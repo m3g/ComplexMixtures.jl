@@ -1,9 +1,9 @@
-!
-! Function that checks the distance criterium and build the list of distances
-! smaller than the cutoff
-!
+#
+# Function that checks the distance criterium and build the list of distances
+# smaller than the cutoff
+#
 
-! Modifies the data of "data.smalld" structure
+# Modifies the data of "data.smalld" structure
 
 function smalldcell!(data :: DistanceData, ii, igroup1, ibox, jbox, kbox)
     
