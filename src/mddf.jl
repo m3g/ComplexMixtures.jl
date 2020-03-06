@@ -1,282 +1,76 @@
-!
-! gmd: A program to compute gmd[1] radial distribution functions from
-!      molecular dynamics simulations in NAMD DCD format.
-!
-!      Important: THIS IS NOT THE CLASSICAL RADIAL DISTRIBUTION
-!                 FUNCTION. It is the shape-dependent RDF used
-!                 for non-spherical solutes. It will only coincide
-!                 with the classical RDF for perfectly spherical
-!                 solutes, for instance if single atoms are used
-!                 to define the solute and the solvent. 
-!                 The normalization of this distribution 
-!                 function is more complicated than the normalization
-!                 of the radial distribution function for spherical
-!                 solutes. Here, the bulk density of the solvent
-!                 is estimated by the counting at long distances, and
-!                 a random distribution of solvent molecules is used
-!                 to estimate the volumes corresponding to each 
-!                 minimum distance count. The normalization if done
-!                 by dividing the actual count of sites by the
-!                 expected non-interacting count estimated from this volume
-!                 and the estimated bulk density.
-!
-! Please cite the following reference when using this package:
-!
-! L. Martinez, S. Shimizu, Minimum distance distribution functions for
-! the analysis of the solvation of complex solutes and solvents.
-! to be published.
-!
-! Auxiliar dimensions:
-!          memory: Controls the amount of memory used for reading dcd
-!                  files. If the program ends with segmentation fault
-!                  without any other printing, decrease the value of
-!                  this parameter.  
-!
-! L. Martinez, Mar 13, 2014. (first version)
-! Institute of Chemistry, State University of Campinas (UNICAMP)
-!
-! L. Martinez, Mar 1, 2017 (with KB integrals)
-! Institute of Chemistry, State University of Campinas (UNICAMP)
-!
-! http://leandro.iqm.unicamp.br/mdanalysis
-! http://github.com/leandromaratinez98/mdanalysis
-!
+#
+# gmd: A program to compute gmd[1] radial distribution functions from
+#      molecular dynamics simulations in NAMD DCD format.
+#
+#      Important: THIS IS NOT THE CLASSICAL RADIAL DISTRIBUTION
+#                 FUNCTION. It is the shape-dependent RDF used
+#                 for non-spherical solutes. It will only coincide
+#                 with the classical RDF for perfectly spherical
+#                 solutes, for instance if single atoms are used
+#                 to define the solute and the solvent. 
+#                 The normalization of this distribution 
+#                 function is more complicated than the normalization
+#                 of the radial distribution function for spherical
+#                 solutes. Here, the bulk density of the solvent
+#                 is estimated by the counting at long distances, and
+#                 a random distribution of solvent molecules is used
+#                 to estimate the volumes corresponding to each 
+#                 minimum distance count. The normalization if done
+#                 by dividing the actual count of sites by the
+#                 expected non-interacting count estimated from this volume
+#                 and the estimated bulk density.
+#
+# Please cite the following reference when using this package:
+#
+# L. Martinez, S. Shimizu, Minimum distance distribution functions for
+# the analysis of the solvation of complex solutes and solvents.
+# to be published.
+#
+# Auxiliar dimensions:
+#          memory: Controls the amount of memory used for reading dcd
+#                  files. If the program ends with segmentation fault
+#                  without any other printing, decrease the value of
+#                  this parameter.  
+#
+# L. Martinez, Mar 13, 2014. (first version)
+# Institute of Chemistry, State University of Campinas (UNICAMP)
+#
+# L. Martinez, Mar 1, 2017 (with KB integrals)
+# Institute of Chemistry, State University of Campinas (UNICAMP)
+#
+# http://leandro.iqm.unicamp.br/mdanalysis
+# http://github.com/leandromaratinez98/mdanalysis
+#
 
-program g_minimum_distance
- 
-  ! Static variables
+function mddf(solute :: Solute,
+              solvent :: Solvent,
+              trajfile :: String,
+              output :: String,
+             ;firstframe :: Int64 = 1,
+              lastframe :: Int64 = -1,
+              stride :: Int64 = 1,
+              periodic :: Bool = true, 
+              nbins :: Int64 = 1000,
+              binstep :: Float64 = 0.2,
+              irefatom :: Int64 = 1,
+              dbulk :: Float64 = 10.,
+              nint :: Int64 = 10,
+              cutoff :: Float64 = 10.,
+              trajtype :: Type == NamdDCD
+             )
 
-  use file_operations
-  implicit none
+  # Arrays that are finally output
 
-  real, parameter :: pi = 4.d0*atan(1.e0)
-  real, parameter :: mole = 6.022140857e23
-  integer, parameter :: memory=15000000
+  # Constants
 
-  integer :: i, j, k, ii, jj
-  integer :: maxatom
-  integer :: natom, nsolute, nsolvent, isolute, isolvent, isolvent_random, &
-             narg, firstframe, lastframe, stride, nclass,&
-             nframes, dummyi, ntotat, memframes, ncycles, memlast,&
-             iframe, icycle, nfrcycle, iatom, &
-             status, keystatus, iargc, lastatom, nres, nrsolute,&
-             nrsolvent, kframe, irad, nbins, natoms_solvent,&
-             nsmalld, frames, irefatom
-  integer :: nrsolvent_random, natsolvent_random
-  integer :: maxsmalld
-  logical :: memerror
-  real :: dbulk, density_fix
-  integer :: nbulk, ibulk, nintegral, nbulk_random
-  real :: convert
-  double precision :: readsidesx, readsidesy, readsidesz, t
-  real :: side(memory,3), mass1, mass2, random, axis(3)
-  real :: dummyr, xdcd(memory), ydcd(memory), zdcd(memory),&
-          time0, etime, tarray(2),&
-          binstep, cutoff, &
-          bulkdensity_at_frame
-  real :: bulkdensity, totalvolume, bulkvolume, simdensity, solutevolume, av_totalvolume
-  real :: bulkerror, sdbulkerror
-  character(len=200) :: groupfile, line, record, value, keyword,&
-                        dcdfile, inputfile, psffile, file,&
-                        lineformat
-  character(len=200) :: output, output_atom_gmd_contrib, output_atom_gmd_contrib_solute
-  character(len=4) :: dummyc
-  character(len=5) :: format
-  logical :: readfromdcd, dcdaxis, periodic, onscreenprogress, usecutoff
-  real :: shellradius
+  pi = 4.d0*atan(1.e0)
+  mole = 6.022140857e23
+  memory=15000000
 
-  real :: beta, gamma, theta, cmx, cmy, cmz
-
-  !
-  ! Allocatable arrays
-  !
-  
-  integer, allocatable :: solute2(:), solvent_random(:)
-  integer, allocatable :: solute(:), solvent(:), resid(:), &
-                          irsolv(:), ismalld(:,:), irsolv_random(:)
-  integer, allocatable :: imind(:,:)
-
-  ! Shell volume, estimated from atom count
-  real, allocatable :: shellvolume(:)
-
-  ! These are the global (whole-solvent-molecule) counts of minimum-distances
-  real, allocatable :: md_count(:)
-  real, allocatable :: md_count_random(:)
-  real, allocatable :: md_atom_contribution(:,:)
-  real, allocatable :: md_atom_contribution_solute(:,:)
-  real :: md_sum
-  real :: md_sum_random
-
-  ! This is the resulting gmd (md_count/md_count_random)
-  real, allocatable :: gmd(:) 
-
-  ! KB integral 
-  real, allocatable :: kb(:)
-
-  ! This is to compute the atomic contributions to gmd (md_atom_contribution/md_count_random)
-  real, allocatable :: gmd_atom_contribution(:,:)
-  real, allocatable :: gmd_atom_contribution_solute(:,:)
-
-  ! Data read from the psf file, not necessarily used here
-  real, allocatable :: eps(:), sig(:), q(:), e(:), s(:), mass(:)
-  character(len=6), allocatable :: class(:), segat(:), resat(:),&
-                                   typeat(:), classat(:)
-
-  ! Array that will contain the coordinates of a single solvent molecule to
-  ! be used in random generation
-  real, allocatable :: solvent_molecule(:,:)
-
-  ! Coordinates and distances
-  real, allocatable :: x(:), y(:), z(:), dsmalld(:), &
-                       xref(:), yref(:), zref(:), xrnd(:), yrnd(:), zrnd(:)
-
-  real, allocatable :: mind_mol(:), mind_atom(:)
-  
-  ! Compute time
-  
-  time0 = etime(tarray)
-  
-  ! Output title
-  
-  write(*,"(/,' ####################################################',&
-            &/,/,&
-            & '   GMD: Compute gmd distribution from DCD files      ',&
-            &/,/,&
-            & ' ####################################################',/)")    
-  
-  call version()
-  
-  ! Seed for random number generator
-  
-  call init_random_number(1811)
-  
-  ! Some default parameters
-  
-  firstframe = 1
-  lastframe = 0
-  stride = 1
-  periodic = .true.
-  readfromdcd = .true.
-  nbins = 1000
-  nintegral = 10
-  dbulk = 10.
-  usecutoff = .false.
-  binstep = 0.02e0
-  onscreenprogress = .false.
-  irefatom = 1
-
-  ! Default output file names
-
-  output = "gmd.dat"
-
-  ! Open input file and read parameters
-  
-  narg = iargc()
-  if(narg == 0) then
-    write(*,*) ' Run with: ./gmd input.inp '
-    stop
-  end if   
-  call getarg(1,record)
-  
-  inputfile = record(1:length(record))
-  open(10,file=inputfile,action='read',iostat=status,status='old')
-  if ( status /= 0 ) then
-    write(*,*) ' ERROR: Could not open input file: ', trim(adjustl(inputfile))
-    stop
-  end if
-  do 
-    read(10,"( a200 )",iostat=status) record
-    if(status /= 0) exit
-    if(keyword(record) == 'dcd') then
-      dcdfile = value(record)
-      write(*,*) ' DCD file name: ', dcdfile(1:length(dcdfile)) 
-    else if(keyword(record) == 'groups') then
-      groupfile = value(record)
-      write(*,*) ' Groups file name: ', groupfile(1:length(groupfile))
-    else if(keyword(record) == 'psf') then
-      psffile = value(record)
-      write(*,*) ' PSF file name: ', psffile(1:length(psffile))
-    else if(keyword(record) == 'firstframe') then
-      line = value(record)
-      read(line,*,iostat=keystatus) firstframe
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'lastframe') then
-      line = value(record)
-      if(line(1:length(line)) /= 'last') then
-        read(line,*,iostat=keystatus) lastframe
-      end if
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'stride') then
-      line = value(record)
-      read(line,*,iostat=keystatus) stride
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'binstep') then
-      line = value(record)
-      read(line,*,iostat=keystatus) binstep
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'nint') then
-      line = value(record)
-      read(line,*,iostat=keystatus) nintegral
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'cutoff') then
-      line = value(record)
-      read(line,*,iostat=keystatus) cutoff
-      if ( cutoff < 0. ) then
-        usecutoff = .false.
-      else
-        usecutoff = .true.
-      end if
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'dbulk') then
-      line = value(record)
-      read(line,*,iostat=keystatus) dbulk
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'irefatom') then
-      line = value(record)
-      read(line,*,iostat=keystatus) irefatom
-      if(keystatus /= 0) exit 
-    else if(keyword(record) == 'onscreenprogress') then
-      onscreenprogress = .true.
-    else if(keyword(record) == 'periodic') then
-      line = value(record)
-      read(line,*,iostat=keystatus) line
-      if(keystatus /= 0) exit 
-      if(line == 'no') then
-        periodic = .false.
-        readfromdcd = .false.
-      else if(line == 'readfromdcd') then
-        periodic = .true.
-        readfromdcd = .true.
-      else
-        periodic = .true.
-        readfromdcd = .false.
-        read(record,*,iostat=keystatus) line, axis(1), axis(2), axis(3)
-        if(keystatus /= 0) exit 
-      end if 
-    else if(keyword(record) == 'output') then
-      output = value(record)
-      write(*,*) ' GMD output file name: ', output(1:length(output))
-    else if(keyword(record) == 'solute' .or. &
-            keyword(record) == 'solvent') then
-      write(*,"(a,/,a)") ' ERROR: The options solute and solvent must be used ',&
-                         '        with the gmd.sh script, not directly. '
-      stop
-    else if(record(1:1) /= '#' .and. & 
-            keyword(record) /= 'par' .and. &
-            record(1:1) > ' ') then
-      write(*,*) ' ERROR: Unrecognized keyword found: ',keyword(record)
-      stop
-    end if
-  end do               
-  close(10)
-
-  ! If some error was found in some keyword value, report error and stop
-  
-  if(keystatus /= 0) then
-    line = keyword(record)
-    write(*,*) ' ERROR: Could not read value for keyword: ',line(1:length(line))
-    stop
-  end if
+  sides = Array{Float64}(memory,3)
+  xdcd = Array{Float64}(memory)
+  ydcd = Array{Float64}(memory)
+  zdcd = Array{Float64}(memory)
 
   ! Names of auxiliary output files
   
