@@ -42,8 +42,8 @@
 # http://github.com/leandromaratinez98/mdanalysis
 #
 
-function mddf(solute :: Solute,
-              solvent :: Solvent,
+function mddf(solute :: SoluteSolvent,
+              solvent :: SoluteSolvent,
               trajfile :: String,
               output :: String,
              ;firstframe :: Int64 = 1,
@@ -54,599 +54,399 @@ function mddf(solute :: Solute,
               binstep :: Float64 = 0.2,
               irefatom :: Int64 = 1,
               dbulk :: Float64 = 10.,
-              nint :: Int64 = 10,
-              cutoff :: Float64 = 10.,
+              nintegral :: Int64 = 10,
+              cutoff :: Float64 = -1.
               trajtype :: Type == NamdDCD
              )
 
-  # Arrays that are finally output
+  # Memory to be used at each reading cycle
 
-  # Constants
-
-  pi = 4.d0*atan(1.e0)
-  mole = 6.022140857e23
   memory=15000000
 
-  sides = Array{Float64}(memory,3)
-  xdcd = Array{Float64}(memory)
-  ydcd = Array{Float64}(memory)
-  zdcd = Array{Float64}(memory)
+  # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
 
-  ! Names of auxiliary output files
-  
-  output_atom_gmd_contrib = output(1:length(remove_extension(output)))//"-GMD_ATOM_CONTRIB."//file_extension(output)
-  output_atom_gmd_contrib_solute = output(1:length(remove_extension(output)))//"-GMD_ATOM_SOLUTE_CONTRIB."//file_extension(output)
-
-  ! Reading the header of psf file
-  
-  call getdim(psffile,inputfile,natom)
-  allocate( eps(natom), sig(natom), q(natom), e(natom), s(natom), mass(natom),&
-            segat(natom), resat(natom), classat(natom), typeat(natom), class(natom),&
-            resid(natom), &
-            irsolv(natom), solute2(natom) )
-
-  ! Reading parameter files to get the vdW sigmas for the definition of exclusion
-  ! zones
-  
-  nclass = 0
-  open(10,file=inputfile,action='read',status='old')
-  do while(.true.)
-    read(10,"( a200 )",iostat=status) record
-    if(status /= 0) exit
-    if(keyword(record) == 'par') then
-      file = value(record)
-      write(*,*) ' Reading parameter file: ', file(1:length(file))
-      call readpar(file,nclass,class,eps,sig)
-    end if
-  end do
-  close(10)
-  
-  ! Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
-
+  mole = 6.022140857e23
   convert = mole / 1.e24
 
-  ! compute ibulk from dbulk (distance from which the solvent is considered bulk,
-  ! in the estimation of bulk density)
+  # Names of auxiliary output files
+  output_atom_gmd_contrib = FileOperations.remove_extension(output)*
+                            "-GMD_ATOM_CONTRIB."*
+                            FileOperations.file_extension(output)
+  output_atom_gmd_contrib_solute = FileOperations.remove_extension(output)*
+                            "-GMD_ATOM_SOLUTE_CONTRIB."*
+                            FileOperations.file_extension(output)
 
-  if ( dbulk-int(dbulk/binstep)*binstep > 1.e-5 ) then
-    write(*,*) ' ERROR: dbulk must be a multiple of binstep. '  
-    stop
-  end if
-  if ( usecutoff ) then
-    if ( dbulk >= cutoff ) then
-      write(*,*) ' ERROR: The bulk volume is zero (dbulk >= cutoff). '
-      stop
-    end if
-    if ( (cutoff-dbulk)-int((cutoff-dbulk)/binstep)*binstep > 1.e-5 ) then
-      write(*,*) ' ERROR: (cutoff-dbulk) must be a multiple of binstep. '  
-      stop
-    end if
-    nbins = int(cutoff/binstep)
-    ibulk = int(dbulk/binstep) + 1
+  # Check for simple input errors
+  
+  if stride < 1
+    error(" ERROR in MDDF input: stride cannot be less than 1. ")
+  end
+  if lastframe < firstframe && lastframe /= 0
+    error(" ERROR in MDDF input: lastframe must be greater or equal to firstframe. ")
+  end
+
+  # compute ibulk from dbulk (distance from which the solvent is considered bulk,
+  # in the estimation of bulk density)
+
+  if dbulk - round(Int64,binstep*dbulk/binstep)*binstep > 1.e-5
+    error("ERROR in MDDF input: dbulk must be a multiple of binstep.")
+  end
+  if cutoff > 0. 
+    usecutoff = true
+    if dbulk >= cutoff 
+      error(" ERROR in MDDF input: The bulk volume is zero (dbulk must be smaller than cutoff). ")
+    end
+    if (cutoff-dbulk)-round(Int64,(cutoff-dbulk)/binstep)*binstep > 1.e-5 
+      error(" ERROR in MDDF input: (cutoff-dbulk) must be a multiple of binstep. ")
+    end
+    nbins = round(Int64,cutoff/binstep)
+    ibulk = round(Int64,dbulk/binstep) + 1
   else
-   write(*,*) ' cutoff < 0: will use ntot-n(dbulk) as nbulk '
-   nbins = int(dbulk/binstep)
-   ibulk = int(dbulk/binstep) + 1
-   cutoff = dbulk
-  end if
-  write(*,*) ' Width of histogram bins: ', binstep
-  write(*,*) ' Number of bins of histograms: ', nbins
+    usecutoff = false
+    println(" cutoff < 0: will use ntot-n(dbulk) as nbulk ")
+    nbins = round(Int64,dbulk/binstep)
+    ibulk = round(Int64,dbulk/binstep) + 1
+    cutoff = dbulk
+  end
+  println(" Width of histogram bins: ", binstep)
+  println(" Number of bins of histograms: ", nbins)
 
-  ! Allocate gmd array according to nbins
+  # Allocate gmd array according to nbins
 
-  allocate( gmd(nbins), kb(nbins), &
-            md_count(nbins), md_count_random(nbins), &
-            shellvolume(nbins) )
-  
-  ! Check for simple input errors
-  
-  if(stride < 1) then
-    write(*,*) ' ERROR: stride cannot be less than 1. ' 
-    stop
-  end if
-  if(lastframe < firstframe.and.lastframe /= 0) then
-    write(*,*) ' ERROR: lastframe must be greater or equal to firstframe. '
-    stop
-  end if
+  gmd = Vector{Float64}(undef,nbins)
+  kb = Vector{Float64}(undef,nbins)
+  gmd_count = Vector{Int64}(undef,nbins)
 
-  ! Output some information if not set
+  # Output some information if not set
   
-  write(*,*) ' First frame to be considered: ', firstframe
-  if(lastframe == 0) then
-    write(*,*) ' Last frame to be considered: last '
+  println(" First frame to be considered: ", firstframe)
+  if lastframe == 0
+    println(" Last frame to be considered: last ")
   else
-    write(*,*) ' Last frame to be considered: ', lastframe
-  end if
-  write(*,*) ' Stride (will jump frames): ', stride
-  write(*,*) ' Cutoff for linked cells: ', cutoff
-  write(*,*) ' Bulk distance: ', dbulk
-  write(*,*) ' Multiplying factor for random count: ', nintegral
+    println(" Last frame to be considered: ", lastframe)
+  end
+  println(" Stride (will jump frames): ", stride)
+  println(" Cutoff for linked cells: ", cutoff)
+  println(" Bulk distance: ", dbulk)
+  println(" Multiplying factor for random count: ", nintegral)
   
-  ! Read PSF file
+  if irefatom > solvent.natoms 
+    error(" ERROR in MDDF input: Reference atom index", irefatom, " is greater than number of "*
+          "                      atoms of the solvent molecule. ")
+  end
   
-  write(*,*) ' Reading PSF file: ', psffile(1:length(psffile))
-  call readpsf(psffile,nclass,class,eps,sig,natom,segat,resat,&
-               resid,classat,typeat,q,e,s,mass,.false.)
-  nres = resid(natom)
-  write(*,*) ' Number of atoms in PSF file: ', natom
-  write(*,*) ' Number of residues in PSF file: ', nres
-  write(*,*)
-  
-  ! Read solute and solvent information from file
-  ! First reading the size of the groups to allocate arrays
-
-  open(10,file=groupfile,action='read')
-  nsolute = 0
-  nsolvent = 0
-  do 
-    read(10,"( a200 )",iostat=status) line
-    if(status /= 0) exit
-    if(line(1:4) == 'ATOM' .or. line(1:6) == 'HETATM') then 
-      if(line(63:66) == '1.00') then      
-        nsolute = nsolute + 1        
-      end if
-      if(line(63:66) == '2.00') then      
-        nsolvent = nsolvent + 1        
-      end if
-    end if     
-  end do
-  if ( nsolute < 1 .or. nsolvent < 1 ) then
-    write(*,*) ' ERROR: No atom selected for solute or solvent. '
-    write(*,*) '        nsolute = ', nsolute
-    write(*,*) '        nsolvent = ', nsolvent
-    stop
-  end if
-  allocate ( solute(nsolute), solvent(nsolvent) )
-  close(10)
-  
-  ! Now reading reading the group atoms
-  
-  open(10,file=groupfile,action='read')
-  isolute = 0
-  isolvent = 0
-  mass1 = 0.
-  mass2 = 0.
-  iatom = 0
-  do 
-    read(10,"( a200 )",iostat=status) line
-    if(status /= 0) exit
-    if(line(1:4) == 'ATOM' .or. line(1:6) == 'HETATM') then 
-      iatom = iatom + 1
-
-      ! Read atoms belonging to solute
-
-      if(line(63:66) == '1.00') then      
-        isolute = isolute + 1        
-        solute(isolute) = iatom
-        mass1 = mass1 + mass(iatom)
-      end if
-  
-      ! Read atoms belonging to solvent
-
-      if(line(63:66) == '2.00') then
-        isolvent = isolvent + 1        
-        solvent(isolvent) = iatom
-        mass2 = mass2 + mass(iatom)
-      end if
-
-    end if     
-  end do
-  close(10)
-  lastatom = max0(solute(nsolute),solvent(nsolvent))
-
-  ! Counting the number of residues of the solute and solvent
-  
-  j = 0
-  nrsolute = 0
-  do i = 1, nsolute
-    if(resid(solute(i)).gt.j) then
-      nrsolute = nrsolute + 1 
-      j = resid(solute(i))
-    end if
-  end do
-  j = 0
-  nrsolvent = 0
-  do i = 1, nsolvent
-    if(resid(solvent(i)).gt.j) then
-      nrsolvent = nrsolvent + 1 
-      j = resid(solvent(i))
-    end if
-    irsolv(i) = nrsolvent
-  end do
-
-  ! Output some group properties for testing purposes
-  
-  write(*,*) ' Number of atoms of solute: ', nsolute 
-  write(*,*) ' First atom of solute: ', solute(1)
-  write(*,*) ' Last atom of solute: ', solute(nsolute)
-  write(*,*) ' Number of residues in solute: ', nrsolute
-  write(*,*) ' Mass of solute: ', mass1
-  write(*,*) ' Number of atoms of solvent: ', nsolvent 
-  write(*,*) ' First atom of solvent: ', solvent(1)
-  write(*,*) ' Last atom of solvent: ', solvent(nsolvent)
-  write(*,*) ' Number of residues in solvent: ', nrsolvent
-  write(*,*) ' Mass of solvent: ', mass2
-
-  ! Check if the solvent atoms have obvious reading problems
-  
-  if ( mod(nsolvent,nrsolvent) /= 0 ) then
-    write(*,*) ' ERROR: Incorrect count of solvent atoms or residues. '
-    stop
-  end if
-
-  natoms_solvent = nsolvent / nrsolvent 
-  write(*,*)  ' Number of atoms of each solvent molecule: ', natoms_solvent
-  if ( irefatom > natoms_solvent ) then
-    write(*,*) ' ERROR: Reference atom index', irefatom, ' is greater than number of '
-    write(*,*) '        atoms of the solvent molecule. '
-    stop
-  else
-    write(*,*) ' Single-site reference atom: ', irefatom,' : ', typeat(solvent(1)+irefatom-1)
-  end if
-  
-  ! The number of random molecules for numerical normalization 
+  # The number of random molecules for numerical normalization 
 
   nrsolvent_random = nintegral*nrsolvent
-  natsolvent_random = natoms_solvent*nrsolvent_random
+  natsolvent_random = solvent.natomspermol*nrsolvent_random
 
-  ! Initialization of the smalldistances routine arrays
- 
-  maxsmalld = nrsolvent_random
-  allocate( ismalld(maxsmalld,2), dsmalld(maxsmalld) )
+  # Auxiliary solute copy for random distribution calculation
+  solute2 = copy(solute)
 
-  ! Allocate xyz and minimum-distance count arrays
+  # Last atom to be read from the trajectory files
+
+  natoms = length(solute)+length(solvent)
+  lastatom = max(maximum(solute),maximum(solvent))
+
+  # Maximum number of atoms in the list
 
   maxatom = max(natom,nsolute+max(nsolvent,natsolvent_random))
-  allocate( x(maxatom), y(maxatom), z(maxatom) )
-  allocate( imind(nrsolvent_random,2), mind_mol(nrsolvent_random), mind_atom(natsolvent_random) )
 
-  ! Allocate solvent molecule (this will be used to generate random coordinates
-  ! for each solvent molecule, one at a time, later)
-  
-  allocate( solvent_molecule(natoms_solvent,3), &
-            xref(natoms_solvent), yref(natoms_solvent), zref(natoms_solvent),&
-            xrnd(natoms_solvent), yrnd(natoms_solvent), zrnd(natoms_solvent) )
-  allocate( gmd_atom_contribution(natoms_solvent,nbins), & 
-            md_atom_contribution(natoms_solvent,nbins) )
-  allocate( gmd_atom_contribution_solute(nsolute,nbins), & 
-            md_atom_contribution_solute(nsolute,nbins) )
+  # Initial estimate of the maximum number of small distances counted
 
-  ! These will contain indexes for the atoms of the randomly generated solvent molecules,
-  ! which are more than the number of the atoms of the solvent in the actual
-  ! simulation. 
+  maxsmalld = nrsolvent_random
 
-  allocate( solvent_random(natsolvent_random), irsolv_random(natsolvent_random) )
+  # Initialization of the main data structure for the computation of small distances
 
-  ! Checking if dcd file contains periodic cell information
+  data = DistanceData(
+             Frame( Vector{Float64}(undef,3),         # sides 
+                    Vector{Float64}(undef,lastatom),  # x 
+                    Vector{Float64}(undef,lastatom),  # y
+                    Vector{Float64}(undef,lastatom)   # z
+                  ),
+             Groups( solute.n, solvent.n,
+                     solute.index,  # indexes of solute atoms 
+                     solvent.index, # indexes of solvent atoms
+                   ),
+             SmalldLinkedLists(
+                     Vector{Int64}(undef,natoms), # iatomfirst
+                     Vector{Int64}(undef,natoms), # iatomnext
+                     Vector{Int64}(undef,3), # number of boxes in each dimension
+                     Array{Int64}(undef,solute.n,3), # boxes of group1
+                     Array{Int64}(undef,solvent.n,3), # boxes of group2
+                     Vector{Float64}(undef,3), # length of box in each dimension
+                     Vector{Int64}(undef,3), # maximum number of boxes in each dimension
+                     cutoff
+                              )
+             # next is mutable
+             SmallDistances(
+                     1, # number of small distances
+                     maxsmalld, # maximum number of small distances
+                     Array{Int64}(undef,maxsmalld,2), # Indexes of the atoms of each distance
+                     Vector{Float64}(undef,maxsmalld), # Distance
+                     false # memory overflow flag
+                           )
+                     )
+
+  # Arrays containing minimum-distance counts
+
+  mind_mol = Vector{Int64}(undef,nrsolvent_random)
+  mind_atom = Vector{Int64}(undef,(natsolvent_random)
+
+  # Allocate solvent molecule (this will be used to generate random coordinates
+  # for each solvent molecule, one at a time, later)
   
-  write(*,"( /,tr2,52('-') )")
-  write(*,*) ' Periodic cell data: Read carefully. '
-  call chkperiod(dcdfile,dcdaxis,readfromdcd) 
-  if(.not.readfromdcd.and.periodic) then
-    write(*,*) ' User provided periodic cell dimensions: '
-    write(*,*) axis(1), axis(2), axis(3)
-  end if
+  solvent_molecule = Array{Float64}(undef,solvent.natomspermol,3)
+  xref = Vector{Float64}(undef,solvent.natomspermol)
+  yref = Vector{Float64}(undef,solvent.natomspermol)
+  zref = Vector{Float64}(undef,solvent.natomspermol)
+  xrnd = Vector{Float64}(undef,solvent.natomspermol)
+  yrnd = Vector{Float64}(undef,solvent.natomspermol)
+  zrnd = Vector{Float64}(undef,solvent.natomspermol)
+
+  gmd_atom_contributon = Array{Float64}(undef,solvent.natomspermol,nbins)
+  md_atom_contributon = Array{Float64}(undef,solvent.natomspermol,nbins)
   
-  ! Reading the dcd file
-  
-  write(*,"(tr2,52('-'),/ )")
-  write(*,*) ' Reading the DCD file header: '
-  open(10,file=dcdfile,action='read',form='unformatted')
-  read(10) dummyc, nframes, (dummyi,i=1,8), dummyr, (dummyi,i=1,9)
-  read(10) dummyi, dummyr
-  read(10) ntotat
-  
-  write(*,*)
-  write(*,*) ' Number of atoms as specified in the dcd file: ', ntotat     
-  call getnframes(10,nframes,dcdaxis,lastframe)
-  if( lastframe == 0 ) lastframe = nframes
-  if(ntotat /= natom) then
-    write(*,"(a,/,a)") ' ERROR: Number of atoms in the dcd file does not',&
-                      &'        match the number of atoms in the psf file'
-    stop
-  end if
-  
-  ! Number of frames (used for normalization of counts)
+  gmd_atom_contributon_solute = Array{Float64}(undef,solvent.natomspermol,nbins)
+  md_atom_contributon_solute = Array{Float64}(undef,solvent.natomspermol,nbins)
+
+  # These will contain indexes for the atoms of the randomly generated solvent molecules,
+  # which are more than the number of the atoms of the solvent in the actual
+  # simulation. 
+
+  solvent_random = Vector{Int64}(undef,natsolvent_random)
+  irsolv_random = Vector{Int64}(undef,natsolvent_random)
+
+  # Opening the trajectory file, this step must return the IO stream
+  # and  the number of the last frame to be read
+
+  trajectory, lastframe = trajectory_start(trajfile)
+
+  # Number of frames (used for normalization of counts)
   
   frames=(lastframe-firstframe+1)/stride
-  write(*,*) ' Number of frames to read: ', frames
+  println(" Number of frames to read: ", frames)
 
-  ! Now going to read the dcd file
-  
-  memframes = memory / ntotat
-  ncycles = (lastframe-1) / memframes + 1
-  memlast = lastframe - memframes * ( ncycles - 1 )
-  write(*,*) ' Will read and store in memory at most ', memframes,&
-             ' frames per reading cycle. '
-  write(*,*) ' There will be ', ncycles, ' cycles of reading. '
-  write(*,*) ' Last cycle will read ', memlast,' frames. '
-  write(*,*)        
-  
-  ! Reseting the counters
-  
-  do i = 1, nbins
-    md_count(i) = 0.e0
-    md_count_random(i) = 0.e0
-    shellvolume(i) = 0.e0
-    do j = 1, natoms_solvent
-      md_atom_contribution(j,i) = 0.e0
-    end do
-    do j = 1, nsolute
-      md_atom_contribution_solute(j,i) = 0.e0
-    end do
-  end do
-  bulkdensity = 0.e0
-  simdensity = 0.e0
-  av_totalvolume = 0.e0
+  # Counters: they are floats to avoid overflow of integers, perhaps
 
-  ! Reading dcd file and computing the gmd function
+  md_count = zeros(Float64,nbins)
+  md_count_random = zeros(Float64,nbins)
+  shellvolume = zeros(Float64,nbins)
+  md_atom_contribution = zeros(Float64,solvent.natomspermol,nbins)
+  md_atom_contribution_solute = zeros(Float64,natoms_solute,nbins)
+
+  bulkdensity = 0.
+  simdensity = 0.
+  av_totalvolume = 0.
+
+  # Reading trajectory file and computing the gmd function
    
-  iframe = 0
-  do icycle = 1, ncycles 
+  for iframe in 1:nframes
    
-    if ( onscreenprogress ) then
-      write(*,"( t3,'Cycle',t10,i5,tr2,' Reading: ',f6.2,'%')",&
-            advance='no') icycle, 0. 
-    end if
-  
-    ! Each cycle fills the memory as specified by the memory parameter 
-  
-    if(icycle == ncycles) then
-      nfrcycle = memlast
-    else
-      nfrcycle = memframes
-    end if
-  
-    iatom = 0
-    do kframe = 1, nfrcycle    
-      if(dcdaxis) then 
-        read(10) readsidesx, t, readsidesy, t, t, readsidesz
-        side(kframe,1) = sngl(readsidesx)
-        side(kframe,2) = sngl(readsidesy)
-        side(kframe,3) = sngl(readsidesz)
-      end if
-      read(10) (xdcd(k), k = iatom + 1, iatom + lastatom)
-      read(10) (ydcd(k), k = iatom + 1, iatom + lastatom)            
-      read(10) (zdcd(k), k = iatom + 1, iatom + lastatom)           
-      iatom = iatom + ntotat
-      if ( onscreenprogress ) then
-        write(*,"( 7a,f6.2,'%' )",advance='no')&
-             (char(8),i=1,7), 100.*float(kframe)/nfrcycle
-      end if
+    sides, x_solute, x_solvent = nextframe(trajectory)
+
+    if cutoff > sides[1]/2. || cutoff > sides[2]/2. || cutoff > sides[3]/2.
+      error(" ERROR in MDDF: cutoff or dbulk > periodic_dimension/2 ")
+    end
+
+    #
+    # Computing the GMD data the simulation
+    #
+
+    data.frame.x_solute = x_solute
+    data.frame.x_solvent = x_solvent
+
+    # Compute all distances that are smaller than the cutoff
+
+    data.smalld.memerror = true
+    while data.smalld.memerror
+      data.smalld.memerror = false
+      smalldistances!(data)
+      # If the size of arrays is not large enough, rescale them and free up the memory
+      if ( data.smalld.memerror ) then
+        data.smalld.nmax = round(Int64,1.5*nsmalld)
+        data.smalld.index = Array{Float64}(undef,data.smalld.nmax,2)
+        data.smalld.d = Vector{Float64}(undef,data.smalld.nmax)
+        GC.gc() # release memory of old arrays that were reassigned
+      end
+    end
+
+    #
+    # Computing the gmd functions from distance data
+    #
+
+    # For each solvent molecule, get the MINIMUM distance to the solute
+    
+    for i in 1:solvent.nmol
+      mind_mol[i] = cutoff + 1. # Minimum distance found for this solvent molecule
+      imind[i,1] = 0 # Solute atom corresponding to this minimum distance
+      imind[i,2] = 0 # Solvent atom corresponding to this minimum distance
+    end
+    for i in 1:solvent.natoms
+      mind_atom[i] = cutoff + 1. # Minimum distance for this atom, to compute atom contributions
+    end
+    for i in 1:data.smalld.n
+      # Counting for computing the whole-molecule gmd 
+      i1 = data.smalld.index[i,1]
+      i2 = data.smalld.index[i,2]
+      isolvent = solvent.imol[i2]
+      if data.smalld.d[i] < mind_mol[isolvent]
+        # Updating minimum distance to this solvent molecule
+        mind_mol[isolvent] = data.smalld.d[i]
+        # Annotating to which solute atom this md corresponds
+        imind[isolvent,1] = i1
+        # Annotating to which solvent atom this md corresponds
+        j = i2%solvent.natomspermol
+        if j == 0 
+          j = solvent.natomspermol
+        end
+        imind[isolvent,2] = j
+      end
+      # Counting for computing atom-specific gmd
+      if data.smalld.d[i] < mind_atom[i2]
+        mind_atom[i2] = data.smalld.d[i]
+      end
+    end
+
+    # Summing up current data to the gmd histogram
+
+    for i in 1:solvent.natoms
+      irad = round(Int64,nbins*mind_mol[i]/cutoff)+1
+      if irad <= nbins
+        # Summing up the total minimum-distance count
+        md_count[irad] = md_count[irad] + 1.
+        # Summing up the solvent atomic contribution
+        if imind[i,2] > 0
+          md_atom_contribution[imind[i,2],irad] = md_atom_contribution[imind[i,2],irad] + 1.
+        end
+        # Summing up the solute atomic contribution
+        if imind[i,1] > 0
+          md_atom_contribution_solute[imind[i,1],irad] = md_atom_contribution_solute[imind[i,1],irad] + 1.
+        end
+      end
+    end
+
+    # Site count at frame, to estimate the bulk density, is performed for a
+    # single solvent reference site, which is taken as atom of type 'irefatom' of the solvent
+
+    nbulk = 0
+    for i in 1:solvent.natoms
+      irad = round(Int64,nbins*mind_atom[i]/cutoff)+1
+      if irad <= nbins
+        j = i%solvent.natoms
+        if j == 0 
+          j = solvent.natomspermol 
+        end
+        if j == irefatom
+          if usecutoff 
+            if irad >= ibulk # Estimate bulk density from the slab between dbulk and cutoff
+              nbulk = nbulk + 1
+            end
+          else
+            if irad > nbins # Estimate from everyting beyond dbulk
+              nbulk = nbulk + 1
+            end
+          end
+        end
+      end
+    end
+
+    # Total volume of the box at this frame
+
+    totalvolume = sides[1]*sides[2]*sides[3]
+    av_totalvolume = av_totalvolume + totalvolume
+
+    # This is the average density of the solvent in the simulation box, that will
+    # be averaged at the end 
+
+    simdensity = simdensity + nrsolvent/totalvolume
+
+    #
+    # Computing random counts
+    #
+
+    # Solute coordinates are put at the first nsolute positions of x,y,z
+
+    for i in 1:solute.natoms
+      ii = solute.index[i]
+      x[i] = data.frame.x[ii]
+      y[i] = data.frame.y[ii]
+      z[i] = data.frame.z[ii]
+      solute2.index[i] = i
     end do
-    if ( onscreenprogress ) then
-      write(*,"(' Computing: ',f6.2,'%')",advance='no') 0.
-    end if
-  
-    ! Computing the gmd function
-  
-    iatom = 0
-    do kframe = 1, nfrcycle
-      iframe = iframe + 1
 
-      if(mod(iframe-firstframe,stride) /= 0 .or. iframe < firstframe ) then
-        iatom = iatom + ntotat
-        cycle
-      end if
+    #
+    # Generating random distribution of solvent molecules in box
+    #
 
-      ! Sides of the periodic cell in this frame
-  
-      axis(1) = side(kframe,1) 
-      axis(2) = side(kframe,2) 
-      axis(3) = side(kframe,3) 
+    for isolvent_random in 1:nrsolvent_random
 
-      if ( cutoff > axis(1)/2.e0 .or. &
-           cutoff > axis(2)/2.e0 .or. &
-           cutoff > axis(3)/2.d0 ) then
-        write(*,*)
-        if ( usecutoff ) then
-          write(*,*) " ERROR: cutoff > periodic_dimension/2 "
-        else
-          write(*,*) " ERROR: dbulk > periodic_dimension/2 "
-        end if
-        stop
-      end if
-
-      !
-      ! Computing the GMD data the simulation
-      !
-
-      do i = 1, nsolute
-        ii = iatom + solute(i)
-        x(solute(i)) = xdcd(ii)
-        y(solute(i)) = ydcd(ii)
-        z(solute(i)) = zdcd(ii)
-      end do
-      do i = 1, nsolvent
-        ii = iatom + solvent(i)
-        x(solvent(i)) = xdcd(ii)
-        y(solvent(i)) = ydcd(ii)
-        z(solvent(i)) = zdcd(ii)
-      end do
-
-      ! Compute all distances that are smaller than the cutoff
-
-      memerror = .true.
-      do while ( memerror ) 
-        memerror = .false.
-        call smalldistances(nsolute,solute,nsolvent,solvent,x,y,z,cutoff,&
-                            nsmalld,ismalld,dsmalld,axis,maxsmalld,memerror)
-        if ( memerror ) then
-          deallocate( ismalld, dsmalld )
-          maxsmalld = int(1.5*nsmalld)
-          allocate( ismalld(maxsmalld,2), dsmalld(maxsmalld) )
-        end if
-      end do
-
-      !
-      ! Computing the gmd functions from distance data
-      !
-
-      ! For each solvent residue, get the MINIMUM distance to the solute
+      # First, pick randomly a solvent molecule from the bulk (mind_mol was just computed above
+      # for the actual simulation)
     
-      do i = 1, nrsolvent
-        mind_mol(i) = cutoff + 1.e0 ! Minimum distance found for this solvent molecule
-        imind(i,1) = 0 ! Solute atom corresponding to this minimum distance
-        imind(i,2) = 0 ! Solvent atom corresponding to this minimum distance
-      end do
-      do i = 1, nsolvent
-        mind_atom(i) = cutoff + 1.e0
-      end do
-      do i = 1, nsmalld
-        ! Counting for computing the whole-molecule gmd 
-        isolvent = irsolv(ismalld(i,2))
-        if ( dsmalld(i) < mind_mol(isolvent) ) then
-          ! Updating minimum distance to this solvent molecule
-          mind_mol(isolvent) = dsmalld(i)
-          ! Annotating to which solute atom this md corresponds
-          imind(isolvent,1) = ismalld(i,1)
-          ! Annotating to which solvent atom this md corresponds
-          j = mod(ismalld(i,2),natoms_solvent) 
-          if ( j == 0 ) j = natoms_solvent
-          imind(isolvent,2) = j
-        end if
-        ! Counting for computing atom-specific gmd
-        if ( dsmalld(i) < mind_atom(ismalld(i,2)) ) then
-          mind_atom(ismalld(i,2)) = dsmalld(i)
-        end if
-      end do
+      ii = round(Int64,(solvent.nmol-1)*rand(Float64))+1
+      while mind_mol[ii] < dbulk 
+        ii = round(Int64,(solvent.nmol-1)*rand(Float64))+1
+      end
 
-      ! Summing up current data to the gmd histogram
-
-      do i = 1, nrsolvent
-        irad = int(float(nbins)*mind_mol(i)/cutoff)+1
-        if( irad <= nbins ) then
-          ! Summing up the total minimum-distance count
-          md_count(irad) = md_count(irad) + 1.e0
-          ! Summing up the solvent atomic contribution
-          if ( imind(i,2) > 0 ) then
-            md_atom_contribution(imind(i,2),irad) = md_atom_contribution(imind(i,2),irad) + 1.e0
-          end if
-          ! Summing up the solute atomic contribution
-          if ( imind(i,1) > 0 ) then
-            md_atom_contribution_solute(imind(i,1),irad) = md_atom_contribution_solute(imind(i,1),irad) + 1.e0
-          end if
-        end if
-      end do
-
-      ! Site count at frame, to estimate the bulk density, is performed for a
-      ! single solvent reference site, which is taken as atom of type 'irefatom' of the solvent
-
-      if ( usecutoff ) then
-        nbulk = 0
-        do i = 1, nsolvent
-          irad = int(float(nbins)*mind_atom(i)/cutoff)+1
-          if( irad <= nbins ) then
-            j = mod(i,natoms_solvent) 
-            if ( j == 0 ) j = natoms_solvent
-            if ( j == irefatom .and. irad >= ibulk ) nbulk = nbulk + 1
-          end if
-        end do
-      else
-        nbulk = 0
-        do i = 1, nsolvent
-          irad = int(float(nbins)*mind_atom(i)/cutoff)+1
-          j = mod(i,natoms_solvent) 
-          if ( j == 0 ) j = natoms_solvent
-          if ( j == irefatom .and. irad > nbins ) nbulk = nbulk + 1
-        end do
-      end if
-
-      ! Total volume of the box at this frame
-
-      totalvolume = axis(1)*axis(2)*axis(3)
-      av_totalvolume = av_totalvolume + totalvolume
-
-      ! This is the average density of the solvent in the simulation box, that will
-      ! be averaged at the end 
-
-      simdensity = simdensity + nrsolvent/totalvolume
-
-      !
-      ! Computing random counts
-      !
-
-      ! Solute coordinates are put at the first nsolute positions of x,y,z
-
-      do i = 1, nsolute
-        ii = iatom + solute(i)
-        x(i) = xdcd(ii)
-        y(i) = ydcd(ii)
-        z(i) = zdcd(ii)
-        solute2(i) = i
-      end do
-
-      !
-      ! Generating random distribution of solvent molecules in box
-      !
-
-      do isolvent_random = 1, nrsolvent_random
-
-        ! First, pick randomly a solvent molecule from the bulk (mind_mol was just computed above
-        ! for the actual simulation)
+      # Save the coordinates of this molecule in this frame in the solvent_molecule array
     
-        ii = int((nrsolvent-1)*random()) + 1
-        do while( mind_mol(ii) < dbulk ) 
-          ii = int((nrsolvent-1)*random()) + 1
-        end do
+      jj = solvent.index[1] + solvent.natoms*(ii-1)
+      for i in 1:solvent.natoms
+        solvent_molecule[i,1] = data.frame.x(jj+i-1)
+        solvent_molecule[i,2] = data.frame.y(jj+i-1)
+        solvent_molecule[i,3] = data.frame.z(jj+i-1)
+      end
 
-        ! Save the coordinates of this molecule in this frame in the solvent_molecule array
-    
-        jj = iatom + solvent(1) + natoms_solvent*(ii-1)
-        do i = 1, natoms_solvent
-          solvent_molecule(i,1) = xdcd(jj+i-1)
-          solvent_molecule(i,2) = ydcd(jj+i-1)
-          solvent_molecule(i,3) = zdcd(jj+i-1)
-        end do
-
-        ! Put molecule in its center of coordinates for it to be the reference coordinate for the 
-        ! random coordinates that will be generated
+      # Put molecule in its center of coordinates for it to be the reference coordinate for the 
+      # random coordinates that will be generated
   
-        cmx = 0.
-        cmy = 0.
-        cmz = 0.
-        do i = 1, natoms_solvent
-          cmx = cmx + solvent_molecule(i,1)
-          cmy = cmy + solvent_molecule(i,2)
-          cmz = cmz + solvent_molecule(i,3)
-        end do
-        cmx = cmx / float(natoms_solvent)
-        cmy = cmy / float(natoms_solvent)
-        cmz = cmz / float(natoms_solvent)
-        do i = 1, natoms_solvent
-          xref(i) = solvent_molecule(i,1) - cmx
-          yref(i) = solvent_molecule(i,2) - cmy
-          zref(i) = solvent_molecule(i,3) - cmz
-        end do
-
-        ! Generate a random position for this molecule
-  
-        cmx = -axis(1)/2. + random()*axis(1) 
-        cmy = -axis(2)/2. + random()*axis(2) 
-        cmz = -axis(3)/2. + random()*axis(3) 
-        beta = random()*2.e0*pi
-        gamma = random()*2.e0*pi
-        theta = random()*2.e0*pi
-        call compcart(natoms_solvent,xref,yref,zref,xrnd,yrnd,zrnd,&
-                      cmx,cmy,cmz,beta,gamma,theta)
-
-        ! Add this molecule to x, y, z arrays
-
-        do i = 1, natoms_solvent
-          ii = nsolute + (isolvent_random-1)*natoms_solvent + i
-          x(ii) = xrnd(i)
-          y(ii) = yrnd(i)
-          z(ii) = zrnd(i)
-          solvent_random(ii-nsolute) = ii
-          ! Annotate to which molecule this atom pertains
-          irsolv_random(ii-nsolute) = isolvent_random
-        end do
-
+      cmx = 0.
+      cmy = 0.
+      cmz = 0.
+      for i in 1:solvent.natomspermol
+        cmx = cmx + solvent_molecule[i,1]
+        cmy = cmy + solvent_molecule[i,2]
+        cmz = cmz + solvent_molecule[i,3]
+      end
+      cmx = cmx / solvent.natomspermol
+      cmy = cmy / solvent.natomspermol
+      cmz = cmz / solvent.natomspermol
+      for i in 1:solvent.natomspermol
+        xref[i] = solvent_molecule[i,1] - cmx
+        yref[i] = solvent_molecule[i,2] - cmy
+        zref[i] = solvent_molecule[i,3] - cmz
       end do
 
-      ! The solute atom was already added to the xyz array for computing volumes, so now
-      ! we have only to compute the distances
+      # Generate a random position for this molecule
+  
+      cmx = -sides[1]/2. + rand(Float64)*sides[1] 
+      cmy = -sides[2]/2. + rand(Float64)*sides[2] 
+      cmz = -sides[3]/2. + rand(Float64)*sides[3] 
+      beta = 2*pi*rand(Float64)
+      gamma = 2*pi*rand(Float64)
+      theta = 2*pi*rand(Float64)
+      compcart!(solvent.natomspermol,[ cmx, cmy, cmz ], 
+                xref,yref,zref,beta,gamma,theta,
+                xrnd, yrnd, zrnd)
 
+      # Add this molecule to x, y, z arrays
+
+      for i in 1:solvent.natomspermol
+        ii = solute.natoms + (isolvent_random-1)*solvent.natomspermol + i
+        x[ii] = xrnd[i]
+        y[ii] = yrnd[i]
+        z[ii] = zrnd[i]
+        solvent_random[ii-nsolute] = ii
+        # Annotate to which molecule this atom pertains
+        irsolv_random[ii-nsolute] = isolvent_random
+      end
+    end
+
+    # The solute atom was already added to the xyz array for computing volumes, so now
+    # we have only to compute the distances
+
+voltar
       memerror = .true.
       do while ( memerror ) 
         memerror = .false.
@@ -670,8 +470,8 @@ function mddf(solute :: Solute,
         isolvent = irsolv_random(ismalld(i,2))
         if ( dsmalld(i) < mind_mol(isolvent) ) then
           mind_mol(isolvent) = dsmalld(i)
-          j = mod(ismalld(i,2),natoms_solvent) 
-          if ( j == 0 ) j = natoms_solvent
+          j = mod(ismalld(i,2),solvent.natomspermol) 
+          if ( j == 0 ) j = solvent.natomspermol
           imind(isolvent,2) = j
         end if
       end do
@@ -701,8 +501,8 @@ function mddf(solute :: Solute,
         do i = 1, natsolvent_random
           irad = int(float(nbins)*mind_atom(i)/cutoff)+1
           if ( irad <= nbins ) then
-            j = mod(i,natoms_solvent) 
-            if ( j == 0 ) j = natoms_solvent
+            j = mod(i,solvent.natomspermol) 
+            if ( j == 0 ) j = solvent.natomspermol
 
             ! The counting of single-sites at the bulk region will be used to estimate
             ! the volumes of spherical shells of radius irad
@@ -718,8 +518,8 @@ function mddf(solute :: Solute,
         nbulk_random = 0
         do i = 1, natsolvent_random
           irad = int(float(nbins)*mind_atom(i)/cutoff)+1
-          j = mod(i,natoms_solvent) 
-          if ( j == 0 ) j = natoms_solvent
+          j = mod(i,solvent.natomspermol) 
+          if ( j == 0 ) j = solvent.natomspermol
           if ( irad <= nbins ) then
             if ( j == irefatom ) shellvolume(irad) = shellvolume(irad) + 1.e0
           else
@@ -787,7 +587,7 @@ function mddf(solute :: Solute,
 
     md_count(i) = md_count(i)/frames
     md_count_random(i) = density_fix*md_count_random(i)/frames
-    do j = 1, natoms_solvent
+    do j = 1, solvent.natomspermol
       md_atom_contribution(j,i) = md_atom_contribution(j,i)/frames
     end do
     do j = 1, nsolute
@@ -799,7 +599,7 @@ function mddf(solute :: Solute,
 
     if ( md_count_random(i) > 0.e0 ) then
       gmd(i) = md_count(i)/md_count_random(i)
-      do j = 1, natoms_solvent
+      do j = 1, solvent.natomspermol
         gmd_atom_contribution(j,i) = md_atom_contribution(j,i)/md_count_random(i)
       end do
       do j = 1, nsolute
@@ -807,7 +607,7 @@ function mddf(solute :: Solute,
       end do
     else
       gmd(i) = 0.e0
-      do j = 1, natoms_solvent
+      do j = 1, solvent.natomspermol
         gmd_atom_contribution(j,i) = 0.e0
       end do
       do j = 1, nsolute
@@ -949,15 +749,15 @@ function mddf(solute :: Solute,
              &'# PSF file: ' )")
   write(20,"(a)") "#"
   write(20,"(a)") "# Atoms: "
-  do i = 1, natoms_solvent
+  do i = 1, solvent.natomspermol
     write(20,"( '#', i6, 2(tr2,a), tr2,' mass: ',f12.5 )") i, typeat(solvent(i)), classat(solvent(i)), mass(solvent(i))
   end do
   write(20,"(a)") "#"
-  write(lineformat,*) "('#',t7,'DISTANCE     GMD TOTAL',",natoms_solvent,"(tr2,i12) )"
-  write(20,lineformat) (i,i=1,natoms_solvent)
-  write(lineformat,*) "(",natoms_solvent+2,"(tr2,f12.5))"
+  write(lineformat,*) "('#',t7,'DISTANCE     GMD TOTAL',",solvent.natomspermol,"(tr2,i12) )"
+  write(20,lineformat) (i,i=1,solvent.natomspermol)
+  write(lineformat,*) "(",solvent.natomspermol+2,"(tr2,f12.5))"
   do i = 1, nbins
-    write(20,lineformat) shellradius(i,binstep), gmd(i), (gmd_atom_contribution(j,i),j=1,natoms_solvent)
+    write(20,lineformat) shellradius(i,binstep), gmd(i), (gmd_atom_contribution(j,i),j=1,solvent.natomspermol)
   end do
   close(20)
 
