@@ -29,11 +29,27 @@
 #              routine should be called again. 
 #  
 
-# Modifies ismalld and dsmalld, returns nsmalld, maxsmalld and memerror
-
 using OffsetArrays
 
+# This function cycles until the vectors smalld.index and smalld.d are large
+# enough to contain all the distances found
+
 function smalldistances!( data :: DistanceData )
+  memerror = true
+  while memerror
+    memerror = false
+    smalldistances!(data,memerror)
+    # If the size of arrays is not large enough, rescale them and free up the memory
+    if memerror
+      data.smalld.nmax = round(Int64,1.5*nsmalld)
+      data.smalld.index = Array{Float64}(undef,data.smalld.nmax,2)
+      data.smalld.d = Vector{Float64}(undef,data.smalld.nmax)
+      GC.gc() # release memory of old arrays that were reassigned
+    end
+  end
+end
+
+function smalldistances!( data :: DistanceData, memerror :: Bool )
 
   # Associate simpler names to data variables for simplicity of the code
 
@@ -55,12 +71,6 @@ function smalldistances!( data :: DistanceData )
 
   cutoff = data.lists.cutoff
   cutoff2 = cutoff^2
-
-  # Number of cells of linked cell method in each direction (initialization)
-
-  nbdim = [ 1, 1, 1 ]
-  iatomfirst = OffsetArray{Int64}(undef,0:0,0:0,0:0)
-  iatomnext = Vector{Int64}(data.groups.ngroup2)
 
   # Putting the atoms in their minimum image coordinates 
 
@@ -90,6 +100,7 @@ function smalldistances!( data :: DistanceData )
     @. nbdim = nboxes
     data.lists.iatomfirst = OffsetArray{Int64}(undef,0:nboxes[1]+1,0:nboxes[2]+1,0:nboxes[3]+1)
     iatomfirst = data.lists.iatomfirst
+    GC.gc()
   end
 
   # Reseting the iatomfirst array
@@ -148,46 +159,46 @@ function smalldistances!( data :: DistanceData )
   
     # Inside box
 
-    smalldcell!(data,ii,igroup1,i,j,k)
+    smalldcell!(data,ii,igroup1,i,j,k,memerror)
   
     # Interactions of boxes that share faces
   
-    smalldcell!(data,ii,igroup1,i+1,j,k) 
-    smalldcell!(data,ii,igroup1,i,j+1,k) 
-    smalldcell!(data,ii,igroup1,i,j,k+1) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i,j+1,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i,j,k+1,memerror) 
   
-    smalldcell!(data,ii,igroup1,i-1,j,k) 
-    smalldcell!(data,ii,igroup1,i,j-1,k) 
-    smalldcell!(data,ii,igroup1,i,j,k-1) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i,j-1,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i,j,k-1,memerror) 
   
     # Interactions of boxes that share axes
                  
-    smalldcell!(data,ii,igroup1,i+1,j+1,k) 
-    smalldcell!(data,ii,igroup1,i+1,j,k+1) 
-    smalldcell!(data,ii,igroup1,i+1,j-1,k) 
-    smalldcell!(data,ii,igroup1,i+1,j,k-1) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j+1,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j-1,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j,k-1,memerror) 
   
-    smalldcell!(data,ii,igroup1,i,j+1,k+1) 
-    smalldcell!(data,ii,igroup1,i,j+1,k-1) 
-    smalldcell!(data,ii,igroup1,i,j-1,k+1) 
-    smalldcell!(data,ii,igroup1,i,j-1,k-1) 
+    memerror = smalldcell!(data,ii,igroup1,i,j+1,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i,j+1,k-1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i,j-1,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i,j-1,k-1,memerror) 
   
-    smalldcell!(data,ii,igroup1,i-1,j+1,k) 
-    smalldcell!(data,ii,igroup1,i-1,j,k+1) 
-    smalldcell!(data,ii,igroup1,i-1,j-1,k) 
-    smalldcell!(data,ii,igroup1,i-1,j,k-1) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j+1,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j-1,k,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j,k-1,memerror) 
   
     # Interactions of boxes that share vertices
   
-    smalldcell!(data,ii,igroup1,i+1,j+1,k+1) 
-    smalldcell!(data,ii,igroup1,i+1,j+1,k-1) 
-    smalldcell!(data,ii,igroup1,i+1,j-1,k+1) 
-    smalldcell!(data,ii,igroup1,i+1,j-1,k-1) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j+1,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j+1,k-1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j-1,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i+1,j-1,k-1,memerror) 
   
-    smalldcell!(data,ii,igroup1,i-1,j+1,k+1) 
-    smalldcell!(data,ii,igroup1,i-1,j+1,k-1) 
-    smalldcell!(data,ii,igroup1,i-1,j-1,k+1) 
-    smalldcell!(data,ii,igroup1,i-1,j-1,k-1) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j+1,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j+1,k-1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j-1,k+1,memerror) 
+    memerror = smalldcell!(data,ii,igroup1,i-1,j-1,k-1,memerror) 
 
   end
 

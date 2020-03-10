@@ -5,10 +5,11 @@
 
 # Modifies the data of "data.smalld" structure
 
-function smalldcell!(data :: DistanceData, ii, igroup1, ibox, jbox, kbox)
+function smalldcell!(data :: DistanceData, 
+                     ii :: Int, igroup1 :: Int, 
+                     ibox :: Int, jbox :: Int, kbox :: Int, 
+                     memerror :: Bool)
     
-  data.smalld.memerror = false
-
   igroup2 = data.lists.iatomfirst(ibox,jbox,kbox)
   while igroup2 != 0 
     jj = data.groups.group2(igroup2)
@@ -25,7 +26,7 @@ function smalldcell!(data :: DistanceData, ii, igroup1, ibox, jbox, kbox)
     if d2 < data.lists.cutoff2 
       data.smalld.n = data.smalld.n + 1
       if data.smalld.n > data.smalld.nmax
-        data.smalld.memerror = true
+        memerror = true
       else
         data.smalld.index[data.smalld.n,1] = igroup1
         data.smalld.index[data.smalld.n,2] = igroup2
@@ -35,5 +36,7 @@ function smalldcell!(data :: DistanceData, ii, igroup1, ibox, jbox, kbox)
 
     igroup2 = data.iatomnext(igroup2)
   end
+
+  return memerror
 
 end

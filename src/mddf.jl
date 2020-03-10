@@ -26,26 +26,24 @@
 # the analysis of the solvation of complex solutes and solvents.
 # to be published.
 #
-# Auxiliar dimensions:
-#          memory: Controls the amount of memory used for reading dcd
-#                  files. If the program ends with segmentation fault
-#                  without any other printing, decrease the value of
-#                  this parameter.  
-#
 # L. Martinez, Mar 13, 2014. (first version)
 # Institute of Chemistry, State University of Campinas (UNICAMP)
 #
 # L. Martinez, Mar 1, 2017 (with KB integrals)
 # Institute of Chemistry, State University of Campinas (UNICAMP)
 #
-# http://leandro.iqm.unicamp.br/mdanalysis
-# http://github.com/leandromaratinez98/mdanalysis
+# L. Martínez, Mar 20, 2020 (to Julia)
 #
+# http://m3g.iqm.unicamp.br/
+# http://github.com/m3g/MDDF
+#
+
+using Printf
 
 function mddf(solute :: SoluteSolvent,
               solvent :: SoluteSolvent,
               trajfile :: String,
-              output :: String,
+              output_name :: String,
              ;firstframe :: Int64 = 1,
               lastframe :: Int64 = -1,
               stride :: Int64 = 1,
@@ -59,22 +57,18 @@ function mddf(solute :: SoluteSolvent,
               trajtype :: Type == NamdDCD
              )
 
-  # Memory to be used at each reading cycle
-
-  memory=15000000
-
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
 
   mole = 6.022140857e23
   convert = mole / 1.e24
 
   # Names of auxiliary output files
-  output_atom_gmd_contrib = FileOperations.remove_extension(output)*
+  output_atom_gmd_contrib = FileOperations.remove_extension(output_name)*
                             "-GMD_ATOM_CONTRIB."*
-                            FileOperations.file_extension(output)
-  output_atom_gmd_contrib_solute = FileOperations.remove_extension(output)*
+                            FileOperations.file_extension(output_name)
+  output_atom_gmd_contrib_solute = FileOperations.remove_extension(output_name)*
                             "-GMD_ATOM_SOLUTE_CONTRIB."*
-                            FileOperations.file_extension(output)
+                            FileOperations.file_extension(output_name)
 
   # Check for simple input errors
   
@@ -84,13 +78,13 @@ function mddf(solute :: SoluteSolvent,
   if lastframe < firstframe && lastframe /= 0
     error(" ERROR in MDDF input: lastframe must be greater or equal to firstframe. ")
   end
+  if dbulk - round(Int64,binstep*dbulk/binstep)*binstep > 1.e-5
+    error("ERROR in MDDF input: dbulk must be a multiple of binstep.")
+  end
 
   # compute ibulk from dbulk (distance from which the solvent is considered bulk,
   # in the estimation of bulk density)
 
-  if dbulk - round(Int64,binstep*dbulk/binstep)*binstep > 1.e-5
-    error("ERROR in MDDF input: dbulk must be a multiple of binstep.")
-  end
   if cutoff > 0. 
     usecutoff = true
     if dbulk >= cutoff 
@@ -141,6 +135,7 @@ function mddf(solute :: SoluteSolvent,
   natsolvent_random = solvent.natomspermol*nrsolvent_random
 
   # Auxiliary solute copy for random distribution calculation
+
   solute2 = copy(solute)
 
   # Last atom to be read from the trajectory files
@@ -149,6 +144,7 @@ function mddf(solute :: SoluteSolvent,
   lastatom = max(maximum(solute),maximum(solvent))
 
   # Maximum number of atoms in the list
+
 
   maxatom = max(natom,nsolute+max(nsolvent,natsolvent_random))
 
@@ -178,13 +174,12 @@ function mddf(solute :: SoluteSolvent,
                      Vector{Int64}(undef,3), # maximum number of boxes in each dimension
                      cutoff
                               )
-             # next is mutable
+             # next structure is mutable
              SmallDistances(
                      1, # number of small distances
                      maxsmalld, # maximum number of small distances
                      Array{Int64}(undef,maxsmalld,2), # Indexes of the atoms of each distance
                      Vector{Float64}(undef,maxsmalld), # Distance
-                     false # memory overflow flag
                            )
                      )
 
@@ -258,18 +253,7 @@ function mddf(solute :: SoluteSolvent,
 
     # Compute all distances that are smaller than the cutoff
 
-    data.smalld.memerror = true
-    while data.smalld.memerror
-      data.smalld.memerror = false
-      smalldistances!(data)
-      # If the size of arrays is not large enough, rescale them and free up the memory
-      if ( data.smalld.memerror ) then
-        data.smalld.nmax = round(Int64,1.5*nsmalld)
-        data.smalld.index = Array{Float64}(undef,data.smalld.nmax,2)
-        data.smalld.d = Vector{Float64}(undef,data.smalld.nmax)
-        GC.gc() # release memory of old arrays that were reassigned
-      end
-    end
+    smalldistances!(data)
 
     #
     # Computing the gmd functions from distance data
@@ -400,33 +384,22 @@ function mddf(solute :: SoluteSolvent,
 
       # Put molecule in its center of coordinates for it to be the reference coordinate for the 
       # random coordinates that will be generated
-  
-      cmx = 0.
-      cmy = 0.
-      cmz = 0.
-      for i in 1:solvent.natomspermol
-        cmx = cmx + solvent_molecule[i,1]
-        cmy = cmy + solvent_molecule[i,2]
-        cmz = cmz + solvent_molecule[i,3]
-      end
-      cmx = cmx / solvent.natomspermol
-      cmy = cmy / solvent.natomspermol
-      cmz = cmz / solvent.natomspermol
-      for i in 1:solvent.natomspermol
-        xref[i] = solvent_molecule[i,1] - cmx
-        yref[i] = solvent_molecule[i,2] - cmy
-        zref[i] = solvent_molecule[i,3] - cmz
-      end do
 
-      # Generate a random position for this molecule
-  
-      cmx = -sides[1]/2. + rand(Float64)*sides[1] 
-      cmy = -sides[2]/2. + rand(Float64)*sides[2] 
-      cmz = -sides[3]/2. + rand(Float64)*sides[3] 
+      cm = centerofcoordinates(solvent_molecule)
+      for i in 1:solvent.natomspermol
+        xref[i] = solvent_molecule[i,1] - cm[1]
+        yref[i] = solvent_molecule[i,2] - cm[2]
+        zref[i] = solvent_molecule[i,3] - cm[3]
+      end
+
+      # Generate a random position for the center of coordinates of this molecule
+      cm[1] = -sides[1]/2. + rand(Float64)*sides[1] 
+      cm[2] = -sides[2]/2. + rand(Float64)*sides[2] 
+      cm[3] = -sides[3]/2. + rand(Float64)*sides[3] 
       beta = 2*pi*rand(Float64)
       gamma = 2*pi*rand(Float64)
       theta = 2*pi*rand(Float64)
-      compcart!(solvent.natomspermol,[ cmx, cmy, cmz ], 
+      compcart!(solvent.natomspermol,cm, 
                 xref,yref,zref,beta,gamma,theta,
                 xrnd, yrnd, zrnd)
 
@@ -441,304 +414,266 @@ function mddf(solute :: SoluteSolvent,
         # Annotate to which molecule this atom pertains
         irsolv_random[ii-nsolute] = isolvent_random
       end
+
     end
 
     # The solute atom was already added to the xyz array for computing volumes, so now
     # we have only to compute the distances
 
-voltar
-      memerror = .true.
-      do while ( memerror ) 
-        memerror = .false.
-        call smalldistances(nsolute,solute2,natsolvent_random,solvent_random,x,y,z,cutoff,&
-                            nsmalld,ismalld,dsmalld,axis,maxsmalld,memerror)
-        if ( memerror ) then
-          deallocate( ismalld, dsmalld )
-          maxsmalld = int(1.5*nsmalld)
-          allocate( ismalld(maxsmalld,2), dsmalld(maxsmalld) )
-        end if
-      end do
+    smalldistances!(data)
 
-      ! Counting the number or random molecules with minimum distances
-      ! in each region
+    # Counting the number or random molecules with minimum distances
+    # in each region
 
-      do i = 1, nrsolvent_random
-        mind_mol(i) = cutoff + 1.e0
-        imind(i,2) = 0
-      end do
-      do i = 1, nsmalld
-        isolvent = irsolv_random(ismalld(i,2))
-        if ( dsmalld(i) < mind_mol(isolvent) ) then
-          mind_mol(isolvent) = dsmalld(i)
-          j = mod(ismalld(i,2),solvent.natomspermol) 
-          if ( j == 0 ) j = solvent.natomspermol
-          imind(isolvent,2) = j
-        end if
-      end do
+    for i in 1:nrsolvent_random
+      mind_mol[i] = cutoff + 1.e0
+      imind[i,2] = 0
+    end
+    for i in 1:data.smalld.n
+      isolvent = irsolv_random[data.smalld.index[i,2]]
+      if data.smalld.d[i] < mind_mol[isolvent]
+        mind_mol[isolvent] = data.smalld.d[i]
+        j = data.smalld.index[i,2]%solvent.natomspermol
+        if j == 0 
+          j = solvent.natomspermol
+        end
+        imind[isolvent,2] = j
+      end
+    end
 
-      ! So lets count the sites at each bin distance for the non-interacting distribution 
-      ! rescaled for the correct density
+    # So lets count the sites at each bin distance for the non-interacting distribution 
+    # rescaled for the correct density
 
-      do i = 1, nrsolvent_random
-        irad = int(float(nbins)*mind_mol(i)/cutoff)+1
-        if ( irad <= nbins ) then
-          md_count_random(irad) = md_count_random(irad) + 1.e0
-        end if
-      end do
+    for i in 1:nrsolvent_random
+      irad = round(Int64,nbins*mind_mol[i]/cutoff)+1
+      if irad <= nbins
+        md_count_random[irad] = md_count_random[irad] + 1.
+      end
+    end
 
-      ! Accumulate site count for each atom
+    # Accumulate site count for each atom
 
-      do i = 1, natsolvent_random
-        mind_atom(i) = cutoff + 1.e0
-      end do
-      do i = 1, nsmalld
-        if ( dsmalld(i) < mind_atom(ismalld(i,2)) ) then
-          mind_atom(ismalld(i,2)) = dsmalld(i)
-        end if
-      end do
-      if ( usecutoff ) then
-        nbulk_random = 0
-        do i = 1, natsolvent_random
-          irad = int(float(nbins)*mind_atom(i)/cutoff)+1
-          if ( irad <= nbins ) then
-            j = mod(i,solvent.natomspermol) 
-            if ( j == 0 ) j = solvent.natomspermol
+    for i in 1:natsolvent_random
+      mind_atom[i] = cutoff + 1.
+    end
+    for i in 1:data.smalld.n
+      if data.smalld.d[i] < mind_atom[data.smalld.index[i,2]]
+        mind_atom[data.smalld.index[i,2]] = data.smalld.d[i]
+      end
+    end
+    if usecutoff
+      nbulk_random = 0
+      for i in 1:natsolvent_random
+        irad = round(Int64,nbins*mind_atom[i]/cutoff)+1
+        if irad <= nbins
+          j = i%solvent.natomspermol 
+          if j == 0 
+            j = solvent.natomspermol
+          end
+          # The counting of single-sites at the bulk region will be used to estimate
+          # the volumes of spherical shells of radius irad
+          if j == irefatom
+            shellvolume[irad] = shellvolume[irad] + 1.
+            if irad >= ibulk 
+              nbulk_random = nbulk_random + 1
+            end
+          end
+        end
+      end
+    else
+      nbulk_random = 0
+      for i in 1:natsolvent_random
+        irad = round(Int64,nbins*mind_atom[i]/cutoff)+1
+        j = i%solvent.natomspermol
+        if j == 0
+          j = solvent.natomspermol
+        end
+        if irad <= nbins
+          if j == irefatom 
+            shellvolume[irad] = shellvolume[irad] + 1.
+          end
+        else
+          if j == irefatom 
+            nbulk_random = nbulk_random + 1
+          end
+        end
+      end
+    end
+    if nbulk_random == 0
+      error(" ERROR: zero volume estimated for bulk region. Either the region is ",'\n'
+            "        too thin, or there is a numerical error. ",'\n',
+            " frame = ", kframe)
+    end
 
-            ! The counting of single-sites at the bulk region will be used to estimate
-            ! the volumes of spherical shells of radius irad
+    # We have just counted the number of times an atom of type 'irefatom' was found
+    # at the bulk region. The minimum-distance volume of the bulk is, then...
 
-            if ( j == irefatom ) then
-              shellvolume(irad) = shellvolume(irad) + 1.e0
-              if ( irad >= ibulk ) nbulk_random = nbulk_random + 1
-            end if
+    bulkvolume = totalvolume*(nbulk_random/nrsolvent_random)
 
-          end if
-        end do
-      else
-        nbulk_random = 0
-        do i = 1, natsolvent_random
-          irad = int(float(nbins)*mind_atom(i)/cutoff)+1
-          j = mod(i,solvent.natomspermol) 
-          if ( j == 0 ) j = solvent.natomspermol
-          if ( irad <= nbins ) then
-            if ( j == irefatom ) shellvolume(irad) = shellvolume(irad) + 1.e0
-          else
-            if ( j == irefatom ) nbulk_random = nbulk_random + 1
-          end if
-        end do
-      end if
-      if ( nbulk_random == 0 ) then
-        write(*,*) 
-        write(*,*) ' ERROR: zero volume estimated for bulk region. Either the region is '
-        write(*,*) '        too thin, or there is a numerical error. '
-        write(*,*) ' frame = ', kframe
-        stop
-      end if
+    # These are averaged at the end for final report:
 
-      ! We have just counted the number of times an atom of type 'irefatom' was found
-      ! at the bulk region. The minimum-distance volume of the bulk is, then...
+    bulkdensity_at_frame = nbulk/bulkvolume
+    bulkdensity = bulkdensity + bulkdensity_at_frame
 
-      bulkvolume = totalvolume*(float(nbulk_random)/nrsolvent_random)
+    iatom = iatom + ntotat
+    end
+    println()
+  end
+  trajectory_end(trajectory)
 
-      ! These are averaged at the end for final report:
-
-      bulkdensity_at_frame = float(nbulk)/bulkvolume
-      bulkdensity = bulkdensity + bulkdensity_at_frame
-
-      ! Write progress
-
-      if ( onscreenprogress ) then
-        write(*,"( 7a,f6.2,'%' )",advance='no') (char(8),i=1,7), 100.*float(kframe)/nfrcycle
-      else
-        if ( mod(iframe,max(1,(frames/1000))) == 0 ) then
-          write(*,"( '  Progress: ',f6.2,'%' )") 100.*float(iframe)/frames
-        end if
-      end if
-  
-      iatom = iatom + ntotat
-    end do
-    write(*,*)
-  end do
-  close(10)
-
-  !
-  ! Averaging results on the number of frames
-  !
+  #
+  # Averaging results on the number of frames
+  #
 
   bulkdensity = bulkdensity / frames
   simdensity = simdensity / frames
   av_totalvolume = av_totalvolume / frames
   density_fix = (bulkdensity*av_totalvolume)/nrsolvent_random
 
-  write(*,*)
-  write(*,"(a,f12.5)") '  Solvent density in simulation box (sites/A^3): ', simdensity
-  write(*,"(a,f12.5)") '  Estimated bulk solvent density (sites/A^3): ', bulkdensity
-  write(*,*)
-  write(*,"(a,f12.5)") '  Molar volume of solvent in simulation box (cc/mol): ', convert/simdensity
-  write(*,"(a,f12.5)") '  Molar volume of solvent in bulk (cc/mol): ', convert/bulkdensity
-  write(*,*)
-  write(*,"(a,f12.5)") '  Density scaling factor for numerical integration: ', density_fix
+  println()
+  println(@printf("%s %12.5f","  Solvent density in simulation box (sites/A^3): ", simdensity)
+  println(@printf("%s %12.5f","  Estimated bulk solvent density (sites/A^3): ", bulkdensity)
+  println()                   
+  println(@printf("%s %12.5f","  Molar volume of solvent in simulation box (cc/mol): ", convert/simdensity)
+  println(@printf("%s %12.5f","  Molar volume of solvent in bulk (cc/mol): ", convert/bulkdensity)
+  println()                   
+  println(@printf("%s %12.5f","  Density scaling factor for numerical integration: ", density_fix)
 
   solutevolume = convert*(bulkdensity*av_totalvolume - nrsolvent)/bulkdensity
-  write(*,*)
-  write(*,"(a,f12.5)") '  Solute partial volume (cc/mol): ', solutevolume
+  println()
+  println(@printf("%s %12.5f","  Solute partial volume (cc/mol): ", solutevolume)
    
-  do i = 1, nbins
+  for i in 1:nbins
 
-    md_count(i) = md_count(i)/frames
-    md_count_random(i) = density_fix*md_count_random(i)/frames
-    do j = 1, solvent.natomspermol
-      md_atom_contribution(j,i) = md_atom_contribution(j,i)/frames
-    end do
-    do j = 1, nsolute
-      md_atom_contribution_solute(j,i) = md_atom_contribution_solute(j,i)/frames
-    end do
-    shellvolume(i) = ((shellvolume(i)/nrsolvent_random)*av_totalvolume)/frames
+    md_count[i] = md_count[i]/frames
+    md_count_random[i] = density_fix*md_count_random[i]/frames
+    for j in 1:solvent.natomspermol
+      md_atom_contribution[j,i] = md_atom_contribution[j,i]/frames
+    end
+    for j in 1:solute.n
+      md_atom_contribution_solute[j,i] = md_atom_contribution_solute[j,i]/frames
+    end
+    shellvolume[i] = ((shellvolume[i]/nrsolvent_random)*av_totalvolume)/frames
 
-    ! GMD distributions
+    # GMD distributions
 
-    if ( md_count_random(i) > 0.e0 ) then
-      gmd(i) = md_count(i)/md_count_random(i)
-      do j = 1, solvent.natomspermol
-        gmd_atom_contribution(j,i) = md_atom_contribution(j,i)/md_count_random(i)
-      end do
-      do j = 1, nsolute
-        gmd_atom_contribution_solute(j,i) = md_atom_contribution_solute(j,i)/md_count_random(i)
-      end do
+    if md_count_random[i] > 0. 
+      gmd[i] = md_count[i]/md_count_random[i]
+      for j in 1:solvent.natomspermol
+        gmd_atom_contribution[j,i] = md_atom_contribution[j,i]/md_count_random[i]
+      end
+      for j in 1:nsolute
+        gmd_atom_contribution_solute[j,i] = md_atom_contribution_solute[j,i]/md_count_random[i]
+      end
     else
-      gmd(i) = 0.e0
-      do j = 1, solvent.natomspermol
-        gmd_atom_contribution(j,i) = 0.e0
-      end do
-      do j = 1, nsolute
-        gmd_atom_contribution_solute(j,i) = 0.e0
-      end do
-    end if
+      gmd[i] = 0.e0
+      for j in 1:solvent.natomspermol
+        gmd_atom_contribution[j,i] = 0.
+      end
+      for j in 1:nsolute
+        gmd_atom_contribution_solute[j,i] = 0.
+      end
+    end
 
-  end do
+  end
 
-  ! Open output file and writes all information of this run
+  # Open output file and writes all information of this run
 
-  !
-  ! GMD computed with minimum distance
-  !
+  #
+  # GMD computed with minimum distance
+  #
   
+  output = open(output_name,"w")
   open(20,file=output(1:length(output)))
-  write(20,"( '#',/,&
-             &'# Output of gmd.f90: Using MINIMUM distance to solute.',/,&
-             &'# Input file: ',a,/,& 
-             &'# DCD file: ',a,/,& 
-             &'# Group file: ',a,/,&
-             &'# PSF file: ',a,/,& 
-             &'# First frame: ',i7,' Last frame: ',i7,' Stride: ',i7,/,&
-             &'#',/,&
-             &'# Periodic boundary conditions: ',/,&
-             &'# Periodic: ',l1,' Read from DCD: ',l1,/,&
-             &'#',/,&
-             &'# Density of solvent in simulation box (sites/A^3): ',f12.5,/,&
-             &'# Density of solvent in bulk (estimated) (sites/A^3): ',f12.5,/,&
-             &'# Molar volume of solvent in simulation (cc/mol): ',f12.5,/,&
-             &'# Molar volume of solvent in bulk (estimated) (cc/mol): ',f12.5,/,&
-             &'#',/,&
-             &'# Solute partial volume estimate (cc/mol): ',f12.5,/,&
-             &'#',/,&
-             &'# Number of atoms and mass of group 1: ',i7,f12.3,/,&
-             &'# First and last atoms of group 1: ',i7,tr1,i7,/,&
-             &'# Number of atoms and mass of group 2: ',i7,f12.3,/,&
-             &'# First and last atoms of group 2: ',i7,tr1,i7,/,&
-             &'#' )" )&
-             &inputfile(1:length(inputfile)),&
-             &dcdfile(1:length(dcdfile)),&
-             &groupfile(1:length(groupfile)),&
-             &psffile(1:length(psffile)),&
-             &firstframe, lastframe, stride,&
-             &periodic, readfromdcd, &
-             &simdensity, bulkdensity, convert/simdensity, convert/bulkdensity, solutevolume, &
-             &nsolute, mass1, solute(1), solute(nsolute),& 
-             &nsolvent, mass2, solvent(1), solvent(nsolvent)  
+  println(output,@printf("#"))
+  println(output,@printf("# Output of gmd.f90: Using MINIMUM distance to solute."))
+  println(output,@printf("# Input file: %s", strip(inputfile)))
+  println(output,@printf("# DCD file: %s", strip(dcdfile)))
+  println(output,@printf("# First frame: %7i Last frame: %7i Stride: %7i",firstframe,lastframe, stride))
+  println(output,@printf("# Periodic boundary conditions: "))
+  println(output,@printf("#"))
+  println(output,@printf("# Density of solvent in simulation box (sites/A^3): %12.5f",simdensity))
+  println(output,@printf("# Density of solvent in bulk (estimated) (sites/A^3): %12.5f",bulkdensity))
+  println(output,@printf("# Molar volume of solvent in simulation (cc/mol): %12.5f",convert/simdensity))
+  println(output,@printf("# Molar volume of solvent in bulk (estimated) (cc/mol): %12.5f",convert/bulkdensity))
+  println(output,@printf("#"))
+  println(output,@printf("# Solute partial volume estimate (cc/mol): %12.5f",solutevolume))
+  println(output,@printf("#"))
+  println(output,@printf("# Number of atoms solute: %i7",solute.n))
+  println(output,@printf("# Number of atoms of the solvent: %i7",solvent.n))
+  println(output,@printf("#"))
 
-  if ( usecutoff ) then
-    bulkerror = 0.e0
-    do i = ibulk, nbins
-      bulkerror = bulkerror + gmd(i)
-    end do
+  if usecutoff
+    bulkerror = 0
+    for i in ibulk:nbins
+      bulkerror = bulkerror + gmd[i]
+    end
     bulkerror = bulkerror / ( nbins-ibulk+1 )
-    do i = ibulk, nbins
-      sdbulkerror = (bulkerror - gmd(i))**2
-    end do
+    for i in ibulk:nbins
+      sdbulkerror = (bulkerror - gmd[i])^2
+    end
     sdbulkerror = sqrt(sdbulkerror/(nbins-ibulk+1))
-    write(*,*)
-    write(*,"('  Average and standard deviation of bulk-gmd: ',f12.5,' +/-',f12.5 )") bulkerror, sdbulkerror 
-    write(20,"('#')")
-    write(20,"('# Average and standard deviation of bulk-gmd: ',f12.5,'+/-',f12.5 )") bulkerror, sdbulkerror 
+    println()
+    println(@printf(" Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f",bulkerror,sdbulkerror))
+    println(output,@printf("#"))
+    println(output,@printf("# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f",bulkerror,sdbulkerror))
   else
-    bulkerror = 0.e0
-    do i = nbins-int(1./binstep), nbins
-      bulkerror = bulkerror + gmd(i)
+    bulkerror = 0.
+    for i in nbins-round(Int64,1./binstep):nbins
+      bulkerror = bulkerror + gmd[i]
+    end
+    bulkerror = bulkerror / ( round(Int64,1./binstep)+1 )
+    for i in nbins-round(Int64,1./binstep):nbins
+      sdbulkerror = (bulkerror - gmd[i])^2
     end do
-    bulkerror = bulkerror / ( int(1./binstep)+1 )
-    do i = nbins-int(1./binstep), nbins
-      sdbulkerror = (bulkerror - gmd(i))**2
-    end do
-    sdbulkerror = sqrt(sdbulkerror/(int(1./binstep)+1))
-    write(*,*)
-    write(*,"('  Average and standard deviation of long range (dbulk-1.) gmd: ',f12.5,' +/-',f12.5 )") bulkerror, sdbulkerror 
-    write(20,"('#')")
-    write(20,"('# Average and standard deviation of long range (dbulk-1.) gmd: ',f12.5,'+/-',f12.5 )") bulkerror, sdbulkerror 
-  end if
+    sdbulkerror = sqrt(sdbulkerror/(round(Int64,1./binstep)+1))
+    println()
+    println(@printf("  Average and standard deviation of long range (dbulk-1.) gmd: %12.5f +/- %12.5f ",bulkerror,sdbulkerror))
+    println(output,@printf("#"))
+    println(output,@printf("# Average and standard deviation of long range (dbulk-1.) gmd: %12.5f +/- %12.5f ",bulkerror,sdbulkerror))
+  end
 
   ! Output table
 
-  write(20,"( '# COLUMNS CORRESPOND TO: ',/,&
-  &'#       1  Minimum distance to solute (dmin)',/,&
-  &'#       2  GMD distribution (md count normalized by md count of random-solute distribution). ',/,&
-  &'#       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))]. ',/,&
-  &'#       4  Minimum distance site count for each dmin.',/,&
-  &'#       5  Minimum distance site count for each dmin for random solute distribution.',/,&
-  &'#       6  Cumulative number of molecules within dmin in the simulation',/,&
-  &'#       7  Cumulative number of molecules within dmin for random solute distribution.',/,&
-  &'#       8  Volume of the shell of distance dmin and width binstep.')")
-  write(20,"('#')") 
-  write(20,"('#   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL')")
+  println(output,"# COLUMNS CORRESPOND TO: ")
+  println(output,"#       1  Minimum distance to solute (dmin)")
+  println(output,"#       2  GMD distribution (md count normalized by md count of random-solute distribution)")
+  println(output,"#       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].")
+  println(output,"#       4  Minimum distance site count for each dmin.")
+  println(output,"#       5  Minimum distance site count for each dmin for random solute distribution.")
+  println(output,"#       6  Cumulative number of molecules within dmin in the simulation.")
+  println(output,"#       7  Cumulative number of molecules within dmin for random solute distribution.")
+  println(output,"#       8  Volume of the shell of distance dmin and width binstep.")
+  println(output,"#")
+  println(output,"#   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL")
 
-  md_sum = 0.e0
-  md_sum_random = 0.e0
-  do i = 1, nbins
+  md_sum = 0.
+  md_sum_random = 0.
+  for i in 1:nbins
 
-    ! Simple sums
+    # Simple sums
 
-    md_sum = md_sum + md_count(i)
-    md_sum_random = md_sum_random + md_count_random(i)
+    md_sum = md_sum + md_count[i]
+    md_sum_random = md_sum_random + md_count_random[i]
 
-    ! KB integrals 
+    # KB integrals 
 
-    kb(i) = convert*(1.e0/bulkdensity)*(md_sum - md_sum_random)
+    kb[i] = convert*(1./bulkdensity)*(md_sum - md_sum_random)
 
-    lineformat = "("
-    lineformat = trim(adjustl(lineformat))//"tr2,"//format(shellradius(i,binstep))
-    lineformat = trim(adjustl(lineformat))//",tr2,"//format(gmd(i))
-    lineformat = trim(adjustl(lineformat))//",tr2,"//format(kb(i))
-    lineformat = trim(adjustl(lineformat))//",tr2,"//format(md_count(i))
-    lineformat = trim(adjustl(lineformat))//",tr2,"//format(md_count_random(i))
-    lineformat = trim(adjustl(lineformat))//",tr2,"//format(md_sum)
-    lineformat = trim(adjustl(lineformat))//",tr2,"//format(md_sum_random)
-    lineformat = trim(adjustl(lineformat))//",tr2,"//format(shellvolume(i))
-    lineformat = trim(adjustl(lineformat))//")"
+    line = format(shellradius(i,binstep))                    #  1-DISTANCE
+    line = line*"  "*format(gmd(i))                          #  2-GMD
+    line = line*"  "*format(kb(i))                           #  3-KB INT
+    line = line*"  "*format(md_count(i))                     #  4-MD COUNT
+    line = line*"  "*format(md_count_random(i))              #  5-COUNT RAND
+    line = line*"  "*format(md_sum)                          #  6-SUM MD
+    line = line*"  "*format(md_sum_random)                   #  7-SUM RAND
+    line = line*"  "*format(shellvolume(i))                  #  8-SHELL VOL
+    println(output,line)
 
-    write(20,lineformat) &
-    shellradius(i,binstep),&                                      !  1-DISTANCE
-    gmd(i),&                                                      !  2-GMD
-    kb(i),&                                                       !  3-KB INT
-    md_count(i),&                                                 !  4-MD COUNT
-    md_count_random(i),&                                          !  5-COUNT RAND
-    md_sum,&                                                      !  6-SUM MD
-    md_sum_random,&                                               !  7-SUM RAND
-    shellvolume(i)                                                !  8-SHELL VOL
+  end
+  close(output)
 
-  end do
-  close(20)
-
-  ! Writting gmd per atom contributions for the solvent
+  # Writting gmd per atom contributions for the solvent
 
   open(20,file=output_atom_gmd_contrib)
   write(20,"(a)") "# Solvent atomic contributions to total GMD. "
@@ -806,78 +741,5 @@ voltar
   write(*,*) '####################################################'
   write(*,*)        
 
-end program g_minimum_distance
-
-! Computes the volume of the spherical shell 
-! defined within [(i-1)*step,i*step]
-
-real function sphericalshellvolume(i,step)
-
-  implicit none
-  integer :: i
-  real :: step, rmin
-  real, parameter :: pi = 4.d0*atan(1.e0)
-  real, parameter :: fourthirdsofpi = (4./3.)*pi
-
-  rmin = (i-1)*step
-  sphericalshellvolume = fourthirdsofpi*( (rmin+step)**3 - rmin**3 )
-
-end function sphericalshellvolume
-
-! Compute the point in which the radius comprises half of the
-! volume of the shell
-
-real function shellradius(i,step)
-
-  implicit none
-  integer :: i
-  real :: step, rmin
-
-  rmin = (i-1)*step
-  shellradius = ( 0.5e0*( (rmin+step)**3 + rmin**3 ) )**(1.e0/3.e0)
-
-end function shellradius
-
-! Computes the radius that corresponds to a spherical shell of
-! a given volume
-
-real function sphereradiusfromshellvolume(volume,step)
- 
-  implicit none
-  real :: volume, step, rmin
-  real, parameter :: pi = 4.d0*atan(1.e0)
-  real, parameter :: fourthirdsofpi = (4./3.)*pi
-  
-  if ( 3*step*volume - pi*step**4 <= 0.d0 ) then
-    sphereradiusfromshellvolume = 0.d0
-    return
-  end if
-  rmin = (sqrt(3*pi)*sqrt(3*step*volume-pi*step**4)-3*pi*step**2)/(6*pi*step)
-  sphereradiusfromshellvolume = ( 0.5e0*( volume/fourthirdsofpi + 2*rmin**3 ) )**(1.e0/3.e0)
-
-end function sphereradiusfromshellvolume
-
-! Function to format propertly output numbers in tables
-
-function format(x)
-
-  implicit none
-  character(len=5) :: format
-  real :: x
-
-  if ( abs(x) < 999e0 ) then
-    format = 'f12.7'
-  else
-    format = 'e12.5'
-  end if
-
-end function format
-      
-
-
-
-
-
-
-
+end
 
