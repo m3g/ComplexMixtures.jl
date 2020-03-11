@@ -29,8 +29,6 @@
 #              routine should be called again. 
 #  
 
-using OffsetArrays
-
 # This function cycles until the vectors smalld.index and smalld.d are large
 # enough to contain all the distances found
 

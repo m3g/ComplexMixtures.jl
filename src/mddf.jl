@@ -38,8 +38,6 @@
 # http://github.com/m3g/MDDF
 #
 
-using Printf
-
 function mddf(solute :: SoluteSolvent,
               solvent :: SoluteSolvent,
               trajfile :: String,
@@ -675,71 +673,67 @@ function mddf(solute :: SoluteSolvent,
 
   # Writting gmd per atom contributions for the solvent
 
-  open(20,file=output_atom_gmd_contrib)
-  write(20,"(a)") "# Solvent atomic contributions to total GMD. "
-  write(20,"( '#',/,&
-             &'# Input file: ',a,/,& 
-             &'# DCD file: ',a,/,& 
-             &'# Group file: ',a,/,&
-             &'# PSF file: ' )")
-  write(20,"(a)") "#"
-  write(20,"(a)") "# Atoms: "
-  do i = 1, solvent.natomspermol
-    write(20,"( '#', i6, 2(tr2,a), tr2,' mass: ',f12.5 )") i, typeat(solvent(i)), classat(solvent(i)), mass(solvent(i))
-  end do
-  write(20,"(a)") "#"
-  write(lineformat,*) "('#',t7,'DISTANCE     GMD TOTAL',",solvent.natomspermol,"(tr2,i12) )"
-  write(20,lineformat) (i,i=1,solvent.natomspermol)
-  write(lineformat,*) "(",solvent.natomspermol+2,"(tr2,f12.5))"
+  output = open(output_atom_gmd_contrib,"w")
+  println(output,"# Solvent atomic contributions to total GMD. ")
+  println(output,"#")
+  println(output,"# Trajectory file: ", trajfile)
+  println(output,"#")
+  println(output,"# Atoms: ")
+  for i in 1:solvent.natomspermol
+    println(output,@printf("#%6i  %s  %s",i, solvent.type[i], solvent.class[i]))
+  end
+  println(output,"#")
+  string = "#     DISTANCE     GMD TOTAL" 
+  for i in 1:solvent.natomspermol
+    string = string*@printf("  %i12",i)
+  end
+  println(output,string)
+  for i in 1:nbins
+    string = format(shellradius(i,binstep))
+    string = string*"  "*format(gmd[i])
+    for j in 1:solvent.natomspermol
+      string = string*"  "*format(gmd_atom_contribution[j,i])
+    end
+    println(output,string)
+  end
+  close(output)
+
+  # Writting gmd per atom contributions for the solute
+
+  output = open(output_atom_gmd_contrib_solute,"w")
+  println(output,"# Solute atomic contributions to total GMD. ")
+  println(output,"#")
+  println(output,"# Trajectory file: ", trajfile)
+  println(output,"#")
+  println(output,"# Atoms:")
+  for i in 1:solute.n
+    println(output,@printf("#%6i  %6i  %a  %a",i,solute.index[i],solute.type[i],soute.class[i]))
+  end
+  println(output,"#")
+  string = "#     DISTANCE      GMD TOTAL"
+  for i in 1:solute.n
+    string = string*@sprintf("  %12i",i)
+  end
+  println(output,string)
   do i = 1, nbins
-    write(20,lineformat) shellradius(i,binstep), gmd(i), (gmd_atom_contribution(j,i),j=1,solvent.natomspermol)
+    string = format(shellradius(i,binstep))**format(gmd(i))
+    for j in 1:nsolute
+      string = string*"  "*format(gmd_atom_contribution_solute[j,i])
+    end
+    println(output,string)
   end do
-  close(20)
+  close(output)
 
-  ! Writting gmd per atom contributions for the solute
+  # Write final messages with names of output files and their content
 
-  open(20,file=output_atom_gmd_contrib_solute)
-  write(20,"(a)") "# Solute atomic contributions to total GMD. "
-  write(20,"( '#',/,&
-             &'# Input file: ',a,/,& 
-             &'# DCD file: ',a,/,& 
-             &'# Group file: ',a,/,&
-             &'# PSF file: ' )")
-  write(20,"(a)") "#"
-  write(20,"(a)") "# Atoms: "
-  do i = 1, nsolute
-    write(20,"( '#', i6, tr2, i6, 2(tr2,a), tr2,' mass: ',f12.5 )") i, solute(i), typeat(solute(i)), &
-                                                                    classat(solute(i)), mass(solute(i))
-  end do
-  write(20,"(a)") "#"
-  write(lineformat,*) "('#',t7,'DISTANCE     GMD TOTAL',",nsolute,"(tr2,i12) )"
-  write(20,lineformat) (i,i=1,nsolute)
-  write(lineformat,*) "(",nsolute+2,"(tr2,f12.5))"
-  do i = 1, nbins
-    write(20,lineformat) shellradius(i,binstep), gmd(i), (gmd_atom_contribution_solute(j,i),j=1,nsolute)
-  end do
-  close(20)
-
-  ! Write final messages with names of output files and their content
-  
-  time0 = etime(tarray) - time0
-  write(*,*)
-  write(*,"( tr2,52('-') )")
-  write(*,*)
-  write(*,*) ' OUTPUT FILES: ' 
-  write(*,*)
-  write(*,*) ' Wrote solvent atomic GMD contributions to file: ', trim(adjustl(output_atom_gmd_contrib))
-  write(*,*) ' Wrote solute atomic GMD contributions to file: ', trim(adjustl(output_atom_gmd_contrib_solute))
-  write(*,*)
-  write(*,*) ' Wrote main output file: ', trim(adjustl(output))
-  write(*,*)
-  write(*,*) ' Running time: ', time0
-  write(*,*) '####################################################'
-  write(*,*) 
-  write(*,*) '  END: Normal termination.  '
-  write(*,*) 
-  write(*,*) '####################################################'
-  write(*,*)        
+  println()
+  println(" OUTPUT FILES: ") 
+  println()
+  println(" Wrote solvent atomic GMD contributions to file: ", output_atom_gmd_contrib)
+  println(" Wrote solute atomic GMD contributions to file: ", output_atom_gmd_contrib_solute)
+  println()
+  println(" Wrote main output file: ", output_name)
+  println()
 
 end
 
