@@ -25,7 +25,7 @@ function movephantomcoor(data :: DistanceData, iatom, ibox, jbox, kbox)
     z = data.frame.z[iatom] + data.frame.sides[3]
   else
     z = data.frame.z[iatom]
-  end if
+  end
 
   return x, y, z
 

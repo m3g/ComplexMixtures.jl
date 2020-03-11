@@ -50,20 +50,20 @@ function phantomcells!(nboxes,iatomfirst)
 
   # Faces
 
-  do j = 1, nboxes[2]
-    do k = 1, nboxes[3]
+  for i in 1:nboxes[2]
+    for k in 1:nboxes[3]
       iatomfirst[0,j,k] = iatomfirst[nboxes[1],j,k]
       iatomfirst[nboxes[1]+1,j,k] = iatomfirst[1,j,k]
     end
   end
-  do i = 1, nboxes[1]
-    do k = 1, nboxes[3]
+  for i in 1:nboxes[1]
+    for k in 1:nboxes[3]
       iatomfirst[i,0,k] = iatomfirst[i,nboxes[2],k]
       iatomfirst[i,nboxes[2]+1,k] = iatomfirst[i,1,k]
     end
   end
-  do i = 1, nboxes[1]
-    do j = 1, nboxes[2]
+  for i in 1:nboxes[1]
+    for j in 1:nboxes[2]
       iatomfirst[i,j,0] = iatomfirst[i,j,nboxes[3]]
       iatomfirst[i,j,nboxes[3]+1] = iatomfirst[i,j,1]
     end

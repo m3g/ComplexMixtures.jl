@@ -4,6 +4,7 @@ module MDDF
   using OffsetArrays
 
   include("./structures.jl")
+  include("./NamdDCD.jl")
 
   include("./FileOperations.jl")
   include("./format.jl")

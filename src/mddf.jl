@@ -51,7 +51,7 @@ function mddf(solute :: SoluteSolvent,
               irefatom :: Int64 = 1,
               dbulk :: Float64 = 10.,
               nintegral :: Int64 = 10,
-              cutoff :: Float64 = -1.
+              cutoff :: Float64 = -1.,
               trajtype :: Type == NamdDCD
              )
 
@@ -73,7 +73,7 @@ function mddf(solute :: SoluteSolvent,
   if stride < 1
     error(" ERROR in MDDF input: stride cannot be less than 1. ")
   end
-  if lastframe < firstframe && lastframe /= 0
+  if lastframe < firstframe && lastframe != 0
     error(" ERROR in MDDF input: lastframe must be greater or equal to firstframe. ")
   end
   if dbulk - round(Int64,binstep*dbulk/binstep)*binstep > 1.e-5
@@ -171,20 +171,20 @@ function mddf(solute :: SoluteSolvent,
                      Vector{Float64}(undef,3), # length of box in each dimension
                      Vector{Int64}(undef,3), # maximum number of boxes in each dimension
                      cutoff
-                              )
+                              ),
              # next structure is mutable
              SmallDistances(
                      1, # number of small distances
                      maxsmalld, # maximum number of small distances
                      Array{Int64}(undef,maxsmalld,2), # Indexes of the atoms of each distance
-                     Vector{Float64}(undef,maxsmalld), # Distance
+                     Vector{Float64}(undef,maxsmalld)  # Distance
                            )
                      )
 
   # Arrays containing minimum-distance counts
 
   mind_mol = Vector{Int64}(undef,nrsolvent_random)
-  mind_atom = Vector{Int64}(undef,(natsolvent_random)
+  mind_atom = Vector{Int64}(undef,natsolvent_random)
 
   # Allocate solvent molecule (this will be used to generate random coordinates
   # for each solvent molecule, one at a time, later)
@@ -355,7 +355,7 @@ function mddf(solute :: SoluteSolvent,
       y[i] = data.frame.y[ii]
       z[i] = data.frame.z[ii]
       solute2.index[i] = i
-    end do
+    end
 
     #
     # Generating random distribution of solvent molecules in box
@@ -498,7 +498,7 @@ function mddf(solute :: SoluteSolvent,
       end
     end
     if nbulk_random == 0
-      error(" ERROR: zero volume estimated for bulk region. Either the region is ",'\n'
+      error(" ERROR: zero volume estimated for bulk region. Either the region is ",'\n',
             "        too thin, or there is a numerical error. ",'\n',
             " frame = ", kframe)
     end

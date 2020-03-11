@@ -48,7 +48,7 @@ struct DistanceData
   frame :: Frame
   groups :: Groups
   lists :: SmalldLinkedLists
-  smalld :: SmallDistnces
+  smalld :: SmallDistances
 
 end
 
