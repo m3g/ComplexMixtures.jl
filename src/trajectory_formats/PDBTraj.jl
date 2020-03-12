@@ -7,7 +7,9 @@
 
 mutable struct PDBTraj
 
+  #
   # Mandatory data for things to work
+  #
   filename :: String
   iostream :: IOStream
   nframes :: Int64 
@@ -19,7 +21,9 @@ mutable struct PDBTraj
   x_solute :: Array{Float64}  # (solute.n,3)
   x_solvent :: Array{Float64} # (solvent.n,3)
 
+  #
   # Additional data required for input/output functions
+  #
   natoms :: Int64
 
 end
@@ -101,5 +105,14 @@ end
 
 function close( trajectory :: PDBTraj )
   close(trajectory.iostream)
+end
+
+# Function that returns the sides of the periodic box given the data structure
+# In this case, just return the sides vector which 
+
+function getsides(trajectory :: PDBTraj, iframe)
+  # Sides is expected to be an array that contains the sides for each frame, and we return the
+  # vector containing the sides of the current fraem
+  return [ trajectory.sides[iframe,1], trajectory.sides[iframe,2], trajectory.sides[iframe,3] ]
 end
 

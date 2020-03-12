@@ -7,19 +7,24 @@
 
 mutable struct NamdDCD
 
+  #
   # Mandatory data for things to work
+  #
   filename :: String
   iostream :: IOStream
   nframes :: Int64 
 
   # This vector must be filled up with the size of the periodic cell, if it
-  # is not defined in the DCD file.
-  sides :: Vector{Float64}
+  # is not defined in the DCD file. 
+  sides :: Array{Float64}
+
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
   x_solute :: Array{Float64}
   x_solvent :: Array{Float64}
 
+  #
   # Additional properties that might be required for implementing IO
+  #
   sides_in_dcd :: Bool # if the DCD contains, or not, periodic cell information for each frame
   lastatom :: Int64 # The last atom to be read from each line
 
@@ -107,6 +112,20 @@ end
 
 function close( trajectory :: NamdDCD )
   close(trajectory.iostream)
+end
+
+# Function that returns the sides of the periodic box given the data structure
+# In this case, just return the sides vector which 
+
+function getsides(trajectory :: NamdDCD, iframe)
+  # In this (most common) case, sides is a vector and must only be returned
+  if trajectory.sides_in_dcd
+    return trajectory.sides
+  # otherwise, sides is an array that contains the sides for each frame, and we return the
+  # vector containing the sides of the current fraem
+  else
+    return [ trajectory.sides[iframe,1], trajectory.sides[iframe,2], trajectory.sides[iframe,3] ]
+  end
 end
 
 #

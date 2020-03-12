@@ -40,7 +40,7 @@
 
 function mddf(solute :: SoluteSolvent,
               solvent :: SoluteSolvent,
-              trajfile, # The type of trajfile defines the functions used to read it
+              trajectory, # The type of trajectory defines the functions used to read it
               output_name :: String,
              ;firstframe :: Int64 = 1,
               lastframe :: Int64 = -1,
@@ -135,13 +135,13 @@ function mddf(solute :: SoluteSolvent,
 
   solute2 = copy(solute)
 
-  # Last atom to be read from the trajectory files
+  # Last atom to be read from the trajectory files (actually this is relevant
+  # only for the NamdDCD format, I think)
 
   natoms = length(solute)+length(solvent)
   lastatom = max(maximum(solute),maximum(solvent))
 
   # Maximum number of atoms in the list
-
 
   maxatom = max(natom,nsolute+max(nsolvent,natsolvent_random))
 
@@ -212,8 +212,8 @@ function mddf(solute :: SoluteSolvent,
   # Opening the trajectory file, this step must return the IO stream
   # and  the number of the last frame to be read
 
-  open(trajfile)
-  if trajfile.nframes < lastframe
+  open(trajectory)
+  if trajectory.nframes < lastframe
     error(" The number of frames of the trajectory is smaller than user-defined lastframe ")
   end
 
@@ -238,18 +238,26 @@ function mddf(solute :: SoluteSolvent,
    
   for iframe in 1:lastframe
    
-    sides, x_solute, x_solvent = nextframe(trajefile,solute,solvent)
+    # This function reads the next frame of the trajectory file and 
+    # modifies the x_solute and x_solvent coordinates of the trajectory
+    # structure with the coordinates of that frame
+    nextframe!(trajectory,solute,solvent)
 
+    # Get sides from the trajectory data structure 
+    sides = getsides(trajectory,iframe)
+
+    # Get coordinates
+    data.frame.x_solute = trajectory.x_solute
+    data.frame.x_solvent = trajectory.x_solvent
+
+    # Check if the cutoff is not too large considering the periodic cell size
     if cutoff > sides[1]/2. || cutoff > sides[2]/2. || cutoff > sides[3]/2.
       error(" ERROR in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
     #
-    # Computing the GMD data the simulation
+    # Computing the MDDF data the simulation
     #
-
-    data.frame.x_solute = x_solute
-    data.frame.x_solvent = x_solvent
 
     # Compute all distances that are smaller than the cutoff
 
@@ -678,7 +686,7 @@ function mddf(solute :: SoluteSolvent,
   output = open(output_atom_gmd_contrib,"w")
   println(output,"# Solvent atomic contributions to total GMD. ")
   println(output,"#")
-  println(output,"# Trajectory file: ", trajfile)
+  println(output,"# Trajectory file: ", trajectory.filename)
   println(output,"#")
   println(output,"# Atoms: ")
   for i in 1:solvent.natomspermol
@@ -705,7 +713,7 @@ function mddf(solute :: SoluteSolvent,
   output = open(output_atom_gmd_contrib_solute,"w")
   println(output,"# Solute atomic contributions to total GMD. ")
   println(output,"#")
-  println(output,"# Trajectory file: ", trajfile)
+  println(output,"# Trajectory file: ", trajectory.filename)
   println(output,"#")
   println(output,"# Atoms:")
   for i in 1:solute.n
