@@ -4,7 +4,10 @@ module MDDF
   using OffsetArrays
 
   include("./structures.jl")
-  include("./NamdDCD.jl")
+
+  # Structures and functions to read different types of trajectories
+  include("./trajectory_formats/NamdDCD.jl")
+  include("./trajectory_formats/PDBTraj.jl")
 
   include("./FileOperations.jl")
   include("./format.jl")

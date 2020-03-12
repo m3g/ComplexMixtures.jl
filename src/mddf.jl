@@ -40,7 +40,7 @@
 
 function mddf(solute :: SoluteSolvent,
               solvent :: SoluteSolvent,
-              trajfile :: String,
+              trajfile, # The type of trajfile defines the functions used to read it
               output_name :: String,
              ;firstframe :: Int64 = 1,
               lastframe :: Int64 = -1,
@@ -52,7 +52,6 @@ function mddf(solute :: SoluteSolvent,
               dbulk :: Float64 = 10.,
               nintegral :: Int64 = 10,
               cutoff :: Float64 = -1.,
-              trajtype :: Type == NamdDCD
              )
 
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
@@ -213,7 +212,10 @@ function mddf(solute :: SoluteSolvent,
   # Opening the trajectory file, this step must return the IO stream
   # and  the number of the last frame to be read
 
-  trajectory, lastframe = trajectory_start(trajfile)
+  open(trajfile)
+  if trajfile.nframes < lastframe
+    error(" The number of frames of the trajectory is smaller than user-defined lastframe ")
+  end
 
   # Number of frames (used for normalization of counts)
   
@@ -234,9 +236,9 @@ function mddf(solute :: SoluteSolvent,
 
   # Reading trajectory file and computing the gmd function
    
-  for iframe in 1:nframes
+  for iframe in 1:lastframe
    
-    sides, x_solute, x_solvent = nextframe(trajectory)
+    sides, x_solute, x_solvent = nextframe(trajefile,solute,solvent)
 
     if cutoff > sides[1]/2. || cutoff > sides[2]/2. || cutoff > sides[3]/2.
       error(" ERROR in MDDF: cutoff or dbulk > periodic_dimension/2 ")
