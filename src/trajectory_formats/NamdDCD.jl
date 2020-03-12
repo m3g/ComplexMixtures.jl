@@ -33,7 +33,7 @@ end
 using FortranFiles
 
 #
-# Function open will set up the IO stream of the trajectory, fillup the 
+# Function "open" will set up the IO stream of the trajectory, fillup the 
 # number of frames field and additional parameters if required (in this case,
 # if the trajectory file has or not pbc information). 
 #

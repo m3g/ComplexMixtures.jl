@@ -9,6 +9,11 @@ module MDDF
   include("./trajectory_formats/NamdDCD.jl")
   include("./trajectory_formats/PDBTraj.jl")
 
+  include("./Solute.jl")
+  include("./Solvent.jl")
+
+  include("./VMDselect.jl")
+
   include("./FileOperations.jl")
   include("./format.jl")
 
