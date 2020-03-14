@@ -173,7 +173,7 @@ function mddf_naive(solute :: Solute,
            iat = ifmol + iatom - 1
            for jatom in 1:solvent.natomspermol
              jat = jfmol + jatom - 1
-             d  = dsquare(@view(x_solvent[jat,1:3]),@view(x_solute[iat,1:3]))
+             d  = dsquare(x_solute,x_solvent,iat,jat)
              if d < dmin
                dmin = d
                mind_current_solute_atom = iatom
@@ -212,7 +212,7 @@ function mddf_naive(solute :: Solute,
           xrnd = -sizes/2 + rand(Float64,3)*sizes/2 + solute_center
           for iatom in 1:solute.natomspermol
             iat = ifmol + iatom - 1
-            d = dsquare(xrnd,@view(x_solute[iat,1:3]))
+            d = dsquare(xrnd,x_solute,iat)
             if d < dmin
               dmin = d
             end
