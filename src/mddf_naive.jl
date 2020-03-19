@@ -53,18 +53,17 @@ function mddf_naive(solute :: Solute,
                     trajectory,
                     output_name :: String,
                     input :: InputDetails)
-
   
   # compute ibulk from dbulk (distance from which the solvent is considered bulk,
   # in the estimation of bulk density)
 
-  if cutoff > 0. 
+  if input.cutoff > 0. 
     usecutoff = true
     ibulk = round(Int64,dbulk/binstep) + 1
   else
     usecutoff = false
     ibulk = round(Int64,dbulk/binstep) + 1
-    cutoff = dbulk
+    cutoff = input.dbulk
   end
 
   # Check if this is a single-solute or homogeneous solution situation: 
@@ -75,28 +74,15 @@ function mddf_naive(solute :: Solute,
   end
 
   # The number of random samples for numerical normalization
-  if single_solute
-    nsamples = n_random_samples
-  else
-    nsamples = round(Int64,n_random_samples/solute.nmols)
+  if input.n_random_samples = -1
+    nsamples = max(10*solvent.nmols,solute.nmols)
+  end
+  if ! single_solute
+    nsamples = round(Int64,nsamples/solute.nmols)
   end
 
   # Initializing the structure that carries all data
-  
-  mddf = MDDF_Data(nbins,solute,solvent,output_name;
-                    firstframe,
-                    lastframe,
-                    stride,
-                    periodic, 
-                    binstep,
-                    irefatom,
-                    dbulk,
-                    nintegral,
-                    cutoff,
-                    n_random_samples,
-                    print_files,
-                    print_results
-                  )
+  mddf = MDDF_Data(nbins,solute,solvent,output_name,input)
 
   # Last atom to be read from the trajectory files (actually this is relevant
   # only for the NamdDCD format, I think)
