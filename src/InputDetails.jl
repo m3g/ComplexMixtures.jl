@@ -1,8 +1,25 @@
 #
-# Structures to contain the results of the MDDF calculation
+# Structure that contains the detailed input options
 #
 
 using Parameters
+
+@with_kw struct InputDetails
+
+   firstframe :: Int64
+   lastframe :: Int64
+   stride :: Int64
+   periodic :: Bool
+   binstep :: Float64
+   irefatom :: Int64
+   dbulk :: Float64
+   nintegral :: Int64
+   cutoff :: Float64
+   n_random_samples :: Int64
+   print_files :: Bool
+   print_results :: Bool
+
+end
 
 @with_kw struct MDDF_Data
 

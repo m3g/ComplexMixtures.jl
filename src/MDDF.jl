@@ -3,7 +3,16 @@ module MDDF
   using Printf
   using OffsetArrays
 
-  include("./structures.jl")
+  # Input and Output data structures
+  include("./InputDetails.jl")
+  include("./Density.jl")
+  include("./Volume.jl")
+  include("./MDDF_Data.jl")
+
+  # Structures to contain data critical for calculation performance
+  include("./Frame.jl")
+  include("./Groups.jl")
+  include("./LinkedLists.jl")
 
   # Structures and functions to read different types of trajectories
   include("./trajectory_formats/NamdDCD.jl")
