@@ -23,6 +23,16 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
   return dmin, iatom, jatom
 end
 
+# Function to compute the minimum distance if on the input vectors
+# only one atom (one set of coordinates)
+
+function minimumdistance(x :: Vector{Float64}, jfmol, jlmol, y :: Array{Float64})
+  dmin = +Inf
+  for j in jfmol, jlmol
+    dmin = min(dmin,dsquare(x,y,j))
+  end
+  return sqrt(dmin)
+end
 
 
 

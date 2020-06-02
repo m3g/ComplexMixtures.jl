@@ -114,34 +114,40 @@ function mddf_naive(solute :: Solute,
       continue
     end
 
-    # computing the minimum distances
+    # get pbc sides in this frame
+    sides = getsides(trajectory,iframe)
+    mddf.volume.total = mddf.volume.total + sides[1]*sides[2]*sides[3] 
+
+    # Check if the cutoff is not too large considering the periodic cell size
+    if cutoff > sides[1]/2. || cutoff > sides[2]/2. || cutoff > sides[3]/2.
+      error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
+    end
+
+    # associate names for code clarity
+    x_solute = trajectory.x_solute
+    x_solvent = tajectory.x_solvent
+
+    # computing the minimum distances, cycle over solute molecules
     for imol in 1:solute.nmols
 
+      # first and last atoms of the current solute molecule
       ifmol = (imol-1)*solute.natomspermol + 1
       ilmol = ifmol + solute.natomspermol - 1
 
-      # associate names for code clarity
-      x_solute = trajectory.x_solute
-      x_solvent = tajectory.x_solvent
-
-      # get pbc sides in this frame
-      sides = getsides(trajectory,iframe)
-      mddf.volume.total = mddf.volume.total + sides[1]*sides[2]*sides[3] 
-
-      # Check if the cutoff is not too large considering the periodic cell size
-      if cutoff > sides[1]/2. || cutoff > sides[2]/2. || cutoff > sides[3]/2.
-        error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
-      end
-
-      # compute center of coordinates of solute to wrap solvent coordinates around it
+      # compute center of coordinates of solute molecule to wrap solvent coordinates around it
       solute_center = centerofcoordinates(@view(x_solute[ifmol:ilmol]))
       wrap!(x_solvent,sides,solute_center)
 
+      # counter for the number of solvent molecules in bulk
       n_jmol_inbulk = 0
+
+      # cycle over solvent molecules
       for jmol in 1:solvent.nmols
+
         # first and last atoms of this solvent molecule
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
+
         # Compute minimum distance 
         dmin, iatom, jatom = minimumdistance(ifmol,ilmol,x_solute,jfmol,jlmol,x_solvent)
 
@@ -153,6 +159,8 @@ function mddf_naive(solute :: Solute,
           mddf.solvent_atom[jatom,ibin] += 1 
         else
           # computing the number of molecules in bulk, if at infinite dilution
+# voltar: ver o que fazer quando não é diluição infita, deveria pular isto aqui,
+# mas tenho que tomar cuidado com o cutoff
           if usecutoff 
             if dmin < cutoff
               n_jmol_inbulk = n_jmol_inbulk + 1
@@ -171,13 +179,7 @@ function mddf_naive(solute :: Solute,
       #
       for i in 1:nsamples
         xrnd = -sizes/2 + rand(Float64,3)*sizes/2 + solute_center
-        for iatom in 1:solute.natomspermol
-          iat = ifmol + iatom - 1
-          d = dsquare(xrnd,x_solute,iat)
-          if d < dmin
-            dmin = d
-          end
-        end
+        dmin = minimumdistance(xrnd,ifmol,ilmol,x_solute)
         ibin = trunc(Int64,sqrt(dmin)/binstep)+1
         if ibin <= nbins
           mddf.volume.shell[ibin] += 1
@@ -200,11 +202,11 @@ function mddf_naive(solute :: Solute,
         end
       end
 
-      voltar
-
     end # solute molecules
   end # frames
   close(trajectory)
+
+voltar
 
   # Averaging
   density_fix = (bulkdensity*av_totalvolume)/nrsolvent_random
@@ -243,7 +245,6 @@ function mddf_naive(solute :: Solute,
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
   mole = 6.022140857e23
   convert = mole / 1.e24
-voltar
 
   # Open output file and writes all information of this run
 
