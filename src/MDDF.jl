@@ -4,9 +4,11 @@ module MDDF
   using OffsetArrays
 
   # Input and Output data structures
-  include("./InputDetails.jl")
+  include("./OutputFiles.jl")
+  include("./SoluteOrSolvent.jl")
   include("./Density.jl")
   include("./Volume.jl")
+  include("./InputDetails.jl")
   include("./MDDF_Data.jl")
 
   # Structures to contain data critical for calculation performance
@@ -17,9 +19,6 @@ module MDDF
   # Structures and functions to read different types of trajectories
   include("./trajectory_formats/NamdDCD.jl")
   include("./trajectory_formats/PDBTraj.jl")
-
-  include("./Solute.jl")
-  include("./Solvent.jl")
 
   include("./VMDselect.jl")
 
@@ -40,7 +39,8 @@ module MDDF
   include("./shellradius.jl")
   include("./sphereradiusfromshellvolume.jl")
 
-  include("./mddf.jl")
+  #include("./mddf.jl")
+  include("./mddf_naive.jl")
 
 end
 

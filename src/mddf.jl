@@ -38,8 +38,8 @@
 # http://github.com/m3g/MDDF
 #
 
-function mddf(solute :: SoluteSolvent,
-              solvent :: SoluteSolvent,
+function mddf(solute :: SoluteOrSolvent,
+              solvent :: SoluteOrSolvent,
               trajectory, # The type of trajectory defines the functions used to read it
               output_name :: String,
              ;firstframe :: Int64 = 1,
@@ -212,7 +212,6 @@ function mddf(solute :: SoluteSolvent,
   # Opening the trajectory file, this step must return the IO stream
   # and  the number of the last frame to be read
 
-  open(trajectory)
   if trajectory.nframes < lastframe
     error(" The number of frames of the trajectory is smaller than user-defined lastframe ")
   end

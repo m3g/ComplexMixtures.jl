@@ -28,8 +28,8 @@ end
 
 # Initializer solute, solvent trajectory and output name, plus optional parameters
 
-function MDDF_Data( solute :: Solute, 
-                    solvent :: Solvent, 
+function MDDF_Data( solute :: SoluteOrSolvent, 
+                    solvent :: SoluteOrSolvent, 
                     trajectory,
                     output_name :: String, 
                     input :: InputDetails

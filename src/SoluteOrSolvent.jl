@@ -2,7 +2,7 @@
 # Structure that contains the information about the solute and solvent molecules
 #
 
-struct Sol
+struct SoluteOrSolvent
 
   natoms :: Int64 # Total number of atoms
   nmols :: Int64 # Number of molecules
@@ -13,20 +13,17 @@ struct Sol
 
 end
 
-# Here we associate two names just for the sake of clarity of the examples
-
-Solute = Sol
-Solvent = Sol
+# Initializers with specific names for solute and solvent
 
 Solute( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) = 
-   Sol(indexes,nmols=nmols,natomspermol=natomspemol)
+   SoluteOrSolvent(indexes,nmols=nmols,natomspermol=natomspermol)
 
 Solvent( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) = 
-   Sol(indexes,nmols=nmols,natomspermol=natomspemol)
+   SoluteOrSolvent(indexes,nmols=nmols,natomspermol=natomspermol)
 
 # Function to initialize the structures
 
-function Sol( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
+function SoluteOrSolvent( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
 
   if nmols == 0 && natomspermol == 0
     error("In Solute, needs to set nmols or natomspermol.")
@@ -37,12 +34,12 @@ function Sol( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int6
     if natoms%nmols != 0
       error(" Number of atoms in selection must be a multiple of nmols.")
     end
-    natomspermol = round(Int64,n/nmols)
+    natomspermol = round(Int64,natoms/nmols)
   else
-   if natoms%natomsspermol != 0
+   if natoms%natomspermol != 0
      error(" Number of atoms in selection must be a multiple of natomspermols.")
    end
-   nmols = natoms%natomspermol
+   nmols = round(Int64,natoms/natomspermol)
   end
    
   # Setting the vector that contains the index of the molecule of each atom
@@ -54,10 +51,14 @@ function Sol( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int6
     end
   end
 
-  return Sol(natoms,nmols,natomspermol,indexex,imol)
+  return SoluteOrSolvent(natoms,nmols,natomspermol,indexes,imol)
 
 end
           
+import Base.show
+function Base.show( io :: IO, s :: SoluteOrSolvent )
+  println(" Selection of $(s.natoms) atoms belonging to $(s.nmols) molecules. ") 
+end
 
 
 

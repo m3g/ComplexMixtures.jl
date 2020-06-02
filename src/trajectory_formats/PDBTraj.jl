@@ -47,7 +47,7 @@ function open( trajectory :: PDBTraj )
   for line in eachline(pdbfile)
     if line(1:3) == "END"
       nframes = nframes + 1
-    elseif nframes = 0 && (line(1:4) == "ATOM" || line(1:6) == "HETATM")
+    elseif nframes == 0 && (line(1:4) == "ATOM" || line(1:6) == "HETATM")
       natoms = natoms + 1
     else
       error(" The PDB file containing the trajectory must have only ATOM, HETATM and END fields. ")
@@ -72,7 +72,7 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!( trajectory:: PDBTraj, solute :: Solute, solvent :: Solvent )
+function nextframe!( trajectory:: PDBTraj, solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent )
 
   iatom = 0
   line = "START"
