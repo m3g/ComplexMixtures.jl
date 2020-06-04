@@ -1,9 +1,6 @@
 #
 # Structure to contain DCD trajectories produces with Namd. 
 #
-# Must be mutable such that nframes, vector sizes, and additional parameters can be updated
-# when the trajectory is first open
-#
 
 using FortranFiles
 

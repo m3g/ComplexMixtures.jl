@@ -1,8 +1,9 @@
 #
-# Structure to contain PDB trajectories. Frames separated by "END", without any other field (remarks, etc)
+# Structure to contain PDB trajectories. Frames separated by "END", and with periodic cell sizes
+# in the "CRYST1" field.
 #
-# Must be mutable such that nframes, vector sizes, and additional parameters can be updated
-# when the trajectory is first open
+# These structure and functions can be used as a template to implement the reading of other 
+# trajectory formats
 #
 
 struct PDBTraj
