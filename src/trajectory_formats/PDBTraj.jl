@@ -68,7 +68,7 @@ function PDBTraj( pdbfile :: String, solute :: SoluteOrSolvent, solvent :: Solut
   # The function "getsides", below, must be adapted accordingly to return the correct
   # sides of the periodic box in each frame.
 
-  sides = Array{Float64}(undef,nframes,3)
+  sides = zeros(Float64,nframes,3)
   stream = open(pdbfile,"r")
   iframe = 0
   for line in eachline(stream)
@@ -90,8 +90,8 @@ function PDBTraj( pdbfile :: String, solute :: SoluteOrSolvent, solvent :: Solut
                   nframes, 
                   sides, # array containing box sides
                   solute, solvent,
-                  Array{Float64}(undef,solute.natoms,3),    
-                  Array{Float64}(undef,solvent.natoms,3),  
+                  zeros(Float64,solute.natoms,3),    
+                  zeros(Float64,solvent.natoms,3),  
                   natoms, # Total number of atoms
                   Array{Float64}(undef,natoms,3) # Auxiliary array for reading
                 )

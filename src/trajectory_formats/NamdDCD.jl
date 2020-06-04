@@ -73,16 +73,16 @@ function NamdDCD( filename :: String, solute :: SoluteOrSolvent, solvent :: Solu
   # be updated upon reading the frame. Alternatively, the user must provide the sides in all
   # frames by filling up an array with the box side data.
   if sides_in_dcd
-    sides = Vector{Float64}(undef,3)
+    sides = zeros(Float64,3)
   else
-    sides = Array{Float64}(undef,nframes,3)
+    sides = zeros(Float64,nframes,3)
   end
 
   return NamdDCD( filename, stream, nframes, 
                   sides, # sides vector (if in dcd) or array to be filled up later
                   solute, solvent,
-                  Array{Float64}(undef,solute.natoms,3), # solute atom coordinates
-                  Array{Float64}(undef,solvent.natoms,3), # solvent atom coordinates
+                  zeros(Float64,solute.natoms,3), # solute atom coordinates
+                  zeros(Float64,solvent.natoms,3), # solvent atom coordinates
                   sides_in_dcd, lastatom,
                   Vector{Float64}(undef,6), # auxiliary vector to read sides
                   Vector{Float32}(undef,lastatom), # auxiliary x
