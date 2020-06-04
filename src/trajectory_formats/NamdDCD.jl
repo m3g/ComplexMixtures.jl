@@ -49,28 +49,27 @@ end
 
 function NamdDCD( filename :: String, solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent )
 
-  FortranDCD = FortranFile(filename)
+  stream = FortranFile(filename)
 
   # Read header
   IntVec = Vector{Int32}(undef,17)
-  hdr, read_nframes, IntVec[1:8], ts, IntVec[9:17] = read(FortranDCD, FString{4}, Int32, (Int32,8), Float64, (Int32,9))
-  dummyi, title = read(FortranDCD, Int32, FString{80})
-  read_natoms = read(FortranDCD,Int32)
+  hdr, read_nframes, IntVec[1:8], ts, IntVec[9:17] = read(stream, FString{4}, Int32, (Int32,8), Float64, (Int32,9))
+  dummyi, title = read(stream, Int32, FString{80})
+  read_natoms = read(stream,Int32)
 
   # Check if dcd file contains axis information
   sides_in_dcd = false
   x = 0.
   try
-    x = read(FortranDCD, [ Float32 for i in 1:read_natoms ])
+    x = read(stream, [ Float32 for i in 1:read_natoms ])
   catch err
     sides_in_dcd = true
   end
 
   # rewind and let it ready to read first frame in the first call to nextframe
-  firstframe(FortranDCD)
+  firstframe(stream)
 
-  nframes = getnframes(FortranDCD,sides_in_dcd) 
-  stream = FortranDCD
+  nframes = getnframes(stream,sides_in_dcd) 
   lastatom = max(maximum(solute.index),maximum(solvent.index))
 
   # Most commonly the sides of the box are written in each frame of the DCD file, and will
@@ -161,7 +160,7 @@ function getsides(trajectory :: NamdDCD, iframe)
   # otherwise, sides is an array that contains the sides for each frame, and we return the
   # vector containing the sides of the current frame
   else
-    return @view(trajectory.sides(iframe,:))
+    return @view(trajectory.sides[iframe,:])
   end
 end
 
@@ -174,20 +173,20 @@ end
 # get the actual number of frames, it is better to read it
 #
 
-function getnframes(FortranDCD :: FortranFile, sides_in_dcd :: Bool )
-  firstframe(FortranDCD)
+function getnframes(stream :: FortranFile, sides_in_dcd :: Bool )
+  firstframe(stream)
   nframes = 0
   while true
     try 
       if sides_in_dcd
-        read(FortranDCD,Float64)
+        read(stream,Float64)
       end
-      read(FortranDCD,Float32)
-      read(FortranDCD,Float32)
-      read(FortranDCD,Float32)
+      read(stream,Float32)
+      read(stream,Float32)
+      read(stream,Float32)
       nframes = nframes + 1
     catch
-      firstframe(FortranDCD)
+      firstframe(stream)
       return nframes
     end
   end
@@ -196,14 +195,17 @@ end
 #
 # Leave DCD file in position to read the first frame
 #
-function firstframe(FortranDCD :: FortranFile)
+
+function firstframe(stream :: FortranFile)
     # rewind
-    rewind(FortranDCD)
+    rewind(stream)
     # skip header
-    read(FortranDCD)
-    read(FortranDCD)
-    read(FortranDCD)
+    read(stream)
+    read(stream)
+    read(stream)
 end
+
+firstframe( trajectory :: NamdDCD ) = firstframe( trajectory.stream )
 
 
 
