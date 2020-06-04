@@ -1,4 +1,6 @@
 
+include("../src/MDDF.jl")
+
 # The solute is a single protein molecule (infinte dilution case). In this case,
 # use the option nmols=1
 solute = MDDF.Solute( MDDF.VMDselect("structure.pdb","protein",vmd="/usr/local/bin/vmd"), 
@@ -15,7 +17,6 @@ trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 
 # Run MDDF calculation 
 #mddf = MDDF.mddf_naive(solute,solvent, 
-
 
 
 

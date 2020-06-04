@@ -78,7 +78,7 @@ end
 
 import Base.show
 function Base.show( io :: IO, traj :: NamdDCD )
-  println(" Trajectory of NamdDCD format containing: ")
+  println(" Trajectory in NamdDCD format containing: ")
   println("     $(traj.nframes) frames ") 
   println("     Sides in DCD: $(traj.sides_in_dcd) ") 
 end

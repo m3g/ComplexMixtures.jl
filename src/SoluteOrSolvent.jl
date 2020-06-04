@@ -57,7 +57,17 @@ end
           
 import Base.show
 function Base.show( io :: IO, s :: SoluteOrSolvent )
-  println(" Selection of $(s.natoms) atoms belonging to $(s.nmols) molecules. ") 
+  if s.nmols == 1
+    mol = "molecule"
+  else
+    mol = "molecules"
+  end
+  if s.natoms == 1
+    at = "atom"
+  else
+    at = "atoms"
+  end
+  println(" Selection of $(s.natoms) $at belonging to $(s.nmols) $mol. ") 
 end
 
 
