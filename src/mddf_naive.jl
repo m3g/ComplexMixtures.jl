@@ -204,7 +204,7 @@ function mddf_naive(solute :: SoluteOrSolvent,
 
     end # solute molecules
   end # frames
-  close(trajectory)
+  closetraj(trajectory)
 
   # Averaging
   density_fix = (bulkdensity*av_totalvolume)/nrsolvent_random

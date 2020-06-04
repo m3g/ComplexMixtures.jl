@@ -144,7 +144,7 @@ end
 # Function that closes the IO Stream of the trajectory
 #
 
-function close( trajectory :: NamdDCD )
+function closetraj( trajectory :: NamdDCD )
   FortranFiles.close(trajectory.stream)
 end
 
