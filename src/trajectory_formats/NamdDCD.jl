@@ -35,6 +35,12 @@ struct NamdDCD
   sides_in_dcd :: Bool # if the DCD contains, or not, periodic cell information for each frame
   lastatom :: Int64 # The last atom to be read from each line
 
+  # Auxiliary vectors to read the coordinates without having the allocate/deallocate every time
+  sides_read :: Vector{Float64}
+  x_read :: Vector{Float32}
+  y_read :: Vector{Float32}
+  z_read :: Vector{Float32}
+
 end
 
 # This function initializes the structure above, returning the data and the vectors with
@@ -67,12 +73,26 @@ function NamdDCD( filename :: String, solute :: SoluteOrSolvent, solvent :: Solu
   stream = FortranDCD
   lastatom = max(maximum(solute.index),maximum(solvent.index))
 
+  # Most commonly the sides of the box are written in each frame of the DCD file, and will
+  # be updated upon reading the frame. Alternatively, the user must provide the sides in all
+  # frames by filling up an array with the box side data.
+  if sides_in_dcd
+    sides = Vector{Float64}(undef,3)
+  else
+    sides = Array{Float64}(undef,nframes,3)
+  end
+
   return NamdDCD( filename, stream, nframes, 
-                  Vector{Float64}(undef,3), # sides
+                  sides, # sides vector (if in dcd) or array to be filled up later
                   solute, solvent,
                   Array{Float64}(undef,solute.natoms,3), # solute atom coordinates
                   Array{Float64}(undef,solvent.natoms,3), # solvent atom coordinates
-                  sides_in_dcd, lastatom )
+                  sides_in_dcd, lastatom,
+                  Vector{Float64}(undef,6), # auxiliary vector to read sides
+                  Vector{Float32}(undef,lastatom), # auxiliary x
+                  Vector{Float32}(undef,lastatom), # auxiliary y
+                  Vector{Float32}(undef,lastatom)  # auxiliary z
+                )
 
 end
 
@@ -96,27 +116,27 @@ function nextframe!( trajectory:: NamdDCD )
 
   # Read the sides of the box from the DCD file, otherwise they must be set manually before
   if trajectory.sides_in_dcd
-    sides_read = read(trajectory.stream,(Float64,6))
-    trajectory.sides[1] = sides_read[1]
-    trajectory.sides[2] = sides_read[3]
-    trajectory.sides[3] = sides_read[6]
+    read(trajectory.stream,trajectory.sides_read)
+    trajectory.sides[1] = trajectory.sides_read[1]
+    trajectory.sides[2] = trajectory.sides_read[3]
+    trajectory.sides[3] = trajectory.sides_read[6]
   end
   
   # Read the coordinates  
-  x = read(trajectory.stream,(Float32,trajectory.lastatom))
-  y = read(trajectory.stream,(Float32,trajectory.lastatom))
-  z = read(trajectory.stream,(Float32,trajectory.lastatom))
+  read(trajectory.stream,trajectory.x_read)
+  read(trajectory.stream,trajectory.y_read)
+  read(trajectory.stream,trajectory.z_read)
 
   # Save coordinates of solute and solvent in trajectory arrays
-  for i in 1:solute.natoms
-    trajectory.x_solute[i,1] = x[trajectory.solute.index[i]]
-    trajectory.x_solute[i,2] = y[trajectory.solute.index[i]]
-    trajectory.x_solute[i,3] = z[trajectory.solute.index[i]]
+  for i in 1:trajectory.solute.natoms
+    trajectory.x_solute[i,1] = trajectory.x_read[trajectory.solute.index[i]]
+    trajectory.x_solute[i,2] = trajectory.y_read[trajectory.solute.index[i]]
+    trajectory.x_solute[i,3] = trajectory.z_read[trajectory.solute.index[i]]
   end
-  for i in 1:solvent.natoms
-    trajectory.x_solvent[i,1] = x[trajectory.solvent.index[i]]
-    trajectory.x_solvent[i,2] = y[trajectory.solvent.index[i]]
-    trajectory.x_solvent[i,3] = z[trajectory.solvent.index[i]]
+  for i in 1:trajectory.solvent.natoms
+    trajectory.x_solvent[i,1] = trajectory.x_read[trajectory.solvent.index[i]]
+    trajectory.x_solvent[i,2] = trajectory.y_read[trajectory.solvent.index[i]]
+    trajectory.x_solvent[i,3] = trajectory.z_read[trajectory.solvent.index[i]]
   end
 
 end
@@ -126,20 +146,22 @@ end
 #
 
 function close( trajectory :: NamdDCD )
-  close(trajectory.stream)
+  FortranFiles.close(trajectory.stream)
 end
 
-# Function that returns the sides of the periodic box given the data structure
-# In this case, just return the sides vector which 
+#
+# Function that returns a vector of dimension 3 with the sides of the periodic box 
+# given the way that the box side information is stored in the Trajectory structure
+#
 
 function getsides(trajectory :: NamdDCD, iframe)
   # In this (most common) case, sides is a vector and must only be returned
   if trajectory.sides_in_dcd
     return trajectory.sides
   # otherwise, sides is an array that contains the sides for each frame, and we return the
-  # vector containing the sides of the current fraem
+  # vector containing the sides of the current frame
   else
-    return [ trajectory.sides[iframe,1], trajectory.sides[iframe,2], trajectory.sides[iframe,3] ]
+    return @view(trajectory.sides(iframe,:))
   end
 end
 
