@@ -15,8 +15,11 @@ solvent = MDDF.Solvent( MDDF.VMDselect("structure.pdb","resname TMAO",vmd="/usr/
 # Initialize trajectroy data structure and open input stream
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 
+# Options for the calcualtion
+options = MDDF.Options(output="example.dat")
+
 # Run MDDF calculation 
-#mddf = MDDF.mddf_naive(solute,solvent, 
+mddf = MDDF.mddf_naive(trajectory,"example.dat")
 
 
 

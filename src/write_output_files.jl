@@ -2,7 +2,7 @@
 # Function to write the final results to output files
 #
 
-function write_output_files(mddf :: MDDF_Data)
+function write_output_files(result :: Result)
 
 
   #

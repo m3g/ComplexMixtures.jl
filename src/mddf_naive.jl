@@ -8,64 +8,12 @@
 # http://github.com/m3g/MDDF
 #
 
-# Start with explicit optional input parameters
+function mddf_naive(trajectory, options :: Options)
 
-function mddf_naive(solute :: SoluteOrSolvent,
-                    solvent :: SoluteOrSolvent,
-                    trajectory, # The type of trajectory defines the functions used to read it
-                    output_name :: String,
-                   ;firstframe :: Int64 = 1,
-                    lastframe :: Int64 = -1,
-                    stride :: Int64 = 1,
-                    periodic :: Bool = true, 
-                    binstep :: Float64 = 0.2,
-                    irefatom :: Int64 = 1,
-                    dbulk :: Float64 = 10.,
-                    nintegral :: Int64 = 10,
-                    cutoff :: Float64 = -1.,
-                    n_random_samples :: Int64 = -1,
-                    print_files :: Bool = true,
-                    print_results :: Bool = true
-                   )
-
-  input = InputDetails(firstframe = firstframe,
-                       lastframe = lastrame,
-                       stride = stride,
-                       periodic = periodic,
-                       binstep = binstep,
-                       irefatom = irefatom,
-                       dbulk = dbulk,
-                       nintegral = nintegral,
-                       cutoff = cutoff,
-                       n_random_samples = n_random_samples,
-                       print_files = print_files,
-                       print_results = print_results,
-                      )
-
-  return mddf_naive(solute,solvent,trajectory,output_name,input)
-
-end
-
-# start providing the InputDetail data structure
-
-function mddf_naive(solute :: SoluteOrSolvent,
-                    solvent :: SoluteOrSolvent,
-                    trajectory,
-                    output_name :: String,
-                    input :: InputDetails)
+  # Simplify code by assigning some shortened names
+  solute = trajectory.solute
+  solvent = trajectory.solvent
   
-  # compute ibulk from dbulk (distance from which the solvent is considered bulk,
-  # in the estimation of bulk density)
-
-  if input.cutoff > 0. 
-    usecutoff = true
-    ibulk = round(Int64,dbulk/binstep) + 1
-  else
-    usecutoff = false
-    ibulk = round(Int64,dbulk/binstep) + 1
-    cutoff = input.dbulk
-  end
-
   # Check if this is a single-solute or homogeneous solution situation: 
   if solute.nmols == 1
     single_solute = true
@@ -74,19 +22,12 @@ function mddf_naive(solute :: SoluteOrSolvent,
   end
 
   # The number of random samples for numerical normalization
-  if input.n_random_samples == -1
-    nsamples = max(10*solvent.nmols,solute.nmols)
-  end
-  if ! single_solute
-    nsamples = round(Int64,nsamples/solute.nmols)
-  end
+  nsamples = n_random_samples*solvent.nmols
 
+# voltar: trocar MDDF_Data por Result e "mddf" por R
   # Initializing the structure that carries all data
+  mddf = MDDF_Data(trajectory,voltar)
   mddf = MDDF_Data(nbins,solute,solvent,output_name,input)
-
-  # Last atom to be read from the trajectory files (actually this is relevant
-  # only for the NamdDCD format, I think)
-  natoms = length(solute)+length(solvent)
 
   # Vector to annotate the molecules that belong to the bulk solution
   jmol_inbulk = Vector{Int64}(undef,solvent.nmols)
@@ -106,7 +47,7 @@ function mddf_naive(solute :: SoluteOrSolvent,
   for iframe in 1:lastframe
 
     # reading coordinates of next frame
-    nextframe!(trajectory,solute,solvent)
+    nextframe!(trajectory)
     if iframe < firstrame 
       continue
     end
@@ -152,7 +93,7 @@ function mddf_naive(solute :: SoluteOrSolvent,
         dmin, iatom, jatom = minimumdistance(ifmol,ilmol,x_solute,jfmol,jlmol,x_solvent)
 
         # Update histograms
-        ibin = trunc(Int64,sqrt(dmin)/binstep)+1
+        ibin = trunc(Int64,sqrt(dmin)/input.binstep)+1
         if ibin <= nbins
           mddf.count[ibin] += 1
           mddf.solute_atom[iatom,ibin] += 1 
@@ -180,7 +121,7 @@ function mddf_naive(solute :: SoluteOrSolvent,
       for i in 1:nsamples
         xrnd = -sizes/2 + rand(Float64,3)*sizes/2 + solute_center
         dmin = minimumdistance(xrnd,ifmol,ilmol,x_solute)
-        ibin = trunc(Int64,sqrt(dmin)/binstep)+1
+        ibin = trunc(Int64,sqrt(dmin)/input.binstep)+1
         if ibin <= nbins
           mddf.volume.shell[ibin] += 1
         end
@@ -196,7 +137,7 @@ function mddf_naive(solute :: SoluteOrSolvent,
         jlmol = jfmol + solvent.natomspermol - 1
         random_move!(jfmol,jlmol,x_solvent,sizes,solute_center,x_solvent_random)
         dmin, iatom, jatom = minimumdistance(ifmol,ilmol,x_solute,1,solvent.natomspermol,x_solvent_random)
-        ibin = trunc(Int64,sqrt(dmin)/binstep)+1
+        ibin = trunc(Int64,sqrt(dmin)/input.binstep)+1
         if ibin <= nbins
           mddf.count_random[ibin] += 1
         end

@@ -8,8 +8,8 @@ module MDDF
   include("./SoluteOrSolvent.jl")
   include("./Density.jl")
   include("./Volume.jl")
-  include("./InputDetails.jl")
-  include("./MDDF_Data.jl")
+  include("./Options.jl")
+  include("./Result.jl")
 
   # Structures to contain data critical for calculation performance
   include("./Frame.jl")

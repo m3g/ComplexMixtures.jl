@@ -2,13 +2,12 @@
 # Structures to contain the volume values obtained from calculations
 #
 
-using Parameters
-
-@with_kw mutable struct Volume
-
-  shell :: Vector{Float64} = 0.
-  total :: Float64 = 0.
-  bulk :: Float64 = 0.
-
+mutable struct Volume
+  shell :: Vector{Float64} 
+  total :: Float64 
+  bulk :: Float64 
 end
+
+Volume(nbins :: Int64) = Volume( zeros(Float64,nbins), 0., 0. )
+
 

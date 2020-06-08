@@ -2,7 +2,7 @@
 # Function to print a resume of the results on the screen after running
 #
 
-function print_results( mddf :: MDDF_Data )
+function print_results( results :: Results )
 
   println()
   println(@printf("%s %12.5f","  Solvent density in simulation box (sites/A^3): ", simdensity))
