@@ -17,7 +17,7 @@ function mddf_naive(trajectory, options :: Options)
   x_solvent = trajectory.x_solvent
   
   # The number of random samples for numerical normalization
-  nsamples = n_random_samples*solvent.nmols
+  nsamples = options.n_random_samples*solvent.nmols
 
   # Initializing the structure that carries all resuts
   R = Result(trajectory,options)
