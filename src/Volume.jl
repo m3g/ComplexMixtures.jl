@@ -9,6 +9,6 @@ mutable struct Volume
   domain :: Float64
 end
 
-Volume(nbins :: Int64) = Volume( zeros(Float64,nbins), 0., 0. )
+Volume(nbins :: Int64) = Volume( zeros(Float64,nbins), 0., 0., 0. )
 
 

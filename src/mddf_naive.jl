@@ -135,16 +135,16 @@ function mddf_naive(trajectory, options :: Options)
   #
 
   # Number of frames
-  nframes = (lastframe - firstframe)/stride + 1 
+  nframes = (options.lastframe - options.firstframe)/options.stride + 1 
 
   # Counters
-  R.count = R.count / nframes
-  R.count_random = R.count_random * solvent.nmols / (nsamples*nframes)
-  R.solute_atom = R.solute_atom / nframes
-  R.solvent_atom = R.solvent_atom / nframes
+  @. R.count = R.count / nframes
+  @. R.count_random = R.count_random * solvent.nmols / (nsamples*nframes)
+  @. R.solute_atom = R.solute_atom / nframes
+  @. R.solvent_atom = R.solvent_atom / nframes
 
   # Volumes and Densities
-  R.volume.total = convert * R.volume.total / nframes
+  R.volume.total = R.volume.total / nframes
   R.density.solvent = solvent.nmols / R.volume.total
   R.density.solute = solute.nmols / R.volume.total
 
@@ -152,11 +152,11 @@ function mddf_naive(trajectory, options :: Options)
   R.volume.domain = sum(R.volume.shell)
   R.volume.bulk = R.volume.total - R.volume.domain
 
-  R.density.solvent_bulk = (nbulk/nframes) / R.solvent.bulk 
+  R.density.solvent_bulk = (nbulk/nframes) / R.volume.bulk 
 
   # Normalizing to compute distributions
   @. R.mddf = R.count / R.count_random
-  for ibin in 1:nbins
+  for ibin in 1:R.nbins
     for i in 1:solute.natomspermol   
       R.solute_atom[i,ibin] = R.solute_atom[i,ibin] / R.count_random[ibin]
     end
