@@ -130,15 +130,29 @@ function mddf_naive(trajectory, options :: Options)
   end # frames
   closetraj(trajectory)
 
+  #
   # Averaging
-  density_fix = (bulkdensity*av_totalvolume)/nrsolvent_random
-  R.count_random = density_fix * R.count_random
+  #
 
-  framecount = round(Int64,(lastframe-firstframe+1)/stride)
-  R.count = R.count / framecount
-  R.count_random = (R.count_random / n_random_samples) / framecount
-  R.solute_atom = R.solute_atom / framecount
-  R.solvent_atom = R.solvent_atom / framecount
+  # Number of frames
+  nframes = (lastframe - firstframe)/stride + 1 
+
+  # Counters
+  R.count = R.count / nframes
+  R.count_random = R.count_random * solvent.nmols / (nsamples*nframes)
+  R.solute_atom = R.solute_atom / nframes
+  R.solvent_atom = R.solvent_atom / nframes
+
+  # Volumes and Densities
+  R.volume.total = convert * R.volume.total / nframes
+  R.density.solvent = solvent.nmols / R.volume.total
+  R.density.solute = solute.nmols / R.volume.total
+
+  R.volume.shell = R.volume.total * R.volume.shell / (nsamples*nframes)
+  R.volume.domain = sum(R.volume.shell)
+  R.volume.bulk = R.volume.total - R.volume.domain
+
+  R.density.solvent_bulk = (nbulk/nframes) / R.solvent.bulk 
 
   # Normalizing to compute distributions
   @. R.mddf = R.count / R.count_random
@@ -151,18 +165,13 @@ function mddf_naive(trajectory, options :: Options)
     end
   end
 
-  R.density.solvent = solvent.nmols / R.volume.total
-  R.density.solute = solute.nmols / R.volume.total
-
-  R.volume.shell = R.volume.shell / n_random_samples / framecount 
-  R.volume.total = R.volume.total / framecount
-  R.volume.bulk = R.volume.total - sum(R.volume.shell)
-
-  R.density.bulk = nbulk / R.volume.bulk
-
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
   mole = 6.022140857e23
   convert = mole / 1.e24
+  R.volume.total = convert * R.volume.total
+  R.volume.shell = convert * R.volume.shell
+  R.volume.domain = convert * R.volume.domain
+  R.volume.bulk = convert * R.volume.bulk
 
   # Open output file and writes all information of this run
 
