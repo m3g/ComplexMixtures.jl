@@ -1,6 +1,0 @@
-mol new "structure.pdb" 
-set sel [ atomselect top "resname TMAO" ] 
-puts "INDEXLIST" 
-set indexes [ $sel get index ] 
-puts "ENDINDEXLIST" 
-exit 
