@@ -7,7 +7,8 @@
 #
 function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
                          jfmol :: Int64, jlmol :: Int64, y :: Array{Float64})
-  local i, j
+  iatom = 0
+  jatom = 0
   dmin = +Inf
   for i in ifmol:ilmol
      for j in jfmol:jlmol
@@ -23,6 +24,36 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
   return dmin, iatom, jatom
 end
 
+# Function that returns the distance of a reference atom as well, to be used for 
+# computation of the volume shell by Monte-Caro integration
+
+function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
+                         jfmol :: Int64, jlmol :: Int64, y :: Array{Float64},
+                         jrefatom :: Int64)
+  iatom = 0
+  jatom = 0
+  drefatom = 0.
+  dmin = +Inf
+  for i in ifmol:ilmol
+     jcount = 0
+     for j in jfmol:jlmol
+       d = dsquare(x,y,i,j)
+       if d < dmin
+         iatom = i
+         jatom = j
+         dmin = d
+       end
+       jcount = jcount + 1
+       if jrefatom == jcount
+         drefatom = d
+       end
+     end
+  end
+  dmin = sqrt(dmin)
+  drefatom = sqrt(drefatom)
+  return dmin, iatom, jatom, drefatom
+end
+
 # Function to compute the minimum distance if on the input vectors
 # only one atom (one set of coordinates)
 
@@ -33,6 +64,7 @@ function minimumdistance(x :: Vector{Float64}, jfmol, jlmol, y :: Array{Float64}
   end
   return sqrt(dmin)
 end
+
 
 
 

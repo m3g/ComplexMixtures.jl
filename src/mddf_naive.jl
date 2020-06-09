@@ -8,43 +8,37 @@
 # http://github.com/m3g/MDDF
 #
 
-function mddf_naive(trajectory, options :: Options)
+function mddf_naive(trajectory, options :: Options)  
 
   # Simplify code by assigning some shortened names
   solute = trajectory.solute
   solvent = trajectory.solvent
+  x_solute = trajectory.x_solute
+  x_solvent = trajectory.x_solvent
   
-  # Check if this is a single-solute or homogeneous solution situation: 
-  if solute.nmols == 1
-    single_solute = true
-  else
-    single_solute = false
-  end
-
   # The number of random samples for numerical normalization
   nsamples = n_random_samples*solvent.nmols
 
-# voltar: trocar MDDF_Data por Result e "mddf" por R
-  # Initializing the structure that carries all data
-  mddf = MDDF_Data(trajectory,voltar)
-  mddf = MDDF_Data(nbins,solute,solvent,output_name,input)
+  # Initializing the structure that carries all resuts
+  R = Result(trajectory,options)
 
   # Vector to annotate the molecules that belong to the bulk solution
   jmol_inbulk = Vector{Int64}(undef,solvent.nmols)
 
   # Vector that will contain randomly generated solvent molecules
   x_solvent_random = Array{Float64}(undef,solvent.natomspermol,3)
+
+  # Vector that wil contain the solute center of coordinates at each frame
+  solute_center = Vector{Float64}(undef,3)
+
+  # Auxiliary structure to random generation of solvent coordiantes
+  moveaux = MoveAux()
   
-  # Total number of bulk molecules
+  # Counter for the total number of bulk molecules
   nbulk = 0
 
   # Computing all minimum-distances
-
-  open(trajectory)
-  if trajectory.nframes < lastframe
-    error(" The number of frames of the trajectory is smaller than user-defined lastframe ")
-  end
-  for iframe in 1:lastframe
+  for iframe in 1:options.lastframe
 
     # reading coordinates of next frame
     nextframe!(trajectory)
@@ -57,16 +51,12 @@ function mddf_naive(trajectory, options :: Options)
 
     # get pbc sides in this frame
     sides = getsides(trajectory,iframe)
-    mddf.volume.total = mddf.volume.total + sides[1]*sides[2]*sides[3] 
+    R.volume.total = R.volume.total + sides[1]*sides[2]*sides[3] 
 
     # Check if the cutoff is not too large considering the periodic cell size
     if cutoff > sides[1]/2. || cutoff > sides[2]/2. || cutoff > sides[3]/2.
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
-
-    # associate names for code clarity
-    x_solute = trajectory.x_solute
-    x_solvent = tajectory.x_solvent
 
     # computing the minimum distances, cycle over solute molecules
     for imol in 1:solute.nmols
@@ -76,7 +66,7 @@ function mddf_naive(trajectory, options :: Options)
       ilmol = ifmol + solute.natomspermol - 1
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      solute_center = centerofcoordinates(@view(x_solute[ifmol:ilmol]))
+      centerofcoordinates!(solute_center,@view(x_solute[ifmol:ilmol]))
       wrap!(x_solvent,sides,solute_center)
 
       # counter for the number of solvent molecules in bulk
@@ -93,15 +83,15 @@ function mddf_naive(trajectory, options :: Options)
         dmin, iatom, jatom = minimumdistance(ifmol,ilmol,x_solute,jfmol,jlmol,x_solvent)
 
         # Update histograms
-        ibin = trunc(Int64,sqrt(dmin)/input.binstep)+1
+        ibin = setbin(dmin,options.binstep)
         if ibin <= nbins
-          mddf.count[ibin] += 1
-          mddf.solute_atom[iatom,ibin] += 1 
-          mddf.solvent_atom[jatom,ibin] += 1 
+          R.count[ibin] += 1
+          R.solute_atom[iatom,ibin] += 1 
+          R.solvent_atom[jatom,ibin] += 1 
         else
-          # computing the number of molecules in bulk, if at infinite dilution
-# voltar: ver o que fazer quando não é diluição infita, deveria pular isto aqui,
-# mas tenho que tomar cuidado com o cutoff
+          # computing the number of solvent molecules in bulk, used for normalization
+          # this normalization might be redudant if the solution is homogeneous (that is,
+          # if the solute is not a single molecule at infinite dilution)
           if usecutoff 
             if dmin < cutoff
               n_jmol_inbulk = n_jmol_inbulk + 1
@@ -115,18 +105,6 @@ function mddf_naive(trajectory, options :: Options)
       end # solvent molecules 
       nbulk = nbulk + n_jmol_inbulk
 
-      #
-      # Estimating the shell volumes using Monte-Carlo integration
-      #
-      for i in 1:nsamples
-        xrnd = -sizes/2 + rand(Float64,3)*sizes/2 + solute_center
-        dmin = minimumdistance(xrnd,ifmol,ilmol,x_solute)
-        ibin = trunc(Int64,sqrt(dmin)/input.binstep)+1
-        if ibin <= nbins
-          mddf.volume.shell[ibin] += 1
-        end
-      end
-
       # Computing the random-solvent distribution to compute the random 
       # minimum-distance count
       for i in 1:nsamples
@@ -135,11 +113,16 @@ function mddf_naive(trajectory, options :: Options)
         # Generate new random coordinates (translation and rotation) for this molecule
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
-        random_move!(jfmol,jlmol,x_solvent,sizes,solute_center,x_solvent_random)
-        dmin, iatom, jatom = minimumdistance(ifmol,ilmol,x_solute,1,solvent.natomspermol,x_solvent_random)
-        ibin = trunc(Int64,sqrt(dmin)/input.binstep)+1
+        random_move!(jfmol,jlmol,x_solvent,sizes,solute_center,x_solvent_random,moveaux)
+        dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,1,solvent.natomspermol,x_solvent_random,options.irefatom)
+        ibin = setbin(dmin,options.binstep)
         if ibin <= nbins
-          mddf.count_random[ibin] += 1
+          R.count_random[ibin] += 1
+        end
+        # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
+        ibin = setbin(drefatom,options.binstep)
+        if ibin <= nbins
+          R.volume.shell[ibin] += 1 
         end
       end
 
@@ -149,37 +132,33 @@ function mddf_naive(trajectory, options :: Options)
 
   # Averaging
   density_fix = (bulkdensity*av_totalvolume)/nrsolvent_random
-  mddf.count_random = density_fix * mddf_count_random
+  R.count_random = density_fix * R.count_random
 
   framecount = round(Int64,(lastframe-firstframe+1)/stride)
-  mddf.count = mddf.count / framecount
-  mddf.count_random = (mddf.count_random / n_random_samples) / framecount
-  mddf.solute_atom = mddf.solute_atom / framecount
-  mddf.solvent_atom = mddf.solvent_atom / framecount
+  R.count = R.count / framecount
+  R.count_random = (R.count_random / n_random_samples) / framecount
+  R.solute_atom = R.solute_atom / framecount
+  R.solvent_atom = R.solvent_atom / framecount
 
   # Normalizing to compute distributions
-  @. mddf.mddf = mddf.count / mddf.count_random
+  @. R.mddf = R.count / R.count_random
   for ibin in 1:nbins
     for i in 1:solute.natomspermol   
-      mddf.solute_atom[i,ibin] = mddf.solute_atom[i,ibin] / mddf.count_random[ibin]
+      R.solute_atom[i,ibin] = R.solute_atom[i,ibin] / R.count_random[ibin]
     end
     for j in 1:solvent.natomspermol
-      mddf.solvent_atom[j,ibin] = mddf.solute_atom[j,ibin] / mddf.count_random[ibin]
+      R.solvent_atom[j,ibin] = R.solute_atom[j,ibin] / R.count_random[ibin]
     end
   end
 
-  mddf.density.solvent = solvent.nmols / mddf.volume.total
-  mddf.density.solute = solute.nmols / mddf.volume.total
+  R.density.solvent = solvent.nmols / R.volume.total
+  R.density.solute = solute.nmols / R.volume.total
 
-  mddf.volume.shell = mddf.volume.shell / n_random_samples / framecount 
-  mddf.volume.total = mddf.volume.total / framecount
-  mddf.volume.bulk = mddf.volume.total - sum(mddf.volume.shell)
+  R.volume.shell = R.volume.shell / n_random_samples / framecount 
+  R.volume.total = R.volume.total / framecount
+  R.volume.bulk = R.volume.total - sum(R.volume.shell)
 
-  if single_solute
-    mddf.density.bulk = nbulk / mddf.volume.bulk
-  else
-    mddf.density.bulk = mddf.density.solvent
-  end
+  R.density.bulk = nbulk / R.volume.bulk
 
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
   mole = 6.022140857e23
@@ -188,14 +167,14 @@ function mddf_naive(trajectory, options :: Options)
   # Open output file and writes all information of this run
 
   #if print_files
-  #  write_output_files(mddf)
+  #  write_output_files(R)
   #end
 
   #if print_results
-  #  print_results(mddf)
+  #  print_results(R)
   #end
 
-  return mddf 
+  return R
 
 end
 

@@ -53,3 +53,29 @@ function eulermat( beta :: Float64,
 
 end
 
+# Function that performs the same computation, but uptating the provided
+# auxiliary structure, to avoid new allocations
+
+function eulermat!( aux :: MoveAux )
+
+  c1 = cos(aux.angles[1]) 
+  s1 = sin(aux.angles[1]) 
+  c2 = cos(aux.angles[2]) 
+  s2 = sin(aux.angles[2]) 
+  c3 = cos(aux.angles[3]) 
+  s3 = sin(aux.angles[3])
+
+  aux.A[1,1] = c2*c3
+  aux.A[1,2] = c1*s3 + c3*s1*s2
+  aux.A[1,3] = s1*s3 - c1*c3*s2
+
+  aux.A[2,1] = -c2*s3
+  aux.A[2,2] = c1*c3 - s1*s2*s3
+  aux.A[2,3] = c1*s2*s3 + c3*s1
+
+  aux.A[3,1] = s2
+  aux.A[3,2] = -c2*s1
+  aux.A[3,3] = c1*c2         
+
+end
+ 

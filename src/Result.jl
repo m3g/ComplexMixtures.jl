@@ -29,7 +29,7 @@ end
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-              :
+
 function Result( trajectory, options :: Options ) 
 
   # Names of auxiliary output files
@@ -68,7 +68,7 @@ function Result( trajectory, options :: Options )
   if (options.dbulk/options.binstep)%1 > 1.e-5
     error("in MDDF options: dbulk must be a multiple of binstep.")
   end
-  nbins = round(Int64,dmax/options.binstep)
+  nbins = setbin(dmax,options.binstep)
 
   if options.irefatom > trajectory.solvent.natoms 
     error("in MDDF options: Reference atom index", options.irefatom, " is greater than number of "*

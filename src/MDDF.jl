@@ -3,6 +3,8 @@ module MDDF
   using Printf
   using OffsetArrays
 
+  include("./setbin.jl")
+
   # Input and Output data structures
   include("./OutputFiles.jl")
   include("./SoluteOrSolvent.jl")
@@ -39,8 +41,12 @@ module MDDF
   include("./shellradius.jl")
   include("./sphereradiusfromshellvolume.jl")
 
+
   #include("./mddf.jl")
+
   include("./mddf_naive.jl")
+  include("./mddf_naive_single.jl")
+  include("./mddf_naive_homogeneous.jl")
 
 end
 
