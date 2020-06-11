@@ -137,6 +137,11 @@ function mddf_naive(trajectory, options :: Options)
   end # frames
   closetraj(trajectory)
 
+  # Setup the distance vector
+  for i in 1:R.nbins
+    R.d[i] = shellradius(i,options.binstep)
+  end
+
   #
   # Averaging
   #
