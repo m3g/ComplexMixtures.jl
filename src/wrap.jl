@@ -6,7 +6,8 @@
 #
 
 function wrap!(coordinates :: Array{Float64}, sides :: Vector{Float64}, center :: Vector{Float64})
-  for i in 1:length(coordinates)
+  n = size(coordinates,1)
+  for i in 1:n
     wrapone!(i,coordinates,sides,center)
   end
 end

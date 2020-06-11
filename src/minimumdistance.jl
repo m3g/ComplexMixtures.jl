@@ -16,8 +16,8 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
      for j in jfmol:jlmol
        d = dsquare(x,y,i,j)
        if d < dmin
-         iatom = i
-         jatom = j
+         iatom = i - ifmol + 1
+         jatom = j - jfmol + 1
          dmin = d
        end
      end
@@ -41,8 +41,8 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
      for j in jfmol:jlmol
        d = dsquare(x,y,i,j)
        if d < dmin
-         iatom = i
-         jatom = j
+         iatom = i - ifmol + 1
+         jatom = j - jfmol + 1
          dmin = d
        end
        jcount = jcount + 1
@@ -61,7 +61,7 @@ end
 
 function minimumdistance(x :: Vector{Float64}, jfmol, jlmol, y :: Array{Float64})
   dmin = +Inf
-  for j in jfmol, jlmol
+  for j in jfmol:jlmol
     dmin = min(dmin,dsquare(x,y,j))
   end
   return sqrt(dmin)

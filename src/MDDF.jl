@@ -34,13 +34,16 @@ module MDDF
 
   include("./phantomcells.jl")
   include("./movephantomcoor.jl")
-  include("./pbc.jl")
+  include("./wrap.jl")
   include("./smalldcell.jl")
   include("./smalldistances.jl")
 
   include("./sphericalshellvolume.jl")
   include("./shellradius.jl")
   include("./sphereradiusfromshellvolume.jl")
+
+  include("./dsquare.jl")
+  include("./minimumdistance.jl")
 
   #include("./mddf.jl")
   include("./mddf_naive.jl")

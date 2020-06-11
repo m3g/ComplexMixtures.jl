@@ -46,7 +46,7 @@ end
 
 function move!(x :: Array{Float64}, aux :: MoveAux)
   
-  n = length(x)
+  n = size(x,1)
   centerofcoordinates!(aux.oldcm,x)
   eulermat!(aux)
 

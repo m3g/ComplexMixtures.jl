@@ -61,7 +61,7 @@ function mddf_naive(trajectory, options :: Options)
     R.volume.total = R.volume.total + sides[1]*sides[2]*sides[3] 
 
     # Check if the cutoff is not too large considering the periodic cell size
-    if cutoff > sides[1]/2. || cutoff > sides[2]/2. || cutoff > sides[3]/2.
+    if options.cutoff > sides[1]/2. || options.cutoff > sides[2]/2. || options.cutoff > sides[3]/2.
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
@@ -73,7 +73,7 @@ function mddf_naive(trajectory, options :: Options)
       ilmol = ifmol + solute.natomspermol - 1
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      centerofcoordinates!(solute_center,@view(x_solute[ifmol:ilmol]))
+      centerofcoordinates!(solute_center,@view(x_solute[ifmol:ilmol,:]))
       wrap!(x_solvent,sides,solute_center)
 
       # counter for the number of solvent molecules in bulk
@@ -91,7 +91,7 @@ function mddf_naive(trajectory, options :: Options)
 
         # Update histograms
         ibin = setbin(dmin,options.binstep)
-        if ibin <= nbins
+        if ibin <= R.nbins
           R.count[ibin] += 1
           R.solute_atom[iatom,ibin] += 1 
           R.solvent_atom[jatom,ibin] += 1 
@@ -99,7 +99,7 @@ function mddf_naive(trajectory, options :: Options)
           # computing the number of solvent molecules in bulk, used for normalization
           # this normalization might be redudant if the solution is homogeneous (that is,
           # if the solute is not a single molecule at infinite dilution)
-          if usecutoff 
+          if options.usecutoff 
             if dmin < cutoff
               n_jmol_inbulk = n_jmol_inbulk + 1
               jmol_inbulk[n_jmol_inbulk] = jmol
@@ -120,15 +120,15 @@ function mddf_naive(trajectory, options :: Options)
         # Generate new random coordinates (translation and rotation) for this molecule
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
-        random_move!(jfmol,jlmol,x_solvent,sizes,solute_center,x_solvent_random,moveaux)
+        random_move!(jfmol,jlmol,x_solvent,sides,solute_center,x_solvent_random,moveaux)
         dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,1,solvent.natomspermol,x_solvent_random,options.irefatom)
         ibin = setbin(dmin,options.binstep)
-        if ibin <= nbins
+        if ibin <= R.nbins
           R.count_random[ibin] += 1
         end
         # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
         ibin = setbin(drefatom,options.binstep)
-        if ibin <= nbins
+        if ibin <= R.nbins
           R.volume.shell[ibin] += 1 
         end
       end
