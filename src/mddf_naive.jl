@@ -49,10 +49,10 @@ function mddf_naive(trajectory, options :: Options)
 
     # reading coordinates of next frame
     nextframe!(trajectory)
-    if iframe < firstrame 
+    if iframe < options.firstframe 
       continue
     end
-    if iframe%stride != 0
+    if iframe%options.stride != 0
       continue
     end
 

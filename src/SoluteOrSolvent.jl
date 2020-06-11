@@ -13,7 +13,17 @@ struct SoluteOrSolvent
 
 end
 
-# Initializers with specific names for solute and solvent
+# Initialize providing the file name, and calling by default VMDselect
+
+Solute( file :: String, selection :: String; 
+        vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) =
+  SoluteOrSolvent( VMDselect(file,selection,vmd=vmd), nmols = nmols, natomspermol = natomspermol )
+
+Solvent( file :: String, selection :: String; 
+         vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) =
+  SoluteOrSolvent( VMDselect(file,selection,vmd=vmd), nmols = nmols, natomspermol = natomspermol )
+
+# Initializers from the indexes of the atoms directly
 
 Solute( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) = 
    SoluteOrSolvent(indexes,nmols=nmols,natomspermol=natomspermol)
