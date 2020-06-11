@@ -1,0 +1,6 @@
+mol new "structure.pdb" 
+set sel [ atomselect top "protein" ] 
+puts "INDEXLIST" 
+set indexes [ $sel get index ] 
+puts "ENDINDEXLIST" 
+exit 

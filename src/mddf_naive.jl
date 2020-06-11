@@ -6,7 +6,7 @@
 #
 # http://m3g.iqm.unicamp.br/
 # http://github.com/m3g/MDDF
-#
+#  
 
 function mddf_naive(trajectory, options :: Options)  
 
@@ -37,8 +37,15 @@ function mddf_naive(trajectory, options :: Options)
   # Counter for the total number of bulk molecules
   nbulk = 0
 
+  # Last frame to be considered
+  if options.lastframe == -1 
+    lastframe = trajectory.nframes
+  else
+    lastframe = options.lastframe
+  end
+
   # Computing all minimum-distances
-  for iframe in 1:options.lastframe
+  for iframe in 1:lastframe
 
     # reading coordinates of next frame
     nextframe!(trajectory)
@@ -135,7 +142,7 @@ function mddf_naive(trajectory, options :: Options)
   #
 
   # Number of frames
-  nframes = (options.lastframe - options.firstframe)/options.stride + 1 
+  nframes = (lastframe - options.firstframe)/options.stride + 1 
 
   # Counters
   @. R.count = R.count / nframes
