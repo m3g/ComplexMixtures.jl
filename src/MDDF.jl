@@ -2,6 +2,7 @@ module MDDF
 
   using Printf
   using OffsetArrays
+  using Parameters
 
   include("./setbin.jl")
   include("./move.jl")

@@ -2,8 +2,6 @@
 # Structure that contains the detailed input options
 #
 
-using Parameters
-
 @with_kw struct Options
 
    output :: String
