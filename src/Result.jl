@@ -27,6 +27,10 @@ struct Result
 
   options :: Options
 
+  sum_count :: Vector{Float64}
+  sum_count_random :: Vector{Float64}
+  sum_shell :: Vector{Float64}
+
 end
 
 #
@@ -97,7 +101,10 @@ function Result( trajectory, options :: Options )
                  OutputFiles( options.output, # name of main output file
                               atom_contrib_solvent, # name of solvent atom contribution file
                               atom_contrib_solute ), # name of solute atom contribution file,
-                 options # all input options
+                 options, # all input options
+                 zeros(Float64,nbins), # sum of counts up to each bin
+                 zeros(Float64,nbins), # sum of random counts up to each bin
+                 zeros(Float64,nbins), # sum of estimated number of molecules in each shell from density
                )      
 
 end

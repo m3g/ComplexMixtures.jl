@@ -35,4 +35,5 @@ options = MDDF.Options(output="example.dat")
 R = MDDF.mddf_naive(trajectory,options)
 
 
+include("./plots.jl")
 

@@ -196,9 +196,9 @@ function mddf_naive(trajectory, options :: Options)
   # Computing the minimum distance distribution function normalized by
   # the random count or the density computed from the shell volumes
   #
-  sum_count = 0.
-  sum_count_random = 0.
-  sum_nshell = 0.
+
+#voltar: estou somando errado os rnd, sei la porque
+
   for ibin in 1:R.nbins
     if R.count_random[ibin] > 0.
       R.mddf[ibin] = R.count[ibin] / R.count_random[ibin]
@@ -210,15 +210,21 @@ function mddf_naive(trajectory, options :: Options)
       end
     end
     nshell = R.volume.shell[ibin]*R.density.solvent_bulk
-    sum_nshell = sum_nshell + nshell
     if R.volume.shell[ibin] > 0.
       R.mddf_shell[ibin] = R.count[ibin] / nshell
     end
-    sum_count = sum_count + R.count[ibin]
-    sum_count_random = sum_count + R.count_random[ibin]
+    if ibin == 1
+      R.sum_count[ibin] = R.count[ibin]
+      R.sum_count_random[ibin] = R.count_random[ibin]
+      R.sum_shell[ibin] = nshell
+    else
+      R.sum_count[ibin] = R.sum_count[ibin-1] + R.count[ibin]
+      R.sum_count_random[ibin] = R.sum_count[ibin-1] + R.count_random[ibin]
+      R.sum_shell[ibin] = R.sum_shell[ibin-1] + nshell
+    end
     # KB integral as a function of the distance
-    R.kb[ibin] = convert*(1/R.density.solvent_bulk)*(sum_count - sum_count_random)
-    R.kb_shell[ibin] = convert*(1/R.density.solvent_bulk)*(sum_count - sum_nshell)
+    R.kb[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_count[ibin] - R.sum_count_random[ibin])
+    R.kb_shell[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_count[ibin] - R.sum_shell[ibin])
   end
 
   return R
