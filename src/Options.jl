@@ -24,6 +24,8 @@
    cutoff :: Float64 = 10.
    usecutoff :: Bool = false
 
+   density_fix :: Bool = false
+
 end
 
 Options() = error(" Options must be initialized at least with the output file name, with Options(output=\"example.dat\")")

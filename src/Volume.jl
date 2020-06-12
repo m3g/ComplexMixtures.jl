@@ -11,6 +11,13 @@ end
 
 Volume(nbins :: Int64) = Volume( 0., 0., 0.,  zeros(Float64,nbins) )
 
+function reset!( v :: Volume ) 
+  v.total = 0.
+  v.bulk = 0.
+  v.domain = 0.
+  @. v.shell = 0.
+end
+
 function Base.show( io :: IO, v :: Volume ) 
   n = length(v.shell)
   println(" Mean total box volume: $(v.total) ")

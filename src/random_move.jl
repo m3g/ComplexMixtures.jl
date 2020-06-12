@@ -3,31 +3,43 @@
 #
 # the new position is returned in x, a previosly allocated array
 #
+
+struct MoveAux
+  oldcm :: Vector{Float64}
+  newcm :: Vector{Float64}
+  angles :: Vector{Float64}
+  A :: Matrix{Float64}
+end
+MoveAux() = MoveAux(zeros(3), zeros(3), zeros(3), zeros(3,3))
+
 function random_move!(jfmol :: Int64, jlmol :: Int64, x_solvent :: Array{Float64},
-                      sizes :: Vector{Float64}, center :: Vector{Float64}, 
-                      x :: Array{Float64})
+                      sides :: Vector{Float64}, solute_center :: Vector{Float64}, 
+                      x_solvent_random :: Array{Float64}, aux :: MoveAux )
+
+  # To avoid boundary problems, the center of coordinates are generated in a 
+  # much larger region, and wrapped aftwerwards
+  scale = 100.
 
   # Generate random coordiantes for the center of mass
-  cm_new = rand(Float64,3) 
-  @. cm_new = -sizes/2 + cm*sizes
+  @. aux.newcm = -scale*sides/2 + rand(Float64)*scale*sides + solute_center 
 
-  # Random rotation Euler angles
-  beta = 2*pi*rand(Float64)
-  gamma = 2*pi*rand(Float64)
-  theta = 2*pi*rand(Float64)
-  
-  natoms = jlmol - jfmol + 1
+  # Generate random rotation angles 
+  @. aux.angles = (2*pi)*rand(Float64)
+
+  # Copy the coordinates of the molecule chosen to the random-coordinates vector
   iatom = 0
-  for i in jlmol:jfmol 
+  for i in jfmol:jlmol 
     iatom = iatom + 1
-    x[iatom,1] = x_solvent[i,1]
-    y[iatom,2] = x_solvent[i,2]
-    z[iatom,3] = x_solvent[i,3]
+    x_solvent_random[iatom,1] = x_solvent[i,1]
+    x_solvent_random[iatom,2] = x_solvent[i,2]
+    x_solvent_random[iatom,3] = x_solvent[i,3]
   end
 
   # Move molecule to new position
-  move!(x, cm_new, beta, gamma, theta)
+  move!(x_solvent_random, aux)
+  
+  # Wrap coordinates relative to solute center 
+  wrap!(x_solvent_random,sides,solute_center)
 
 end
-
 

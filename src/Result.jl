@@ -7,8 +7,12 @@ struct Result
   nbins :: Int64
   dmax :: Float64
   d :: Vector{Float64}
+
   mddf :: Vector{Float64}
   kb :: Vector{Float64}
+
+  mddf_shell :: Vector{Float64}
+  kb_shell :: Vector{Float64}
 
   solute_atom :: Array{Float64}
   solvent_atom :: Array{Float64}
@@ -82,6 +86,8 @@ function Result( trajectory, options :: Options )
                  zeros(Float64,nbins), # d - vector of distances
                  zeros(Float64,nbins), # Vector to store the actual mddf
                  zeros(Float64,nbins), # Vector to store the KB integral
+                 zeros(Float64,nbins), # Vector to store the mddf computed from shell volumes
+                 zeros(Float64,nbins), # Vector to store the KB integralcomputed from shell volumes
                  zeros(Float64,trajectory.solute.natomspermol,nbins), # Array to store the solute atom contributions
                  zeros(Float64,trajectory.solvent.natomspermol,nbins), # Array to store the solvent atom contributions
                  zeros(Float64,nbins), # Solvent count at each distance

@@ -5,6 +5,7 @@ module MDDF
   using Parameters
 
   include("./setbin.jl")
+  include("./random_move.jl")
   include("./move.jl")
 
   # Input and Output data structures

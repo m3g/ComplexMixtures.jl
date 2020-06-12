@@ -34,20 +34,24 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
                          jrefatom :: Int64)
   iatom = 0
   jatom = 0
-  drefatom = 0.
+  drefatom = +Inf
   dmin = +Inf
   for i in ifmol:ilmol
      jcount = 0
      for j in jfmol:jlmol
        d = dsquare(x,y,i,j)
+       # Minimum distance to the solute of any solvent atom
        if d < dmin
          iatom = i - ifmol + 1
          jatom = j - jfmol + 1
          dmin = d
        end
+       # Minimum distance to the solute of the reference atom
        jcount = jcount + 1
-       if jrefatom == jcount
-         drefatom = d
+       if jcount == jrefatom
+         if d < drefatom
+           drefatom = d
+         end
        end
      end
   end
