@@ -46,12 +46,14 @@ function mddf_naive(trajectory, options :: Options)
 
   # Structure to organize counters for each frame only
   volume_frame = Volume(R.nbins)
+  rdf_count_random_frame = zeros(R.nbins)
 
   # Computing all minimum-distances
   for iframe in 1:lastframe
 
     # Reset counters for this frame
     reset!(volume_frame)
+    @. rdf_count_random_frame = 0.
 
     # reading coordinates of next frame
     nextframe!(trajectory)
@@ -100,9 +102,11 @@ function mddf_naive(trajectory, options :: Options)
         jlmol = jfmol + solvent.natomspermol - 1
 
         # Compute minimum distance 
-        dmin, iatom, jatom = minimumdistance(ifmol,ilmol,x_solute,jfmol,jlmol,x_solvent)
+        dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
+                                                       jfmol,jlmol,x_solvent,
+                                                       options.irefatom)
 
-        # Update histograms
+        # Update histogram for computation of MDDF
         ibin = setbin(dmin,options.binstep)
         if ibin <= R.nbins
           R.md_count[ibin] += 1
@@ -111,6 +115,12 @@ function mddf_naive(trajectory, options :: Options)
         else
           n_jmol_inbulk = n_jmol_inbulk + 1
           jmol_inbulk[n_jmol_inbulk] = jmol
+        end
+
+        # Update histogram for the computation of the RDF
+        ibin = setbin(drefatom,options.binstep) 
+        if ibin <= R.nbins
+          R.rdf_count[ibin] += 1
         end
 
       end # solvent molecules 
@@ -135,18 +145,17 @@ function mddf_naive(trajectory, options :: Options)
         # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
         ibin = setbin(drefatom,options.binstep)
         if ibin <= R.nbins
-          volume_frame.shell[ibin] += 1
-        else
-          volume_frame.bulk += 1 
+          rdf_count_random_frame[ibin] += 1
         end
       end
-      @. volume_frame.shell = volume_frame.total * (volume_frame.shell / nsamples)
-      volume_frame.bulk = volume_frame.total * (volume_frame.bulk / nsamples)
+      @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
+      @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/nsamples)
+      volume_frame.domain = sum(volume_frame.shell)
+      volume_frame.bulk = volume_frame.total - volume_frame.domain
 
       @. R.volume.shell = R.volume.shell + volume_frame.shell
       R.volume.bulk = R.volume.bulk + volume_frame.bulk
-      R.volume.domain = R.volume.domain + volume_frame.total - volume_frame.bulk
-  
+      R.volume.domain = R.volume.domain + volume_frame.domain
       R.density.solvent_bulk = R.density.solvent_bulk + n_jmol_inbulk / volume_frame.bulk
 
     end # solute molecules
@@ -170,6 +179,8 @@ function mddf_naive(trajectory, options :: Options)
   @. R.solute_atom = R.solute_atom / nframes
   @. R.solvent_atom = R.solvent_atom / nframes
   @. R.md_count_random = R.md_count_random / (nframes*options.n_random_samples)
+  @. R.rdf_count = R.rdf_count / nframes
+  @. R.rdf_count_random = R.rdf_count_random / (nframes*options.n_random_samples)
 
   # Volumes and Densities
   R.volume.total = R.volume.total / nframes
@@ -193,11 +204,14 @@ function mddf_naive(trajectory, options :: Options)
   convert = mole / 1.e24
 
   #
-  # Computing the minimum distance distribution function normalized by
-  # the random count or the density computed from the shell volumes
+  # Computing the distribution functions and KB integrals, from the MDDF
+  # and from the RDF
   #
 
   for ibin in 1:R.nbins
+
+    # For the MDDF
+
     if R.md_count_random[ibin] > 0.
       R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
       for i in 1:solute.natomspermol   
@@ -207,22 +221,31 @@ function mddf_naive(trajectory, options :: Options)
         R.solvent_atom[j,ibin] = R.solute_atom[j,ibin] / R.md_count_random[ibin]
       end
     end
-    nshell = R.volume.shell[ibin]*R.density.solvent_bulk
-    if R.volume.shell[ibin] > 0.
-      R.mddf_shell[ibin] = R.md_count[ibin] / nshell
-    end
     if ibin == 1
       R.sum_md_count[ibin] = R.md_count[ibin]
       R.sum_md_count_random[ibin] = R.md_count_random[ibin]
-      R.sum_shell[ibin] = nshell
     else
       R.sum_md_count[ibin] = R.sum_md_count[ibin-1] + R.md_count[ibin]
       R.sum_md_count_random[ibin] = R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
-      R.sum_shell[ibin] = R.sum_shell[ibin-1] + nshell
     end
-    # KB integral as a function of the distance
     R.kb[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_md_count[ibin] - R.sum_md_count_random[ibin])
-    R.kb_shell[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_md_count[ibin] - R.sum_shell[ibin])
+
+    # For the RDF
+
+    if R.rdf_count_random[ibin] > 0.
+      R.rdf[ibin] = R.rdf_count[ibin] / (R.volume.shell[ibin]*R.density.solvent_bulk)
+      #or
+      #R.rdf[ibin] = R.rdf_count[ibin] / R.rdf_count_random[ibin] 
+    end
+    if ibin == 1
+      R.sum_rdf_count[ibin] = R.rdf_count[ibin]
+      R.sum_rdf_count_random[ibin] = R.rdf_count_random[ibin]
+    else
+      R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
+      R.sum_rdf_count_random[ibin] = R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
+    end
+    R.kb_rdf[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
+
   end
 
   return R

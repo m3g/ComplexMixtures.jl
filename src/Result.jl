@@ -32,7 +32,7 @@ struct Result
   sum_rdf_count :: Vector{Float64}
   sum_rdf_count_random :: Vector{Float64}
 
-  rdf_count :: Vector{Float64}
+  rdf :: Vector{Float64}
   kb_rdf :: Vector{Float64}
 
   # Overall densities and volumes
@@ -105,23 +105,26 @@ function Result( trajectory, options :: Options )
   return Result( nbins, # number of bins of histogram
                  dmax, # maximum distance to be considered (cutoff or dbulk)
                  zeros(Float64,nbins), # d - vector of distances
-                 zeros(Float64,nbins), # Vector to store the actual mddf
-                 zeros(Float64,nbins), # Vector to store the KB integral
-                 zeros(Float64,nbins), # Vector to store the mddf computed from shell volumes
-                 zeros(Float64,nbins), # Vector to store the KB integralcomputed from shell volumes
+                 zeros(Float64,nbins), # md_count
+                 zeros(Float64,nbins), # md_count_random
+                 zeros(Float64,nbins), # sum_md_count
+                 zeros(Float64,nbins), # sum_md_count_random
+                 zeros(Float64,nbins), # mddf
+                 zeros(Float64,nbins), # kb
                  zeros(Float64,trajectory.solute.natomspermol,nbins), # Array to store the solute atom contributions
                  zeros(Float64,trajectory.solvent.natomspermol,nbins), # Array to store the solvent atom contributions
-                 zeros(Float64,nbins), # Solvent count at each distance
-                 zeros(Float64,nbins), # Random solvent count at each distance
+                 zeros(Float64,nbins), # rdf_count
+                 zeros(Float64,nbins), # rdf_Count_random
+                 zeros(Float64,nbins), # sum_rdf_count
+                 zeros(Float64,nbins), # sum_rdf_count_random
+                 zeros(Float64,nbins), # rdf
+                 zeros(Float64,nbins), # kb_rdf
                  Density(), # mutable scalars for results
                  Volume(nbins), # mutable vector and scalars for results
                  OutputFiles( options.output, # name of main output file
                               atom_contrib_solvent, # name of solvent atom contribution file
                               atom_contrib_solute ), # name of solute atom contribution file,
                  options, # all input options
-                 zeros(Float64,nbins), # sum of counts up to each bin
-                 zeros(Float64,nbins), # sum of random counts up to each bin
-                 zeros(Float64,nbins), # sum of estimated number of molecules in each shell from density
                )      
 
 end
