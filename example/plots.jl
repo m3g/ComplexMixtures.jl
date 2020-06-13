@@ -40,5 +40,5 @@ plot!(old[:,1],old[:,7],subplot=sp,label="old - rand")
 scatter!(R.d,R.sum_count_random,subplot=sp,label="new - rand")
 scatter!(R.d,R.sum_shell,subplot=sp,label="new - shell")
 
-plot!(size=(600,1600))
+plot!(size=(600,1600),leftmargin=50)
 savefig("./plots.pdf")

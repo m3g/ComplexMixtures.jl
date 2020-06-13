@@ -105,7 +105,7 @@ function mddf_naive(trajectory, options :: Options)
         # Update histograms
         ibin = setbin(dmin,options.binstep)
         if ibin <= R.nbins
-          R.count[ibin] += 1
+          R.md_count[ibin] += 1
           R.solute_atom[iatom,ibin] += 1 
           R.solvent_atom[jatom,ibin] += 1 
         else
@@ -130,7 +130,7 @@ function mddf_naive(trajectory, options :: Options)
                                                        options.irefatom)
         ibin = setbin(dmin,options.binstep)
         if ibin <= R.nbins
-          R.count_random[ibin] += 1
+          R.md_count_random[ibin] += 1
         end
         # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
         ibin = setbin(drefatom,options.binstep)
@@ -166,10 +166,10 @@ function mddf_naive(trajectory, options :: Options)
   nframes = (lastframe - options.firstframe)/options.stride + 1 
 
   # Counters
-  @. R.count = R.count / nframes
+  @. R.md_count = R.md_count / nframes
   @. R.solute_atom = R.solute_atom / nframes
   @. R.solvent_atom = R.solvent_atom / nframes
-  @. R.count_random = R.count_random / (nframes*options.n_random_samples)
+  @. R.md_count_random = R.md_count_random / (nframes*options.n_random_samples)
 
   # Volumes and Densities
   R.volume.total = R.volume.total / nframes
@@ -185,7 +185,7 @@ function mddf_naive(trajectory, options :: Options)
   # Fix the number of random samples using the bulk density
   if options.density_fix
     density_fix = R.density.solvent_bulk/R.density.solvent
-    @. R.count_random = R.count_random * density_fix 
+    @. R.md_count_random = R.md_count_random * density_fix 
   end
 
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
@@ -197,34 +197,32 @@ function mddf_naive(trajectory, options :: Options)
   # the random count or the density computed from the shell volumes
   #
 
-#voltar: estou somando errado os rnd, sei la porque
-
   for ibin in 1:R.nbins
-    if R.count_random[ibin] > 0.
-      R.mddf[ibin] = R.count[ibin] / R.count_random[ibin]
+    if R.md_count_random[ibin] > 0.
+      R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
       for i in 1:solute.natomspermol   
-        R.solute_atom[i,ibin] = R.solute_atom[i,ibin] / R.count_random[ibin]
+        R.solute_atom[i,ibin] = R.solute_atom[i,ibin] / R.md_count_random[ibin]
       end
       for j in 1:solvent.natomspermol
-        R.solvent_atom[j,ibin] = R.solute_atom[j,ibin] / R.count_random[ibin]
+        R.solvent_atom[j,ibin] = R.solute_atom[j,ibin] / R.md_count_random[ibin]
       end
     end
     nshell = R.volume.shell[ibin]*R.density.solvent_bulk
     if R.volume.shell[ibin] > 0.
-      R.mddf_shell[ibin] = R.count[ibin] / nshell
+      R.mddf_shell[ibin] = R.md_count[ibin] / nshell
     end
     if ibin == 1
-      R.sum_count[ibin] = R.count[ibin]
-      R.sum_count_random[ibin] = R.count_random[ibin]
+      R.sum_md_count[ibin] = R.md_count[ibin]
+      R.sum_md_count_random[ibin] = R.md_count_random[ibin]
       R.sum_shell[ibin] = nshell
     else
-      R.sum_count[ibin] = R.sum_count[ibin-1] + R.count[ibin]
-      R.sum_count_random[ibin] = R.sum_count[ibin-1] + R.count_random[ibin]
+      R.sum_md_count[ibin] = R.sum_md_count[ibin-1] + R.md_count[ibin]
+      R.sum_md_count_random[ibin] = R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
       R.sum_shell[ibin] = R.sum_shell[ibin-1] + nshell
     end
     # KB integral as a function of the distance
-    R.kb[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_count[ibin] - R.sum_count_random[ibin])
-    R.kb_shell[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_count[ibin] - R.sum_shell[ibin])
+    R.kb[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_md_count[ibin] - R.sum_md_count_random[ibin])
+    R.kb_shell[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_md_count[ibin] - R.sum_shell[ibin])
   end
 
   return R

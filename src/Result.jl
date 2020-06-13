@@ -8,28 +8,45 @@ struct Result
   dmax :: Float64
   d :: Vector{Float64}
 
+  # Data to compute the MDDF distribution and corresponding KB integral
+
+  md_count :: Vector{Float64}
+  md_count_random :: Vector{Float64}
+  
+  sum_md_count :: Vector{Float64}
+  sum_md_count_random :: Vector{Float64}
+
   mddf :: Vector{Float64}
   kb :: Vector{Float64}
 
-  mddf_shell :: Vector{Float64}
-  kb_shell :: Vector{Float64}
+  # Atomic contributions to the MDDFs
 
   solute_atom :: Array{Float64}
   solvent_atom :: Array{Float64}
   
-  count :: Vector{Float64}
-  count_random :: Vector{Float64}
-  
+  # Data to compute a RDF and the KB integral from this count
+
+  rdf_count :: Vector{Float64}
+  rdf_count_random :: Vector{Float64}
+
+  sum_rdf_count :: Vector{Float64}
+  sum_rdf_count_random :: Vector{Float64}
+
+  rdf_count :: Vector{Float64}
+  kb_rdf :: Vector{Float64}
+
+  # Overall densities and volumes
+
   density :: Density
   volume :: Volume
 
+  # Name of output files
+
   file :: OutputFiles
 
-  options :: Options
+  # Options of the calculation
 
-  sum_count :: Vector{Float64}
-  sum_count_random :: Vector{Float64}
-  sum_shell :: Vector{Float64}
+  options :: Options
 
 end
 
