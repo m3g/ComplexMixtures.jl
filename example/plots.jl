@@ -18,6 +18,7 @@ plot!(ylabel="KB",subplot=sp)
 plot!(old[:,1],old[:,3],subplot=sp,label="old")
 plot!(R.d,R.kb,subplot=sp,label="new - mddf")
 plot!(R.d,R.kb_rdf,subplot=sp,label="new - rdf")
+plot!(legend=:topleft,subplot=sp)
 
 sp=3
 plot!(ylabel="Count",subplot=sp)
@@ -32,14 +33,16 @@ plot!(old[:,1],old[:,8],subplot=sp,label="old")
 plot!(R.d,R.volume.shell,subplot=sp,label="new")
 
 sp=5
-plot!(ylabel="Sum", subplot=sp)
+plot!(ylabel="Sum MD", subplot=sp)
 plot!(old[:,1],old[:,6],subplot=sp,label="old - md")
 scatter!(R.d,R.sum_md_count,subplot=sp,label="new - md")
 
 sp=6
+plot!(ylabel="Sum RAND", subplot=sp)
 plot!(old[:,1],old[:,7],subplot=sp,label="old - rand")
 scatter!(R.d,R.sum_md_count_random,subplot=sp,label="new - rand")
-scatter!(R.d,R.sum_rdf_count,subplot=sp,label="new - shell")
+scatter!(R.d,R.sum_rdf_count,subplot=sp,label="new - rdf")
+plot!(legend=:topleft,subplot=sp)
 
-plot!(size=(600,1600),leftmargin=50)
+plot!(size=(800,1300))
 savefig("./plots.pdf")

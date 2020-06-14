@@ -51,7 +51,7 @@ binstep 0.2
 # nint: An integer parameter controling the precision of the numerical volume
 # integration. The greater nint, the greater the precision (but at a cost
 # proportional to nint).  
-nint 10
+nint 100
 
 # Use this option if you are running the package and printing the output
 # on the screen:

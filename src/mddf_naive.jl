@@ -86,7 +86,7 @@ function mddf_naive(trajectory, options :: Options)
       ilmol = ifmol + solute.natomspermol - 1
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      centerofcoordinates!(solute_center,@view(x_solute[ifmol:ilmol,:]))
+      centerofcoordinates!(solute_center,ifmol,ilmol,x_solute)
       wrap!(x_solvent,sides,solute_center)
 
       # counter for the number of solvent molecules in bulk
@@ -104,7 +104,7 @@ function mddf_naive(trajectory, options :: Options)
         # Compute minimum distance 
         dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
                                                        jfmol,jlmol,x_solvent,
-                                                       options.irefatom)
+                                                       R.irefatom)
 
         # Update histogram for computation of MDDF
         ibin = setbin(dmin,options.binstep)
@@ -137,7 +137,7 @@ function mddf_naive(trajectory, options :: Options)
         random_move!(jfmol,jlmol,x_solvent,sides,solute_center,x_solvent_random,moveaux)
         dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
                                                        1,solvent.natomspermol,x_solvent_random,
-                                                       options.irefatom)
+                                                       R.irefatom)
         ibin = setbin(dmin,options.binstep)
         if ibin <= R.nbins
           R.md_count_random[ibin] += 1
@@ -161,7 +161,7 @@ function mddf_naive(trajectory, options :: Options)
     end # solute molecules
   end # frames
   closetraj(trajectory)
-
+  
   # Setup the distance vector
   for i in 1:R.nbins
     R.d[i] = shellradius(i,options.binstep)

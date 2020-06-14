@@ -47,6 +47,7 @@ struct Result
   # Options of the calculation
 
   options :: Options
+  irefatom :: Int64
 
 end
 
@@ -100,6 +101,16 @@ function Result( trajectory, options :: Options )
           "                 atoms of the solvent molecule. ")
   end
 
+  # Set reference atom as the closest one to the center of coordinates of the molecule, as default
+  if options.irefatom == -1
+    nextframe!(trajectory)
+    cm = centerofcoordinates(1,trajectory.solvent.natomspermol,trajectory.x_solvent)
+    dmin, irefatom = minimumdistance(cm,1,trajectory.solvent.natomspermol,trajectory.x_solvent)
+    firstframe(trajectory)
+  else
+    irefatom = options.irefatom
+  end
+
   # Return data structure built up
 
   return Result( nbins, # number of bins of histogram
@@ -125,7 +136,25 @@ function Result( trajectory, options :: Options )
                               atom_contrib_solvent, # name of solvent atom contribution file
                               atom_contrib_solute ), # name of solute atom contribution file,
                  options, # all input options
+                 irefatom # reference atom for RDF calculation
                )      
 
 end
+
+function Base.show( io :: IO, R :: Result ) 
+
+  ifar = trunc(Int64,R.nbins - 0.9*R.nbins)
+
+  long_range_mean = mean( R.mddf[ifar:R.nbins] )
+  long_range_std = std( R.mddf[ifar:R.nbins] )
+  println(" Long range MDDF mean (expected 1.0): ", long_range_mean, " +/- ", long_range_std)
+
+  long_range_mean = mean( R.rdf[ifar:R.nbins] )
+  long_range_std = std( R.rdf[ifar:R.nbins] )
+  println(" Long range RDF mean (expected 1.0): ", long_range_mean, " +/- ", long_range_std)
+
+end
+
+
+
 

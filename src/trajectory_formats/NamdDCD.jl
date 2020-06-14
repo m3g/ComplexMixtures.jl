@@ -92,7 +92,6 @@ function NamdDCD( filename :: String, solute :: SoluteOrSolvent, solvent :: Solu
 
 end
 
-import Base.show
 function Base.show( io :: IO, traj :: NamdDCD )
   println(" Trajectory in NamdDCD format containing: ")
   println("     $(traj.nframes) frames ") 
@@ -162,6 +161,22 @@ function getsides(trajectory :: NamdDCD, iframe)
 end
 
 #
+# Leave DCD file in position to read the first frame
+#
+
+function firstframe(stream :: FortranFile)
+    # rewind
+    rewind(stream)
+    # skip header
+    read(stream)
+    read(stream)
+    read(stream)
+end
+
+firstframe( trajectory :: NamdDCD ) = firstframe( trajectory.stream )
+
+
+#
 # Auxiliary functions
 #
 
@@ -188,21 +203,5 @@ function getnframes(stream :: FortranFile, sides_in_dcd :: Bool )
     end
   end
 end
-
-#
-# Leave DCD file in position to read the first frame
-#
-
-function firstframe(stream :: FortranFile)
-    # rewind
-    rewind(stream)
-    # skip header
-    read(stream)
-    read(stream)
-    read(stream)
-end
-
-firstframe( trajectory :: NamdDCD ) = firstframe( trajectory.stream )
-
 
 

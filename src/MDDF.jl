@@ -3,6 +3,7 @@ module MDDF
   using Printf
   using OffsetArrays
   using Parameters
+  using Statistics
 
   include("./setbin.jl")
   include("./random_move.jl")

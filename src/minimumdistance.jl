@@ -64,13 +64,15 @@ end
 # only one atom (one set of coordinates)
 
 function minimumdistance(x :: Vector{Float64}, jfmol, jlmol, y :: Array{Float64})
+  jatom = 0
   dmin = +Inf
   for j in jfmol:jlmol
-    dmin = min(dmin,dsquare(x,y,j))
+    d = dsquare(x,y,j)
+    if d < dmin
+      dmin = d
+      jatom = j - jfmol + 1
+    end
   end
-  return sqrt(dmin)
+  return sqrt(dmin), jatom
 end
-
-
-
 

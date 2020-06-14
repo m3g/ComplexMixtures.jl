@@ -12,7 +12,7 @@
 
    periodic :: Bool = true
 
-   irefatom :: Int64 = 1
+   irefatom :: Int64 = -1
    nintegral :: Int64 = 10
    n_random_samples :: Int64 = 10
 
