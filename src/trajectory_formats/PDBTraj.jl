@@ -97,7 +97,6 @@ function PDBTraj( pdbfile :: String, solute :: SoluteOrSolvent, solvent :: Solut
                 )
 end
 
-import Base.show
 function Base.show( io :: IO, trajectory :: PDBTraj )
   println(" Trajectory in PDB format with: ")
   println("    $(trajectory.nframes) frames.")
@@ -116,25 +115,28 @@ end
 function nextframe!( trajectory :: PDBTraj ) 
 
   iatom = 0
-  line = "START"
-  while line[1:3] != "END"
-    line = readline(trajectory.stream)
-    iatom = iatom + 1
-    trajectory.x_read[iatom,1] = parse(Float64,record[31:38])
-    trajectory.x_read[iatom,2] = parse(Float64,record[39:46])
-    trajectory.x_read[iatom,3] = parse(Float64,record[47:54])
+  line = [ "START" ]
+  while line[1] != "END"
+    record = readline(trajectory.stream)
+    line = split(record)
+    if line[1] == "ATOM" || line[1] == "HETATM"
+      iatom = iatom + 1
+      trajectory.x_read[iatom,1] = parse(Float64,record[31:38])
+      trajectory.x_read[iatom,2] = parse(Float64,record[39:46])
+      trajectory.x_read[iatom,3] = parse(Float64,record[47:54])
+    end
   end
 
   # Save coordinates of solute and solvent in trajectory arrays
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i,1] = trajectory.x_read[solute.index[i],1]
-    trajectory.x_solute[i,2] = trajectory.x_read[solute.index[i],2]
-    trajectory.x_solute[i,3] = trajectory.x_read[solute.index[i],3]
+    trajectory.x_solute[i,1] = trajectory.x_read[trajectory.solute.index[i],1]
+    trajectory.x_solute[i,2] = trajectory.x_read[trajectory.solute.index[i],2]
+    trajectory.x_solute[i,3] = trajectory.x_read[trajectory.solute.index[i],3]
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i,1] = trajectory.x_read[solvent.index[i],1]
-    trajectory.x_solvent[i,2] = trajectory.x_read[solvent.index[i],2]
-    trajectory.x_solvent[i,3] = trajectory.x_read[solvent.index[i],3]
+    trajectory.x_solvent[i,1] = trajectory.x_read[trajectory.solvent.index[i],1]
+    trajectory.x_solvent[i,2] = trajectory.x_read[trajectory.solvent.index[i],2]
+    trajectory.x_solvent[i,3] = trajectory.x_read[trajectory.solvent.index[i],3]
   end
 
 end
@@ -151,9 +153,12 @@ end
 #
 # Function that closes the IO Stream of the trajectory
 #
-function closetraj( trajectory :: PDBTraj )
-  close(trajectory.stream)
-end
+closetraj( trajectory :: PDBTraj ) = close( trajectory.stream )
+
+#
+# Function that returns the trajectory in position to read the first frame
+#
+firstframe( trajectory :: PDBTraj ) = seekstart( trajectory.stream )
 
 
 
