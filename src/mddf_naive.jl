@@ -32,7 +32,7 @@ function mddf_naive(trajectory, options :: Options)
   solute_center = Vector{Float64}(undef,3)
 
   # Auxiliary structure to random generation of solvent coordiantes
-  moveaux = MoveAux()
+  moveaux = MoveAux(solvent.natomspermol)
   
   # Counter for the total number of bulk molecules
   nbulk = 0
@@ -49,7 +49,9 @@ function mddf_naive(trajectory, options :: Options)
   rdf_count_random_frame = zeros(R.nbins)
 
   # Computing all minimum-distances
+  prog = Progress(lastframe,1)
   for iframe in 1:lastframe
+    next!(prog)
 
     # Reset counters for this frame
     reset!(volume_frame)

@@ -12,7 +12,7 @@ function centerofcoordinates!(cm :: Vector{Float64}, ifirst, ilast, coor :: Arra
     cm[2] = cm[2] + coor[i,2]
     cm[3] = cm[3] + coor[i,3]
   end
-  @. cm = cm / (ifirst-ilast+1)
+  @. cm = cm / (ilast-ifirst+1)
 end
 
 function centerofcoordinates!(cm :: Vector{Float64}, coor :: Array{Float64}) 

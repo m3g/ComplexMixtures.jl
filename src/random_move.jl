@@ -4,14 +4,6 @@
 # the new position is returned in x, a previosly allocated array
 #
 
-struct MoveAux
-  oldcm :: Vector{Float64}
-  newcm :: Vector{Float64}
-  angles :: Vector{Float64}
-  A :: Matrix{Float64}
-end
-MoveAux() = MoveAux(zeros(3), zeros(3), zeros(3), zeros(3,3))
-
 function random_move!(jfmol :: Int64, jlmol :: Int64, x_solvent :: Array{Float64},
                       sides :: Vector{Float64}, solute_center :: Vector{Float64}, 
                       x_solvent_random :: Array{Float64}, aux :: MoveAux )

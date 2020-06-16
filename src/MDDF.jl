@@ -4,8 +4,10 @@ module MDDF
   using OffsetArrays
   using Parameters
   using Statistics
+  using ProgressMeter
 
   include("./setbin.jl")
+  include("./MoveAux.jl")
   include("./random_move.jl")
   include("./move.jl")
 
