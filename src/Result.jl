@@ -94,7 +94,7 @@ function Result( trajectory, options :: Options )
   if (options.dbulk/options.binstep)%1 > 1.e-5
     error("in MDDF options: dbulk must be a multiple of binstep.")
   end
-  nbins = setbin(dmax,options.binstep)
+  nbins = setbin(dmax,options.binstep)-1
 
   if options.irefatom > trajectory.solvent.natoms 
     error("in MDDF options: Reference atom index", options.irefatom, " is greater than number of "*
@@ -143,7 +143,7 @@ end
 
 function Base.show( io :: IO, R :: Result ) 
 
-  ifar = trunc(Int64,R.nbins - 0.9*R.nbins)
+  ifar = trunc(Int64,R.nbins - 1.0/R.options.binstep)
 
   long_range_mean = mean( R.mddf[ifar:R.nbins] )
   long_range_std = std( R.mddf[ifar:R.nbins] )
