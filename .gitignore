@@ -24,3 +24,13 @@ docs/site/
 # committed for packages, but should be committed for applications that require a static
 # environment.
 Manifest.toml
+
+# Some files generated when testing the package
+examples/gmd.dat
+examples/gmd-GMD_ATOM_CONTRIB.dat
+examples/gmd-GMD_ATOM_SOLUTE_CONTRIB.dat
+examples/gmd.inp
+examples/plots.jl
+examples/plots.pdf
+examples/teste.xyz
+
