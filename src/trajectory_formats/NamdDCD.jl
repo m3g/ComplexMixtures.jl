@@ -172,9 +172,7 @@ function firstframe(stream :: FortranFile)
     read(stream)
     read(stream)
 end
-
 firstframe( trajectory :: NamdDCD ) = firstframe( trajectory.stream )
-
 
 #
 # Auxiliary functions
