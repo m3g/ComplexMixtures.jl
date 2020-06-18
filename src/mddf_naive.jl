@@ -150,7 +150,8 @@ function mddf_naive(trajectory, options :: Options)
           ibin = setbin(drefatom,options.binstep)
           rdf_count_random_frame[ibin] += 1
         end
-      end
+      end # random solvent sampling
+
     end # solute molecules
 
     @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
