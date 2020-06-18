@@ -50,6 +50,8 @@ module MDDF
   include("./dsquare.jl")
   include("./minimumdistance.jl")
 
+  include("./finalresults.jl")
+
   #include("./mddf.jl")
   include("./mddf_naive.jl")
 

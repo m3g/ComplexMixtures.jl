@@ -48,6 +48,8 @@ struct Result
 
   options :: Options
   irefatom :: Int64
+  lastframe_read :: Int64
+  nframes_read :: Int64
 
 end
 
@@ -111,6 +113,17 @@ function Result( trajectory, options :: Options )
     irefatom = options.irefatom
   end
 
+  # Last frame to be considered
+  if options.lastframe == -1
+    lastframe_read = trajectory.nframes
+  else
+    lastframe_read = options.lastframe
+  end
+ 
+  # Actual number of frames that are read considering lastframe and stride
+  nframes_read = (lastframe_read - options.firstframe)/options.stride + 1
+
+
   # Return data structure built up
 
   return Result( nbins, # number of bins of histogram
@@ -136,7 +149,9 @@ function Result( trajectory, options :: Options )
                               atom_contrib_solvent, # name of solvent atom contribution file
                               atom_contrib_solute ), # name of solute atom contribution file,
                  options, # all input options
-                 irefatom # reference atom for RDF calculation
+                 irefatom, # reference atom for RDF calculation
+                 lastframe_read, # last frame read
+                 nframes_read # number of frames actually used for computing
                )      
 
 end

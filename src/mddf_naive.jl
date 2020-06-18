@@ -37,20 +37,13 @@ function mddf_naive(trajectory, options :: Options)
   # Counter for the total number of bulk molecules
   nbulk = 0
 
-  # Last frame to be considered
-  if options.lastframe == -1 
-    lastframe = trajectory.nframes
-  else
-    lastframe = options.lastframe
-  end
-
   # Structure to organize counters for each frame only
   volume_frame = Volume(R.nbins)
   rdf_count_random_frame = zeros(R.nbins)
 
   # Computing all minimum-distances
-  prog = Progress(lastframe,1)
-  for iframe in 1:lastframe
+  prog = Progress(R.lastframe_read,1)
+  for iframe in 1:R.lastframe_read
     next!(prog)
 
     # Reset counters for this frame
@@ -167,92 +160,10 @@ function mddf_naive(trajectory, options :: Options)
     end # solute molecules
   end # frames
   closetraj(trajectory)
-  
-  # Setup the distance vector
-  for i in 1:R.nbins
-    R.d[i] = shellradius(i,options.binstep)
-  end
 
-  #
-  # Averaging for the number of frames
-  #
-
-  # Number of frames
-  nframes = (lastframe - options.firstframe)/options.stride + 1 
-
-  # Counters
-  @. R.md_count = R.md_count / nframes
-  @. R.solute_atom = R.solute_atom / nframes
-  @. R.solvent_atom = R.solvent_atom / nframes
-  @. R.md_count_random = R.md_count_random / (nframes*options.n_random_samples)
-  @. R.rdf_count = R.rdf_count / nframes
-  @. R.rdf_count_random = R.rdf_count_random / (nframes*options.n_random_samples)
-
-  # Volumes and Densities
-  R.volume.total = R.volume.total / nframes
-  R.density.solvent = R.density.solvent / nframes
-  R.density.solute = R.density.solute / nframes
-
-  R.volume.shell = R.volume.shell / nframes
-  R.volume.domain = R.volume.domain / nframes
-  R.volume.bulk = R.volume.bulk / nframes
-
-  R.density.solvent_bulk = R.density.solvent_bulk / nframes
-
-  # Fix the number of random samples using the bulk density
-  if options.density_fix
-    density_fix = R.density.solvent_bulk/R.density.solvent
-    @. R.md_count_random = R.md_count_random * density_fix 
-  end
-
-  # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
-  mole = 6.022140857e23
-  convert = mole / 1.e24
-
-  #
-  # Computing the distribution functions and KB integrals, from the MDDF
-  # and from the RDF
-  #
-
-  for ibin in 1:R.nbins
-
-    # For the MDDF
-
-    if R.md_count_random[ibin] > 0.
-      R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
-      for i in 1:solute.natomspermol   
-        R.solute_atom[i,ibin] = R.solute_atom[i,ibin] / R.md_count_random[ibin]
-      end
-      for j in 1:solvent.natomspermol
-        R.solvent_atom[j,ibin] = R.solute_atom[j,ibin] / R.md_count_random[ibin]
-      end
-    end
-    if ibin == 1
-      R.sum_md_count[ibin] = R.md_count[ibin]
-      R.sum_md_count_random[ibin] = R.md_count_random[ibin]
-    else
-      R.sum_md_count[ibin] = R.sum_md_count[ibin-1] + R.md_count[ibin]
-      R.sum_md_count_random[ibin] = R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
-    end
-    R.kb[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_md_count[ibin] - R.sum_md_count_random[ibin])
-
-    # For the RDF
-
-    if R.rdf_count_random[ibin] > 0.
-      R.rdf[ibin] = R.rdf_count[ibin] / (R.volume.shell[ibin]*R.density.solvent_bulk)
-      #or
-      #R.rdf[ibin] = R.rdf_count[ibin] / R.rdf_count_random[ibin] 
-    end
-    if ibin == 1
-      R.sum_rdf_count[ibin] = R.rdf_count[ibin]
-      R.sum_rdf_count_random[ibin] = R.rdf_count_random[ibin]
-    else
-      R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
-      R.sum_rdf_count_random[ibin] = R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
-    end
-    R.kb_rdf[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
-
-  end
+  # Setup the final data structure with final values averaged over the number of frames,
+  # sampling, etc, and computes final distributions and integrals
+  finalresults!(R,options,trajectory)
 
   return R
 

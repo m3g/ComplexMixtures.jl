@@ -16,6 +16,9 @@ solute = MDDF.Solute( solute_indexes, nmols=1 )
 solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO", atoms ) ]
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 
+#solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
+#solvent = MDDF.Solvent( solvent_indexes, natomspermol=3 )
+
 # Alternativelly (to PDBTools, we can use VMD in background and its powerfull selections syntax,
 # but you need VMD installed:
 #
