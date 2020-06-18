@@ -42,9 +42,8 @@ function mddf_naive(trajectory, options :: Options)
   rdf_count_random_frame = zeros(R.nbins)
 
   # Computing all minimum-distances
-  prog = Progress(R.lastframe_read,1)
+  progress = Progress(R.nframes_read*solute.nmols,1)
   for iframe in 1:R.lastframe_read
-    next!(prog)
 
     # Reset counters for this frame
     reset!(volume_frame)
@@ -75,6 +74,7 @@ function mddf_naive(trajectory, options :: Options)
 
     # computing the minimum distances, cycle over solute molecules
     for imol in 1:solute.nmols
+      next!(progress)
 
       # first and last atoms of the current solute molecule
       ifmol = (imol-1)*solute.natomspermol + 1

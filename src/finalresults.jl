@@ -19,27 +19,28 @@ function finalresults!(R :: Result, options :: Options, trajectory)
   end
 
   #
-  # Averaging for the number of frames
+  # Averaging for the number of frames and number of solute molecules
   #
+  nsamples = R.nframes_read*trajectory.solute.nmols
 
   # Counters
-  @. R.md_count = R.md_count / R.nframes_read
-  @. R.solute_atom = R.solute_atom / R.nframes_read
-  @. R.solvent_atom = R.solvent_atom / R.nframes_read
-  @. R.md_count_random = R.md_count_random / (R.nframes_read*options.n_random_samples)
-  @. R.rdf_count = R.rdf_count / R.nframes_read
-  @. R.rdf_count_random = R.rdf_count_random / (R.nframes_read*options.n_random_samples)
+  @. R.md_count = R.md_count / nsamples
+  @. R.solute_atom = R.solute_atom / nsamples
+  @. R.solvent_atom = R.solvent_atom / nsamples
+  @. R.md_count_random = R.md_count_random / (nsamples*options.n_random_samples)
+  @. R.rdf_count = R.rdf_count / nsamples
+  @. R.rdf_count_random = R.rdf_count_random / (nsamples*options.n_random_samples)
 
   # Volumes and Densities
-  R.volume.total = R.volume.total / R.nframes_read
-  R.density.solvent = R.density.solvent / R.nframes_read
-  R.density.solute = R.density.solute / R.nframes_read
+  R.volume.total = R.volume.total / nsamples
+  R.density.solvent = R.density.solvent / nsamples
+  R.density.solute = R.density.solute / nsamples
 
-  R.volume.shell = R.volume.shell / R.nframes_read
-  R.volume.domain = R.volume.domain / R.nframes_read
-  R.volume.bulk = R.volume.bulk / R.nframes_read
+  R.volume.shell = R.volume.shell / nsamples
+  R.volume.domain = R.volume.domain / nsamples
+  R.volume.bulk = R.volume.bulk / nsamples
 
-  R.density.solvent_bulk = R.density.solvent_bulk / R.nframes_read
+  R.density.solvent_bulk = R.density.solvent_bulk / nsamples
 
   # Fix the number of random samples using the bulk density
   if options.density_fix
