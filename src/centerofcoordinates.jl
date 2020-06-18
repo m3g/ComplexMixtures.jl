@@ -5,7 +5,7 @@
 
 # With explicit passing of indexes of a subarray
 
-function centerofcoordinates!(cm :: Vector{Float64}, ifirst, ilast, coor :: Array{Float64})
+function centerofcoordinates!(cm :: AbstractVector{Float64}, ifirst, ilast, coor :: Array{Float64})
   @. cm = 0.
   for i in ifirst:ilast
     cm[1] = cm[1] + coor[i,1]
@@ -15,7 +15,7 @@ function centerofcoordinates!(cm :: Vector{Float64}, ifirst, ilast, coor :: Arra
   @. cm = cm / (ilast-ifirst+1)
 end
 
-function centerofcoordinates!(cm :: Vector{Float64}, coor :: Array{Float64}) 
+function centerofcoordinates!(cm :: AbstractVector{Float64}, coor :: Array{Float64}) 
   centerofcoordinates!(cm, 1, size(coor,1), coor)
 end
 
@@ -27,7 +27,7 @@ function centerofcoordinates(ifirst, ilast, coor :: Array{Float64} )
   return cm
 end
 
-function centerofcoordinates(cm :: Vector{Float64}, coor :: Array{Float64}) 
+function centerofcoordinates(cm :: AbstractVector{Float64}, coor :: Array{Float64}) 
   centerofcoordinates(cm, 1, size(coor,1), coor)
 end
 
