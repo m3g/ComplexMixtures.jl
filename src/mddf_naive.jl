@@ -23,7 +23,7 @@ function mddf_naive(trajectory, options :: Options)
   R = Result(trajectory,options)
 
   # Vector to annotate the molecules that belong to the bulk solution
-  jmol_inbulk = Vector{Int64}(undef,solvent.nmols)
+  jmol_in_bulk = Vector{Int64}(undef,solvent.nmols)
 
   # Vector that will contain randomly generated solvent molecules
   x_solvent_random = Array{Float64}(undef,solvent.natomspermol,3)
@@ -72,6 +72,10 @@ function mddf_naive(trajectory, options :: Options)
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
+    # Counter for the cumulative number of solvent molecules found to be in bulk
+    # relative to each solute molecule
+    n_solvent_in_bulk = 0
+
     # computing the minimum distances, cycle over solute molecules
     for imol in 1:solute.nmols
       next!(progress)
@@ -84,8 +88,8 @@ function mddf_naive(trajectory, options :: Options)
       centerofcoordinates!(solute_center,ifmol,ilmol,x_solute)
       wrap!(x_solvent,sides,solute_center)
 
-      # counter for the number of solvent molecules in bulk
-      n_jmol_inbulk = 0
+      # counter for the number of solvent molecules in bulk for this solute molecule
+      n_jmol_in_bulk = 0
 
       #
       # cycle over solvent molecules to compute the MDDF count
@@ -108,8 +112,8 @@ function mddf_naive(trajectory, options :: Options)
           R.solute_atom[iatom,ibin] += 1 
           R.solvent_atom[jatom,ibin] += 1 
         else
-          n_jmol_inbulk += 1
-          jmol_inbulk[n_jmol_inbulk] = jmol
+          n_jmol_in_bulk += 1
+          jmol_in_bulk[n_jmol_in_bulk] = jmol
         end
 
         # Update histogram for the computation of the RDF
@@ -120,13 +124,15 @@ function mddf_naive(trajectory, options :: Options)
 
       end # solvent molecules 
 
+      # Sum up the number of solvent molecules found in bulk for this solute to the total 
+      n_solvent_in_bulk = n_solvent_in_bulk + n_jmol_in_bulk
+
       #
       # Computing the random-solvent distribution to compute the random minimum-distance count
       #
-      n_random_in_bulk = 0
       for i in 1:nsamples
         # Choose randomly one molecule from the bulk
-        jmol = rand(@view(jmol_inbulk[1:n_jmol_inbulk]))
+        jmol = rand(@view(jmol_in_bulk[1:n_jmol_in_bulk]))
         # Generate new random coordinates (translation and rotation) for this molecule
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
@@ -143,21 +149,20 @@ function mddf_naive(trajectory, options :: Options)
         if drefatom <= options.dbulk
           ibin = setbin(drefatom,options.binstep)
           rdf_count_random_frame[ibin] += 1
-        else
-          n_random_in_bulk += 1
         end
       end
-      @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
-      @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/nsamples)
-      volume_frame.domain = sum(volume_frame.shell)
-      volume_frame.bulk = volume_frame.total - volume_frame.domain
-
-      @. R.volume.shell = R.volume.shell + volume_frame.shell
-      R.volume.bulk = R.volume.bulk + volume_frame.bulk
-      R.volume.domain = R.volume.domain + volume_frame.domain
-      R.density.solvent_bulk = R.density.solvent_bulk + n_jmol_inbulk / volume_frame.bulk
-
     end # solute molecules
+
+    @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
+    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/(nsamples*solute.nmols))
+    volume_frame.domain = sum(volume_frame.shell)
+    volume_frame.bulk = volume_frame.total - volume_frame.domain
+
+    @. R.volume.shell = R.volume.shell + volume_frame.shell
+    R.volume.bulk = R.volume.bulk + volume_frame.bulk
+    R.volume.domain = R.volume.domain + volume_frame.domain
+    R.density.solvent_bulk = R.density.solvent_bulk + (n_solvent_in_bulk/solute.nmols) / volume_frame.bulk
+
   end # frames
   closetraj(trajectory)
 

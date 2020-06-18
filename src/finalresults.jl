@@ -32,15 +32,15 @@ function finalresults!(R :: Result, options :: Options, trajectory)
   @. R.rdf_count_random = R.rdf_count_random / (nsamples*options.n_random_samples)
 
   # Volumes and Densities
-  R.volume.total = R.volume.total / nsamples
-  R.density.solvent = R.density.solvent / nsamples
-  R.density.solute = R.density.solute / nsamples
+  R.volume.total = R.volume.total / R.nframes_read
+  R.density.solvent = R.density.solvent / R.nframes_read
+  R.density.solute = R.density.solute / R.nframes_read
 
-  R.volume.shell = R.volume.shell / nsamples
-  R.volume.domain = R.volume.domain / nsamples
-  R.volume.bulk = R.volume.bulk / nsamples
+  R.volume.shell = R.volume.shell / R.nframes_read
+  R.volume.domain = R.volume.domain / R.nframes_read
+  R.volume.bulk = R.volume.bulk / R.nframes_read
 
-  R.density.solvent_bulk = R.density.solvent_bulk / nsamples
+  R.density.solvent_bulk = R.density.solvent_bulk / R.nframes_read
 
   # Fix the number of random samples using the bulk density
   if options.density_fix
@@ -63,7 +63,7 @@ function finalresults!(R :: Result, options :: Options, trajectory)
         R.solute_atom[i,ibin] = R.solute_atom[i,ibin] / R.md_count_random[ibin]
       end
       for j in 1:trajectory.solvent.natomspermol
-        R.solvent_atom[j,ibin] = R.solute_atom[j,ibin] / R.md_count_random[ibin]
+        R.solvent_atom[j,ibin] = R.solvent_atom[j,ibin] / R.md_count_random[ibin]
       end
     end
     if ibin == 1

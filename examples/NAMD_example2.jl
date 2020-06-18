@@ -19,10 +19,28 @@ solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat")
+options = MDDF.Options(output="example.dat",lastframe=1,n_random_samples=1)
 
 # Run MDDF calculation, and get the resutls in the R structure
 R = MDDF.mddf_naive(trajectory,options)
 
-include("./plots.jl")
 
+using Plots
+nogtk()
+
+plot(layout=(2,1))
+
+sp=1
+plot!(ylabel="MDDF or RDF",subplot=sp)
+plot!(R.d,R.mddf,subplot=sp,label="mddf")
+plot!(R.d,R.rdf,subplot=sp,label="rdf")
+plot!(legend=:topright,subplot=sp)
+
+sp=2
+plot!(ylabel="KB",subplot=sp)
+plot!(R.d,R.kb,subplot=sp,label="mddf")
+plot!(R.d,R.kb_rdf,subplot=sp,label="rdf")
+plot!(legend=:topright,subplot=sp)
+
+plot!(size=(600,800))
+savefig("./plots.pdf")
