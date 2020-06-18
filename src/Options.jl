@@ -18,7 +18,7 @@
    print_files :: Bool = true 
    print_results :: Bool = true
 
-   binstep :: Float64 = 0.2
+   binstep :: Float64 = 0.02
    dbulk :: Float64 = 10.
    cutoff :: Float64 = 10.
    usecutoff :: Bool = false
