@@ -5,7 +5,7 @@
 #
 
 function random_move!(jfmol :: Int64, jlmol :: Int64, x_solvent :: Array{Float64},
-                      sides :: Vector{Float64}, solute_center :: Vector{Float64}, 
+                      irefatom :: Int64, sides :: Vector{Float64}, solute_center :: Vector{Float64}, 
                       x_solvent_random :: Array{Float64}, aux :: MoveAux )
 
   # To avoid boundary problems, the center of coordinates are generated in a 
@@ -26,10 +26,15 @@ function random_move!(jfmol :: Int64, jlmol :: Int64, x_solvent :: Array{Float64
     x_solvent_random[iatom,2] = x_solvent[i,2]
     x_solvent_random[iatom,3] = x_solvent[i,3]
   end
+  
+  # Take care that this molecule is not split by periodic boundary conditions, by
+  # wrapping its coordinates around its reference atom
+  @. aux.oldcm = x_solvent[jfmol+irefatom-1,1:3] 
+  wrap!(x_solvent_random,sides,aux.oldcm)
 
   # Move molecule to new position
   move!(x_solvent_random, aux)
-  
+
   # Wrap coordinates relative to solute center 
   wrap!(x_solvent_random,sides,solute_center)
 

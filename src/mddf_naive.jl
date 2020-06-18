@@ -115,7 +115,7 @@ function mddf_naive(trajectory, options :: Options)
           R.solute_atom[iatom,ibin] += 1 
           R.solvent_atom[jatom,ibin] += 1 
         else
-          n_jmol_inbulk = n_jmol_inbulk + 1
+          n_jmol_inbulk += 1
           jmol_inbulk[n_jmol_inbulk] = jmol
         end
 
@@ -130,24 +130,28 @@ function mddf_naive(trajectory, options :: Options)
       #
       # Computing the random-solvent distribution to compute the random minimum-distance count
       #
+      n_random_in_bulk = 0
       for i in 1:nsamples
         # Choose randomly one molecule from the bulk
         jmol = rand(@view(jmol_inbulk[1:n_jmol_inbulk]))
         # Generate new random coordinates (translation and rotation) for this molecule
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
-        random_move!(jfmol,jlmol,x_solvent,sides,solute_center,x_solvent_random,moveaux)
+        random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,x_solvent_random,moveaux)
         dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
                                                        1,solvent.natomspermol,x_solvent_random,
                                                        R.irefatom)
-        ibin = setbin(dmin,options.binstep)
-        if ibin <= R.nbins
+
+        if dmin <= options.dbulk
+          ibin = setbin(dmin,options.binstep)
           R.md_count_random[ibin] += 1
         end
         # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
-        ibin = setbin(drefatom,options.binstep)
-        if ibin <= R.nbins
+        if drefatom <= options.dbulk
+          ibin = setbin(drefatom,options.binstep)
           rdf_count_random_frame[ibin] += 1
+        else
+          n_random_in_bulk += 1
         end
       end
       @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
