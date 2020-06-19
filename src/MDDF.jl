@@ -51,9 +51,11 @@ module MDDF
   include("./minimumdistance.jl")
 
   include("./finalresults.jl")
+  include("./finalresults_self.jl")
 
   #include("./mddf.jl")
   include("./mddf_naive.jl")
+  include("./mddf_naive_self.jl")
 
 end
 
