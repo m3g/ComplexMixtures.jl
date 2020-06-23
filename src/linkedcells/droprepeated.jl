@@ -22,17 +22,19 @@
 # y : index of the atom corresponding to position in x
 #
 # On output:
+# x : vector containing only non-repeated cells, at the begining ofthe vector, corresponding
+#     to the first-atom indexes of y
 # y : First atom of each cell, without repeated cells, put at the begining of the vector,
 #     and with zeros afterwards
 #
 
-droprepeated!( lc :: LinkedCells ) =droprepeated!( lc.cell, lc.firstatom, lc.iaux, lc.xaux, lc.yaux )
+droprepeated!( lc :: LinkedCells ) = droprepeated!( lc.cell, lc.firstatom, lc.iaux, lc.xaux, lc.yaux )
 
 function droprepeated(xin :: Vector{Int64}, yin :: Vector{Int64})
   x = copy(xin)
   y = copy(yin)
   droprepeated!(x,y)
-  return y
+  return x, y
 end
 
 function droprepeated!(x :: Vector{Int64}, y :: Vector{Int64})  
@@ -55,25 +57,22 @@ function droprepeated!(x :: Vector{Int64}, y :: Vector{Int64},
   @. xaux = x[iaux]
   @. yaux = y[iaux]
   @. y = yaux
+  @. x = xaux
 
   # Remove repeated elements of x and corresponding elements in y
 
   i = 1
   iunique = 1
-  xunique = xaux[i]
   while i < n
-    i = i + 1
-    while i <= n && xaux[i] == xunique
-      y[iunique] = y[i]
-      i = i + 1
-    end
-    if i < n
+    if x[i+1] != x[iunique]
       iunique = iunique + 1
-      xunique = xaux[i]
-      y[iunique] = y[i]
     end
+    x[iunique] = x[i+1]
+    y[iunique] = y[i+1]
+    i = i + 1
   end
   for i in iunique+1:n
+    x[i] = 0
     y[i] = 0
   end
 
