@@ -22,7 +22,6 @@ module MDDF
   # Structures to contain data critical for calculation performance
   include("./Frame.jl")
   include("./Groups.jl")
-  include("./LinkedLists.jl")
 
   # Structures and functions to read different types of trajectories
   include("./trajectory_formats/NamdDCD.jl")
@@ -37,11 +36,7 @@ module MDDF
   include("./centerofcoordinates.jl")
   include("./eulermat.jl")
 
-  include("./phantomcells.jl")
-  include("./movephantomcoor.jl")
   include("./wrap.jl")
-  include("./smalldcell.jl")
-  include("./smalldistances.jl")
 
   include("./sphericalshellvolume.jl")
   include("./shellradius.jl")
@@ -56,6 +51,14 @@ module MDDF
   #include("./mddf.jl")
   include("./mddf_naive.jl")
   include("./mddf_naive_self.jl")
+ 
+  # Structures and functions for the linked cell method
+  include("./linkedcells/LinkedCells.jl")
+  include("./linkedcells/icell3D.jl")
+  include("./linkedcells/droprepeated.jl")
+  include("./linkedcells/initcells.jl")
+
+  #include("./mddf_lindedcells.jl")
 
 end
 
