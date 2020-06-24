@@ -57,6 +57,7 @@ module MDDF
   include("./linkedcells/icell3D.jl")
   include("./linkedcells/droprepeated.jl")
   include("./linkedcells/initcells.jl")
+  include("./linkedcells/first_atom_in_cell.jl")
 
   #include("./mddf_lindedcells.jl")
 

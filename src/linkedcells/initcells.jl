@@ -3,7 +3,9 @@
 # belongs and filling up the firstatom and nexatom arrays.
 #
 
-function initcells(n, x :: Array{Float64}, cutoff, lc :: LinkedCells )
+function initcells(x :: Array{Float64}, cutoff :: Float64, lc :: LinkedCells )
+
+  n = size(x,1)
 
   # Reset arrays
   @. lc.cell = 0
@@ -19,10 +21,7 @@ function initcells(n, x :: Array{Float64}, cutoff, lc :: LinkedCells )
 
   # Compute to which cell each atom belongs
   for i in 1:n
-    ix = trunc(Int64,(x[i,1]-lc.xmin[1])/cutoff)+1
-    iy = trunc(Int64,(x[i,2]-lc.xmin[2])/cutoff)+1
-    iz = trunc(Int64,(x[i,3]-lc.xmin[3])/cutoff)+1
-    icell = icell3D(lc.nc,ix,iy,iz) 
+    icell = icell3D(@view(x[i,1:3]),cutoff,lc)
     ifirst = findlast( ic -> ic == icell, lc.cell )
     if ifirst == nothing
       ifirst = i
