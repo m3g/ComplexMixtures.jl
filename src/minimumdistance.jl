@@ -14,7 +14,7 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
   dmin = +Inf
   for i in ifmol:ilmol
      for j in jfmol:jlmol
-       d = dsquare(x,y,i,j)
+       d = distance(x,y,i,j)
        if d < dmin
          iatom = i - ifmol + 1
          jatom = j - jfmol + 1
@@ -22,7 +22,6 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
        end
      end
   end
-  dmin = sqrt(dmin)
   return dmin, iatom, jatom
 end
 
@@ -39,7 +38,7 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
   for i in ifmol:ilmol
      jcount = 0
      for j in jfmol:jlmol
-       d = dsquare(x,y,i,j)
+       d = distance(x,y,i,j)
        # Minimum distance of any solvent atom to the solute
        if d < dmin
          iatom = i - ifmol + 1
@@ -55,8 +54,6 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
        end
      end
   end
-  dmin = sqrt(dmin)
-  drefatom = sqrt(drefatom)
   return dmin, iatom, jatom, drefatom
 end
 
@@ -67,12 +64,12 @@ function minimumdistance(x :: Vector{Float64}, jfmol, jlmol, y :: Array{Float64}
   jatom = 0
   dmin = +Inf
   for j in jfmol:jlmol
-    d = dsquare(x,y,j)
+    d = distance(x,y,j)
     if d < dmin
       dmin = d
       jatom = j - jfmol + 1
     end
   end
-  return sqrt(dmin), jatom
+  return dmin, jatom
 end
 

@@ -42,7 +42,7 @@ module MDDF
   include("./shellradius.jl")
   include("./sphereradiusfromshellvolume.jl")
 
-  include("./dsquare.jl")
+  include("./distance.jl")
   include("./minimumdistance.jl")
 
   include("./finalresults.jl")

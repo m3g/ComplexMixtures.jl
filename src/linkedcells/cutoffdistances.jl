@@ -17,17 +17,18 @@ function cutoffdistances!(x_solute :: Array{Float64},
   maxdim = length(d_in_cutoff.d)
 
   # Loop over the boxes that contain solute atoms
-  icell = 1
-  while lc_solute.cell[icell] > 0
+  index_cell_vector = 1
+  icell = lc_solute.cell[index_cell_vector]
+  while icell > 0
   
     # Check if this cell has a solvent atom, if not, cycle
-    jcell = findfirst(jcell -> jcell == lc_solute.cell[icell], lc_solvent.cell)
+    jcell = findfirst(jcell -> jcell == icell, lc_solvent.cell)
     if jcell == nothing
       cycle
     end
 
     # 3D indexes of the current cell
-    i, j, k = ijkcell(box,icell) 
+    i, j, k = ijkcell(box.nc,icell) 
     
     # Now, loop over the atoms of these cells, computing the distances      
     iat = lc_solute.firstatom(icell)
@@ -37,8 +38,7 @@ function cutoffdistances!(x_solute :: Array{Float64},
       xat = @view(x_solute[iat,1:3])
 
       # Inside box
-
-      smalldcell!(data,ii,igroup1,i,j,k,memerror)
+      cutoffdcell!(xat,x_solvent,lc_solvent,box,i,j,k,d_in_cutoff)
   
       # Interactions of boxes that share faces
   
@@ -79,13 +79,13 @@ function cutoffdistances!(x_solute :: Array{Float64},
       smalldcell!(data,ii,igroup1,i-1,j-1,k+1,memerror) 
       smalldcell!(data,ii,igroup1,i-1,j-1,k-1,memerror)   
 
+      # Go to next atom of the solute in this cell
       iat = lc_solute.nextatom(iat)
     end
 
-
-    # First atom of the solute in that cell
-    iat_first = lc_solute.firstatom(icell) 
-
+    # Go to next cell containing solute atoms
+    index_cell_vector = index_cell_vector + 1
+    icell = lc_solute.cell[index_cell_vector]
   end
 
 end
