@@ -3,51 +3,47 @@
 # the linked cell corresponding to indexes i, j, and k
 #
 # Modifies the data of d_in_cutoff
+#
 
-function cutoffdcell!(xat :: AbstractArray,
+function cutoffdcell!(iat :: Int64, xat :: AbstractArray,
                       x_solvent :: Array,
                       lc_solvent :: LinkedCells,
                       box :: Box,
                       i :: Int64, j :: Int64, k :: Int64,
-                      d_in_cutoff :: CutoffDistances)
+                      d_in_cutoff :: CutoffDistances,
+                      nd :: Int64)
 
+  # Find the 1D index of the cell corresponding to the given 3D indexes
   jcell = icell3D(box.nc,i,j,k)
-  index_cell_vector = findfirst( j -> j == jcell, lc_solvent.cell ) 
+
+  # Check which is the index in the cell vector that is associated to the
+  # input cell to be considered 
+  index_cell_vector = my_searchsortedfirst(lc_solvent.cell,jcell)
+  if index_cell_vector == 0
+    return
+  end
+
+  # Cycle of the atoms of the solvent in this cell, computing the distances
+  # and annotating the distances and the atoms of those smaller than the cutoff
   jat = lc.firstatom[index_cell_vector]
   while jat > 0
     yat = @view(x_solvent[jat,1:3])
     d = distance(xat,yat)
-    
-
-    jat = lc.nextatom[jat]
-  end
-    
-  while igroup2 != 0 
-    jj = data.groups.group2(igroup2)
-
-    if ii == jj
-      igroup2 = data.lists.iatomnext(igroup2) 
-      continue
-    end
-
-    x, y, z = movephantomcoor(data,jj,ibox,jbox,kbox)
-
-    d2 = ( data.frame.x[ii] - x )^2 + ( data.frame.y[ii] - y )^2 + ( data.frame.z[ii] - z )^2
-
-    if d2 < data.lists.cutoff2 
-      data.smalld.n = data.smalld.n + 1
-      if data.smalld.n > data.smalld.nmax
-        memerror = true
-      else
-        data.smalld.index[data.smalld.n,1] = igroup1
-        data.smalld.index[data.smalld.n,2] = igroup2
-        data.smalld.d[data.smalld.n] = sqrt(d2)
+    if d <= box.cutoff
+      nd = nd + 1
+      # If the number of distances found is greater than maxdim,
+      # we need to increase the size of the vectors by 10%
+      maxdim = length(d_in_cutoff.d)
+      if nd > maxdim
+        resize!(d_in_cutoff.d,round(Int64,round(Int64,1.1*maxdim)))
+        resize!(d_in_cutoff.iat,round(Int64,round(Int64,1.1*maxdim)))
+        resize!(d_in_cutoff.jat,round(Int64,round(Int64,1.1*maxdim)))
       end
+      d_in_cutoff[nd] = iat
+      d_in_cutoff[nd] = jat
+      d_in_cutoff.d[nd] = d
     end
-
-    igroup2 = data.iatomnext(igroup2)
+    jat = lc_solvent.nextatom[jat]
   end
-
-  return memerror
 
 end
