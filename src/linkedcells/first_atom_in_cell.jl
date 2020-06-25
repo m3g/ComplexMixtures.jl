@@ -10,14 +10,14 @@ function first_atom_in_cell(icell :: Int64, lc :: LinkedCells)
 end
 
 # From the 3D indexes of the cell
-function first_atom_in_cell(i :: Int64,j :: Int64, k :: Int64, lc :: LinkedCells)
-  icell = icell3D(lc.nc,i,j,k)
+function first_atom_in_cell(i :: Int64,j :: Int64, k :: Int64, box :: Box, lc :: LinkedCells)
+  icell = icell3D(box.nc,i,j,k)
   return first_atom_in_cell( icell, lc )
 end
 
 # Directly from the coordinates of a given atom
-function first_atom_in_cell( x :: AbstractArray, cutoff, lc )
-  icell = icell3D(x, cutoff, lc)
+function first_atom_in_cell( x :: AbstractArray, box :: Box, lc :: LinkedCells )
+  icell = icell3D(x, box)
   return first_atom_in_cell( icell, lc )
 end
 

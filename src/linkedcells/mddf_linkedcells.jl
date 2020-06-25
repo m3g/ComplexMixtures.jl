@@ -41,7 +41,17 @@ function mddf_linkedcells(trajectory, options :: Options)
   rdf_count_random_frame = zeros(R.nbins)
 
   # Initialize the linked cell structures
-  lcells = LinkedCells(solvent.natoms)
+  lc_solute = LinkedCells(solute.natoms)
+  lc_solvent = LinkedCells(solvent.natoms)
+ 
+  # Structure that contains the cutoff, sides, and xmin, to organize the linked
+  # cell calculations
+  box = Box(options.cutoff)
+
+  # Structure that will contain the temporary useful information of all the  
+  # distances found to the be smaller than the cutoff, and the corresponding
+  # atom indexes. This structure might be resized if needed during the calculation
+  d_in_cutoff = CutoffDistances(zeros(solvent.natoms),zeros(Int64,solvent.natoms),zeros(Int64,solvent.natoms))
 
   # Computing all minimum-distances
   progress = Progress(R.nframes_read*solute.nmols,1)
@@ -74,9 +84,27 @@ function mddf_linkedcells(trajectory, options :: Options)
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
+    # Compute the minimum coordinates of an atom in this cell, used to define the
+    # first cell
+    @. box.xmin = min( minimum(x_solute), minimum(x_solvent) )
+    # and copy the sides to the box structure
+    @. box.sides = sides
+    # Compute the number of cells in each dimension
+    @. box.nc = trunc(Int64,box.sides/box.cutoff) + 1
+
+    # Initialize linked lists
+    initcells!(x_solvent,box,lc_solute)
+    initcells!(x_solvent,box,lc_solvent)
+
+    # Compute all distances between solute and solvent atoms which are smaller than the 
+    # cutoff
+    cutoffdistances!(box,lc_solute,lc_solvent,d_in_cutoff)
+
     # Counter for the cumulative number of solvent molecules found to be in bulk
     # relative to each solute molecule
     n_solvent_in_bulk = 0
+
+    for icell in 1:lc_solute.
 
     # computing the minimum distances, cycle over solute molecules
     for imol in 1:solute.nmols
@@ -89,6 +117,22 @@ function mddf_linkedcells(trajectory, options :: Options)
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
       centerofcoordinates!(solute_center,ifmol,ilmol,x_solute)
       wrap!(x_solvent,sides,solute_center)
+
+      # Loop over solute atoms
+      for iat in ifmol:ilmol
+        iat_cell = icell3D(@view(solute.x_solute[iat,1;3]), cutoff, lc)
+
+        # Distances within the same cell
+        jcell = iat_cell
+        jat = first_atom_in_cell(jcell,lc)
+        while jat > 0
+          dmin = 
+          jat = lc.nextatom(jat)
+        end
+        
+
+      end
+
 
       # counter for the number of solvent molecules in bulk for this solute molecule
       n_jmol_in_bulk = 0
