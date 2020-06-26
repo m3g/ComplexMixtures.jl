@@ -3,10 +3,13 @@
 # returns the type of the atom, that is, the index of this atom within the molecule
 # (goes from 1 to natomspermol)
 #
-function itype(iatom,natomspermol)
+function itype(iatom :: Int64, natomspermol :: Int64)
   itype = iatom%natomspermol
   if itype == 0
     itype = natomspermol
   end
   return itype
 end
+
+# Calling using the structures of Solute and Solvent, to clear up the code above
+itype(iatom :: Int64, s :: SoluteOrSolvent) = itype(iatom,s.natomspermol)
