@@ -8,7 +8,7 @@ struct SoluteOrSolvent
   nmols :: Int64 # Number of molecules
   natomspermol :: Int64 # Number of atoms per molecule
 
-  index :: Vector{Int64} # Index in the coordinates of each atom
+  index :: Vector{Int64} # Index of each atom in the full vector of coordinates
   imol :: Vector{Int64} # index of the molecule to which each atom belongs
 
 end
