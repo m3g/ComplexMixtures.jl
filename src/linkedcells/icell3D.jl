@@ -14,7 +14,7 @@ function icell3D( x :: AbstractArray, box :: Box )
 end
 
 # Special case in which the cells are periodic: if the indexes received are outside the
-# boundaries (beint 0 or n+1), return the indexes of the corresponding periodic cell on the
+# boundaries (being 0 or n+1), return the indexes of the corresponding periodic cell on the
 # other side
 
 function icell3D_periodic(nc, i, j, k)
@@ -58,6 +58,7 @@ function icell3D_periodic(nc, i, j, k)
   k == 0         && return icell3D(nc,   i  ,   j  , nc[3])
   k == nc[3] + 1 && return icell3D(nc,   i  ,   j  ,   1  )
 
+  # not outside, return the indexes of a regular cell
   return icell3D(nc,i,j,k)
 
 end

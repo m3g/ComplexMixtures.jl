@@ -31,7 +31,7 @@ function cutoffdistances!(x_solute :: Array{Float64},
     # 3D indexes of the current cell
     i, j, k = ijkcell(box.nc,icell) 
     
-    # Now, loop over the atoms of these cells, computing the distances      
+    # Now, loop over the atoms of this cell, computing the distances      
     iat = lc_solute.firstatom(icell)
     while iat > 0
 

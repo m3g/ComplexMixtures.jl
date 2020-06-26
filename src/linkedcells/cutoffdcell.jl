@@ -14,7 +14,7 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray,
                       nd :: Int64)
 
   # Find the 1D index of the cell corresponding to the given 3D indexes
-  jcell = icell3D(box.nc,i,j,k)
+  jcell = icell3D_periodic(box.nc,i,j,k)
 
   # Check which is the index in the cell vector that is associated to the
   # input cell to be considered 
