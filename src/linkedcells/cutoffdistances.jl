@@ -5,17 +5,26 @@
 #
 # L. Martinez, Sep 23, 2014. (to Julia on June, 2020)
 #
+# Returns nd, the number of distances smaller than the cutoff, and modifies d_in_cutoff
+#
 
 function cutoffdistances!(x_solute :: Array{Float64},
                           x_solvent :: Array{Float64},
                           lc_solute :: LinkedCells,
                           lc_solvent :: LinkedCells,
                           box :: Box,
-                          d_in_cutoff :: CutoffDistances,
-                          nd)
+                          d_in_cutoff :: CutoffDistances)
 
   # Number of distances smaller than the cutoff found
   nd = 0
+
+  # Wrap coordinates relative to the origin
+  wrap!(x_solute,box.sides)
+  wrap!(x_solvent,box.sides)
+
+  # Initialize linked lists
+  initcells!(x_solvent,box,lc_solute)
+  initcells!(x_solvent,box,lc_solvent)
 
   # Loop over the boxes that contain solute atoms
   index_cell_vector = 1
@@ -89,5 +98,6 @@ function cutoffdistances!(x_solute :: Array{Float64},
     icell = lc_solute.cell[index_cell_vector]
   end
 
+  return nd
 end
 

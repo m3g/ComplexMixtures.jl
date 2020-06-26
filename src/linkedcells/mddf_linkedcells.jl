@@ -92,86 +92,13 @@ function mddf_linkedcells(trajectory, options :: Options)
     # Compute the number of cells in each dimension
     @. box.nc = trunc(Int64,box.sides/box.cutoff) + 1
 
-    # Initialize linked lists
-    initcells!(x_solvent,box,lc_solute)
-    initcells!(x_solvent,box,lc_solvent)
-
     # Compute all distances between solute and solvent atoms which are smaller than the 
-    # cutoff
-    cutoffdistances!(box,lc_solute,lc_solvent,d_in_cutoff)
+    # cutoff (this is the most computationaly expensive part)
+    nd = cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box, d_in_cutoff)
 
-    # Counter for the cumulative number of solvent molecules found to be in bulk
-    # relative to each solute molecule
-    n_solvent_in_bulk = 0
+    # Now, parse the resutls in d_in_cutoff, to get the minimum distances between pairs
+    # of molecules, their atoms, etc.
 
-    for icell in 1:lc_solute.
-
-    # computing the minimum distances, cycle over solute molecules
-    for imol in 1:solute.nmols
-      next!(progress)
-
-      # first and last atoms of the current solute molecule
-      ifmol = (imol-1)*solute.natomspermol + 1
-      ilmol = ifmol + solute.natomspermol - 1
-
-      # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      centerofcoordinates!(solute_center,ifmol,ilmol,x_solute)
-      wrap!(x_solvent,sides,solute_center)
-
-      # Loop over solute atoms
-      for iat in ifmol:ilmol
-        iat_cell = icell3D(@view(solute.x_solute[iat,1;3]), cutoff, lc)
-
-        # Distances within the same cell
-        jcell = iat_cell
-        jat = first_atom_in_cell(jcell,lc)
-        while jat > 0
-          dmin = 
-          jat = lc.nextatom(jat)
-        end
-        
-
-      end
-
-
-      # counter for the number of solvent molecules in bulk for this solute molecule
-      n_jmol_in_bulk = 0
-
-      # Reset linkedcell arrays
-      linkedcells_reset!(lcells)
-
-      #
-      # cycle over solvent molecules to compute the MDDF count
-      #
-      for jmol in 1:solvent.nmols
-
-        # first and last atoms of this solvent molecule
-        jfmol = (jmol-1)*solvent.natomspermol + 1
-        jlmol = jfmol + solvent.natomspermol - 1
-
-        # Compute minimum distance 
-        dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
-                                                       jfmol,jlmol,x_solvent,
-                                                       R.irefatom)
-
-        # Update histogram for computation of MDDF
-        ibin = setbin(dmin,options.binstep)
-        if ibin <= R.nbins
-          R.md_count[ibin] += 1
-          R.solute_atom[iatom,ibin] += 1 
-          R.solvent_atom[jatom,ibin] += 1 
-        else
-          n_jmol_in_bulk += 1
-          jmol_in_bulk[n_jmol_in_bulk] = jmol
-        end
-
-        # Update histogram for the computation of the RDF
-        ibin = setbin(drefatom,options.binstep) 
-        if ibin <= R.nbins
-          R.rdf_count[ibin] += 1
-        end
-
-      end # solvent molecules 
 
       # Sum up the number of solvent molecules found in bulk for this solute to the total 
       n_solvent_in_bulk = n_solvent_in_bulk + n_jmol_in_bulk
