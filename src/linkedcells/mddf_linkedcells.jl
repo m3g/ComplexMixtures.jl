@@ -1,5 +1,5 @@
-#
-# mddf_naive
+#     
+# mddf_linkedcells
 #
 # Computes the MDDF using linked cells  
 #
@@ -22,6 +22,9 @@ function mddf_linkedcells(trajectory, options :: Options)
   # to take advantadge of the linked cells, therefore we need an auxliary array
   # store that randomly generated solvent box
   x_solvent_random = similar(x_solvent)
+
+  # Vector to annotate if the solvent molecule is a bulk molecule
+  solvent_in_bulk = zeros(Bool,solvent.nmols)
 
   # Initializing the structure that carries all results
   R = Result(trajectory,options)
@@ -55,16 +58,16 @@ function mddf_linkedcells(trajectory, options :: Options)
   # atom indexes. This structure might be resized if needed during the calculation
   d_in_cutoff = CutoffDistances(zeros(solvent.natoms),
                                 zeros(Int64,solvent.natoms),
-                                zeros(Int64,solvent.natoms),
-                                solvent.natompersmol,options.irefatom,zeros(solvent.natoms))
+                                zeros(Int64,solvent.natoms))
 
   # Vectors used to parse the minimum distance data
   dmin_mol = zeros(solvent.nmols)
   imin = zeros(solvent.nmols,2)
 
   # Computing all minimum-distances
-  progress = Progress(R.nframes_read*solute.nmols,1)
+  progress = Progress(R.nframes_read,1)
   for iframe in 1:R.lastframe_read
+    next!(progress)
 
     # Reset counters for this frame
     reset!(volume_frame)

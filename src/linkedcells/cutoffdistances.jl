@@ -12,7 +12,7 @@ function cutoffdistances!(x_solute :: AbstractArray{Float64},
                           x_solvent :: AbstractArray{Float64},
                           lc_solute :: LinkedCells,
                           lc_solvent :: LinkedCells,
-                          box :: Box,  iref :: Int64,
+                          box :: Box, 
                           d_in_cutoff :: CutoffDistances)
 
   # Number of distances smaller than the cutoff found
@@ -34,14 +34,17 @@ function cutoffdistances!(x_solute :: AbstractArray{Float64},
     # Check if this cell has a solvent atom, if not, cycle
     jcell = findfirst(jcell -> jcell == icell, lc_solvent.cell)
     if jcell == nothing
-      cycle
+      # Go to next solute cell
+      index_cell_vector = index_cell_vector + 1
+      icell = lc_solute.cell[index_cell_vector]
+      continue
     end
 
     # 3D indexes of the current cell
     i, j, k = ijkcell(box.nc,icell) 
     
     # Now, loop over the atoms of this cell, computing the distances      
-    iat = lc_solute.firstatom(icell)
+    iat = lc_solute.firstatom[icell]
     while iat > 0
 
       # Coordinates of this solute atom

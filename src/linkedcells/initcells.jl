@@ -16,7 +16,7 @@ function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells )
 
   # Compute to which cell each atom belongs
   for i in 1:n
-    icell = icell3D(@view(x[i,1:3]),box,lc)
+    icell = icell3D(@view(x[i,1:3]),box)
     ifirst = findlast( ic -> ic == icell, lc.cell )
     if ifirst == nothing
       ifirst = i

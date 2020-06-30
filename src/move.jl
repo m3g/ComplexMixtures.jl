@@ -4,8 +4,6 @@
 # modifyies the vector x
 #
 
-using Rotations
-
 function move!(x :: AbstractArray{Float64}, aux :: MoveAux)
   
   n = size(x,1)
