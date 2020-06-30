@@ -6,7 +6,7 @@
 
 using Rotations
 
-function move!(x :: Array{Float64}, aux :: MoveAux)
+function move!(x :: AbstractArray{Float64}, aux :: MoveAux)
   
   n = size(x,1)
   centerofcoordinates!(aux.oldcm,x)

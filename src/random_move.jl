@@ -1,12 +1,15 @@
 #
 # Function that generates a new random position for a molecule
 #
-# the new position is returned in x, a previosly allocated array
+# the new position is returned in x, a previously allocated array
+#
+# x_solvent_random might be a view of the array that contains all the solvent
+# molecules
 #
 
 function random_move!(jfmol :: Int64, jlmol :: Int64, x_solvent :: Array{Float64},
                       irefatom :: Int64, sides :: Vector{Float64}, solute_center :: Vector{Float64}, 
-                      x_solvent_random :: Array{Float64}, aux :: MoveAux )
+                      x_solvent_random :: AbstractArray{Float64}, aux :: MoveAux )
 
   # To avoid boundary problems, the center of coordinates are generated in a 
   # much larger region, and wrapped aftwerwards

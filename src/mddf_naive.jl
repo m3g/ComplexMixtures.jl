@@ -25,7 +25,8 @@ function mddf_naive(trajectory, options :: Options)
   # Vector to annotate the molecules that belong to the bulk solution
   jmol_in_bulk = Vector{Int64}(undef,solvent.nmols)
 
-  # Vector that will contain randomly generated solvent molecules
+  # Vector that will contain randomly generated solvent molecules (one at a time, 
+  # in this naive algoritm)
   x_solvent_random = Array{Float64}(undef,solvent.natomspermol,3)
 
   # Vector that wil contain the solute center of coordinates at each frame
@@ -34,9 +35,6 @@ function mddf_naive(trajectory, options :: Options)
   # Auxiliary structure to random generation of solvent coordiantes
   moveaux = MoveAux(solvent.natomspermol)
   
-  # Counter for the total number of bulk molecules
-  nbulk = 0
-
   # Structure to organize counters for each frame only
   volume_frame = Volume(R.nbins)
   rdf_count_random_frame = zeros(R.nbins)

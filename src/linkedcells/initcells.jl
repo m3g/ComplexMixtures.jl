@@ -5,7 +5,7 @@
 # Modifies the data in the lc structure
 #
                   
-function initcells!(x :: Array{Float64}, box :: Box, lc :: LinkedCells )
+function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells )
 
   n = size(x,1)
 

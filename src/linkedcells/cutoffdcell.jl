@@ -5,8 +5,8 @@
 # Modifies the data of d_in_cutoff
 #
 
-function cutoffdcell!(iat :: Int64, xat :: AbstractArray,
-                      x_solvent :: Array,
+function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
+                      x_solvent :: AbstractArray{Float64},
                       lc_solvent :: LinkedCells,
                       box :: Box,
                       i :: Int64, j :: Int64, k :: Int64,
