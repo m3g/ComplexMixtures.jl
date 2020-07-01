@@ -147,13 +147,14 @@ function mddf_linkedcells(trajectory, options :: Options)
     # if the solution is heterogeneous at the microscopic level)
     n_solvent_in_bulk = solvent.nmols
     @. solvent_in_bulk = true
-    i = 0
+    i = 1
     while d_in_cutoff.iat[i] > 0
       if d_in_cutoff.d[i] <= options.dbulk
         jmol = solvent.imol[d_in_cutoff.jat[i]]
         solvent_in_bulk[jmol] = false
         n_solvent_in_bulk = n_solvent_in_bulk - 1
       end
+      i = i + 1
     end
 
     #
@@ -200,7 +201,7 @@ function mddf_linkedcells(trajectory, options :: Options)
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
       # in the d_in_cutoff structure, and "nd" is only their number
-      nd = cutoffdistances!(@view(x_solute[jfmol:jlmol,1:3]),x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
+      nd = cutoffdistances!(@view(x_solute[ifmol:ilmol,1:3]),x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
 
       # Add the distances of the reference atoms to the reference-atom counter
       # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
