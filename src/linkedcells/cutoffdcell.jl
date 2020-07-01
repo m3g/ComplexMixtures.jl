@@ -18,14 +18,14 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
 
   # Check which is the index in the cell vector that is associated to the
   # input cell to be considered 
-  index_cell_vector = my_searchsortedfirst(lc_solvent.cell,jcell)
-  if index_cell_vector == 0
+  index_cell_vector = findfirst( x -> x == jcell, lc_solvent.cell)
+  if index_cell_vector == nothing
     return
   end
 
   # Cycle of the atoms of the solvent in this cell, computing the distances
   # and annotating the distances and the atoms of those smaller than the cutoff
-  jat = lc.firstatom[index_cell_vector]
+  jat = lc_solvent.firstatom[index_cell_vector]
   while jat > 0
     yat = @view(x_solvent[jat,1:3])
     d = distance(xat,yat)
@@ -39,8 +39,8 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
         resize!(d_in_cutoff.iat,round(Int64,round(Int64,1.1*maxdim)))
         resize!(d_in_cutoff.jat,round(Int64,round(Int64,1.1*maxdim)))
       end
-      d_in_cutoff[nd] = iat
-      d_in_cutoff[nd] = jat
+      d_in_cutoff.iat[nd] = iat
+      d_in_cutoff.jat[nd] = jat
       d_in_cutoff.d[nd] = d
     end
     jat = lc_solvent.nextatom[jat]
