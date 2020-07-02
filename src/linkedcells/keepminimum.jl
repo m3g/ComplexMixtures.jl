@@ -34,10 +34,10 @@ end
 
 # Calling the function using the structures instead of the vectors
 
-keepminimum!(nd :: Int64, d_in_cutoff :: CutoffDistances,
+keepminimum!(d_in_cutoff :: CutoffDistances,
              solute :: SoluteOrSolvent,
              solvent :: SoluteOrSolvent ) = 
-  keepminimum!(nd,d_in_cutoff.d,d_in_cutoff.iat,d_in_cutoff.jat,
+  keepminimum!(d_in_cutoff.nd[1],d_in_cutoff.d,d_in_cutoff.iat,d_in_cutoff.jat,
                solute.imol, solvent.imol)
 
 # This is the same function, but it keeps the minimum distance between pairs of atoms, 

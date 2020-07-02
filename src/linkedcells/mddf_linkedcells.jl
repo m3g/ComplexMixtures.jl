@@ -55,10 +55,11 @@ function mddf_linkedcells(trajectory, options :: Options)
 
   # Structure that will contain the temporary useful information of all the  
   # distances found to the be smaller than the cutoff, and the corresponding
-  # atom indexes. This structure might be resized if needed during the calculation
+  # atom indexes. The vectors of this structure might be resized during the calculations
   d_in_cutoff = CutoffDistances(zeros(solvent.natoms),
                                 zeros(Int64,solvent.natoms),
-                                zeros(Int64,solvent.natoms))
+                                zeros(Int64,solvent.natoms),
+                                zeros(Int64,1))
 
   # Vectors used to parse the minimum distance data
   dmin_mol = zeros(solvent.nmols)
@@ -72,7 +73,7 @@ function mddf_linkedcells(trajectory, options :: Options)
     # Reset counters for this frame
     reset!(volume_frame)
     @. rdf_count_random_frame = 0.
-
+  
     # reading coordinates of next frame
     nextframe!(trajectory)
     if iframe < options.firstframe 
@@ -109,10 +110,10 @@ function mddf_linkedcells(trajectory, options :: Options)
     # Compute all distances between solute and solvent atoms which are smaller than the 
     # cutoff (this is the most computationally expensive part), the distances are returned
     # in the d_in_cutoff structure, and "nd" is only their number
-    nd = cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
+    cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
 
     # Add the distances of the reference atoms to the reference-atom counter
-    for i in 1:nd
+    for i in 1:d_in_cutoff.nd[1]
       if itype(d_in_cutoff.jat[i]) == options.irefatom
         if d_in_cutoff.d[i] <= option.dbulk
           ibin = setbin(d_in_cutoff.d[i],options.binstep)
@@ -125,12 +126,12 @@ function mddf_linkedcells(trajectory, options :: Options)
     # of molecules, their atoms, etc. The resulting output in d_in_cutoff will contain
     # only the pairs of atoms corresponding to the minimum distance between the molecules
     # to which these atoms belong, and the corresponding distance
-    keepminimum!(nd,d_in_cutoff,solute,solvent)
+    keepminimum!(d_in_cutoff,solute,solvent)
 
     # Very well, lets add the data to the counters
     i = 1
     while d_in_cutoff.iat[i] > 0
-      if d_in_cutoff.d[i] <= option.dbulk
+      if d_in_cutoff.d[i] <= options.dbulk
         ibin = setbin(d_in_cutoff.d[i],options.binstep)
         R.md_count[ibin] += 1
         R.solute_atom[itype(d_in_cutoff.iat[i],solute),ibin] += 1
@@ -200,12 +201,12 @@ function mddf_linkedcells(trajectory, options :: Options)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
-      # in the d_in_cutoff structure, and "nd" is only their number
-      nd = cutoffdistances!(@view(x_solute[ifmol:ilmol,1:3]),x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
+      # in the d_in_cutoff structure
+      cutoffdistances!(@view(x_solute[ifmol:ilmol,1:3]),x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
 
       # Add the distances of the reference atoms to the reference-atom counter
       # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
-      for i in 1:nd
+      for i in 1:d_in_cutoff.nd[1]
         if itype(d_in_cutoff.jat[i]) == options.irefatom
           if d_in_cutoff.d[i] <= option.dbulk
             ibin = setbin(d_in_cutoff.d[i],options.binstep)
@@ -218,12 +219,12 @@ function mddf_linkedcells(trajectory, options :: Options)
       # of molecules, their atoms, etc. The resulting output in d_in_cutoff will contain
       # only the pairs of atoms corresponding to the minimum distance between the molecules
       # to which these atoms belong, and the corresponding distance
-      keepminimum!(nd,d_in_cutoff,solute,solvent)
+      keepminimum!(d_in_cutoff,solute,solvent)
 
       # Very well, lets add the data to the counters
       i = 1
       while d_in_cutoff.iat[i] > 0
-        if d_in_cutoff.d[i] <= option.dbulk
+        if d_in_cutoff.d[i] <= options.dbulk
           ibin = setbin(d_in_cutoff.d[i],options.binstep)
           R.md_count_random[ibin] += 1
         end

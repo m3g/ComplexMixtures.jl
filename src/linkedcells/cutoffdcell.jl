@@ -10,8 +10,7 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
                       lc_solvent :: LinkedCells,
                       box :: Box,
                       i :: Int64, j :: Int64, k :: Int64,
-                      d_in_cutoff :: CutoffDistances,
-                      nd :: Int64)
+                      d_in_cutoff :: CutoffDistances)
 
   # Find the 1D index of the cell corresponding to the given 3D indexes
   jcell = icell3D_periodic(box.nc,i,j,k)
@@ -30,18 +29,18 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
     yat = @view(x_solvent[jat,1:3])
     d = distance(xat,yat)
     if d <= box.cutoff
-      nd = nd + 1
+      d_in_cutoff.nd[1] += 1
       # If the number of distances found is greater than maxdim,
       # we need to increase the size of the vectors by 10%
       maxdim = length(d_in_cutoff.d)
-      if nd > maxdim
+      if d_in_cutoff.nd[1] > maxdim
         resize!(d_in_cutoff.d,round(Int64,round(Int64,1.1*maxdim)))
         resize!(d_in_cutoff.iat,round(Int64,round(Int64,1.1*maxdim)))
         resize!(d_in_cutoff.jat,round(Int64,round(Int64,1.1*maxdim)))
       end
-      d_in_cutoff.iat[nd] = iat
-      d_in_cutoff.jat[nd] = jat
-      d_in_cutoff.d[nd] = d
+      d_in_cutoff.iat[d_in_cutoff.nd[1]] = iat
+      d_in_cutoff.jat[d_in_cutoff.nd[1]] = jat
+      d_in_cutoff.d[d_in_cutoff.nd[1]] = d
     end
     jat = lc_solvent.nextatom[jat]
   end
