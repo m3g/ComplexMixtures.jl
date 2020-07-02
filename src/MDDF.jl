@@ -57,13 +57,10 @@ module MDDF
   include("./mddf_naive_self.jl")
  
   # Structures and functions for the linked cell method
-  include("./linkedcells/my_searchsortedfirst.jl")
   include("./linkedcells/LinkedCells.jl")
   include("./linkedcells/icell3D.jl")
   include("./linkedcells/ijkcell.jl")
-  include("./linkedcells/droprepeated.jl")
   include("./linkedcells/initcells.jl")
-  include("./linkedcells/first_atom_in_cell.jl")
   include("./linkedcells/CutoffDistances.jl")
   include("./linkedcells/cutoffdcell.jl")
   include("./linkedcells/cutoffdistances.jl")
