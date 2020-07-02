@@ -37,6 +37,8 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
         resize!(d_in_cutoff.d,round(Int64,round(Int64,1.1*maxdim)))
         resize!(d_in_cutoff.iat,round(Int64,round(Int64,1.1*maxdim)))
         resize!(d_in_cutoff.jat,round(Int64,round(Int64,1.1*maxdim)))
+        resize!(d_in_cutoff.imol,round(Int64,round(Int64,1.1*maxdim)))
+        resize!(d_in_cutoff.jmol,round(Int64,round(Int64,1.1*maxdim)))
       end
       d_in_cutoff.iat[d_in_cutoff.nd[1]] = iat
       d_in_cutoff.jat[d_in_cutoff.nd[1]] = jat

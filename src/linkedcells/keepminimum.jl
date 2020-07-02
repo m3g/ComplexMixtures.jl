@@ -1,5 +1,5 @@
 #
-# Function that resturns the structure containing the list of the distances found keeping
+# Function that returns the structure containing the list of the distances found keeping
 # only the minimum distance between pairs of molecules, the remaining of the vectors
 # will be zeroed
 #
@@ -9,28 +9,64 @@
 # arrays. All other elements will be zeroed.   
 
 function keepminimum!(nd :: Int64, d :: Vector{Float64}, iat :: Vector{Int64}, jat :: Vector{Int64},
-                      imol :: Vector{Int64}, jmol :: Vector{Int64})
-  istore = 0
+                      imol :: Vector{Int64}, jmol :: Vector{Int64},
+                      imol_ref :: Vector{Int64}, jmol_ref :: Vector{Int64})
+
+  # Check to which molecule each atom of the list belongs
+  for i in 1:nd
+    imol[i] = imol_ref[iat[i]]
+    jmol[i] = jmol_ref[jat[i]]
+  end
+
   for i in 1:nd-1
-    if imol[iat[i]] > 0 
-      istore = istore + 1 
-    else
+    # If this position is already a repeated one, lets not waste time
+    if iat[i] == 0
       continue
     end
     for j in i+1:nd
-      if imol[iat[j]] == imol[iat[i]] && jmol[jat[j]] == jmol[jat[i]] 
-        imol[iat[j]] = 0
+      # If this position is already a repeated one, lets not waste time
+      if iat[j] == 0
+        continue  
+      end
+      # If the molecules involved are the same, keep the smallest distance
+      # in the smaller index, and eliminates the other
+      if imol[j] == imol[i] && jmol[j] == jmol[i] 
         if d[j] < d[i]
-          iat[istore] = iat[i]
-          jat[istore] = jat[i]
-          d[istore] = d[j]
+          iat[i] = iat[j]
+          jat[i] = jat[j]
+          d[i] = d[j]
         end
+        iat[j] = 0
+        jat[j] = 0
+        imol[j] = 0
+        jmol[j] = 0
+        d[j] = 0.
       end
     end
   end
-  @. d[istore+1:nd] = 0.
-  @. jat[istore+1:nd] = 0.
+
+  # Put the zeros at the end
+  nonzero = 0
+  for i in 1:nd
+    if imol[i] > 0 
+      nonzero = nonzero + 1
+      if nonzero < i
+        d[nonzero] = d[i]
+        iat[nonzero] = iat[i]
+        jat[nonzero] = jat[i]
+        imol[nonzero] = imol[i]
+        jmol[nonzero] = jmol[i]
+        d[i] = 0.
+        iat[i] = 0
+        jat[i] = 0
+        imol[i] = 0
+        jmol[i] = 0
+      end
+    end
+  end
+
 end
+
 
 # Calling the function using the structures instead of the vectors
 
@@ -38,31 +74,6 @@ keepminimum!(d_in_cutoff :: CutoffDistances,
              solute :: SoluteOrSolvent,
              solvent :: SoluteOrSolvent ) = 
   keepminimum!(d_in_cutoff.nd[1],d_in_cutoff.d,d_in_cutoff.iat,d_in_cutoff.jat,
+               d_in_cutoff.imol, d_in_cutoff.jmol,
                solute.imol, solvent.imol)
-
-# This is the same function, but it keeps the minimum distance between pairs of atoms, 
-# independently of their molecules. Won't be used here.
-
-function keepminimum!(nd :: Int64, d :: Vector{Float64}, iat :: Vector{Int64}, jat :: Vector{Int64})
-  istore = 0
-  for i in 1:nd-1
-    if iat[i] > 0 
-      istore = istore + 1 
-    else
-      continue
-    end
-    for j in i+1:nd
-      if iat[j] == iat[i] && jat[j] == jat[i] 
-        iat[j] = 0
-        if d[j] < d[i]
-          iat[istore] = iat[i]
-          jat[istore] = jat[i]
-          d[istore] = d[j]
-        end
-      end
-    end
-  end
-  @. d[istore+1:nd] = 0.
-  @. jat[istore+1:nd] = 0.
-end
 

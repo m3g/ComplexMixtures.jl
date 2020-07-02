@@ -56,10 +56,7 @@ function mddf_linkedcells(trajectory, options :: Options)
   # Structure that will contain the temporary useful information of all the  
   # distances found to the be smaller than the cutoff, and the corresponding
   # atom indexes. The vectors of this structure might be resized during the calculations
-  d_in_cutoff = CutoffDistances(zeros(solvent.natoms),
-                                zeros(Int64,solvent.natoms),
-                                zeros(Int64,solvent.natoms),
-                                zeros(Int64,1))
+  d_in_cutoff = CutoffDistances(solvent.natoms)
 
   # Vectors used to parse the minimum distance data
   dmin_mol = zeros(solvent.nmols)
@@ -109,12 +106,12 @@ function mddf_linkedcells(trajectory, options :: Options)
 
     # Compute all distances between solute and solvent atoms which are smaller than the 
     # cutoff (this is the most computationally expensive part), the distances are returned
-    # in the d_in_cutoff structure, and "nd" is only their number
+    # in the d_in_cutoff structure
     cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
 
     # Add the distances of the reference atoms to the reference-atom counter
     for i in 1:d_in_cutoff.nd[1]
-      if itype(d_in_cutoff.jat[i]) == options.irefatom
+      if itype(d_in_cutoff.jat[i],solvent) == options.irefatom
         if d_in_cutoff.d[i] <= option.dbulk
           ibin = setbin(d_in_cutoff.d[i],options.binstep)
           R.rdf_count[ibin] += 1
@@ -207,7 +204,7 @@ function mddf_linkedcells(trajectory, options :: Options)
       # Add the distances of the reference atoms to the reference-atom counter
       # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
       for i in 1:d_in_cutoff.nd[1]
-        if itype(d_in_cutoff.jat[i]) == options.irefatom
+        if itype(d_in_cutoff.jat[i],solvent) == options.irefatom
           if d_in_cutoff.d[i] <= option.dbulk
             ibin = setbin(d_in_cutoff.d[i],options.binstep)
             rdf_count_random_frame[ibin] += 1

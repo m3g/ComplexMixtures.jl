@@ -5,20 +5,34 @@
 struct CutoffDistances
 
   # To store all distances smaller than the cutoff
+  nd :: Vector{Int64} # Number of small distances (vector size = 1), just to be mutable
   d :: Vector{Float64} # All distances smaller than the cutoff
   iat :: Vector{Int64} # atom of the solute
   jat :: Vector{Int64} # atom of the solvent
-  nd :: Vector{Int64} # Number of small distances (vector size = 1), just to be mutable
+  imol :: Vector{Int64} # molecule of the solute
+  jmol :: Vector{Int64} # molecule of the solvent
 
 end
+
+# Generator
+
+CutoffDistances( natoms :: Int64) =
+  CutoffDistances(zeros(Int64,1), # nd
+                  zeros(Float64,natoms), # d
+                  zeros(Int64,natoms), # iat
+                  zeros(Int64,natoms), # jat
+                  zeros(Int64,natoms), # imol
+                  zeros(Int64,natoms)) # jmol
 
 # Function that zeroes all the values in this structure
 
 function reset!( c :: CutoffDistances )
+  c.nd[1] = 0
   @. c.d = 0.
   @. c.iat = 0
   @. c.jat = 0
-  nd[1] = 0
+  @. c.imol = 0
+  @. c.jmol = 0
 end
 
 
