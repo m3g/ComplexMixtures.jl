@@ -94,12 +94,7 @@ function mddf_linkedcells(trajectory, options :: Options)
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
-    # Compute the minimum coordinates of an atom in this cell, used to define the
-    # first cell
-    box.xmin[1] = min( minimum(x_solute[:,1]), minimum(x_solvent[:,1]) )
-    box.xmin[2] = min( minimum(x_solute[:,2]), minimum(x_solvent[:,2]) )
-    box.xmin[3] = min( minimum(x_solute[:,3]), minimum(x_solvent[:,3]) )
-    # and copy the sides to the box structure
+    # Add the box side information to the box structure, in this frame
     @. box.sides = sides
     # Compute the number of cells in each dimension
     @. box.nc = trunc(Int64,box.sides/box.cutoff) + 1
@@ -109,10 +104,14 @@ function mddf_linkedcells(trajectory, options :: Options)
     # in the d_in_cutoff structure
     cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
 
+    # Remove duplicate entries from the list, that is, if two distances correspond to different
+    # solute atoms but the same solvent atom, keep only the shortest one
+    keepunique!(d_in_cutoff,solute)
+
     # Add the distances of the reference atoms to the reference-atom counter
     for i in 1:d_in_cutoff.nd[1]
-      if itype(d_in_cutoff.jat[i],solvent) == options.irefatom
-        if d_in_cutoff.d[i] <= option.dbulk
+      if itype(d_in_cutoff.jat[i],solvent) == R.irefatom
+        if d_in_cutoff.d[i] <= options.dbulk
           ibin = setbin(d_in_cutoff.d[i],options.binstep)
           R.rdf_count[ibin] += 1
         end
@@ -126,15 +125,13 @@ function mddf_linkedcells(trajectory, options :: Options)
     keepminimum!(d_in_cutoff,solute,solvent)
 
     # Very well, lets add the data to the counters
-    i = 1
-    while d_in_cutoff.iat[i] > 0
+    for i in 1:d_in_cutoff.nd[1]
       if d_in_cutoff.d[i] <= options.dbulk
         ibin = setbin(d_in_cutoff.d[i],options.binstep)
         R.md_count[ibin] += 1
         R.solute_atom[itype(d_in_cutoff.iat[i],solute),ibin] += 1
         R.solvent_atom[itype(d_in_cutoff.jat[i],solvent),ibin] += 1
       end
-      i = i + 1
     end
 
     # Let us annotate the molecules of the solvent which are in the bulk solution,
@@ -145,14 +142,12 @@ function mddf_linkedcells(trajectory, options :: Options)
     # if the solution is heterogeneous at the microscopic level)
     n_solvent_in_bulk = solvent.nmols
     @. solvent_in_bulk = true
-    i = 1
-    while d_in_cutoff.iat[i] > 0
+    for i in 1:d_in_cutoff.nd[1]
       if d_in_cutoff.d[i] <= options.dbulk
         jmol = solvent.imol[d_in_cutoff.jat[i]]
         solvent_in_bulk[jmol] = false
         n_solvent_in_bulk = n_solvent_in_bulk - 1
       end
-      i = i + 1
     end
 
     #
@@ -162,8 +157,8 @@ function mddf_linkedcells(trajectory, options :: Options)
       
       # Choose randomly one solute molecule to be the reference solute for this
       # random solvent box
-      j_rand_mol = rand(1:solute.nmols)
-      ifmol = (j_rand_mol-1)*solute.natomspermol+1
+      i_rand_mol = rand(1:solute.nmols)
+      ifmol = (i_rand_mol-1)*solute.natomspermol+1
       ilmol = ifmol + solute.natomspermol - 1
       centerofcoordinates!(solute_center, ifmol, ilmol, x_solute)
 
@@ -191,21 +186,20 @@ function mddf_linkedcells(trajectory, options :: Options)
         random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,xrand,moveaux)
       end
 
-      # Compute the minimum coordinates of an atom in this cell, used to define the first cell
-      box.xmin[1] = min( minimum(x_solute[ifmol:ilmol,1]), minimum(x_solvent_random[:,1]) )  
-      box.xmin[2] = min( minimum(x_solute[ifmol:ilmol,2]), minimum(x_solvent_random[:,2]) )  
-      box.xmin[3] = min( minimum(x_solute[ifmol:ilmol,3]), minimum(x_solvent_random[:,3]) )  
-
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
       # in the d_in_cutoff structure
-      cutoffdistances!(@view(x_solute[ifmol:ilmol,1:3]),x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
+      cutoffdistances!(@view(x_solute[ifmol:ilmol,1:3]),x_solvent_random,lc_solute,lc_solvent,box,d_in_cutoff)
+
+      # Remove duplicate entries from the list, that is, if two distances correspond to different
+      # solute atoms but the same solvent atom, keep only the shortest one
+      keepunique!(d_in_cutoff,solute)
 
       # Add the distances of the reference atoms to the reference-atom counter
       # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
       for i in 1:d_in_cutoff.nd[1]
-        if itype(d_in_cutoff.jat[i],solvent) == options.irefatom
-          if d_in_cutoff.d[i] <= option.dbulk
+        if itype(d_in_cutoff.jat[i],solvent) == R.irefatom
+          if d_in_cutoff.d[i] <= options.dbulk
             ibin = setbin(d_in_cutoff.d[i],options.binstep)
             rdf_count_random_frame[ibin] += 1
           end
@@ -219,19 +213,17 @@ function mddf_linkedcells(trajectory, options :: Options)
       keepminimum!(d_in_cutoff,solute,solvent)
 
       # Very well, lets add the data to the counters
-      i = 1
-      while d_in_cutoff.iat[i] > 0
+      for i in 1:d_in_cutoff.nd[1]
         if d_in_cutoff.d[i] <= options.dbulk
           ibin = setbin(d_in_cutoff.d[i],options.binstep)
           R.md_count_random[ibin] += 1
         end
-        i = i + 1
       end
 
     end # random solvent sampling
 
     @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
-    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/(nsamples*solute.nmols))
+    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/nsamples)
     volume_frame.domain = sum(volume_frame.shell)
     volume_frame.bulk = volume_frame.total - volume_frame.domain
 

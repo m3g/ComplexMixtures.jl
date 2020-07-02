@@ -8,22 +8,30 @@
 # corresponding to the minimum distance between each pair of molecules is retained in the 
 # arrays. All other elements will be zeroed.   
 
-function keepminimum!(nd :: Int64, d :: Vector{Float64}, iat :: Vector{Int64}, jat :: Vector{Int64},
-                      imol :: Vector{Int64}, jmol :: Vector{Int64},
-                      imol_ref :: Vector{Int64}, jmol_ref :: Vector{Int64})
+function keepminimum!(d_in_cutoff :: CutoffDistances,
+                      solute :: SoluteOrSolvent,
+                      solvent :: SoluteOrSolvent )
+
+  # Just use simpler names
+  nd = d_in_cutoff.nd
+  iat = d_in_cutoff.iat
+  jat = d_in_cutoff.jat
+  imol = d_in_cutoff.imol
+  jmol = d_in_cutoff.jmol
+  d = d_in_cutoff.d
 
   # Check to which molecule each atom of the list belongs
-  for i in 1:nd
-    imol[i] = imol_ref[iat[i]]
-    jmol[i] = jmol_ref[jat[i]]
+  for i in 1:nd[1]
+    imol[i] = solute.imol[iat[i]]
+    jmol[i] = solvent.imol[jat[i]]
   end
 
-  for i in 1:nd-1
+  for i in 1:nd[1]-1
     # If this position is already a repeated one, lets not waste time
     if iat[i] == 0
       continue
     end
-    for j in i+1:nd
+    for j in i+1:nd[1]
       # If this position is already a repeated one, lets not waste time
       if iat[j] == 0
         continue  
@@ -47,7 +55,7 @@ function keepminimum!(nd :: Int64, d :: Vector{Float64}, iat :: Vector{Int64}, j
 
   # Put the zeros at the end
   nonzero = 0
-  for i in 1:nd
+  for i in 1:nd[1]
     if imol[i] > 0 
       nonzero = nonzero + 1
       if nonzero < i
@@ -65,15 +73,8 @@ function keepminimum!(nd :: Int64, d :: Vector{Float64}, iat :: Vector{Int64}, j
     end
   end
 
+  # Update number of distances
+  nd[1] = nonzero
+
 end
-
-
-# Calling the function using the structures instead of the vectors
-
-keepminimum!(d_in_cutoff :: CutoffDistances,
-             solute :: SoluteOrSolvent,
-             solvent :: SoluteOrSolvent ) = 
-  keepminimum!(d_in_cutoff.nd[1],d_in_cutoff.d,d_in_cutoff.iat,d_in_cutoff.jat,
-               d_in_cutoff.imol, d_in_cutoff.jmol,
-               solute.imol, solvent.imol)
 

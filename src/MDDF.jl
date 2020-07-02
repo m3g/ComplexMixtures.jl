@@ -33,6 +33,9 @@ module MDDF
   # Wrapping functions
   include("./wrap.jl")
 
+  # Structure used for periodic boundary conditions
+  include("./linkedcells/Box.jl")
+
   # Functions to compute distances
   include("./distance.jl")
   include("./minimumdistance.jl")
@@ -55,7 +58,6 @@ module MDDF
  
   # Structures and functions for the linked cell method
   include("./linkedcells/my_searchsortedfirst.jl")
-  include("./linkedcells/Box.jl")
   include("./linkedcells/LinkedCells.jl")
   include("./linkedcells/icell3D.jl")
   include("./linkedcells/ijkcell.jl")
@@ -65,6 +67,7 @@ module MDDF
   include("./linkedcells/CutoffDistances.jl")
   include("./linkedcells/cutoffdcell.jl")
   include("./linkedcells/cutoffdistances.jl")
+  include("./linkedcells/keepunique.jl")
   include("./linkedcells/keepminimum.jl")
   include("./linkedcells/mddf_linkedcells.jl")
 

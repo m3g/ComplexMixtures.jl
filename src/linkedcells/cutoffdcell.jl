@@ -16,7 +16,8 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
   jcell = icell3D_periodic(box.nc,i,j,k)
 
   # Check which is the index in the cell vector that is associated to the
-  # input cell to be considered 
+  # input cell to be considered. If there is no atom of the solvent in 
+  # this cell, just return
   index_cell_vector = findfirst( x -> x == jcell, lc_solvent.cell)
   if index_cell_vector == nothing
     return

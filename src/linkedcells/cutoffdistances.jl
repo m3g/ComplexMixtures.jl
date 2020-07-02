@@ -22,6 +22,11 @@ function cutoffdistances!(x_solute :: AbstractArray{Float64},
   wrap!(x_solute,box.sides)
   wrap!(x_solvent,box.sides)
 
+  # Compute the minimum coordinates of an atom in this cell, used to define the first cell
+  box.xmin[1] = min( minimum(x_solute[:,1]), minimum(x_solvent[:,1]) )
+  box.xmin[2] = min( minimum(x_solute[:,2]), minimum(x_solvent[:,2]) )
+  box.xmin[3] = min( minimum(x_solute[:,3]), minimum(x_solvent[:,3]) )
+
   # Initialize linked lists
   initcells!(x_solute,box,lc_solute)
   initcells!(x_solvent,box,lc_solvent)
@@ -31,19 +36,10 @@ function cutoffdistances!(x_solute :: AbstractArray{Float64},
   icell = lc_solute.cell[index_cell_vector]
   while icell > 0
 
-    # Check if this cell has a solvent atom, if not, cycle
-    jcell = findfirst(jcell -> jcell == icell, lc_solvent.cell)
-    if jcell == nothing
-      # Go to next solute cell
-      index_cell_vector = index_cell_vector + 1
-      icell = lc_solute.cell[index_cell_vector]
-      continue
-    end
-
     # 3D indexes of the current cell
     i, j, k = ijkcell(box.nc,icell) 
-    
-    # Now, loop over the atoms of this cell, computing the distances      
+
+    # Loop over the atoms of this cell, computing the distances      
     iat = lc_solute.firstatom[index_cell_vector]
     while iat > 0
 

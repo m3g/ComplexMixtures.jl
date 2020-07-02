@@ -32,7 +32,7 @@ solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat")
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1)
 
 # Run MDDF calculation, and get the resutls in the R structure
 R = MDDF.mddf_linkedcells(trajectory,options)
