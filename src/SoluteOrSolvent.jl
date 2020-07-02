@@ -55,9 +55,11 @@ function SoluteOrSolvent( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspe
   # Setting the vector that contains the index of the molecule of each atom
 
   imol = Vector{Int64}(undef,natoms)
+  iat = 0
   for j in 1:nmols
     for i in 1:natomspermol
-      imol[i] = j
+      iat = iat + 1
+      imol[iat] = j
     end
   end
 
