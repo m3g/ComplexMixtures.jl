@@ -27,18 +27,24 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
   jat = lc_solvent.firstatom[index_cell_vector]
   while jat > 0
     yat = @view(x_solvent[jat,1:3])
-    d = distance(xat,yat)
+    d = distance(box,xat,yat)
     if d <= box.cutoff
       d_in_cutoff.nd[1] += 1
       # If the number of distances found is greater than maxdim,
-      # we need to increase the size of the vectors by 10%
+      # we need to increase the size of the vectors by 50%
       maxdim = length(d_in_cutoff.d)
       if d_in_cutoff.nd[1] > maxdim
-        resize!(d_in_cutoff.d,round(Int64,round(Int64,1.1*maxdim)))
-        resize!(d_in_cutoff.iat,round(Int64,round(Int64,1.1*maxdim)))
-        resize!(d_in_cutoff.jat,round(Int64,round(Int64,1.1*maxdim)))
-        resize!(d_in_cutoff.imol,round(Int64,round(Int64,1.1*maxdim)))
-        resize!(d_in_cutoff.jmol,round(Int64,round(Int64,1.1*maxdim)))
+        resize!(d_in_cutoff.d,round(Int64,round(Int64,1.5*maxdim)))
+        resize!(d_in_cutoff.iat,round(Int64,round(Int64,1.5*maxdim)))
+        resize!(d_in_cutoff.jat,round(Int64,round(Int64,1.5*maxdim)))
+        resize!(d_in_cutoff.imol,round(Int64,round(Int64,1.5*maxdim)))
+        resize!(d_in_cutoff.jmol,round(Int64,round(Int64,1.5*maxdim)))
+        maxdim = length(d_in_cutoff.d)
+        @. d_in_cutoff.d[d_in_cutoff.nd[1]+1:maxdim] = 0.
+        @. d_in_cutoff.iat[d_in_cutoff.nd[1]+1:maxdim] = 0
+        @. d_in_cutoff.jat[d_in_cutoff.nd[1]+1:maxdim] = 0
+        @. d_in_cutoff.imol[d_in_cutoff.nd[1]+1:maxdim] = 0
+        @. d_in_cutoff.jmol[d_in_cutoff.nd[1]+1:maxdim] = 0
       end
       d_in_cutoff.iat[d_in_cutoff.nd[1]] = iat
       d_in_cutoff.jat[d_in_cutoff.nd[1]] = jat
