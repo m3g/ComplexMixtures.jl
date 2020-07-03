@@ -14,6 +14,7 @@
 
 struct LinkedCells
 
+  cell :: Vector{Int64}
   firstatom :: Vector{Int64}
   nextatom :: Vector{Int64}
   
@@ -27,7 +28,8 @@ struct LinkedCells
 
 end
 
-LinkedCells(n) = LinkedCells( zeros(Int64,n), # firstatom (actual required size is nc1*nc2*nc*3
+LinkedCells(n) = LinkedCells( zeros(Int64,n), # cell
+                              zeros(Int64,n), # firstatom
                               zeros(Int64,n), # nextatom
                               zeros(3), # xmin
                               zeros(3), # xmax

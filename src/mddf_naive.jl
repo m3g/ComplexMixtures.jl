@@ -130,7 +130,7 @@ function mddf_naive(trajectory, options :: Options)
       #
       for i in 1:nsamples
         # Choose randomly one molecule from the bulk
-        jmol = rand(@view(jmol_in_bulk[1:n_jmol_in_bulk]))
+        jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
         # Generate new random coordinates (translation and rotation) for this molecule
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1

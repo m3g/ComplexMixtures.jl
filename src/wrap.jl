@@ -5,14 +5,21 @@
 # It modifies the coordinates input vector
 #
 
-function wrap!(x:: AbstractArray{Float64}, sides :: Vector{Float64}, center :: Vector{Float64})
-  n = size(x,1)
-  for i in 1:n
+
+function wrap!(x :: Array{Float64}, sides :: Vector{Float64}, center :: Vector{Float64})
+  first = 1
+  last = size(x,1)
+  wrap!(first, last, x, sides, center)
+end
+
+function wrap!(first :: Int64, last :: Int64, x :: Array{Float64}, 
+               sides :: Vector{Float64}, center :: Vector{Float64})
+  for i in first:last
     wrapone!(i,x,sides,center)
   end
 end
 
-function wrapone!(i :: Int64, x :: AbstractArray{Float64}, sides :: Vector{Float64} ,center :: Vector{Float64})
+function wrapone!(i :: Int64, x :: Array{Float64}, sides :: Vector{Float64} ,center :: Vector{Float64})
 
   x[i,1] = x[i,1] - center[1]
   x[i,2] = x[i,2] - center[2]
@@ -31,14 +38,20 @@ end
 # If the center is not provided, wrap to origin
 #
 
-function wrap!(x:: AbstractArray{Float64}, sides :: Vector{Float64})
-  n = size(x,1)
-  for i in 1:n
+
+function wrap!(x:: Array{Float64}, sides :: Vector{Float64})
+  first = 1
+  last = size(x,1)
+  wrap!(first,last,x,sides)
+end
+
+function wrap!(first :: Int64, last :: Int64, x :: Array{Float64}, sides :: Vector{Float64})
+  for i in first:last
      wrapone!(i,x,sides)
   end
 end
 
-function wrapone!(i :: Int64, x :: AbstractArray{Float64}, sides :: Vector{Float64})
+function wrapone!(i :: Int64, x :: Array{Float64}, sides :: Vector{Float64})
 
   x[i,1] = x[i,1]%sides[1]
   x[i,2] = x[i,2]%sides[2]

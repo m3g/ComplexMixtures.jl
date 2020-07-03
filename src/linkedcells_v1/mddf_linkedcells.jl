@@ -24,7 +24,7 @@ function mddf_linkedcells(trajectory, options :: Options)
   x_solvent_random = similar(x_solvent)
 
   # Vector to annotate if the solvent molecule is a bulk molecule
-  solvent_in_bulk = zeros(Int64,solvent.nmols)
+  solvent_in_bulk = zeros(Bool,solvent.nmols)
 
   # Initializing the structure that carries all results
   R = Result(trajectory,options)
@@ -56,11 +56,11 @@ function mddf_linkedcells(trajectory, options :: Options)
   # Structure that will contain the temporary useful information of all the  
   # distances found to the be smaller than the cutoff, and the corresponding
   # atom indexes. The vectors of this structure might be resized during the calculations
-  dc = CutoffDistances(solvent.natoms)
+  d_in_cutoff = CutoffDistances(solvent.natoms)
 
   # Vectors used to parse the minimum distance data
   dmin_mol = zeros(solvent.nmols)
-  dref_mol = zeros(solvent.nmols)
+  imin = zeros(solvent.nmols,2)
 
   # Computing all minimum-distances
   progress = Progress(R.nframes_read,1)
@@ -101,40 +101,52 @@ function mddf_linkedcells(trajectory, options :: Options)
 
     # Compute all distances between solute and solvent atoms which are smaller than the 
     # cutoff (this is the most computationally expensive part), the distances are returned
-    # in the dc structure
-    cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box,dc)
+    # in the d_in_cutoff structure
+    cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box,d_in_cutoff)
 
-    # Let us assume that there is only one solute molecule for a while, and
-    # annotate which are the minimum distances of each solvent molecule to this solute
-    # molecule
-    @. dmin_mol = +Inf
-    @. dref_mol = +Inf
-    for i in dc.nd[1]
-      jmol = solvent.imol[dc.jat[i]]
-      if dc.d[i] < dmin_mol[jmol]
-        dmin_mol[jmol] = dc.d[i]
-      end
-      if itype(dc.jat[i],solvent) == R.irefatom
-        dref_mol[jmol] = dc.d[i] 
+    # Remove duplicate entries from the list, that is, if two distances correspond to different
+    # solute atoms but the same solvent atom, keep only the shortest one
+    keepunique!(d_in_cutoff,solute)
+
+    # Add the distances of the reference atoms to the reference-atom counter
+    for i in 1:d_in_cutoff.nd[1]
+      if itype(d_in_cutoff.jat[i],solvent) == R.irefatom
+        if d_in_cutoff.d[i] <= options.dbulk
+          ibin = setbin(d_in_cutoff.d[i],options.binstep)
+          R.rdf_count[ibin] += 1
+        end
       end
     end
 
-    # Add distances to the counters
-    n_solvent_in_bulk = 0
-    @. solvent_in_bulk = 0
-    for i in 1:solvent.nmols
-      if dmin_mol[i] <= options.dbulk
-        ibin = setbin(dmin_mol[i],options.binstep)
+    # Now, parse the results in d_in_cutoff, to get the minimum distances between pairs
+    # of molecules, their atoms, etc. The resulting output in d_in_cutoff will contain
+    # only the pairs of atoms corresponding to the minimum distance between the molecules
+    # to which these atoms belong, and the corresponding distance
+    keepminimum!(d_in_cutoff,solute,solvent)
+
+    # Very well, lets add the data to the counters
+    for i in 1:d_in_cutoff.nd[1]
+      if d_in_cutoff.d[i] <= options.dbulk
+        ibin = setbin(d_in_cutoff.d[i],options.binstep)
         R.md_count[ibin] += 1
-        #R.solute_atom[itype(dc.iat[i],solute),ibin] += 1
-        #R.solvent_atom[itype(dc.jat[i],solvent),ibin] += 1
-      else
-        n_solvent_in_bulk += 1
-        solvent_in_bulk[n_solvent_in_bulk] = i
+        R.solute_atom[itype(d_in_cutoff.iat[i],solute),ibin] += 1
+        R.solvent_atom[itype(d_in_cutoff.jat[i],solvent),ibin] += 1
       end
-      if dref_mol[i] <= options.dbulk
-        ibin = setbin(dref_mol[i],options.binstep)
-        R.rdf_count[ibin] += 1
+    end
+
+    # Let us annotate the molecules of the solvent which are in the bulk solution,
+    # that is, far from any solute molecule. Note that for solutions in which the 
+    # solute is homogeneously distributed in the solution, this might be zero, in 
+    # which case any solvent molecule is both in the domain and in the bulk (that is,
+    # there is no difference between domain and bulk, something that only occurs
+    # if the solution is heterogeneous at the microscopic level)
+    n_solvent_in_bulk = solvent.nmols
+    @. solvent_in_bulk = true
+    for i in 1:d_in_cutoff.nd[1]
+      if d_in_cutoff.d[i] <= options.dbulk
+        jmol = solvent.imol[d_in_cutoff.jat[i]]
+        solvent_in_bulk[jmol] = false
+        n_solvent_in_bulk = n_solvent_in_bulk - 1
       end
     end
 
@@ -153,58 +165,58 @@ function mddf_linkedcells(trajectory, options :: Options)
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols
         # Choose randomly one molecule from the bulk
-        jmol = solvent_in_bulk[rand(1:n_solvent_in_bulk)]
+        j_rand_mol = rand(1:n_solvent_in_bulk)
+        # find which is the jmol molecule in bulk corresponding to this random pick
+        jmol = 0
+        jcount = 0
+        while jcount < j_rand_mol
+          jmol = jmol + 1
+          if solvent_in_bulk[jmol]
+            jcount = jcount + 1
+          end
+        end  
         # Indexes of this molecule in the x_solvent array
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
         # Indexes of the random molecule in random array
         jfstore = (j-1)*solvent.natomspermol + 1
         jlstore = jfstore + solvent.natomspermol - 1
+        xrand = @view(x_solvent_random[jfstore:jlstore,1:3])
         # Generate new random coordinates (translation and rotation) for this molecule
-        random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,
-                     jfstore,jlstore,x_solvent_random,moveaux)
+        random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,xrand,moveaux)
       end
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
-      # in the dc structure
-      cutoffdistances!(ifmol,ilmol,x_solute,x_solvent_random,lc_solute,lc_solvent,box,dc)
+      # in the d_in_cutoff structure
+      cutoffdistances!(@view(x_solute[ifmol:ilmol,1:3]),x_solvent_random,lc_solute,lc_solvent,box,d_in_cutoff)
 
-      # Let us assume that there is only one solute molecule for a while, and
-      # annotate which are the minimum distances of each solvent molecule to this solute
-      # molecule
-      @. dmin_mol = +Inf
-      @. dref_mol = +Inf
-      for i in dc.nd[1]
-        jmol = solvent.imol[dc.jat[i]]
-        if dc.d[i] < dmin_mol[jmol]
-          dmin_mol[jmol] = dc.d[i]
-        end
-        if itype(dc.jat[i],solvent) == R.irefatom
-          dref_mol[jmol] = dc.d[i] 
-        end
-      end
-
-      # Add distances to the counters
-      for i in 1:solvent.nmols
-        if dmin_mol[i] <= options.dbulk
-          ibin = setbin(dmin_mol[i],options.binstep)
-          R.md_count_random[ibin] += 1
-        end
-        if dref_mol[i] <= options.dbulk
-          ibin = setbin(dref_mol[i],options.binstep)
-          rdf_count_random_frame[ibin] += 1
-        end
-      end
+      # Remove duplicate entries from the list, that is, if two distances correspond to different
+      # solute atoms but the same solvent atom, keep only the shortest one
+      keepunique!(d_in_cutoff,solute)
 
       # Add the distances of the reference atoms to the reference-atom counter
       # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
-      for i in 1:dc.nd[1]
-        if itype(dc.jat[i],solvent) == R.irefatom
-          if dc.d[i] <= options.dbulk
-            ibin = setbin(dc.d[i],options.binstep)
+      for i in 1:d_in_cutoff.nd[1]
+        if itype(d_in_cutoff.jat[i],solvent) == R.irefatom
+          if d_in_cutoff.d[i] <= options.dbulk
+            ibin = setbin(d_in_cutoff.d[i],options.binstep)
             rdf_count_random_frame[ibin] += 1
           end
+        end
+      end
+
+      # Now, parse the results in d_in_cutoff, to get the minimum distances between pairs
+      # of molecules, their atoms, etc. The resulting output in d_in_cutoff will contain
+      # only the pairs of atoms corresponding to the minimum distance between the molecules
+      # to which these atoms belong, and the corresponding distance
+      keepminimum!(d_in_cutoff,solute,solvent)
+
+      # Very well, lets add the data to the counters
+      for i in 1:d_in_cutoff.nd[1]
+        if d_in_cutoff.d[i] <= options.dbulk
+          ibin = setbin(d_in_cutoff.d[i],options.binstep)
+          R.md_count_random[ibin] += 1
         end
       end
 

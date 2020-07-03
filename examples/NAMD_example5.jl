@@ -16,14 +16,15 @@ solute = MDDF.Solute( solute_indexes, nmols=1 )
 #solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO", atoms ) ]
 #solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 
-solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
+solvent_indexes = [ atom.index for atom in filter( atom -> (atom.resname == "TIP3" && atom.resnum <= 1000 ), atoms ) ]
+#solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=3 )
 
 # Initialize trajectroy data structure and open input stream
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2)
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=1)
 
 # Run MDDF calculation, and get the resutls in the R structure
 R = MDDF.mddf_linkedcells(trajectory,options)

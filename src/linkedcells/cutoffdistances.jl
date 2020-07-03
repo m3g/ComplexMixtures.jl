@@ -8,8 +8,23 @@
 # Returns nd, the number of distances smaller than the cutoff, and modifies d_in_cutoff
 #
 
-function cutoffdistances!(x_solute :: AbstractArray{Float64},
-                          x_solvent :: AbstractArray{Float64},
+function cutoffdistances!(x_solute :: Array{Float64},
+                          x_solvent :: Array{Float64},
+                          lc_solute :: LinkedCells,
+                          lc_solvent :: LinkedCells,
+                          box :: Box, 
+                          d_in_cutoff :: CutoffDistances)
+
+ ifmol = 1
+ ilmol = size(x_solute,1)
+ return cutoffdistances!(ifmol,ilmol,x_solute,x_solvent,
+                         lc_solute,lc_solvent,box,d_in_cutoff)
+
+end
+
+
+function cutoffdistances!(ifmol, ilmol, x_solute :: Array{Float64},
+                          x_solvent :: Array{Float64},
                           lc_solute :: LinkedCells,
                           lc_solvent :: LinkedCells,
                           box :: Box, 
@@ -28,73 +43,69 @@ function cutoffdistances!(x_solute :: AbstractArray{Float64},
   box.xmin[3] = min( minimum(x_solute[:,3]), minimum(x_solvent[:,3]) )
 
   # Initialize linked lists
-  initcells!(x_solute,box,lc_solute)
+  initcells!(ifmol,ilmol,x_solute,box,lc_solute)
   initcells!(x_solvent,box,lc_solvent)
 
-  # Loop over the boxes that contain solute atoms
-  index_cell_vector = 1
-  icell = lc_solute.cell[index_cell_vector]
-  while icell > 0
+  # Loop over the cells
+  for i in 1:box.nc[1]
+    for j in 1:box.nc[2]
+      for k in 1:box.nc[3]
 
-    # 3D indexes of the current cell
-    i, j, k = ijkcell(box.nc,icell) 
+        # First solute atom in this cell
+        icell = icell1D(box.nc,i,j,k)
+        iat = lc_solute.firstatom[icell]
 
-    # Loop over the atoms of this cell, computing the distances      
-    iat = lc_solute.firstatom[index_cell_vector]
-    while iat > 0
+        # Loop over solute atoms of this cell
+        while iat > 0
 
-      # Coordinates of this solute atom
-      xat = @view(x_solute[iat,1:3])
+          # Inside box
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j,k,d_in_cutoff)
+        
+          # Interactions of boxes that share faces
 
-      # Inside box
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j,k,d_in_cutoff)
-  
-      # Interactions of boxes that share faces
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j+1,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j,k+1,d_in_cutoff)
 
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j+1,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j-1,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j,k-1,d_in_cutoff)
+        
+          # Interactions of boxes that share axes
 
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j-1,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j,k-1,d_in_cutoff)
-  
-      # Interactions of boxes that share axes
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j+1,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j-1,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j,k-1,d_in_cutoff)
 
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j+1,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j-1,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j,k-1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j+1,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j+1,k-1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j-1,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i,j-1,k-1,d_in_cutoff)
 
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j+1,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j+1,k-1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j-1,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j-1,k-1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j+1,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j-1,k,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j,k-1,d_in_cutoff)
+                       
+          # Interactions of boxes that share vertices
 
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j+1,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j-1,k,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j,k-1,d_in_cutoff)
-                   
-      # Interactions of boxes that share vertices
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j+1,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j+1,k-1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j-1,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i+1,j-1,k-1,d_in_cutoff)
 
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j+1,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j+1,k-1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j-1,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j-1,k-1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j+1,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j+1,k-1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j-1,k+1,d_in_cutoff)
+          cutoffdcell!(iat,x_solute,x_solvent,lc_solvent,box,i-1,j-1,k-1,d_in_cutoff)
+        
+          # Go to next atom of the solute in this cell
+          iat = lc_solute.nextatom[iat]
 
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j+1,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j+1,k-1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j-1,k+1,d_in_cutoff)
-      cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j-1,k-1,d_in_cutoff)
-  
-      # Go to next atom of the solute in this cell
-      iat = lc_solute.nextatom[iat]
+        end
+      end
     end
-
-    # Go to next cell containing solute atoms
-    index_cell_vector = index_cell_vector + 1
-    icell = lc_solute.cell[index_cell_vector]
   end
 
 end
