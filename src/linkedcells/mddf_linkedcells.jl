@@ -109,7 +109,7 @@ function mddf_linkedcells(trajectory, options :: Options)
     # molecule
     @. dmin_mol = +Inf
     @. dref_mol = +Inf
-    for i in dc.nd[1]
+    for i in 1:dc.nd[1]
       jmol = solvent.imol[dc.jat[i]]
       if dc.d[i] < dmin_mol[jmol]
         dmin_mol[jmol] = dc.d[i]
@@ -161,7 +161,9 @@ function mddf_linkedcells(trajectory, options :: Options)
         jfstore = (j-1)*solvent.natomspermol + 1
         jlstore = jfstore + solvent.natomspermol - 1
         # Generate new random coordinates (translation and rotation) for this molecule
+        #xrand = @view(x_solvent_random[jfstore:jlstore,1:3])
         random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,
+                     #xrand,moveaux)
                      jfstore,jlstore,x_solvent_random,moveaux)
       end
 
@@ -175,7 +177,7 @@ function mddf_linkedcells(trajectory, options :: Options)
       # molecule
       @. dmin_mol = +Inf
       @. dref_mol = +Inf
-      for i in dc.nd[1]
+      for i in 1:dc.nd[1]
         jmol = solvent.imol[dc.jat[i]]
         if dc.d[i] < dmin_mol[jmol]
           dmin_mol[jmol] = dc.d[i]
@@ -194,17 +196,6 @@ function mddf_linkedcells(trajectory, options :: Options)
         if dref_mol[i] <= options.dbulk
           ibin = setbin(dref_mol[i],options.binstep)
           rdf_count_random_frame[ibin] += 1
-        end
-      end
-
-      # Add the distances of the reference atoms to the reference-atom counter
-      # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
-      for i in 1:dc.nd[1]
-        if itype(dc.jat[i],solvent) == R.irefatom
-          if dc.d[i] <= options.dbulk
-            ibin = setbin(dc.d[i],options.binstep)
-            rdf_count_random_frame[ibin] += 1
-          end
         end
       end
 
