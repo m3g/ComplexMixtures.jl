@@ -9,7 +9,7 @@
 
 function random_move!(jfmol :: Int64, jlmol :: Int64, x_solvent :: Array{Float64},
                       irefatom :: Int64, sides :: Vector{Float64}, solute_center :: Vector{Float64}, 
-                      ipos :: Int64, lpos :: Int64, x_solvent_random :: Array{Float64}, aux :: MoveAux )
+                      ipos :: Int64, lpos :: Int64, x_solvent_random :: AbstractArray{Float64}, aux :: MoveAux )
 
   # To avoid boundary problems, the center of coordinates are generated in a 
   # much larger region, and wrapped aftwerwards
@@ -48,7 +48,7 @@ end
 
 function random_move!(jfmol :: Int64, jlmol :: Int64, x_solvent :: Array{Float64},
                       irefatom :: Int64, sides :: Vector{Float64}, solute_center :: Vector{Float64}, 
-                      x_solvent_random :: Array{Float64}, aux :: MoveAux )
+                      x_solvent_random :: AbstractArray{Float64}, aux :: MoveAux )
   ipos=1
   lpos=size(x_solvent_random,1)
   random_move!(jfmol,jlmol,x_solvent,irefatom,sides,solute_center,ipos,lpos,x_solvent_random,aux)

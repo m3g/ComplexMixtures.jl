@@ -4,13 +4,13 @@
 # modifyies the vector x
 #
 
-function move!(x :: Array{Float64}, aux :: MoveAux)
+function move!(x :: AbstractArray{Float64}, aux :: MoveAux)
   first = 1
   last = size(x,1)
   move!(first,last,x,aux)
 end
 
-function move!(first :: Int64, last :: Int64, x :: Array{Float64}, aux :: MoveAux)
+function move!(first :: Int64, last :: Int64, x :: AbstractArray{Float64}, aux :: MoveAux)
   
   centerofcoordinates!(aux.oldcm,first,last,x)
   eulermat!(aux)

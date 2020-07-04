@@ -1,4 +1,6 @@
 
+using Profile
+
 include("../src/MDDF.jl")
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
