@@ -57,13 +57,32 @@ function wrapone!(i :: Int64, x :: AbstractArray{Float64}, sides :: Vector{Float
   x[i,2] = x[i,2]%sides[2]
   x[i,3] = x[i,3]%sides[3]
 
-  if x[i,1] > sides[1]/2 ; x[i,1] = x[i,1] - sides[1] ; end
-  if x[i,2] > sides[2]/2 ; x[i,2] = x[i,2] - sides[2] ; end
-  if x[i,3] > sides[3]/2 ; x[i,3] = x[i,3] - sides[3] ; end
+  if x[i,1] > sides[1]/2  
+    x[i,1] = x[i,1] - sides[1] 
+  elseif x[i,1] < -sides[1]/2 
+    x[i,1] = x[i,1] + sides[1]
+  end
 
-  if x[i,1] < -sides[1]/2 ; x[i,1] = x[i,1] + sides[1] ; end
-  if x[i,2] < -sides[2]/2 ; x[i,2] = x[i,2] + sides[2] ; end
-  if x[i,3] < -sides[3]/2 ; x[i,3] = x[i,3] + sides[3] ; end
+  if x[i,2] > sides[2]/2 
+    x[i,2] = x[i,2] - sides[2] 
+  elseif x[i,2] < -sides[2]/2 
+    x[i,2] = x[i,2] + sides[2] 
+  end
+
+  if x[i,3] > sides[3]/2 
+    x[i,3] = x[i,3] - sides[3]
+  elseif x[i,3] < -sides[3]/2 
+    x[i,3] = x[i,3] + sides[3]
+  end
 
 end
+
+
+
+
+
+
+
+
+
 

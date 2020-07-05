@@ -70,6 +70,8 @@ module MDDF
   #include("./linkedcells_v1/mddf_linkedcells.jl")
 
   include("./linkedcells/LinkedCells.jl")
+  include("./linkedcells/DminMol.jl")
+  include("./linkedcells/updatecounters.jl")
   include("./linkedcells/icell1D.jl")
   include("./linkedcells/wrap_cell.jl")
   include("./linkedcells/icell3D.jl")

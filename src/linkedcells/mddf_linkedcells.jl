@@ -59,7 +59,7 @@ function mddf_linkedcells(trajectory, options :: Options)
   dc = CutoffDistances(solvent.natoms)
 
   # Vectors used to parse the minimum distance data
-  dmin_mol = zeros(solvent.nmols)
+  dmin_mol = Vector{DminMol}(undef,solvent.nmols)
   dref_mol = zeros(solvent.nmols)
 
   # Computing all minimum-distances
@@ -107,36 +107,8 @@ function mddf_linkedcells(trajectory, options :: Options)
     # Let us assume that there is only one solute molecule for a while, and
     # annotate which are the minimum distances of each solvent molecule to this solute
     # molecule
-    @. dmin_mol = +Inf
-    @. dref_mol = +Inf
-    for i in 1:dc.nd[1]
-      jmol = solvent.imol[dc.jat[i]]
-      if dc.d[i] < dmin_mol[jmol]
-        dmin_mol[jmol] = dc.d[i]
-      end
-      if itype(dc.jat[i],solvent) == R.irefatom
-        dref_mol[jmol] = dc.d[i] 
-      end
-    end
-
-    # Add distances to the counters
-    n_solvent_in_bulk = 0
-    @. solvent_in_bulk = 0
-    for i in 1:solvent.nmols
-      if dmin_mol[i] <= options.dbulk
-        ibin = setbin(dmin_mol[i],options.binstep)
-        R.md_count[ibin] += 1
-        #R.solute_atom[itype(dc.iat[i],solute),ibin] += 1
-        #R.solvent_atom[itype(dc.jat[i],solvent),ibin] += 1
-      else
-        n_solvent_in_bulk += 1
-        solvent_in_bulk[n_solvent_in_bulk] = i
-      end
-      if dref_mol[i] <= options.dbulk
-        ibin = setbin(dref_mol[i],options.binstep)
-        R.rdf_count[ibin] += 1
-      end
-    end
+    n_solvent_in_bulk = updatecounters!(R.irefatom,R.md_count,R.rdf_count,
+                                        solvent,dc,options,dmin_mol,dref_mol)
 
     #
     # Computing the random-solvent distribution to compute the random minimum-distance count
@@ -153,7 +125,8 @@ function mddf_linkedcells(trajectory, options :: Options)
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols
         # Choose randomly one molecule from the bulk
-        jmol = solvent_in_bulk[rand(1:n_solvent_in_bulk)]
+        #jmol = solvent_in_bulk[rand(1:n_solvent_in_bulk)]
+        jmol = dmin_mol[rand(solvent.nmols-n_solvent_in_bulk+1:solvent.nmols)].jmol
         # Indexes of this molecule in the x_solvent array
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
@@ -161,9 +134,7 @@ function mddf_linkedcells(trajectory, options :: Options)
         jfstore = (j-1)*solvent.natomspermol + 1
         jlstore = jfstore + solvent.natomspermol - 1
         # Generate new random coordinates (translation and rotation) for this molecule
-        #xrand = @view(x_solvent_random[jfstore:jlstore,1:3])
         random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,
-                     #xrand,moveaux)
                      jfstore,jlstore,x_solvent_random,moveaux)
       end
 
@@ -172,32 +143,9 @@ function mddf_linkedcells(trajectory, options :: Options)
       # in the dc structure
       cutoffdistances!(ifmol,ilmol,x_solute,x_solvent_random,lc_solute,lc_solvent,box,dc)
 
-      # Let us assume that there is only one solute molecule for a while, and
-      # annotate which are the minimum distances of each solvent molecule to this solute
-      # molecule
-      @. dmin_mol = +Inf
-      @. dref_mol = +Inf
-      for i in 1:dc.nd[1]
-        jmol = solvent.imol[dc.jat[i]]
-        if dc.d[i] < dmin_mol[jmol]
-          dmin_mol[jmol] = dc.d[i]
-        end
-        if itype(dc.jat[i],solvent) == R.irefatom
-          dref_mol[jmol] = dc.d[i] 
-        end
-      end
-
-      # Add distances to the counters
-      for i in 1:solvent.nmols
-        if dmin_mol[i] <= options.dbulk
-          ibin = setbin(dmin_mol[i],options.binstep)
-          R.md_count_random[ibin] += 1
-        end
-        if dref_mol[i] <= options.dbulk
-          ibin = setbin(dref_mol[i],options.binstep)
-          rdf_count_random_frame[ibin] += 1
-        end
-      end
+      # Update the counters and get the number of solvent molecules in bulk
+      updatecounters!(R.irefatom,R.md_count_random,rdf_count_random_frame,
+                      solvent,dc,options,dmin_mol,dref_mol)
 
     end # random solvent sampling
 

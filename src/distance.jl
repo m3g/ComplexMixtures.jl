@@ -8,14 +8,14 @@ distance(x :: AbstractVector{Float64}, y :: AbstractVector{Float64}) =
 distance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64}, j :: Int64) = 
   sqrt((y[j,1]-x[1])^2 + (y[j,2]-x[2])^2 + (y[j,3]-x[3])^2)
 
-distance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64}, i :: Int64, j :: Int64) = 
+distance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64}, i :: Int64, j :: Int64) =
   sqrt((y[j,1]-x[i,1])^2 + (y[j,2]-x[i,2])^2 + (y[j,3]-x[i,3])^2)
 
 # With possible periodic conditions 
 
 function distance( box :: Box, x :: AbstractArray{Float64}, y :: AbstractArray{Float64}, 
                                i :: Int64, j :: Int64 )
- 
+
   dx = (x[i,1]-y[j,1])%box.sides[1]
   dy = (x[i,2]-y[j,2])%box.sides[2]
   dz = (x[i,3]-y[j,3])%box.sides[3]
