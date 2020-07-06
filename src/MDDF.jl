@@ -71,6 +71,7 @@ module MDDF
 
   include("./linkedcells/LinkedCells.jl")
   include("./linkedcells/DminMol.jl")
+  include("./linkedcells/partialsort_cutoff.jl")
   include("./linkedcells/updatecounters.jl")
   include("./linkedcells/icell1D.jl")
   include("./linkedcells/wrap_cell.jl")

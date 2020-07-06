@@ -125,7 +125,6 @@ function mddf_linkedcells(trajectory, options :: Options)
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols
         # Choose randomly one molecule from the bulk
-        #jmol = solvent_in_bulk[rand(1:n_solvent_in_bulk)]
         jmol = dmin_mol[rand(solvent.nmols-n_solvent_in_bulk+1:solvent.nmols)].jmol
         # Indexes of this molecule in the x_solvent array
         jfmol = (jmol-1)*solvent.natomspermol + 1
