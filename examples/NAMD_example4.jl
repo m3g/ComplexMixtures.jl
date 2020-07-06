@@ -36,7 +36,6 @@ options = MDDF.Options(output="example.dat",binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
 R = MDDF.mddf_linkedcells(trajectory,options)
-#R = MDDF.mddf_naive(trajectory,options)
 
 include("./plots.jl")
 
