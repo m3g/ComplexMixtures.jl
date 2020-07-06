@@ -6,6 +6,8 @@ module MDDF
   using Statistics
   using ProgressMeter
 
+  include("./version.jl")
+
   # Function to rigid-body move molecules
   include("./MoveAux.jl")
   include("./centerofcoordinates.jl")
