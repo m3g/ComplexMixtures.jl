@@ -5,26 +5,26 @@ function wrap_cell(nc :: Vector{Int64}, i :: Int64, j :: Int64, k :: Int64)
 
   wrapped = false
   if i == 0
-    i == nc[1]
+    i = nc[1]
     wrapped = true
   elseif i == nc[1] + 1
-    i == 1
+    i = 1
     wrapped = true
   end
  
   if j == 0
-    j == nc[2]
+    j = nc[2]
     wrapped = true
   elseif j == nc[2] + 1
-    j == 1
+    j = 1
     wrapped = true
   end
 
   if k == 0
-    k == nc[3]
+    k = nc[3]
     wrapped = true
   elseif k == nc[3] + 1
-    k == 1
+    k = 1
     wrapped = true
   end
 
