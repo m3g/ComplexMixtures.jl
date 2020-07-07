@@ -99,9 +99,9 @@ function mddf_naive(trajectory, options :: Options)
         jlmol = jfmol + solvent.natomspermol - 1
 
         # Compute minimum distance 
-        dmin, iatom, jatom, drefatom = minimumdistance(@view(x_solute[ifmol:ilmol,:]),
-                                                       @view(x_solvent[jfmol:jlmol,:]),
-                                                       R.irefatom, sides)
+        dmin, iatom, jatom, drefatom = minimumdistance(@view(x_solute[ifmol:ilmol,1:3]),
+                                                       @view(x_solvent[jfmol:jlmol,1:3]),
+                                                       R.irefatom)
 
         # Update histogram for computation of MDDF
         ibin = setbin(dmin,options.binstep)
@@ -136,9 +136,11 @@ function mddf_naive(trajectory, options :: Options)
           jfmol = (jmol-1)*solvent.natomspermol + 1
           jlmol = jfmol + solvent.natomspermol - 1
           random_move!(@view(x_solvent[jfmol:jlmol,1:3]),R.irefatom,sides,solute_center,x_solvent_random,moveaux)
-          dmin, iatom, jatom, drefatom = minimumdistance(@view(x_solute[ifmol:ilmol,:]),
-                                                         x_solvent_random,
-                                                         R.irefatom, sides)
+          # Wrap random solvent molecule relative to solute center, so we do not need to take
+          # care of periodic boundaries when computing each distance
+          wrap!(x_solvent_random,sides,solute_center)
+          dmin, iatom, jatom, drefatom = minimumdistance(@view(x_solute[ifmol:ilmol,1:3]),
+                                                         x_solvent_random, R.irefatom)
           if dmin <= options.dbulk
             ibin = setbin(dmin,options.binstep)
             R.md_count_random[ibin] += 1

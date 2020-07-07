@@ -14,7 +14,7 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   ny = size(y,1)
   for i in 1:nx
      for j in 1:ny
-       d = distance(@view(x[i,:]),@view(y[j,:]))
+       d = distance(@view(x[i,1:3]),@view(y[j,1:3]))
        if d < dmin
          iatom = i 
          jatom = j 
@@ -32,7 +32,7 @@ function minimumdistance(x :: AbstractVector{Float64}, y :: AbstractArray{Float6
   dmin = +Inf
   ny = size(y,1)
   for j in 1:ny
-    d = distance(x,@view(y[j,:]))
+    d = distance(x,@view(y[j,1:3]))
     if d < dmin
       jatom = j 
       dmin = d
@@ -53,9 +53,8 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   nx = size(x,1)
   ny = size(y,1)
   for i in 1:nx
-     jcount = 0
      for j in 1:ny
-       d = distance(@view(x[i,:]),@view(y[j,:]))
+       d = distance(@view(x[i,1:3]),@view(y[j,1:3]))
        # Minimum distance of any solvent atom to the solute
        if d < dmin
          iatom = i
@@ -63,8 +62,7 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
          dmin = d
        end
        # Minimum distance of the reference atom to the solute
-       jcount = jcount + 1
-       if jcount == jrefatom
+       if j == jrefatom
          if d < drefatom
            drefatom = d
          end
@@ -87,7 +85,7 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   ny = size(y,1)
   for i in 1:nx
      for j in 1:ny
-       d = distance(sides,@view(x[i,:]),@view(y[j,:]))
+       d = distance(sides,@view(x[i,1:3]),@view(y[j,1:3]))
        if d < dmin
          iatom = i
          jatom = j
@@ -110,9 +108,8 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   nx = size(x,1)
   ny = size(y,1)
   for i in 1:nx
-     jcount = 0
      for j in 1:ny
-       d = distance(sides,@view(x[i,:]),@view(y[j,:]))
+       d = distance(sides,@view(x[i,1:3]),@view(y[j,1:3]))
        # Minimum distance of any solvent atom to the solute
        if d < dmin
          iatom = i
@@ -120,8 +117,7 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
          dmin = d
        end
        # Minimum distance of the reference atom to the solute
-       jcount = jcount + 1
-       if jcount == jrefatom
+       if j == jrefatom
          if d < drefatom
            drefatom = d
          end
