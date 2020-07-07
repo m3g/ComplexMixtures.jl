@@ -83,7 +83,7 @@ function mddf_naive(trajectory, options :: Options)
       ilmol = ifmol + solute.natomspermol - 1
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      centerofcoordinates!(solute_center,ifmol,ilmol,x_solute)
+      centerofcoordinates!(solute_center,@view(x_solute[ifmol:ilmol,1:3]))
       wrap!(x_solvent,sides,solute_center)
 
       # counter for the number of solvent molecules in bulk for this solute molecule
@@ -99,9 +99,9 @@ function mddf_naive(trajectory, options :: Options)
         jlmol = jfmol + solvent.natomspermol - 1
 
         # Compute minimum distance 
-        dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
-                                                       jfmol,jlmol,x_solvent,
-                                                       R.irefatom)
+        dmin, iatom, jatom, drefatom = minimumdistance(@view(x_solute[ifmol:ilmol,:]),
+                                                       @view(x_solvent[jfmol:jlmol,:]),
+                                                       R.irefatom, sides)
 
         # Update histogram for computation of MDDF
         ibin = setbin(dmin,options.binstep)
@@ -128,32 +128,33 @@ function mddf_naive(trajectory, options :: Options)
       #
       # Computing the random-solvent distribution to compute the random minimum-distance count
       #
-      for i in 1:nsamples
-        # Choose randomly one molecule from the bulk
-        jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
-        # Generate new random coordinates (translation and rotation) for this molecule
-        jfmol = (jmol-1)*solvent.natomspermol + 1
-        jlmol = jfmol + solvent.natomspermol - 1
-        random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,x_solvent_random,moveaux)
-        dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
-                                                       1,solvent.natomspermol,x_solvent_random,
-                                                       R.irefatom)
-
-        if dmin <= options.dbulk
-          ibin = setbin(dmin,options.binstep)
-          R.md_count_random[ibin] += 1
-        end
-        # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
-        if drefatom <= options.dbulk
-          ibin = setbin(drefatom,options.binstep)
-          rdf_count_random_frame[ibin] += 1
-        end
-      end # random solvent sampling
+      if imol == 1 
+        for i in 1:nsamples
+          # Choose randomly one molecule from the bulk
+          jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
+          # Generate new random coordinates (translation and rotation) for this molecule
+          jfmol = (jmol-1)*solvent.natomspermol + 1
+          jlmol = jfmol + solvent.natomspermol - 1
+          random_move!(@view(x_solvent[jfmol:jlmol,1:3]),R.irefatom,sides,solute_center,x_solvent_random,moveaux)
+          dmin, iatom, jatom, drefatom = minimumdistance(@view(x_solute[ifmol:ilmol,:]),
+                                                         x_solvent_random,
+                                                         R.irefatom, sides)
+          if dmin <= options.dbulk
+            ibin = setbin(dmin,options.binstep)
+            R.md_count_random[ibin] += 1
+          end
+          # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
+          if drefatom <= options.dbulk
+            ibin = setbin(drefatom,options.binstep)
+            rdf_count_random_frame[ibin] += 1
+          end
+        end # random solvent sampling
+      end
 
     end # solute molecules
 
     @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
-    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/(nsamples*solute.nmols))
+    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/nsamples)
     volume_frame.domain = sum(volume_frame.shell)
     volume_frame.bulk = volume_frame.total - volume_frame.domain
 

@@ -5,13 +5,7 @@
 # Modifies the data in the lc structure
 #
                   
-function initcells!(x :: Array{Float64}, box :: Box, lc :: LinkedCells )
-  ifmol = 1
-  ilmol = size(x,1)
-  return initcells!(ifmol,ilmol,x,box,lc)
-end
-
-function initcells!(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64}, box :: Box, lc :: LinkedCells )
+function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells )
 
   nboxes = box.nc[1]*box.nc[2]*box.nc[3] 
   if length(lc.firstatom) < nboxes
@@ -25,8 +19,8 @@ function initcells!(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64}, box :: 
   @. lc.nextatom = 0
 
   # Initialize cell, firstatom and nexatom
-  for iat in ifmol:ilmol
-    ic, jc, kc = icell3D(iat,x,box)
+  for iat in 1:size(x,1)
+    ic, jc, kc = icell3D(@view(x[iat,1:3]),box)
     icell = icell1D(box.nc,ic,jc,kc)
     lc.nextatom[iat] = lc.firstatom[icell]
     lc.firstatom[icell] = iat

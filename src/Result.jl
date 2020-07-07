@@ -106,8 +106,9 @@ function Result( trajectory, options :: Options )
   # Set reference atom as the closest one to the center of coordinates of the molecule, as default
   if options.irefatom == -1
     nextframe!(trajectory)
-    cm = centerofcoordinates(1,trajectory.solvent.natomspermol,trajectory.x_solvent)
-    dmin, irefatom = minimumdistance(cm,1,trajectory.solvent.natomspermol,trajectory.x_solvent)
+    xfirst = @view(trajectory.x_solvent[1:trajectory.solvent.natomspermol,:])
+    cm = centerofcoordinates(xfirst)
+    dmin, one, irefatom = minimumdistance(cm,xfirst)
     firstframe(trajectory)
   else
     irefatom = options.irefatom

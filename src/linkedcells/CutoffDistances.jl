@@ -12,6 +12,9 @@ struct CutoffDistances
   imol :: Vector{Int64} # molecule of the solute
   jmol :: Vector{Int64} # molecule of the solvent
 
+  # Size of the arrays
+  maxdim :: Vector{Int64}
+
 end
 
 # Generator
@@ -22,7 +25,8 @@ CutoffDistances( natoms :: Int64) =
                   zeros(Int64,natoms), # iat
                   zeros(Int64,natoms), # jat
                   zeros(Int64,natoms), # imol
-                  zeros(Int64,natoms)) # jmol
+                  zeros(Int64,natoms), # jmol
+                  [ natoms ]) # maxdim
 
 # Function that zeroes all the values in this structure
 

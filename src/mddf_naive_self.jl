@@ -90,7 +90,7 @@ function mddf_naive_self(trajectory, options :: Options)
       ilmol = ifmol + solute.natomspermol - 1
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      centerofcoordinates!(solute_center,ifmol,ilmol,x_solute)
+      centerofcoordinates!(solute_center,@view(x_solute[ifmol:ilmol,1:3]))
       wrap!(x_solvent,sides,solute_center)
 
       # counter for the number of solvent molecules in bulk for this solute molecule

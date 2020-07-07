@@ -46,7 +46,7 @@ function mddf_linkedcells(trajectory, options :: Options)
   rdf_count_random_frame = zeros(R.nbins)
 
   # Initialize the linked cell structures
-  lc_solute = LinkedCells(solute.natoms)
+  lc_solute = LinkedCells(solute.natomspermol)
   lc_solvent = LinkedCells(solvent.natoms)
  
   # Structure that contains the cutoff, sides, and xmin, to organize the linked
@@ -89,43 +89,60 @@ function mddf_linkedcells(trajectory, options :: Options)
     R.density.solute = R.density.solute + (solute.nmols / volume_frame.total)
     R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
 
-    # Check if the cutoff is not too large considering the periodic cell size
-    if options.cutoff > sides[1]/2. || options.cutoff > sides[2]/2. || options.cutoff > sides[3]/2.
-      error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
-    end
-
     # Add the box side information to the box structure, in this frame
     @. box.sides = sides
     # Compute the number of cells in each dimension
     @. box.nc = trunc(Int64,box.sides/box.cutoff) + 1
 
-    # Compute all distances between solute and solvent atoms which are smaller than the 
-    # cutoff (this is the most computationally expensive part), the distances are returned
-    # in the dc structure
-    cutoffdistances!(x_solute,x_solvent,lc_solute,lc_solvent,box,dc)
+    # Initialize linked cells
+    initcells!(x_solvent,box,lc_solvent)
 
-    # Let us assume that there is only one solute molecule for a while, and
-    # annotate which are the minimum distances of each solvent molecule to this solute
-    # molecule
-    n_solvent_in_bulk = updatecounters!(R.irefatom,R.md_count,R.rdf_count,
-                                        solvent,dc,options,dmin_mol,dref_mol)
+    # Check if the cutoff is not too large considering the periodic cell size
+    if options.cutoff > sides[1]/2. || options.cutoff > sides[2]/2. || options.cutoff > sides[3]/2.
+      error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
+    end
+
+    n_solvent_in_bulk = 0
+    local n_solvent_in_bulk_last
+    for isolute in 1:solute.nmols
+      # Compute all distances between solute and solvent atoms which are smaller than the 
+      # cutoff (this is the most computationally expensive part), the distances are returned
+      # in the dc structure
+      ifmol = (isolute-1)*solute.natomspermol + 1
+      ilmol = ifmol + solute.natomspermol - 1
+      xsol = @view(x_solute[ifmol:ilmol,1:3])
+      initcells!(xsol,box,lc_solute)
+      cutoffdistances!(xsol,x_solvent,lc_solute,lc_solvent,box,dc)
+
+      # For each solute molecule, update the counters (this is highly suboptimal, because
+      # within updatecounters there are loops over solvent molecules, in such a way that
+      # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
+      # at this point with acceptable memory requirements
+      n_solvent_in_bulk_last = updatecounters!(R.irefatom,R.md_count,R.rdf_count,
+                                               solvent,dc,options,dmin_mol,dref_mol)
+      n_solvent_in_bulk += n_solvent_in_bulk_last
+    end
 
     #
     # Computing the random-solvent distribution to compute the random minimum-distance count
     #
     for i in 1:options.n_random_samples
-      
       # Choose randomly one solute molecule to be the reference solute for this
       # random solvent box
       i_rand_mol = rand(1:solute.nmols)
       ifmol = (i_rand_mol-1)*solute.natomspermol+1
       ilmol = ifmol + solute.natomspermol - 1
-      centerofcoordinates!(solute_center, ifmol, ilmol, x_solute)
+      xsol = @view(x_solute[ifmol:ilmol,1:3])
+      centerofcoordinates!(solute_center, xsol)
 
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols
-        # Choose randomly one molecule from the bulk
-        jmol = dmin_mol[rand(solvent.nmols-n_solvent_in_bulk+1:solvent.nmols)].jmol
+        # Choose randomly one molecule from the bulk, if there are actually bulk molecules
+        if n_solvent_in_bulk != 0
+          jmol = dmin_mol[rand(solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol
+        else
+          jmol = rand(1:solvent.nmols)
+        end
         # Indexes of this molecule in the x_solvent array
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
@@ -133,14 +150,18 @@ function mddf_linkedcells(trajectory, options :: Options)
         jfstore = (j-1)*solvent.natomspermol + 1
         jlstore = jfstore + solvent.natomspermol - 1
         # Generate new random coordinates (translation and rotation) for this molecule
-        random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,
-                     jfstore,jlstore,x_solvent_random,moveaux)
+        random_move!(@view(x_solvent[jfmol:jlmol,1:3]),R.irefatom,sides,solute_center,
+                     @view(x_solvent_random[jfstore:jlstore,1:3]),moveaux)
       end
+
+      # Initialize linked cells
+      initcells!(xsol,box,lc_solute)
+      initcells!(x_solvent,box,lc_solvent)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
       # in the dc structure
-      cutoffdistances!(ifmol,ilmol,x_solute,x_solvent_random,lc_solute,lc_solvent,box,dc)
+      cutoffdistances!(xsol,x_solvent_random,lc_solute,lc_solvent,box,dc)
 
       # Update the counters and get the number of solvent molecules in bulk
       updatecounters!(R.irefatom,R.md_count_random,rdf_count_random_frame,

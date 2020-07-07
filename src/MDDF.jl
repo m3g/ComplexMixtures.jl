@@ -80,6 +80,7 @@ module MDDF
   include("./linkedcells/icell3D.jl")
   include("./linkedcells/initcells.jl")
   include("./linkedcells/CutoffDistances.jl")
+  include("./linkedcells/increase_size.jl")
   include("./linkedcells/cutoffdcell.jl")
   include("./linkedcells/cutoffdistances.jl")
   include("./linkedcells/keepunique.jl")

@@ -6,18 +6,39 @@
 # the indexes of these points in x and y vectors
 #
 
-
-function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
-                         jfmol :: Int64, jlmol :: Int64, y :: Array{Float64})
+function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64})
   iatom = 0
   jatom = 0
   dmin = +Inf
-  for i in ifmol:ilmol
-     for j in jfmol:jlmol
-       d = distance(x,y,i,j)
+  nx = size(x,1)
+  ny = size(y,1)
+  for i in 1:nx
+     for j in 1:ny
+       d = distance(@view(x[i,:]),@view(y[j,:]))
        if d < dmin
-         iatom = i - ifmol + 1
-         jatom = j - jfmol + 1
+         iatom = i 
+         jatom = j 
+         dmin = d
+       end
+     end
+  end
+  return dmin, iatom, jatom
+end
+
+# If x is only a vector (not an array)
+
+function minimumdistance(x :: AbstractVector{Float64}, y :: AbstractArray{Float64})
+  iatom = 0
+  jatom = 0
+  dmin = +Inf
+  nx = size(x,1)
+  ny = size(y,1)
+  for i in 1:nx
+     for j in 1:ny
+       d = distance(x,@view(y[j,:]))
+       if d < dmin
+         iatom = i 
+         jatom = j 
          dmin = d
        end
      end
@@ -28,21 +49,22 @@ end
 # Function that returns the distance of a reference atom as well, to be used for 
 # computation of the volume shell by Monte-Caro integration
 
-function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
-                         jfmol :: Int64, jlmol :: Int64, y :: Array{Float64},
+function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64},
                          jrefatom :: Int64)
   iatom = 0
   jatom = 0
   drefatom = +Inf
   dmin = +Inf
-  for i in ifmol:ilmol
+  nx = size(x,1)
+  ny = size(y,1)
+  for i in 1:nx
      jcount = 0
-     for j in jfmol:jlmol
-       d = distance(x,y,i,j)
+     for j in 1:ny
+       d = distance(@view(x[i,:]),@view(y[j,:]))
        # Minimum distance of any solvent atom to the solute
        if d < dmin
-         iatom = i - ifmol + 1
-         jatom = j - jfmol + 1
+         iatom = i
+         jatom = j
          dmin = d
        end
        # Minimum distance of the reference atom to the solute
@@ -57,19 +79,61 @@ function minimumdistance(ifmol :: Int64, ilmol :: Int64, x :: Array{Float64},
   return dmin, iatom, jatom, drefatom
 end
 
-# Function to compute the minimum distance if on the input vectors
-# only one atom (one set of coordinates)
+#
+# With periodic boundary conditions
+#
 
-function minimumdistance(x :: Vector{Float64}, jfmol, jlmol, y :: Array{Float64})
+function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64},
+                         sides :: Vector{Float64})
+  iatom = 0
   jatom = 0
   dmin = +Inf
-  for j in jfmol:jlmol
-    d = distance(x,y,j)
-    if d < dmin
-      dmin = d
-      jatom = j - jfmol + 1
-    end
+  nx = size(x,1)
+  ny = size(y,1)
+  for i in 1:nx
+     for j in 1:ny
+       d = distance(sides,@view(x[i,:]),@view(y[j,:]))
+       if d < dmin
+         iatom = i
+         jatom = j
+         dmin = d
+       end
+     end
   end
-  return dmin, jatom
+  return dmin, iatom, jatom
 end
+
+# Function that returns the distance of a reference atom as well, to be used for 
+# computation of the volume shell by Monte-Caro integration
+
+function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64},
+                         jrefatom :: Int64, sides :: Vector{Float64})
+  iatom = 0
+  jatom = 0
+  drefatom = +Inf
+  dmin = +Inf
+  nx = size(x,1)
+  ny = size(y,1)
+  for i in 1:nx
+     jcount = 0
+     for j in 1:ny
+       d = distance(sides,@view(x[i,:]),@view(y[j,:]))
+       # Minimum distance of any solvent atom to the solute
+       if d < dmin
+         iatom = i
+         jatom = j
+         dmin = d
+       end
+       # Minimum distance of the reference atom to the solute
+       jcount = jcount + 1
+       if jcount == jrefatom
+         if d < drefatom
+           drefatom = d
+         end
+       end
+     end
+  end
+  return dmin, iatom, jatom, drefatom
+end
+
 

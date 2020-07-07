@@ -7,6 +7,11 @@
 # This function modified the values contained in the R data structure
 #
 
+struct Samples
+  count :: Int64
+  random :: Int64
+end
+
 function finalresults!(R :: Result, options :: Options, trajectory)
   
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
@@ -21,15 +26,16 @@ function finalresults!(R :: Result, options :: Options, trajectory)
   #
   # Averaging for the number of frames and number of solute molecules
   #
-  nsamples = R.nframes_read*trajectory.solute.nmols
+  s = Samples(R.nframes_read*trajectory.solute.nmols, 
+              R.nframes_read*options.n_random_samples)
 
   # Counters
-  @. R.md_count = R.md_count / nsamples
-  @. R.solute_atom = R.solute_atom / nsamples
-  @. R.solvent_atom = R.solvent_atom / nsamples
-  @. R.md_count_random = R.md_count_random / (nsamples*options.n_random_samples)
-  @. R.rdf_count = R.rdf_count / nsamples
-  @. R.rdf_count_random = R.rdf_count_random / (nsamples*options.n_random_samples)
+  @. R.md_count = R.md_count / s.count
+  @. R.solute_atom = R.solute_atom / s.count
+  @. R.solvent_atom = R.solvent_atom / s.count
+  @. R.md_count_random = R.md_count_random / s.random
+  @. R.rdf_count = R.rdf_count / s.count
+  @. R.rdf_count_random = R.rdf_count_random / s.random
 
   # Volumes and Densities
   R.volume.total = R.volume.total / R.nframes_read
