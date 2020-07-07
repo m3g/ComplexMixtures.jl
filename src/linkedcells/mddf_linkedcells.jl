@@ -38,9 +38,6 @@ function mddf_linkedcells(trajectory, options :: Options)
   # Auxiliary structure to random generation of solvent coordinates
   moveaux = MoveAux(solvent.natomspermol)
   
-  # Counter for the total number of bulk molecules
-  nbulk = 0
-
   # Structure to organize counters for each frame only
   volume_frame = Volume(R.nbins)
   rdf_count_random_frame = zeros(R.nbins)
@@ -156,7 +153,7 @@ function mddf_linkedcells(trajectory, options :: Options)
 
       # Initialize linked cells
       initcells!(xsol,box,lc_solute)
-      initcells!(x_solvent,box,lc_solvent)
+      initcells!(x_solvent_random,box,lc_solvent)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned

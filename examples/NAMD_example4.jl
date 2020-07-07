@@ -10,6 +10,11 @@ atoms = PDBTools.readPDB("./structure.pdb")
 solute_indexes = [ atom.index for atom in filter( atom -> PDBTools.isprotein(atom), atoms ) ]
 solute = MDDF.Solute( solute_indexes, nmols=1 )
 
+# test
+#sel = filter(atom -> atom.resname == "TIP3" && atom.resnum == 1 && atom.chain == "B", atoms)
+#solute_indexes = [ atom.index for atom in sel ]
+#solute = MDDF.Solute( solute_indexes, nmols=1 )
+
 # The solvent is TMAO, which has 14 atoms. Use the natomspermol to indicate how many
 # atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
 # of the selection into individual molecules.
@@ -32,7 +37,7 @@ solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2)
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1)
 
 # Run MDDF calculation, and get the resutls in the R structure
 #R = MDDF.mddf_naive(trajectory,options)

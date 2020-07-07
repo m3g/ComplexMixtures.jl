@@ -30,8 +30,7 @@ function random_move!(x_ref :: AbstractArray{Float64},
   
   # Take care that this molecule is not split by periodic boundary conditions, by
   # wrapping its coordinates around its reference atom
-  @. aux.oldcm = x_ref[irefatom,1:3] 
-  wrap!(x_new,sides,aux.oldcm)
+  wrap!(x_new,sides,@view(x_ref[irefatom,1:3]))
 
   # Move molecule to new position
   move!(x_new,aux)
