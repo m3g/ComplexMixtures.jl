@@ -17,7 +17,7 @@ options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=1)
 
 Profile.clear()
 
-for num in [ 10000000 ]
+for num in [ 100000000 ]
 
   println(" n = ", num) 
 
@@ -32,11 +32,12 @@ for num in [ 10000000 ]
   R = MDDF.mddf_linkedcells(trajectory,options)
   trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
   @time R = MDDF.mddf_linkedcells(trajectory,options)
-  println("naive:")
-  trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-  R = MDDF.mddf_naive(trajectory,options)
-  trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-  @time R = MDDF.mddf_naive(trajectory,options)
+
+  #println("naive:")
+  #trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+  #R = MDDF.mddf_naive(trajectory,options)
+  #trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+  #@time R = MDDF.mddf_naive(trajectory,options)
 
   println(" profiling linkedcells... ")
   trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)

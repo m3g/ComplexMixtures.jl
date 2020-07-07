@@ -1,2 +1,2 @@
 # Function that prints the current release version
-version() = "Version 20.188"
+version() = "Version 20.189"
