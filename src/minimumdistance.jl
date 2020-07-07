@@ -28,22 +28,17 @@ end
 # If x is only a vector (not an array)
 
 function minimumdistance(x :: AbstractVector{Float64}, y :: AbstractArray{Float64})
-  iatom = 0
   jatom = 0
   dmin = +Inf
-  nx = size(x,1)
   ny = size(y,1)
-  for i in 1:nx
-     for j in 1:ny
-       d = distance(x,@view(y[j,:]))
-       if d < dmin
-         iatom = i 
-         jatom = j 
-         dmin = d
-       end
-     end
+  for j in 1:ny
+    d = distance(x,@view(y[j,:]))
+    if d < dmin
+      jatom = j 
+      dmin = d
+    end
   end
-  return dmin, iatom, jatom
+  return dmin, 1, jatom
 end
 
 # Function that returns the distance of a reference atom as well, to be used for 
