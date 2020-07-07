@@ -6,6 +6,24 @@
 # the indexes of these points in x and y vectors
 #
 
+# If x is only a vector (not an array)
+
+function minimumdistance(x :: AbstractVector{Float64}, y :: AbstractArray{Float64})
+  jatom = 0
+  dmin = +Inf
+  ny = size(y,1)
+  for j in 1:ny
+    d = distance(x,@view(y[j,1:3]))
+    if d < dmin
+      jatom = j 
+      dmin = d
+    end
+  end
+  return dmin, 1, jatom
+end
+
+# If both are arrays
+
 function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64})
   iatom = 0
   jatom = 0
@@ -23,22 +41,6 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
      end
   end
   return dmin, iatom, jatom
-end
-
-# If x is only a vector (not an array)
-
-function minimumdistance(x :: AbstractVector{Float64}, y :: AbstractArray{Float64})
-  jatom = 0
-  dmin = +Inf
-  ny = size(y,1)
-  for j in 1:ny
-    d = distance(x,@view(y[j,1:3]))
-    if d < dmin
-      jatom = j 
-      dmin = d
-    end
-  end
-  return dmin, 1, jatom
 end
 
 # Function that returns the distance of a reference atom as well, to be used for 
