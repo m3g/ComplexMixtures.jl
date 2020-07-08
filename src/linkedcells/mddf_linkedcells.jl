@@ -46,8 +46,8 @@ function mddf_linkedcells(trajectory, options :: Options)
   lc_solute = LinkedCells(solute.natomspermol)
   lc_solvent = LinkedCells(solvent.natoms)
  
-  # Structure that contains the cutoff, sides, and xmin, to organize the linked
-  # cell calculations
+  # Structure that contains the cutoff, sides, and number of cells
+  # in each dimension  to organize the linked cell calculations
   box = Box(options.cutoff)
 
   # Structure that will contain the temporary useful information of all the  
