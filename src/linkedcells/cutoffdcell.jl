@@ -12,6 +12,13 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
                       i :: Int64, j :: Int64, k :: Int64,
                       dc :: CutoffDistances)
 
+  # Check if this box needs to be wrapped. If so, the distance calculation has to take
+  # that in consideration
+  wrapped = false
+  if i == 0 || i == box.nc[1] || j == 0 || j == box.nc[2] || k == 0 || k == box.nc[3]
+    wrapped = true
+  end
+
   # Get the indexes of the current cell considering the possible wrap associated
   # to periodic boundary conditions
   i, j, k = wrap_cell(box.nc,i,j,k)
@@ -21,7 +28,11 @@ function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
   # and annotating the distances and the atoms of those smaller than the cutoff
   jat = lc_solvent.firstatom[icell]
   while jat > 0
-    d = distance(box.sides,@view(x_solvent[jat,1:3]),xat)
+    if wrapped 
+      d = distance(box.sides,@view(x_solvent[jat,1:3]),xat)
+    else
+      d = distance(@view(x_solvent[jat,1:3]),xat)
+    end
     if d <= box.cutoff
       dc.nd[1] += 1
       # If the number of distances found is greater than maxdim,

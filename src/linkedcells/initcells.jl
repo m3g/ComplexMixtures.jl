@@ -7,6 +7,13 @@
                   
 function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells )
 
+  # Wrap coordinates relative to the origin. This is necessary to speedup calculations,
+  # as the wrapping of coordinates to compute distanes will be only necessary for cells
+  # at the borders of the simulation box. Not having the compute minimum images between
+  # pairs of atoms actually speeds up the calculations significantly, because the calculation
+  # of pairwise distances is the most repeated calculation 
+  wrap!(x,box.sides)
+
   nboxes = box.nc[1]*box.nc[2]*box.nc[3] 
   if length(lc.firstatom) < nboxes
     resize!(lc.firstatom,nboxes)

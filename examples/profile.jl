@@ -41,11 +41,11 @@ for num in [ 10000000 ]
 
   println(" profiling linkedcells... ")
   trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-  #@profile R = MDDF.mddf_linkedcells(trajectory,options) 
+  @profile R = MDDF.mddf_linkedcells(trajectory,options) 
 
-  trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-  println(" profiling naive... ")
-  @profile R = MDDF.mddf_naive(trajectory,options) 
+  #trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+  #println(" profiling naive... ")
+  #profile R = MDDF.mddf_naive(trajectory,options) 
 
 end
 
