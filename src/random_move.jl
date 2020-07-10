@@ -8,7 +8,7 @@
 #
 
 function random_move!(x_ref :: AbstractArray{Float64},
-                      irefatom :: Int64, sides :: Vector{Float64}, ref_center :: Vector{Float64}, 
+                      irefatom :: Int64, sides :: Vector{Float64},
                       x_new :: AbstractArray{Float64}, aux :: MoveAux )
 
   # To avoid boundary problems, the center of coordinates are generated in a 
@@ -16,7 +16,7 @@ function random_move!(x_ref :: AbstractArray{Float64},
   scale = 100.
 
   # Generate random coordiantes for the center of mass
-  @. aux.newcm = -scale*sides/2 + rand(Float64)*scale*sides + ref_center
+  @. aux.newcm = -scale*sides/2 + rand(Float64)*scale*sides
 
   # Generate random rotation angles 
   @. aux.angles = (2*pi)*rand(Float64)
@@ -34,9 +34,6 @@ function random_move!(x_ref :: AbstractArray{Float64},
 
   # Move molecule to new position
   move!(x_new,aux)
-
-  # Wrap coordinates relative to solute center 
-  wrap!(x_new,sides,ref_center)
 
 end
 

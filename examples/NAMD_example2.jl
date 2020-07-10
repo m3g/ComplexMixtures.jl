@@ -8,8 +8,7 @@ using PDBTools
 atoms = PDBTools.readPDB("./structure.pdb")
 
 # The solute is water, with 3 atoms
-solute_indexes = 
-  [ atom.index for atom in filter( atom -> (atom.resname == "TIP3" && atom.resnum < 500), atoms ) ]
+solute_indexes = [ atom.index for atom in filter( atom -> (atom.resname == "TIP3"), atoms ) ]
 solute = MDDF.Solute( solute_indexes, natomspermol=3 )
 
 # The solvent is TMAO, which has 14 atoms. Use the natomspermol to indicate how many
@@ -18,19 +17,17 @@ solute = MDDF.Solute( solute_indexes, natomspermol=3 )
 solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO", atoms ) ]
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 
-# Initialize trajectroy data structure and open input stream
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",n_random_samples=20000,binstep=0.2,lastframe=1)
+options = MDDF.Options(output="example.dat",n_random_samples=1000,binstep=0.2,lastframe=-1)
 
 # Run MDDF calculation, and get the resutls in the R structure
+println("Naive:")
+trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 @time N = MDDF.mddf_naive(trajectory,options)
 
-# Initialize trajectroy data structure and open input stream
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-
 # Run MDDF calculation, and get the resutls in the R structure
+println("LinkedCells:")
+trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 @time R = MDDF.mddf_linkedcells(trajectory,options)
 
 plot(layout=(6,1))
@@ -72,8 +69,8 @@ sp=6
 plot!(ylabel="Sum RAND", subplot=sp)
 scatter!(N.d,N.sum_md_count_random,subplot=sp,label="naive - rand")
 scatter!(N.d,N.sum_rdf_count,subplot=sp,label="naive - rdf")
-scatter!(R.d,R.sum_md_count_random,subplot=sp,label="new - rand")
-scatter!(R.d,R.sum_rdf_count,subplot=sp,label="new - rdf")
+plot!(R.d,R.sum_md_count_random,subplot=sp,label="new - rand")
+plot!(R.d,R.sum_rdf_count,subplot=sp,label="new - rdf")
 plot!(legend=:topleft,subplot=sp)
 
 plot!(size=(800,1300))

@@ -9,10 +9,11 @@
 # With periodic conditions 
 #
 
-@inline function distance( sides :: Vector{Float64}, 
-                           x :: AbstractVector{Float64}, y :: AbstractVector{Float64}) 
+@inline function distance( x :: AbstractVector{Float64}, y :: AbstractVector{Float64}, 
+                           sides :: Vector{Float64} )
   # Wrap x relative to y
-  wrapone!(x,sides,y)
-  return distance(x,y)
+  xnew = wrapone(x,sides,y)
+  return distance(xnew,y)
 
 end
+

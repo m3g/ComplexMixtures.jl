@@ -2,9 +2,9 @@
 # Structure that contains some data required to compute the linked cells
 #
 struct Box
+  cutoff :: Float64
   sides :: Vector{Float64}
   nc :: Vector{Int64}
-  l :: Vector{Float64}
 end
 # Must be initialized with a cutoff
-Box() = Box(zeros(3), zeros(Int64,3), zeros(3))
+Box(cutoff :: Float64) = Box( cutoff, zeros(3), zeros(Int64,3))

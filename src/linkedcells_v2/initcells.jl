@@ -5,7 +5,21 @@
 # Modifies the data in the lc structure
 #
                   
-function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells)
+function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells, center)
+
+  # Wrap coordinates relative to the origin. This is necessary to speedup calculations,
+  # as the wrapping of coordinates to compute distanes will be only necessary for cells
+  # at the borders of the simulation box. Not having the compute minimum images between
+  # pairs of atoms actually speeds up the calculations significantly, because the calculation
+  # of pairwise distances is the most repeated calculation 
+  wrap!(x,box.sides,center)
+
+  # Move the atoms such that the provided center is in the origin
+  for i in 1:size(x,1)
+    for j in 1:3
+      x[i,j] = x[i,j] - center[j]
+    end
+  end
 
   # Count the number of boxes and checks if there is a problem with dimensions
   nboxes = box.nc[1]*box.nc[2]*box.nc[3] 

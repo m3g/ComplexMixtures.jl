@@ -8,9 +8,9 @@
 # Returns nd, the number of distances smaller than the cutoff, and modifies dc
 #
 
-function cutoffdistances!(x_solute :: AbstractArray{Float64},
+function cutoffdistances!(cutoff :: Float64,
+                          x_solute :: AbstractArray{Float64},
                           x_solvent :: AbstractArray{Float64},
-                          lc_solute :: LinkedCells,
                           lc_solvent :: LinkedCells,
                           box :: Box, 
                           dc :: CutoffDistances)
@@ -18,66 +18,17 @@ function cutoffdistances!(x_solute :: AbstractArray{Float64},
   # Reset the dc structure 
   reset!(dc)
 
-  # Loop over the cells
-  for i in 1:box.nc[1]
-    for j in 1:box.nc[2]
-      for k in 1:box.nc[3]
-
-        # First solute atom in this cell
-        icell = icell1D(box.nc,i,j,k)
-        iat = lc_solute.firstatom[icell]
-
-        # Loop over solute atoms of this cell
-        while iat > 0
-
-          # Current solute atom coordinates
-          xat = @view(x_solute[iat,1:3])
-
-          # Inside box
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j,k,dc)
-        
-          # Interactions of boxes that share faces
-
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j+1,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j,k+1,dc)
-
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j-1,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j,k-1,dc)
-        
-          # Interactions of boxes that share axes
-
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j+1,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j-1,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j,k-1,dc)
-
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j+1,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j+1,k-1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j-1,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i,j-1,k-1,dc)
-
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j+1,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j-1,k,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j,k-1,dc)
-                       
-          # Interactions of boxes that share vertices
-
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j+1,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j+1,k-1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j-1,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i+1,j-1,k-1,dc)
-
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j+1,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j+1,k-1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j-1,k+1,dc)
-          cutoffdcell!(iat,xat,x_solvent,lc_solvent,box,i-1,j-1,k-1,dc)
-        
-          # Go to next atom of the solute in this cell
-          iat = lc_solute.nextatom[iat]
-
+  # Loop over solute atoms
+  for iat in 1:size(x_solute,1)
+    xat = @view(x_solute[iat,1:3])
+    # Check the cell of this atom
+    i, j, k = icell3D(xat,box)
+    # Loop over vicinal cells to compute distances to solvent atoms, and
+    # add data to dc structure (includes current cell)
+    for ic in i-1:i+1
+      for jc in j-1:j+1
+        for kc in k-1:k+1
+          cutoffdcell!(cutoff,iat,xat,x_solvent,lc_solvent,box,ic,jc,kc,dc)
         end
       end
     end

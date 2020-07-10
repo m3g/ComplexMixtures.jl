@@ -5,8 +5,7 @@
 # Modifies the data of dc
 #
 
-function cutoffdcell!(cutoff :: Float64, 
-                      iat :: Int64, xat :: AbstractArray{Float64},
+function cutoffdcell!(iat :: Int64, xat :: AbstractArray{Float64},
                       x_solvent :: AbstractArray{Float64},
                       lc_solvent :: LinkedCells,
                       box :: Box,
@@ -30,11 +29,11 @@ function cutoffdcell!(cutoff :: Float64,
   jat = lc_solvent.firstatom[icell]
   while jat > 0
     if wrapped 
-      d = distance(@view(x_solvent[jat,1:3]),xat,box.sides)
+      d = distance(box.sides,@view(x_solvent[jat,1:3]),xat)
     else
       d = distance(@view(x_solvent[jat,1:3]),xat)
     end
-    if d <= cutoff
+    if d <= box.cutoff
       dc.nd[1] += 1
       # If the number of distances found is greater than maxdim,
       # we need to increase the size of the vectors by 50%
