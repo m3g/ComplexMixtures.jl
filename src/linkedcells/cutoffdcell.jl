@@ -16,7 +16,7 @@ function cutoffdcell!(cutoff :: Float64,
   # Check if this box needs to be wrapped. If so, the distance calculation has to take
   # that in consideration
   wrapped = false
-  if i == 0 || j == 0 || k == 0 || i == box.nc[1]+1 || j == box.nc[2]+1 || k == box.nc[3]+1
+  if i < 1 || j < 1 || k < 1 || i > box.nc[1] || j > box.nc[2] || k > box.nc[3]
     wrapped = true
   end
 

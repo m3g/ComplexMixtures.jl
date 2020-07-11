@@ -47,7 +47,7 @@ function mddf_linkedcells(trajectory, options :: Options)
  
   # Structure that contains the sides, number of cells and cell length
   # in each dimension  to organize the linked cell calculations
-  box = Box()
+  box = Box(options.lcell)
 
   # Structure that will contain the temporary useful information of all the  
   # distances found to the be smaller than the cutoff, and the corresponding
@@ -88,7 +88,7 @@ function mddf_linkedcells(trajectory, options :: Options)
     # Add the box side information to the box structure, in this frame
     @. box.sides = sides
     # Compute the number of cells in each dimension
-    @. box.nc = max(1,trunc(Int64,box.sides/options.cutoff))
+    @. box.nc = max(1,trunc(Int64,box.sides/(options.cutoff/box.lcell)))
     @. box.l = box.sides/box.nc
 
     # Will wrap everthing relative to the center of coordinates of the solute atoms

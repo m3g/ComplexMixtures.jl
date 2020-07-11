@@ -25,9 +25,9 @@ function cutoffdistances!(cutoff :: Float64,
     i, j, k = icell3D(xat,box)
     # Loop over vicinal cells to compute distances to solvent atoms, and
     # add data to dc structure (includes current cell)
-    for ic in i-1:i+1
-      for jc in j-1:j+1
-        for kc in k-1:k+1
+    for ic in i-box.lcell:i+box.lcell
+      for jc in j-box.lcell:j+box.lcell
+        for kc in k-box.lcell:k+box.lcell
           cutoffdcell!(cutoff,iat,xat,x_solvent,lc_solvent,box,ic,jc,kc,dc)
         end
       end
