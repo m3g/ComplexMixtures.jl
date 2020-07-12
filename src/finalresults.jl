@@ -7,12 +7,7 @@
 # This function modified the values contained in the R data structure
 #
 
-struct Samples
-  count :: Int64
-  random :: Int64
-end
-
-function finalresults!(R :: Result, options :: Options, trajectory)
+function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples)
   
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
   mole = 6.022140857e23
@@ -22,12 +17,6 @@ function finalresults!(R :: Result, options :: Options, trajectory)
   for i in 1:R.nbins
     R.d[i] = shellradius(i,options.binstep)
   end
-
-  #
-  # Averaging for the number of frames and number of solute molecules
-  #
-  s = Samples(R.nframes_read*trajectory.solute.nmols, 
-              R.nframes_read*options.n_random_samples)
 
   # Counters
   @. R.md_count = R.md_count / s.count

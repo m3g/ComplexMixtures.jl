@@ -5,20 +5,10 @@ include("../src/MDDF.jl")
 using PDBTools
 atoms = PDBTools.readPDB("./structure.pdb")
 
-# The solute is water, with 3 atoms
-
-#solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO", atoms ) ]
-#solute = MDDF.Solute( solute_indexes, natomspermol=14 )
+# Self correlation, thus the solute and solvent indexes are identical
 
 solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
 solute = MDDF.Solute( solute_indexes, natomspermol=3 )
-
-# The solvent is TMAO, which has 14 atoms. Use the natomspermol to indicate how many
-# atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
-# of the selection into individual molecules.
-
-#solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO", atoms ) ]
-#solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 
 solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=3 )
@@ -27,27 +17,36 @@ solvent = MDDF.Solvent( solvent_indexes, natomspermol=3 )
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",n_random_samples=1,binstep=0.2)
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1)
 
 # Run MDDF calculation, and get the resutls in the R structure
-R = MDDF.mddf_naive_self(trajectory,options)
+#N = MDDF.mddf_naive_self(trajectory,options)
 
+R = MDDF.mddf_linkedcells_self(trajectory,options)
 
 using Plots
 nogtk()
 
 plot(layout=(2,1))
 
+x = [0,10]
+y = [1, 1]
+
 sp=1
 plot!(ylabel="MDDF or RDF",subplot=sp)
-plot!(R.d,R.mddf,subplot=sp,label="mddf")
-plot!(R.d,R.rdf,subplot=sp,label="rdf")
+scatter!(R.d,R.mddf,subplot=sp,label="mddf")
+scatter!(R.d,R.rdf,subplot=sp,label="rdf")
+plot!(N.d,R.mddf,subplot=sp,label="mddf - naive")
+plot!(N.d,R.rdf,subplot=sp,label="rdf - naive")
+plot!(x,y)
 plot!(legend=:topright,subplot=sp)
 
 sp=2
 plot!(ylabel="KB",subplot=sp)
-plot!(R.d,R.kb,subplot=sp,label="mddf")
-plot!(R.d,R.kb_rdf,subplot=sp,label="rdf")
+scatter!(R.d,R.kb,subplot=sp,label="mddf")
+scatter!(R.d,R.kb_rdf,subplot=sp,label="rdf")
+plot!(N.d,R.kb,subplot=sp,label="mddf - naive")
+plot!(N.d,R.kb_rdf,subplot=sp,label="rdf - naive")
 plot!(legend=:topright,subplot=sp)
 
 plot!(size=(600,800))

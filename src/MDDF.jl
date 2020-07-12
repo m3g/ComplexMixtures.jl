@@ -52,8 +52,8 @@ module MDDF
   # Structures to report results
   include("./FileOperations.jl")
   include("./Result.jl")
+  include("./Samples.jl")
   include("./finalresults.jl")
-  include("./finalresults_self.jl")
 
   # Implementation of mddf using naive algorithms
   include("./mddf_naive.jl")
@@ -87,6 +87,10 @@ module MDDF
   include("./linkedcells/keepunique.jl")
   include("./linkedcells/keepminimum.jl")
   include("./linkedcells/mddf_linkedcells.jl")
+
+  include("./linkedcells/cutoffdcell_self.jl")
+  include("./linkedcells/cutoffdistances_self.jl")
+  include("./linkedcells/mddf_linkedcells_self.jl")
 
   # Parser to the default mddf method in each case
   #include("./mddf.jl")

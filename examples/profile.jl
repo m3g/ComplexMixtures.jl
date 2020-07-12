@@ -13,7 +13,7 @@ solute_indexes = [ atom.index for atom in filter( atom -> PDBTools.isprotein(ato
 solute = MDDF.Solute( solute_indexes, nmols=1 )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=1)
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=1,lcell=2)
 
 Profile.clear()
 

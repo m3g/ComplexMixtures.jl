@@ -44,8 +44,6 @@ function mddf_naive_self(trajectory, options :: Options)
   # Number of pairs of molecules (the number of distances computed)
   npairs = solute.nmols*(solute.nmols-1)/2
 
-  n_sample_total = 0
-
   # Computing all minimum-distances
   progress = Progress(R.nframes_read*solute.nmols,1)
   for iframe in 1:R.lastframe_read
@@ -88,6 +86,7 @@ function mddf_naive_self(trajectory, options :: Options)
       # first and last atoms of the current solute molecule
       ifmol = (imol-1)*solute.natomspermol + 1
       ilmol = ifmol + solute.natomspermol - 1
+      x_this_solute = @view(x_solute[ifmol:ilmol,1:3])
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
       centerofcoordinates!(solute_center,@view(x_solute[ifmol:ilmol,1:3]))
@@ -106,8 +105,8 @@ function mddf_naive_self(trajectory, options :: Options)
         jlmol = jfmol + solvent.natomspermol - 1
 
         # Compute minimum distance 
-        dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
-                                                       jfmol,jlmol,x_solvent,
+        dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
+                                                       @view(x_solvent[jfmol:jlmol,1:3]),
                                                        R.irefatom)
 
         # Update histogram for computation of MDDF
@@ -142,9 +141,10 @@ function mddf_naive_self(trajectory, options :: Options)
         # Generate new random coordinates (translation and rotation) for this molecule
         jfmol = (jmol-1)*solvent.natomspermol + 1
         jlmol = jfmol + solvent.natomspermol - 1
-        random_move!(jfmol,jlmol,x_solvent,R.irefatom,sides,solute_center,x_solvent_random,moveaux)
-        dmin, iatom, jatom, drefatom = minimumdistance(ifmol,ilmol,x_solute,
-                                                       1,solvent.natomspermol,x_solvent_random,
+        x_this_solvent = @view(x_solvent[jfmol:jlmol,1:3])
+        random_move!(x_this_solvent,R.irefatom,sides,x_solvent_random,moveaux)
+        dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
+                                                       x_solvent_random,
                                                        R.irefatom)
 
         if dmin <= options.dbulk
@@ -175,7 +175,9 @@ function mddf_naive_self(trajectory, options :: Options)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
-  finalresults_self!(R,options,trajectory)
+  s = Samples(R.nframes_read*(trajectory.solute.nmols-1),
+              R.nframes_read*options.n_random_samples)
+  finalresults!(R,options,trajectory,s)
 
   return R
 

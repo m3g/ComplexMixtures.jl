@@ -175,7 +175,9 @@ function mddf_naive(trajectory, options :: Options)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
-  finalresults!(R,options,trajectory)
+  s = Samples(R.nframes_read*trajectory.solute.nmols,
+              R.nframes_read*options.n_random_samples)
+  finalresults!(R,options,trajectory,s)
 
   return R
 
