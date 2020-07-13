@@ -110,8 +110,8 @@ function mddf_naive_self(trajectory, options :: Options)
                                                        R.irefatom)
 
         # Update histogram for computation of MDDF
-        ibin = setbin(dmin,options.binstep)
-        if ibin <= R.nbins
+        if dmin <= options.cutoff
+          ibin = setbin(dmin,options.binstep)
           R.md_count[ibin] += 1
           R.solute_atom[iatom,ibin] += 1 
           R.solvent_atom[jatom,ibin] += 1 
@@ -121,8 +121,8 @@ function mddf_naive_self(trajectory, options :: Options)
         end
 
         # Update histogram for the computation of the RDF
-        ibin = setbin(drefatom,options.binstep) 
-        if ibin <= R.nbins
+        if drefatom <= options.cutoff
+          ibin = setbin(drefatom,options.binstep) 
           R.rdf_count[ibin] += 1
         end
 
