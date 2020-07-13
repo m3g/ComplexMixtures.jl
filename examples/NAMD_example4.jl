@@ -33,14 +33,14 @@ solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 #solvent = MDDF.Solvent( MDDF.VMDselect("structure.pdb","resname TMAO",vmd="/usr/local/bin/vmd"), 
 #                        natomspermol=14 ) 
 
-# Initialize trajectroy data structure and open input stream
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-
 # Input options for the calcualtion
 options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1)
 
 # Run MDDF calculation, and get the resutls in the R structure
-#R = MDDF.mddf_naive(trajectory,options)
+trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+N = MDDF.mddf_naive(trajectory,options)
+
+trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 R = MDDF.mddf_linkedcells(trajectory,options)
 
 include("./plots.jl")

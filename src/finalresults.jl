@@ -55,10 +55,10 @@ function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples
     if R.md_count_random[ibin] > 0.
       R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
       for i in 1:trajectory.solute.natomspermol   
-        R.solute_atom[i,ibin] = R.solute_atom[i,ibin] / R.md_count_random[ibin]
+        R.solute_atom[ibin,i] = R.solute_atom[ibin,i] / R.md_count_random[ibin]
       end
       for j in 1:trajectory.solvent.natomspermol
-        R.solvent_atom[j,ibin] = R.solvent_atom[j,ibin] / R.md_count_random[ibin]
+        R.solvent_atom[ibin,j] = R.solvent_atom[ibin,j] / R.md_count_random[ibin]
       end
     end
     if ibin == 1
@@ -73,9 +73,9 @@ function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples
     # For the RDF
 
     if R.rdf_count_random[ibin] > 0.
-      R.rdf[ibin] = R.rdf_count[ibin] / (R.volume.shell[ibin]*R.density.solvent_bulk)
+      #R.rdf[ibin] = R.rdf_count[ibin] / (R.volume.shell[ibin]*R.density.solvent_bulk)
       #or
-      #R.rdf[ibin] = R.rdf_count[ibin] / R.rdf_count_random[ibin] 
+      R.rdf[ibin] = R.rdf_count[ibin] / R.rdf_count_random[ibin] 
     end
     if ibin == 1
       R.sum_rdf_count[ibin] = R.rdf_count[ibin]

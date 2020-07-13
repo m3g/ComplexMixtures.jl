@@ -136,8 +136,8 @@ function Result( trajectory, options :: Options )
                  zeros(Float64,nbins), # sum_md_count_random
                  zeros(Float64,nbins), # mddf
                  zeros(Float64,nbins), # kb
-                 zeros(Float64,trajectory.solute.natomspermol,nbins), # Array to store the solute atom contributions
-                 zeros(Float64,trajectory.solvent.natomspermol,nbins), # Array to store the solvent atom contributions
+                 zeros(Float64,nbins,trajectory.solute.natomspermol), # Array to store the solute atom contributions
+                 zeros(Float64,nbins,trajectory.solvent.natomspermol), # Array to store the solvent atom contributions
                  zeros(Float64,nbins), # rdf_count
                  zeros(Float64,nbins), # rdf_Count_random
                  zeros(Float64,nbins), # sum_rdf_count

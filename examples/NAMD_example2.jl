@@ -18,7 +18,7 @@ solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",n_random_samples=100,binstep=0.2,lastframe=1)
+options = MDDF.Options(output="example.dat",n_random_samples=100,binstep=0.2,lastframe=-1)
 
 # Run MDDF calculation, and get the resutls in the R structure
 println("Naive:")
@@ -30,7 +30,7 @@ println("LinkedCells:")
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 @time R = MDDF.mddf_linkedcells(trajectory,options)
 
-plot(layout=(6,1))
+plot(layout=(7,1))
 
 sp=1
 plot!(ylabel="MDDF",subplot=sp)
@@ -72,6 +72,13 @@ scatter!(N.d,N.sum_rdf_count,subplot=sp,label="naive - rdf")
 plot!(R.d,R.sum_md_count_random,subplot=sp,label="new - rand")
 plot!(R.d,R.sum_rdf_count,subplot=sp,label="new - rdf")
 plot!(legend=:topleft,subplot=sp)
+
+sp=7
+plot!(ylabel="Atom contributions", subplot=sp)
+scatter!(N.d,N.solute_atom,subplot=sp,label="naive")
+plot!(R.d,R.solute_atom,subplot=sp,label="new")
+#scatter!(N.d,N.solvent_atom,subplot=sp,label="naive")
+#plot!(R.d,R.solvent_atom,subplot=sp,label="new")
 
 plot!(size=(800,1300))
 savefig("./plots.pdf")

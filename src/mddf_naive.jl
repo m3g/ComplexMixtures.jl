@@ -109,8 +109,8 @@ function mddf_naive(trajectory, options :: Options)
         if dmin < options.dbulk
           ibin = setbin(dmin,options.binstep)
           R.md_count[ibin] += 1
-          R.solute_atom[iatom,ibin] += 1 
-          R.solvent_atom[jatom,ibin] += 1 
+          R.solute_atom[ibin,iatom] += 1 
+          R.solvent_atom[ibin,jatom] += 1 
         else
           n_jmol_in_bulk += 1
           jmol_in_bulk[n_jmol_in_bulk] = jmol

@@ -7,11 +7,16 @@ atoms = PDBTools.readPDB("./structure.pdb")
 
 # Self correlation, thus the solute and solvent indexes are identical
 
-solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
-solute = MDDF.Solute( solute_indexes, natomspermol=3 )
+resname = "TMAO"
+natomspermol = 14
+resname = "TIP3"
+natomspermol = 3
 
-solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
-solvent = MDDF.Solvent( solvent_indexes, natomspermol=3 )
+solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
+solute = MDDF.Solute( solute_indexes, natomspermol=natomspermol )
+
+solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
+solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
 
 # Initialize trajectroy data structure and open input stream
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)

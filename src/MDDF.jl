@@ -60,32 +60,18 @@ module MDDF
   include("./mddf_naive_self.jl")
  
   # Structures and functions for the linked cell method
-
-  #include("./linkedcells_v1/LinkedCells.jl")
-  #include("./linkedcells_v1/icell3D.jl")
-  #include("./linkedcells_v1/ijkcell.jl")
-  #include("./linkedcells_v1/initcells.jl")
-  #include("./linkedcells_v1/CutoffDistances.jl")
-  #include("./linkedcells_v1/cutoffdcell.jl")
-  #include("./linkedcells_v1/cutoffdistances.jl")
-  #include("./linkedcells_v1/keepunique.jl")
-  #include("./linkedcells_v1/keepminimum.jl")
-  #include("./linkedcells_v1/mddf_linkedcells.jl")
-
   include("./linkedcells/LinkedCells.jl")
   include("./linkedcells/DminMol.jl")
+  include("./linkedcells/CutoffDistances.jl")
   include("./linkedcells/partialsort_cutoff.jl")
   include("./linkedcells/updatecounters.jl")
   include("./linkedcells/icell1D.jl")
   include("./linkedcells/wrap_cell.jl")
   include("./linkedcells/icell3D.jl")
   include("./linkedcells/initcells.jl")
-  include("./linkedcells/CutoffDistances.jl")
   include("./linkedcells/increase_size.jl")
   include("./linkedcells/cutoffdcell.jl")
   include("./linkedcells/cutoffdistances.jl")
-  include("./linkedcells/keepunique.jl")
-  include("./linkedcells/keepminimum.jl")
   include("./linkedcells/mddf_linkedcells.jl")
 
   include("./linkedcells/cutoffdcell_self.jl")

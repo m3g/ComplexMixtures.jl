@@ -121,8 +121,7 @@ function mddf_linkedcells(trajectory, options :: Options)
       # within updatecounters there are loops over solvent molecules, in such a way that
       # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
       # at this point with acceptable memory requirements
-      n_solvent_in_bulk_last = updatecounters!(R.irefatom,R.md_count,R.rdf_count,
-                                               solvent,dc,options,dmin_mol,dref_mol)
+      n_solvent_in_bulk_last = updatecounters!(R,solute,solvent,dc,options,dmin_mol,dref_mol)
       n_solvent_in_bulk += n_solvent_in_bulk_last
     end
 
@@ -168,9 +167,10 @@ function mddf_linkedcells(trajectory, options :: Options)
       # in the dc structure
       cutoffdistances!(options.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
 
-      # Update the counters and get the number of solvent molecules in bulk
+      # Update the counters of the random distribution
       updatecounters!(R.irefatom,R.md_count_random,rdf_count_random_frame,
                       solvent,dc,options,dmin_mol,dref_mol)
+
 
     end # random solvent sampling
 

@@ -5,5 +5,7 @@
 mutable struct DminMol
   d
   jmol
+  iat
+  jat
 end
 
