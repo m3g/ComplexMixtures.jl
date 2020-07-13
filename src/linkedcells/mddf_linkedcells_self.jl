@@ -18,8 +18,10 @@ function mddf_linkedcells_self(trajectory, options :: Options)
 
   # Here, we have to generate the complete box of random solvent molecules at once,
   # to take advantadge of the linked cells, therefore we need an auxliary array
-  # store that randomly generated solvent box
-  x_solvent_random = similar(x_solvent)
+  # store that randomly generated solvent box (the size of the random vector
+  # is one molecule smaller, because the solvent does not contain the reference
+  # solute molecule
+  x_solvent_random = Array{Float64}(undef,solvent.natoms-solvent.natomspermol,3)
 
   # Vector to annotate if the solvent molecule is a bulk molecule
   solvent_in_bulk = zeros(Int64,solvent.nmols)
@@ -121,8 +123,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       # within updatecounters there are loops over solvent molecules, in such a way that
       # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
       # at this point with acceptable memory requirements
-      n_solvent_in_bulk_last = updatecounters!(R.irefatom,R.md_count,R.rdf_count,
-                                               solvent,dc,options,dmin_mol,dref_mol)
+      n_solvent_in_bulk_last = updatecounters!(R,solvent,solvent,dc,options,dmin_mol,dref_mol)
       n_solvent_in_bulk += n_solvent_in_bulk_last
     end
 
@@ -132,7 +133,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     for i in 1:options.n_random_samples
 
       # generate random solvent box, and store it in x_solvent_random
-      for j in 1:solvent.nmols
+      for j in 1:solvent.nmols-1
         # Choose randomly one molecule from the bulk, if there are actually bulk molecules
         if n_solvent_in_bulk_last != 0
           jmol = dmin_mol[rand(solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol

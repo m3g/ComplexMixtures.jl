@@ -9,7 +9,7 @@
 #
 
 function updatecounters!(R :: Result, 
-                         solute, solvent :: SoluteOrSolvent,
+                         solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent,
                          dc :: CutoffDistances, options :: Options,
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
 

@@ -9,8 +9,8 @@ atoms = PDBTools.readPDB("./structure.pdb")
 
 resname = "TMAO"
 natomspermol = 14
-resname = "TIP3"
-natomspermol = 3
+#resname = "TIP3"
+#natomspermol = 3
 
 solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
 solute = MDDF.Solute( solute_indexes, natomspermol=natomspermol )
@@ -18,21 +18,20 @@ solute = MDDF.Solute( solute_indexes, natomspermol=natomspermol )
 solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
 
-# Initialize trajectroy data structure and open input stream
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1)
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1,n_random_samples=100)
 
 # Run MDDF calculation, and get the resutls in the R structure
-#N = MDDF.mddf_naive_self(trajectory,options)
+trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+N = MDDF.mddf_naive_self(trajectory,options)
 
+trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 R = MDDF.mddf_linkedcells_self(trajectory,options)
 
 using Plots
 nogtk()
 
-plot(layout=(2,1))
+plot(layout=(3,1))
 
 x = [0,10]
 y = [1, 1]
@@ -52,6 +51,23 @@ scatter!(R.d,R.kb,subplot=sp,label="mddf")
 scatter!(R.d,R.kb_rdf,subplot=sp,label="rdf")
 plot!(N.d,R.kb,subplot=sp,label="mddf - naive")
 plot!(N.d,R.kb_rdf,subplot=sp,label="rdf - naive")
+plot!(legend=:topright,subplot=sp)
+
+sp=3
+plot!(ylabel="atom contrib",subplot=sp)
+i = 5
+plot!(R.d,R.solute_atom[:,i],subplot=sp,label="new",linewidth=2)
+plot!(R.d,R.solvent_atom[:,i],subplot=sp,label="new",linewidth=2)
+scatter!(N.d,N.solute_atom[:,i],subplot=sp,label="naive")
+scatter!(N.d,N.solvent_atom[:,i],subplot=sp,label="naive")
+y1 = similar(R.d)
+y2 = similar(R.d)
+for i in 1:size(R.d,1)
+  y1[i] = sum(R.solvent_atom[i,:])
+  y2[i] = sum(N.solvent_atom[i,:])
+end
+plot!(R.d,y1,subplot=sp,label="sum")
+scatter!(R.d,y2,subplot=sp,label="sum")
 plot!(legend=:topright,subplot=sp)
 
 plot!(size=(600,800))
