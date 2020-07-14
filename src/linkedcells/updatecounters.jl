@@ -102,7 +102,7 @@ function updatecounters!(irefatom :: Int64, md_count_random :: AbstractVector{Fl
 
   # Add distances to the counters
   i = 1
-  while i <= solvent.nmols && dmin_mol[i].d < options.dbulk 
+  while i <= solvent.nmols && dmin_mol[i].d <= options.dbulk 
     ibin = setbin(dmin_mol[i].d,options.binstep)
     md_count_random[ibin] += 1
     i = i + 1

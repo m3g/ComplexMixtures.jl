@@ -48,6 +48,7 @@ module MDDF
   include("./shellradius.jl")
   include("./sphereradiusfromshellvolume.jl")
   include("./setbin.jl")
+  include("./viewmol.jl")
 
   # Structures to report results
   include("./FileOperations.jl")
@@ -56,6 +57,7 @@ module MDDF
   include("./finalresults.jl")
 
   # Implementation of mddf using naive algorithms
+  include("./update_counters_frame.jl")
   include("./mddf_naive.jl")
   include("./mddf_naive_self.jl")
  

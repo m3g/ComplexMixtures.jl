@@ -33,7 +33,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
   center = Vector{Float64}(undef,3)
 
   # Number of pairs of molecules (the number of distances computed)
-  npairs = solvent.nmols*(solvent.nmols-1)/2
+  npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
 
   # Auxiliary structure to random generation of solvent coordinates
   moveaux = MoveAux(solvent.natomspermol)
@@ -109,9 +109,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
 
       # We need to do this one solute molecule at a time to avoid exploding the memory
       # requirements
-      ifmol = (isolvent-1)*solvent.natomspermol + 1
-      ilmol = ifmol + solvent.natomspermol - 1
-      x_this_solute = @view(x_solvent[ifmol:ilmol,1:3])
+      x_this_solute = viewmol(isolvent,x_solvent,solvent)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
@@ -131,7 +129,6 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     # Computing the random-solvent distribution to compute the random minimum-distance count
     #
     for i in 1:options.n_random_samples
-
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols-1
         # Choose randomly one molecule from the bulk, if there are actually bulk molecules
@@ -141,14 +138,11 @@ function mddf_linkedcells_self(trajectory, options :: Options)
           jmol = rand(1:solvent.nmols)
         end
         # Indexes of this molecule in the x_solvent array
-        jfmol = (jmol-1)*solvent.natomspermol + 1
-        jlmol = jfmol + solvent.natomspermol - 1
+        x_ref = viewmol(jmol,x_solvent,solvent)
         # Indexes of the random molecule in random array
-        jfstore = (j-1)*solvent.natomspermol + 1
-        jlstore = jfstore + solvent.natomspermol - 1
+        x_rnd = viewmol(j,x_solvent_random,solvent)
         # Generate new random coordinates (translation and rotation) for this molecule
-        random_move!(@view(x_solvent[jfmol:jlmol,1:3]),R.irefatom,sides,
-                     @view(x_solvent_random[jfstore:jlstore,1:3]),moveaux)
+        random_move!(x_ref,R.irefatom,sides,x_rnd,moveaux)
       end
 
       # wrap random solvent coordinates to box
@@ -160,9 +154,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
 
       # Choose randomly one solute molecule to be the solute in this sample
       i_rand_mol = rand(1:solvent.nmols)
-      ifmol = (i_rand_mol-1)*solvent.natomspermol+1
-      ilmol = ifmol + solvent.natomspermol - 1
-      x_this_solute = @view(x_solvent[ifmol:ilmol,1:3])
+      x_this_solute = viewmol(i_rand_mol,x_solvent,solvent)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
@@ -176,22 +168,16 @@ function mddf_linkedcells_self(trajectory, options :: Options)
 
     end # random solvent sampling
 
-    @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
-    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/(nsamples*(solvent.nmols-1)))
-    volume_frame.domain = sum(volume_frame.shell)
-    volume_frame.bulk = volume_frame.total - volume_frame.domain
-
-    @. R.volume.shell = R.volume.shell + volume_frame.shell
-    R.volume.bulk = R.volume.bulk + volume_frame.bulk
-    R.volume.domain = R.volume.domain + volume_frame.domain
-    R.density.solvent_bulk = R.density.solvent_bulk + (solvent.nmols-1)*(n_solvent_in_bulk/npairs) / volume_frame.bulk
+    # Update global counters with the data of this frame
+    update_counters_frame!(R,rdf_count_random_frame,volume_frame,solvent,
+                           nsamples,npairs,n_solvent_in_bulk)
 
   end # frames
   closetraj(trajectory)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
-  s = Samples(R.nframes_read*(trajectory.solute.nmols-1),
+  s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
               R.nframes_read*options.n_random_samples)
   finalresults!(R,options,trajectory,s)
 

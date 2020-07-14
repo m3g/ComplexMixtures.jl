@@ -108,9 +108,7 @@ function mddf_linkedcells(trajectory, options :: Options)
     for isolute in 1:solute.nmols
       # We need to do this one solute molecule at a time to avoid exploding the memory
       # requirements
-      ifmol = (isolute-1)*solute.natomspermol + 1
-      ilmol = ifmol + solute.natomspermol - 1
-      x_this_solute = @view(x_solute[ifmol:ilmol,1:3])
+      x_this_solute = viewmol(isolute,x_solute,solute)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
@@ -139,14 +137,11 @@ function mddf_linkedcells(trajectory, options :: Options)
           jmol = rand(1:solvent.nmols)
         end
         # Indexes of this molecule in the x_solvent array
-        jfmol = (jmol-1)*solvent.natomspermol + 1
-        jlmol = jfmol + solvent.natomspermol - 1
+        x_ref = viewmol(jmol,x_solvent,solvent)
         # Indexes of the random molecule in random array
-        jfstore = (j-1)*solvent.natomspermol + 1
-        jlstore = jfstore + solvent.natomspermol - 1
+        x_rnd = viewmol(j,x_solvent_random,solvent)
         # Generate new random coordinates (translation and rotation) for this molecule
-        random_move!(@view(x_solvent[jfmol:jlmol,1:3]),R.irefatom,sides,
-                     @view(x_solvent_random[jfstore:jlstore,1:3]),moveaux)
+        random_move!(x_ref,R.irefatom,sides,x_rnd,moveaux)
       end
 
       # wrap random solvent coordinates to box
@@ -158,9 +153,7 @@ function mddf_linkedcells(trajectory, options :: Options)
 
       # Choose randomly one solute molecule to be the solute in this sample
       i_rand_mol = rand(1:solute.nmols)
-      ifmol = (i_rand_mol-1)*solute.natomspermol+1
-      ilmol = ifmol + solute.natomspermol - 1
-      x_this_solute = @view(x_solute[ifmol:ilmol,1:3])
+      x_this_solute = viewmol(i_rand_mol,x_solute,solute)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
@@ -174,15 +167,9 @@ function mddf_linkedcells(trajectory, options :: Options)
 
     end # random solvent sampling
 
-    @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
-    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/nsamples)
-    volume_frame.domain = sum(volume_frame.shell)
-    volume_frame.bulk = volume_frame.total - volume_frame.domain
-
-    @. R.volume.shell = R.volume.shell + volume_frame.shell
-    R.volume.bulk = R.volume.bulk + volume_frame.bulk
-    R.volume.domain = R.volume.domain + volume_frame.domain
-    R.density.solvent_bulk = R.density.solvent_bulk + (n_solvent_in_bulk/solute.nmols) / volume_frame.bulk
+    # Update counters with the data of this frame
+    update_counters_frame!(R, rdf_count_random_frame, volume_frame, solute,
+                           nsamples, n_solvent_in_bulk)
 
   end # frames
   closetraj(trajectory)

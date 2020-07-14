@@ -79,9 +79,7 @@ function mddf_naive(trajectory, options :: Options)
       next!(progress)
 
       # first and last atoms of the current solute molecule
-      ifmol = (imol-1)*solute.natomspermol + 1
-      ilmol = ifmol + solute.natomspermol - 1
-      x_this_solute = @view(x_solute[ifmol:ilmol,1:3]) 
+      x_this_solute = viewmol(imol,x_solute,solute)
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
       centerofcoordinates!(solute_center,x_this_solute)
@@ -95,9 +93,7 @@ function mddf_naive(trajectory, options :: Options)
       for jmol in 1:solvent.nmols
 
         # first and last atoms of this solvent molecule
-        jfmol = (jmol-1)*solvent.natomspermol + 1
-        jlmol = jfmol + solvent.natomspermol - 1
-        x_this_solvent = @view(x_solvent[jfmol:jlmol,1:3])
+        x_this_solvent = viewmol(jmol,x_solvent,solvent)
 
         # Wrap the coordinates of the solvent molecule relative to the solute molecule
         wrap!(x_this_solvent,sides,solute_center)
@@ -139,9 +135,8 @@ function mddf_naive(trajectory, options :: Options)
             jmol = rand(1:solvent.nmols)
           end
           # Generate new random coordinates (translation and rotation) for this molecule
-          jfmol = (jmol-1)*solvent.natomspermol + 1
-          jlmol = jfmol + solvent.natomspermol - 1
-          random_move!(@view(x_solvent[jfmol:jlmol,1:3]),R.irefatom,sides,x_solvent_random,moveaux)
+          x_ref = viewmol(jmol,x_solvent,solvent)
+          random_move!(x_ref,R.irefatom,sides,x_solvent_random,moveaux)
           # Wrap random solvent molecule relative to solute center, so we do not need to take
           # care of periodic boundaries when computing each distance
           wrap!(x_solvent_random,sides,solute_center)
@@ -160,15 +155,9 @@ function mddf_naive(trajectory, options :: Options)
 
     end # solute molecules
 
-    @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
-    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/nsamples)
-    volume_frame.domain = sum(volume_frame.shell)
-    volume_frame.bulk = volume_frame.total - volume_frame.domain
-
-    @. R.volume.shell = R.volume.shell + volume_frame.shell
-    R.volume.bulk = R.volume.bulk + volume_frame.bulk
-    R.volume.domain = R.volume.domain + volume_frame.domain
-    R.density.solvent_bulk = R.density.solvent_bulk + (n_solvent_in_bulk/solute.nmols) / volume_frame.bulk
+    # Update counters with the data of this frame
+    update_counters_frame!(R, rdf_count_random_frame, volume_frame, solute,
+                           nsamples, n_solvent_in_bulk)
 
   end # frames
   closetraj(trajectory)

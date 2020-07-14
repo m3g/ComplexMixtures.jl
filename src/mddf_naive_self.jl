@@ -40,7 +40,7 @@ function mddf_naive_self(trajectory, options :: Options)
   rdf_count_random_frame = zeros(R.nbins)
 
   # Number of pairs of molecules (the number of distances computed)
-  npairs = solvent.nmols*(solvent.nmols-1)/2
+  npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
 
   # Computing all minimum-distances
   progress = Progress(R.nframes_read*solvent.nmols,1)
@@ -82,9 +82,7 @@ function mddf_naive_self(trajectory, options :: Options)
       next!(progress)
 
       # first and last atoms of the current solute molecule
-      ifmol = (imol-1)*solvent.natomspermol + 1
-      ilmol = ifmol + solvent.natomspermol - 1
-      x_this_solute = @view(x_solvent[ifmol:ilmol,1:3])
+      x_this_solute = viewmol(imol,x_solvent,solvent)
 
       # compute center of coordinates of solute molecule to wrap solvent coordinates around it
       centerofcoordinates!(center,x_this_solute)
@@ -99,16 +97,13 @@ function mddf_naive_self(trajectory, options :: Options)
       for jmol in imol+1:solvent.nmols
 
         # first and last atoms of this solvent molecule
-        jfmol = (jmol-1)*solvent.natomspermol + 1
-        jlmol = jfmol + solvent.natomspermol - 1
+        x_this_solvent = viewmol(jmol,x_solvent,solvent)
 
         # Compute minimum distance 
-        dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
-                                                       @view(x_solvent[jfmol:jlmol,1:3]),
-                                                       R.irefatom)
+        dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,x_this_solvent,R.irefatom)
 
         # Update histogram for computation of MDDF
-        if dmin <= options.cutoff
+        if dmin <= options.dbulk
           ibin = setbin(dmin,options.binstep)
           R.md_count[ibin] += 1
           R.solute_atom[ibin,iatom] += 1 
@@ -119,7 +114,7 @@ function mddf_naive_self(trajectory, options :: Options)
         end
 
         # Update histogram for the computation of the RDF
-        if drefatom <= options.cutoff
+        if drefatom <= options.dbulk
           ibin = setbin(drefatom,options.binstep) 
           R.rdf_count[ibin] += 1
         end
@@ -133,42 +128,32 @@ function mddf_naive_self(trajectory, options :: Options)
       # Computing the random-solvent distribution to compute the random minimum-distance count
       # Since this is a self-distribution, bulk or non-bulk molecules have identical shapes
       # 
-      if imol == 1
-        for i in 1:nsamples*(solvent.nmols-1)
-          # Choose randomly one molecule
-          jmol = rand(2:solvent.nmols)
-          # Generate new random coordinates (translation and rotation) for this molecule
-          jfmol = (jmol-1)*solvent.natomspermol + 1
-          jlmol = jfmol + solvent.natomspermol - 1
-          x_this_solvent = @view(x_solvent[jfmol:jlmol,1:3])
-          random_move!(x_this_solvent,R.irefatom,sides,x_solvent_random,moveaux)
-          wrap!(x_solvent_random,sides,center)
-          dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
-                                                         x_solvent_random,
-                                                         R.irefatom)
-          if dmin <= options.dbulk
-            ibin = setbin(dmin,options.binstep)
-            R.md_count_random[ibin] += 1
-          end
-          # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
-          if drefatom <= options.dbulk
-            ibin = setbin(drefatom,options.binstep)
-            rdf_count_random_frame[ibin] += 1
-          end
+      for i in 1:options.n_random_samples
+        # Choose randomly one molecule
+        jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
+        # Generate new random coordinates (translation and rotation) for this molecule
+        x_this_solvent = viewmol(jmol,x_solvent,solvent)
+        random_move!(x_this_solvent,R.irefatom,sides,x_solvent_random,moveaux)
+        wrap!(x_solvent_random,sides,center)
+        dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
+                                                       x_solvent_random,
+                                                       R.irefatom)
+        if dmin <= options.dbulk
+          ibin = setbin(dmin,options.binstep)
+          R.md_count_random[ibin] += 1
+        end
+        # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
+        if drefatom <= options.dbulk
+          ibin = setbin(drefatom,options.binstep)
+          rdf_count_random_frame[ibin] += 1
         end
       end # random solvent sampling
 
     end # solute molecules
 
-    @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
-    @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/(nsamples*(solvent.nmols-1)))
-    volume_frame.domain = sum(volume_frame.shell)
-    volume_frame.bulk = volume_frame.total - volume_frame.domain
-
-    @. R.volume.shell = R.volume.shell + volume_frame.shell
-    R.volume.bulk = R.volume.bulk + volume_frame.bulk
-    R.volume.domain = R.volume.domain + volume_frame.domain
-    R.density.solvent_bulk = R.density.solvent_bulk + (solvent.nmols-1)*(n_solvent_in_bulk/npairs) / volume_frame.bulk
+    # Update global counters with the data of this frame
+    update_counters_frame!(R,rdf_count_random_frame,volume_frame,solvent,
+                           nsamples,npairs,n_solvent_in_bulk)
 
   end # frames
   closetraj(trajectory)
