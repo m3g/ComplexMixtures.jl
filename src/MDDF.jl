@@ -15,6 +15,7 @@ module MDDF
   include("./random_move.jl")
   include("./move.jl")
   include("./center_to_origin.jl")
+  include("./writexyz.jl")
 
   # Structures and functions to deal with the solute and solvent selections
   include("./SoluteOrSolvent.jl")

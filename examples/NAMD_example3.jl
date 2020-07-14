@@ -12,14 +12,14 @@ natomspermol = 14
 #resname = "TIP3"
 #natomspermol = 3
 
-solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname && atom.resnum in [1,2], atoms ) ]
+solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
 solute = MDDF.Solute( solute_indexes, natomspermol=natomspermol )
 
-solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname && atom.resnum in [1,2], atoms ) ]
+solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=1,n_random_samples=10000)
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1,n_random_samples=10000)
 
 # Run MDDF calculation, and get the resutls in the R structure
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)

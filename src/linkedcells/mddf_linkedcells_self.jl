@@ -21,7 +21,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
   # store that randomly generated solvent box (the size of the random vector
   # is one molecule smaller, because the solvent does not contain the reference
   # solute molecule
-  x_solvent_random = Array{Float64}(undef,solvent.natoms-solvent.natomspermol,3)
+  x_solvent_random = Array{Float64}(undef,solvent.natoms,3)
 
   # Vector to annotate if the solvent molecule is a bulk molecule
   solvent_in_bulk = zeros(Int64,solvent.nmols)
@@ -130,7 +130,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     #
     for i in 1:options.n_random_samples
       # generate random solvent box, and store it in x_solvent_random
-      for j in 1:solvent.nmols-1
+      for j in 1:solvent.nmols
         # Choose randomly one molecule from the bulk, if there are actually bulk molecules
         if n_solvent_in_bulk_last != 0
           jmol = dmin_mol[rand(solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol
@@ -158,9 +158,8 @@ function mddf_linkedcells_self(trajectory, options :: Options)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
-      # in the dc structure
-      cutoffdistances_self!(options.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc,
-                            solvent,i_rand_mol)
+      # in the dc structure (here we do not use the self function)
+      cutoffdistances!(options.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
 
       # Update the counters and get the number of solvent molecules in bulk
       updatecounters!(R.irefatom,R.md_count_random,rdf_count_random_frame,
@@ -176,9 +175,11 @@ function mddf_linkedcells_self(trajectory, options :: Options)
   closetraj(trajectory)
 
   # Setup the final data structure with final values averaged over the number of frames,
-  # sampling, etc, and computes final distributions and integrals
+  # sampling, etc, and computes final distributions and integrals. nfix is necessary
+  # because of the number of random sampling performed (which was n^2 instead of npairs) 
+  nfix = 2*solvent.nmols^2/(solvent.nmols^2-solvent.nmols)
   s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
-              R.nframes_read*options.n_random_samples)
+              R.nframes_read*options.n_random_samples*nfix)
   finalresults!(R,options,trajectory,s)
 
   return R

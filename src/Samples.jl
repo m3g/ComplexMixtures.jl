@@ -4,7 +4,7 @@
 #
 
 struct Samples
-  count :: Int64
-  random :: Int64
+  count :: Float64
+  random :: Float64
 end
 
