@@ -1,0 +1,56 @@
+Info) VMD for LINUXAMD64, version 1.9.3 (November 30, 2016)
+Info) http://www.ks.uiuc.edu/Research/vmd/                         
+Info) Email questions and bug reports to vmd@ks.uiuc.edu           
+Info) Please include this reference in published work using VMD:   
+Info)    Humphrey, W., Dalke, A. and Schulten, K., `VMD - Visual   
+Info)    Molecular Dynamics', J. Molec. Graphics 1996, 14.1, 33-38.
+Info) -------------------------------------------------------------
+Info) Multithreading available, 8 CPUs detected.
+Info)   CPU features: SSE2 AVX AVX2 FMA 
+Info) Free system memory: 11GB (73%)
+Info) Creating CUDA device pool and initializing hardware...
+Info) Detected 1 available CUDA accelerator:
+Info) [0] GeForce MX150       3 SM_6.1 @ 1.53 GHz, 2.0GB RAM, KTO, AE2, ZCP
+Info) Detected 1 available TachyonL/OptiX ray tracing accelerator
+Info)   Compiling 1 OptiX shaders on 1 target GPU...
+ERROR) /usr/local/lib/vmd
+Info) Dynamically loaded 2 plugins in directory:
+Info) /usr/local/lib/vmd/plugins/LINUXAMD64/molfile
+ERROR) Could not read the vmd initialization file -
+ERROR)   source {/usr/local/lib/vmd/scripts/vmd/vmdinit.tcl}
+ERROR) 
+ERROR) The VMDDIR environment variable is set by the startup
+ERROR) script and should point to the top of the VMD hierarchy.
+ERROR) VMD will continue with limited functionality.
+./structure.psf
+./trajectory.dcd
+protein
+resname TMAO
+protein
+gmd.dat.gmdtemp
+psfplugin) Detected a Charmm PSF file
+Info) Using plugin psf for structure file ./structure.psf
+Info) Analyzing structure ...
+Info)    Atoms: 62026
+Info)    Bonds: 61851
+Info)    Angles: 26311  Dihedrals: 8764  Impropers: 284  Cross-terms: 102
+Info)    Bondtypes: 0  Angletypes: 0  Dihedraltypes: 0  Impropertypes: 0
+Info)    Residues: 19638
+Info)    Waters: 19338
+Info)    Segments: 6
+Info)    Fragments: 19535   Protein: 1   Nucleic: 0
+0
+dcdplugin) detected standard 32-bit DCD file of native endianness
+dcdplugin) CHARMM format DCD file (also NAMD 2.1 and later)
+Info) Using plugin dcd for coordinates from file ./trajectory.dcd
+Info) Finished with coordinate file ./trajectory.dcd.
+0
+atomselect0
+atomselect1
+atomselect2
+atomselect3
+Info) Opened coordinate file gmd.dat.gmdtemp for writing.
+Info) Finished with coordinate file gmd.dat.gmdtemp.
+can't set "vmd_logfile": 
+Info) VMD for LINUXAMD64, version 1.9.3 (November 30, 2016)
+Info) Exiting normally.
