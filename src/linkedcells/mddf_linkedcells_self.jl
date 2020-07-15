@@ -82,6 +82,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     R.volume.total = R.volume.total + volume_frame.total
    
     R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
+    R.density.solute = R.density.solvent
 
     # Add the box side information to the box structure, in this frame
     @. box.sides = sides
@@ -122,7 +123,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
       # at this point with acceptable memory requirements
       n_solvent_in_bulk_last = updatecounters!(R,solvent,solvent,dc,options,dmin_mol,dref_mol)
-      n_solvent_in_bulk += n_solvent_in_bulk_last
+      n_solvent_in_bulk += n_solvent_in_bulk_last / (solvent.nmols^2/npairs) 
     end
 
     #
@@ -177,7 +178,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals. nfix is necessary
   # because of the number of random sampling performed (which was n^2 instead of npairs) 
-  nfix = 2*solvent.nmols^2/(solvent.nmols^2-solvent.nmols)
+  nfix = solvent.nmols^2/npairs
   s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
               R.nframes_read*options.n_random_samples*nfix)
   finalresults!(R,options,trajectory,s)

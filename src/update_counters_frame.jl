@@ -23,7 +23,7 @@ end
 function update_counters_frame!(R :: Result, rdf_count_random_frame :: Vector{Float64},
                                 volume_frame :: Volume, 
                                 solvent :: SoluteOrSolvent, 
-                                nsamples :: Int64, npairs :: Int64, n_solvent_in_bulk :: Int64)
+                                nsamples :: Int64, npairs :: Int64, n_solvent_in_bulk :: Union{Int64,Float64})
 
   @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
   @. volume_frame.shell = volume_frame.total * (rdf_count_random_frame/(nsamples*(solvent.nmols-1)))

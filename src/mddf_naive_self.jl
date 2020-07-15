@@ -160,7 +160,7 @@ function mddf_naive_self(trajectory, options :: Options)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
-  nfix = 2*solvent.nmols^2/(solvent.nmols^2-solvent.nmols)
+  nfix = solvent.nmols^2/npairs
   s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
               R.nframes_read*options.n_random_samples*nfix)
   finalresults!(R,options,trajectory,s)
