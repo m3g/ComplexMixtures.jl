@@ -81,8 +81,11 @@ function mddf_naive(trajectory, options :: Options)
       # first and last atoms of the current solute molecule
       x_this_solute = viewmol(imol,x_solute,solute)
 
-      # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      centerofcoordinates!(solute_center,x_this_solute)
+      # Wrap the solute molecule relative to its reference atom, which will provide
+      # reference coordinates for wrapping the solvent molecules (this is to prevent
+      # the solute molecule of being split through periodic conditions
+      wrap!(x_this_solute,sides,@view(x_this_solute[R.irefatom,1:3]))
+      solute_center = @view(x_this_solute[R.irefatom,1:3])
 
       # counter for the number of solvent molecules in bulk for this solute molecule
       n_jmol_in_bulk = 0
@@ -118,16 +121,10 @@ function mddf_naive(trajectory, options :: Options)
           R.rdf_count[ibin] += 1
         end
 
-      end # solvent molecules 
-
-      # Sum up the number of solvent molecules found in bulk for this solute to the total 
-      n_solvent_in_bulk = n_solvent_in_bulk + n_jmol_in_bulk
-
-      #
-      # Computing the random-solvent distribution to compute the random minimum-distance count
-      #
-      if imol == 1 
-        for i in 1:nsamples
+        #
+        # Computing the random-solvent distribution to compute the random minimum-distance count
+        #
+        for i in 1:options.n_random_samples
           # Choose randomly one molecule from the bulk
           if n_jmol_in_bulk > 0
             jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
@@ -151,7 +148,11 @@ function mddf_naive(trajectory, options :: Options)
             rdf_count_random_frame[ibin] += 1
           end
         end # random solvent sampling
-      end
+
+      end # solvent molecules 
+
+      # Sum up the number of solvent molecules found in bulk for this solute to the total 
+      n_solvent_in_bulk = n_solvent_in_bulk + n_jmol_in_bulk
 
     end # solute molecules
 

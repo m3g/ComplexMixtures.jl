@@ -26,11 +26,11 @@ function mddf_naive_self(trajectory, options :: Options)
   # Vector that will contain randomly generated solvent molecules
   x_solvent_random = Array{Float64}(undef,solvent.natomspermol,3)
 
-  # Vector that wil contain the solute center of coordinates at each frame
-  center = Vector{Float64}(undef,3)
-
   # Auxiliary structure to random generation of solvent coordiantes
   moveaux = MoveAux(solvent.natomspermol)
+
+  # Auxiliar vector to contain the center of coordinates of a solute
+  solute_center = zeros(3)
   
   # Counter for the total number of bulk molecules
   nbulk = 0
@@ -84,9 +84,10 @@ function mddf_naive_self(trajectory, options :: Options)
       # first and last atoms of the current solute molecule
       x_this_solute = viewmol(imol,x_solvent,solvent)
 
-      # compute center of coordinates of solute molecule to wrap solvent coordinates around it
-      centerofcoordinates!(center,x_this_solute)
-      wrap!(x_solvent,sides,center)
+      # Wrap all molecules relative to the reference atom of this solute molecule 
+      # (solute and solvent are the same here, so everything is wrapped)
+      wrap!(x_solvent,sides,@view(x_this_solute[R.irefatom,1:3]))
+      solute_center = @view(x_this_solute[R.irefatom,1:3])
 
       # counter for the number of solvent molecules in bulk for this solute molecule
       n_jmol_in_bulk = 0
@@ -130,11 +131,15 @@ function mddf_naive_self(trajectory, options :: Options)
       # 
       for i in 1:options.n_random_samples
         # Choose randomly one molecule
-        jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
+        if n_jmol_in_bulk > 0
+          jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
+        else
+          jmol = rand(1:solvent.nmols)
+        end
         # Generate new random coordinates (translation and rotation) for this molecule
         x_this_solvent = viewmol(jmol,x_solvent,solvent)
         random_move!(x_this_solvent,R.irefatom,sides,x_solvent_random,moveaux)
-        wrap!(x_solvent_random,sides,center)
+        wrap!(x_solvent_random,sides,solute_center)
         dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
                                                        x_solvent_random,
                                                        R.irefatom)

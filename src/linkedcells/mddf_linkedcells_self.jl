@@ -29,9 +29,6 @@ function mddf_linkedcells_self(trajectory, options :: Options)
   # Initializing the structure that carries all results
   R = Result(trajectory,options)
 
-  # Vector that will contain the solute center of coordinates at each frame
-  center = Vector{Float64}(undef,3)
-
   # Number of pairs of molecules (the number of distances computed)
   npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
 
@@ -90,10 +87,12 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     @. box.nc = max(1,trunc(Int64,box.sides/(options.cutoff/box.lcell)))
     @. box.l = box.sides/box.nc
 
-    # Will wrap everthing relative to the center of coordinates of the selection
-    centerofcoordinates!(center,x_solvent)
-    wrap!(x_solvent,sides,center)
-    center_to_origin!(x_solvent,center)
+    # Will wrap everthing relative to one atom of the first solute molecule, and
+    # put that center at the origin, such that the minimum coordinates for cell indexing
+    # is -side/2 at each direction
+    solute_center = @view(x_solvent[R.irefatom,1:3])
+    wrap!(x_solvent,sides,solute_center)
+    center_to_origin!(x_solvent,solute_center)
 
     # Initialize linked cells
     initcells!(x_solvent,box,lc_solvent)
@@ -146,9 +145,8 @@ function mddf_linkedcells_self(trajectory, options :: Options)
         random_move!(x_ref,R.irefatom,sides,x_rnd,moveaux)
       end
 
-      # wrap random solvent coordinates to box
-      wrap!(x_solvent_random,sides,center)
-      center_to_origin!(x_solvent_random,center)
+      # wrap random solvent coordinates to origin
+      wrap!(x_solvent_random,sides)
 
       # Initialize linked cells
       initcells!(x_solvent_random,box,lc_solvent)
