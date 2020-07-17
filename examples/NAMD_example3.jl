@@ -24,10 +24,10 @@ options = MDDF.Options(output="example.dat",binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-N = MDDF.mddf_naive_self(trajectory,options)
+@time N = MDDF.mddf_naive_self(trajectory,options)
 
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-R = MDDF.mddf_linkedcells_self(trajectory,options)
+@time R = MDDF.mddf_linkedcells_self(trajectory,options)
 
 using Plots
 nogtk()
@@ -56,19 +56,18 @@ plot!(legend=:topright,subplot=sp)
 
 sp=3         
 plot!(ylabel="atom contrib",subplot=sp)
-i = 5
-plot!(R.d,R.solute_atom[:,i],subplot=sp,label="new",linewidth=2)
-plot!(R.d,R.solvent_atom[:,i],subplot=sp,label="new",linewidth=2)
-scatter!(N.d,N.solute_atom[:,i],subplot=sp,label="naive")
-scatter!(N.d,N.solvent_atom[:,i],subplot=sp,label="naive")
+for i in 1:solute.natomspermol
+  scatter!(R.d,R.solute_atom[:,i],subplot=sp,label="",linewidth=2)
+  plot!(N.d,N.solute_atom[:,i],subplot=sp,label="")
+end
 y1 = similar(R.d)
 y2 = similar(R.d)
 for i in 1:size(R.d,1)
   y1[i] = sum(R.solvent_atom[i,:])
   y2[i] = sum(N.solvent_atom[i,:])
 end
-plot!(R.d,y1,subplot=sp,label="sum")
-scatter!(R.d,y2,subplot=sp,label="sum")
+scatter!(R.d,y1,subplot=sp,label="sum")
+plot!(R.d,y2,subplot=sp,label="sum")
 plot!(legend=:topright,subplot=sp)
 
 sp=4
