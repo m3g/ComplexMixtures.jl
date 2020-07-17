@@ -70,6 +70,10 @@ function mddf_naive(trajectory, options :: Options)
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
+    # Sample randomly the indexes of the solute molecules that will be reference
+    # molecules for the random solvent distributions
+    i_solute_ref = rand(1:solute.nmols,options.n_random_samples) 
+
     # Counter for the cumulative number of solvent molecules found to be in bulk
     # relative to each solute molecule
     n_solvent_in_bulk = 0
@@ -124,7 +128,7 @@ function mddf_naive(trajectory, options :: Options)
         #
         # Computing the random-solvent distribution to compute the random minimum-distance count
         #
-        for i in 1:options.n_random_samples
+        for i in findall( i -> i == imol, i_solute_ref )
           # Choose randomly one molecule from the bulk
           if n_jmol_in_bulk > 0
             jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
