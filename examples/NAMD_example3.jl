@@ -20,7 +20,7 @@ solvent_indexes = copy(solute_indexes)
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1,n_random_samples=1000)
+options = MDDF.Options(output="example.dat",binstep=0.2,firstframe=5,lastframe=5,n_random_samples=1)
 
 # Run MDDF calculation, and get the resutls in the R structure
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
@@ -74,10 +74,10 @@ plot!(legend=:topright,subplot=sp)
 sp=4
 plot!(ylabel="count",subplot=sp)
 scatter!(R.d,R.md_count,subplot=sp,label="R md")
-scatter!(R.d,R.md_count_random,subplot=sp,label="R rand")
+#scatter!(R.d,R.md_count_random,subplot=sp,label="R rand")
 plot!(N.d,N.md_count,subplot=sp,label="N md")
-plot!(N.d,N.md_count_random,subplot=sp,label="N rand")
-plot!(legend=:topright,subplot=sp)
+#plot!(N.d,N.md_count_random,subplot=sp,label="N rand")
+plot!(legend=:topleft,subplot=sp)
 
 plot!(size=(600,800))
 savefig("./plots.pdf")

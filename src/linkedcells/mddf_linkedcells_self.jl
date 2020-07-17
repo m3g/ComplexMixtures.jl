@@ -1,4 +1,4 @@
-#     
+     
 # mddf_linkedcells
 #
 # Computes the MDDF using linked cells  
@@ -34,6 +34,9 @@ function mddf_linkedcells_self(trajectory, options :: Options)
 
   # Auxiliary structure to random generation of solvent coordinates
   moveaux = MoveAux(solvent.natomspermol)
+ 
+  # Vector that will contain the center of coordinates of the reference solute
+  solute_center = zeros(3)
   
   # Structure to organize counters for each frame only
   volume_frame = Volume(R.nbins)
@@ -90,7 +93,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     # Will wrap everthing relative to one atom of the first solute molecule, and
     # put that center at the origin, such that the minimum coordinates for cell indexing
     # is -side/2 at each direction
-    solute_center = @view(x_solvent[R.irefatom,1:3])
+    @. solute_center = x_solvent[R.irefatom,1:3]
     wrap!(x_solvent,sides,solute_center)
     center_to_origin!(x_solvent,solute_center)
 

@@ -32,5 +32,5 @@ examples/gmd-GMD_ATOM_SOLUTE_CONTRIB.dat
 examples/gmd.inp
 examples/plots.jl
 examples/plots.pdf
-#examples/teste*.xyz
+examples/teste*.xyz
 
