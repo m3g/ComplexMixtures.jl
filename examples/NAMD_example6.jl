@@ -1,5 +1,5 @@
 #
-# Self - Water
+# Self - TMAO
 #
 
 include("../src/MDDF.jl")
@@ -10,8 +10,10 @@ atoms = PDBTools.readPDB("./structure.pdb")
 
 # Self correlation, thus the solute and solvent indexes are identical
 
-resname = "TIP3"
-natomspermol = 3
+resname = "TMAO"
+natomspermol = 14
+#resname = "TIP3"
+#natomspermol = 3
 
 solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
 solute = MDDF.Solute( solute_indexes, natomspermol=natomspermol )

@@ -1,3 +1,6 @@
+#
+# Protein - TMAO (compare new and old implementations)
+#
 
 include("../src/MDDF.jl")
 

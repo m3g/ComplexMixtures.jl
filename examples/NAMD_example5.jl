@@ -1,3 +1,6 @@
+#
+# Protein - Water
+#
 
 include("../src/MDDF.jl")
 
@@ -25,5 +28,38 @@ options = MDDF.Options(output="example.dat",binstep=0.2)
 # Run MDDF calculation, and get the resutls in the R structure
 R = MDDF.mddf_linkedcells(trajectory,options)
 
-#include("./plots.jl")
+plot(layout=(4,1))
+
+x = [0,10]
+y = [1, 1]
+
+sp=1
+plot!(ylabel="MDDF or RDF",subplot=sp)
+plot!(R.d,R.mddf,subplot=sp,label="mddf")
+plot!(R.d,R.rdf,subplot=sp,label="rdf")
+plot!(x,y)
+plot!(legend=:topright,subplot=sp)
+
+sp=2
+plot!(ylabel="KB",subplot=sp)
+plot!(R.d,R.kb,subplot=sp,label="mddf")
+plot!(R.d,R.kb_rdf,subplot=sp,label="rdf")
+plot!(legend=:topright,subplot=sp)
+
+sp=3         
+plot!(ylabel="atom contrib",subplot=sp)
+for i in 1:solvent.natomspermol
+  plot!(R.d,R.solvent_atom[:,i],subplot=sp,label="",linewidth=2)
+end
+plot!(legend=:topright,subplot=sp)
+
+sp=4
+plot!(ylabel="count",subplot=sp)
+plot!(R.d,R.md_count,subplot=sp,label="R md")
+plot!(R.d,R.md_count_random,subplot=sp,label="R rand")
+plot!(legend=:topleft,subplot=sp)
+
+plot!(size=(600,800))
+savefig("./plots.pdf")
+
 
