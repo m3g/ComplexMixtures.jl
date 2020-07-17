@@ -20,7 +20,7 @@ solvent_indexes = copy(solute_indexes)
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1)
+options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1,n_random_samples=1000)
 
 # Run MDDF calculation, and get the resutls in the R structure
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)

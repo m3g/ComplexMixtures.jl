@@ -86,8 +86,9 @@ function mddf_naive_self(trajectory, options :: Options)
 
       # Wrap all molecules relative to the reference atom of this solute molecule 
       # (solute and solvent are the same here, so everything is wrapped)
-      wrap!(x_solvent,sides,@view(x_this_solute[R.irefatom,1:3]))
-      solute_center = @view(x_this_solute[R.irefatom,1:3])
+      @. solute_center = x_this_solute[R.irefatom,1:3]
+      wrap!(x_solvent,sides,solute_center)
+      center_to_origin!(x_solvent,solute_center)
 
       # counter for the number of solvent molecules in bulk for this solute molecule
       n_jmol_in_bulk = 0
@@ -139,7 +140,7 @@ function mddf_naive_self(trajectory, options :: Options)
         # Generate new random coordinates (translation and rotation) for this molecule
         x_this_solvent = viewmol(jmol,x_solvent,solvent)
         random_move!(x_this_solvent,R.irefatom,sides,x_solvent_random,moveaux)
-        wrap!(x_solvent_random,sides,solute_center)
+        wrap!(x_solvent_random,sides)
         dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
                                                        x_solvent_random,
                                                        R.irefatom)
