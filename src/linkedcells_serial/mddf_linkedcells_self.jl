@@ -1,4 +1,4 @@
-#     
+     
 # mddf_linkedcells
 #
 # Computes the MDDF using linked cells  
@@ -7,21 +7,21 @@
 # http://github.com/m3g/MDDF
 #  
 
-function mddf_linkedcells(trajectory, options :: Options)  
+function mddf_linkedcells_self(trajectory, options :: Options)  
 
   # Simplify code by assigning some shortened names
-  solute = trajectory.solute
   solvent = trajectory.solvent
-  x_solute = trajectory.x_solute
   x_solvent = trajectory.x_solvent
 
   # The number of random samples for numerical normalization
-  nsamples = options.n_random_samples*solvent.nmols
+  nsamples = options.n_random_samples
 
   # Here, we have to generate the complete box of random solvent molecules at once,
   # to take advantadge of the linked cells, therefore we need an auxliary array
-  # store that randomly generated solvent box
-  x_solvent_random = similar(x_solvent)
+  # store that randomly generated solvent box (the size of the random vector
+  # is one molecule smaller, because the solvent does not contain the reference
+  # solute molecule
+  x_solvent_random = Array{Float64}(undef,solvent.natoms,3)
 
   # Vector to annotate if the solvent molecule is a bulk molecule
   solvent_in_bulk = zeros(Int64,solvent.nmols)
@@ -29,11 +29,14 @@ function mddf_linkedcells(trajectory, options :: Options)
   # Initializing the structure that carries all results
   R = Result(trajectory,options)
 
-  # Vector that will contain the solute center of coordinates at each frame
-  solute_center = Vector{Float64}(undef,3)
+  # Number of pairs of molecules (the number of distances computed)
+  npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
 
   # Auxiliary structure to random generation of solvent coordinates
   moveaux = MoveAux(solvent.natomspermol)
+ 
+  # Vector that will contain the center of coordinates of the reference solute
+  solute_center = zeros(3)
   
   # Structure to organize counters for each frame only
   volume_frame = Volume(R.nbins)
@@ -49,16 +52,15 @@ function mddf_linkedcells(trajectory, options :: Options)
   # Structure that will contain the temporary useful information of all the  
   # distances found to the be smaller than the cutoff, and the corresponding
   # atom indexes. The vectors of this structure might be resized during the calculations
-  dc = [ CutoffDistances(solvent.natoms) for i in 1:Threads.nthreads() ]
+  dc = CutoffDistances(solvent.natoms)
 
   # Vectors used to parse the minimum distance data
   dmin_mol = Vector{DminMol}(undef,solvent.nmols)
   dref_mol = zeros(solvent.nmols)
 
   # Computing all minimum-distances
-  progress = Progress(R.nframes_read,1)
+  progress = Progress(R.nframes_read*(solvent.nmols-1),1)
   for iframe in 1:R.lastframe_read
-    next!(progress)
 
     # Reset counters for this frame
     reset!(volume_frame)
@@ -79,8 +81,8 @@ function mddf_linkedcells(trajectory, options :: Options)
     volume_frame.total = sides[1]*sides[2]*sides[3]
     R.volume.total = R.volume.total + volume_frame.total
    
-    R.density.solute = R.density.solute + (solute.nmols / volume_frame.total)
     R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
+    R.density.solute = R.density.solvent
 
     # Add the box side information to the box structure, in this frame
     @. box.sides = sides
@@ -88,13 +90,10 @@ function mddf_linkedcells(trajectory, options :: Options)
     @. box.nc = max(1,trunc(Int64,box.sides/(options.cutoff/box.lcell)))
     @. box.l = box.sides/box.nc
 
-    # Will wrap everthing relative to the reference atom of the first molecule
-    # and move everything such that that center is in the origin. This is important
-    # to simplify the computation of cell indexes, as the minimum coordinates are 
-    # automatically -side/2 at each direction
-    @. solute_center = x_solute[R.irefatom,1:3]
-    wrap!(x_solute,sides,solute_center)
-    center_to_origin!(x_solute,solute_center)
+    # Will wrap everthing relative to one atom of the first solute molecule, and
+    # put that center at the origin, such that the minimum coordinates for cell indexing
+    # is -side/2 at each direction
+    @. solute_center = x_solvent[R.irefatom,1:3]
     wrap!(x_solvent,sides,solute_center)
     center_to_origin!(x_solvent,solute_center)
 
@@ -108,29 +107,31 @@ function mddf_linkedcells(trajectory, options :: Options)
 
     n_solvent_in_bulk = 0
     local n_solvent_in_bulk_last
-    for isolute in 1:solute.nmols
+    for isolvent in 1:solvent.nmols-1
+      next!(progress)
+
       # We need to do this one solute molecule at a time to avoid exploding the memory
       # requirements
-      x_this_solute = viewmol(isolute,x_solute,solute)
+      x_this_solute = viewmol(isolvent,x_solvent,solvent)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
       # in the dc structure
-      cutoffdistances!(options.cutoff,x_this_solute,x_solvent,lc_solvent,box,dc)
+      cutoffdistances_self!(options.cutoff,x_this_solute,x_solvent,lc_solvent,box,dc,
+                            solvent,isolvent)
 
       # For each solute molecule, update the counters (this is highly suboptimal, because
       # within updatecounters there are loops over solvent molecules, in such a way that
       # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
       # at this point with acceptable memory requirements
-      n_solvent_in_bulk_last = updatecounters!(R,solute,solvent,dc[1],options,dmin_mol,dref_mol)
-      n_solvent_in_bulk += n_solvent_in_bulk_last
+      n_solvent_in_bulk_last = updatecounters!(R,solvent,solvent,dc,options,dmin_mol,dref_mol)
+      n_solvent_in_bulk += n_solvent_in_bulk_last / (solvent.nmols^2/npairs) 
     end
 
     #
     # Computing the random-solvent distribution to compute the random minimum-distance count
     #
     for i in 1:options.n_random_samples
-
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols
         # Choose randomly one molecule from the bulk, if there are actually bulk molecules
@@ -147,39 +148,40 @@ function mddf_linkedcells(trajectory, options :: Options)
         random_move!(x_ref,R.irefatom,sides,x_rnd,moveaux)
       end
 
-      # wrap random solvent coordinates to box, with the center at the origin
+      # wrap random solvent coordinates to origin
       wrap!(x_solvent_random,sides)
 
       # Initialize linked cells
       initcells!(x_solvent_random,box,lc_solvent)
 
       # Choose randomly one solute molecule to be the solute in this sample
-      i_rand_mol = rand(1:solute.nmols)
-      x_this_solute = viewmol(i_rand_mol,x_solute,solute)
+      i_rand_mol = rand(1:solvent.nmols)
+      x_this_solute = viewmol(i_rand_mol,x_solvent,solvent)
 
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
-      # in the dc structure
+      # in the dc structure (here we do not use the self function)
       cutoffdistances!(options.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
 
-      # Update the counters of the random distribution
+      # Update the counters and get the number of solvent molecules in bulk
       updatecounters!(R.irefatom,R.md_count_random,rdf_count_random_frame,
-                      solvent,dc[1],options,dmin_mol,dref_mol)
-
+                      solvent,dc,options,dmin_mol,dref_mol)
 
     end # random solvent sampling
 
-    # Update counters with the data of this frame
-    update_counters_frame!(R, rdf_count_random_frame, volume_frame, solute,
-                           nsamples, n_solvent_in_bulk)
+    # Update global counters with the data of this frame
+    update_counters_frame!(R,rdf_count_random_frame,volume_frame,solvent,
+                           nsamples,npairs,n_solvent_in_bulk)
 
   end # frames
   closetraj(trajectory)
 
   # Setup the final data structure with final values averaged over the number of frames,
-  # sampling, etc, and computes final distributions and integrals
-  s = Samples(R.nframes_read*trajectory.solute.nmols,
-              R.nframes_read*options.n_random_samples)
+  # sampling, etc, and computes final distributions and integrals. nfix is necessary
+  # because of the number of random sampling performed (which was n^2 instead of npairs) 
+  nfix = solvent.nmols^2/npairs
+  s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
+              R.nframes_read*options.n_random_samples*nfix)
   finalresults!(R,options,trajectory,s)
 
   return R

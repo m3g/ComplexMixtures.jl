@@ -41,10 +41,10 @@ options = MDDF.Options(output="example.dat",binstep=0.2,lastframe=-1)
 
 # Run MDDF calculation, and get the resutls in the R structure
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-N = MDDF.mddf_naive(trajectory,options)
+@time N = MDDF.mddf_naive(trajectory,options)
 
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-R = MDDF.mddf_linkedcells(trajectory,options)
+@time R = MDDF.mddf_linkedcells(trajectory,options)
 
 include("./plots.jl")
 

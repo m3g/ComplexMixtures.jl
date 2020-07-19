@@ -2,6 +2,9 @@
 # Protein - Water
 #
 
+using Plots
+nogtk()
+
 include("../src/MDDF.jl")
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
@@ -26,7 +29,7 @@ trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 options = MDDF.Options(output="example.dat",binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
-R = MDDF.mddf_linkedcells(trajectory,options)
+@time R = MDDF.mddf_linkedcells(trajectory,options)
 
 plot(layout=(4,1))
 

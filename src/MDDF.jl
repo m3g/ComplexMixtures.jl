@@ -66,6 +66,7 @@ module MDDF
   include("./linkedcells/LinkedCells.jl")
   include("./linkedcells/DminMol.jl")
   include("./linkedcells/CutoffDistances.jl")
+  include("./linkedcells/reduce.jl")
   include("./linkedcells/partialsort_cutoff.jl")
   include("./linkedcells/updatecounters.jl")
   include("./linkedcells/icell1D.jl")
