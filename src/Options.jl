@@ -29,6 +29,9 @@
   # performance
   lcell :: Int64 = 2
 
+  # Sleep time between checks of threads for multple spawn
+  sleep = 0.1
+
 end
 
 Options() = error(" Options must be initialized at least with the output file name, with Options(output=\"example.dat\")")

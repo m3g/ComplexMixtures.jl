@@ -13,34 +13,26 @@ function cutoffdistances!(cutoff :: Float64,
                           x_solvent :: AbstractArray{Float64},
                           lc_solvent :: LinkedCells,
                           box :: Box, 
-                          dc :: Union{CutoffDistances,Vector{CutoffDistances}})
+                          dc :: CutoffDistances)
 
   # Reset the dc structure 
   reset!(dc)
 
-  nat = size(x_solute,1)
-  n_cells_each_dim = 2*box.lcell+1
-  ncells = n_cells_each_dim^3 
-  noperations = nat*ncells
-  Threads.@threads for iop in 1:noperations
-    ithread = Threads.threadid()
-
-    iat = trunc(Int64,(iop-1)/ncells)+1
+  # Loop over solute atoms
+  for iat in 1:size(x_solute,1)
     xat = @view(x_solute[iat,1:3])
+    # Check the cell of this atom
     i, j, k = icell3D(xat,box)
-
-    icell = iop - (iat-1)*ncells
-    ic, jc, kc = icell3D(n_cells_each_dim,icell)
-
-    ic = ic - (box.lcell + 1) + i
-    jc = jc - (box.lcell + 1) + j
-    kc = kc - (box.lcell + 1) + k
-
-    cutoffdcell!(cutoff,iat,xat,x_solvent,lc_solvent,box,ic,jc,kc,dc[ithread])
-
+    # Loop over vicinal cells to compute distances to solvent atoms, and
+    # add data to dc structure (includes current cell)
+    for ic in i-box.lcell:i+box.lcell
+      for jc in j-box.lcell:j+box.lcell
+        for kc in k-box.lcell:k+box.lcell
+          cutoffdcell!(cutoff,iat,xat,x_solvent,lc_solvent,box,ic,jc,kc,dc)
+        end
+      end
+    end
   end
 
-  # Reduce the data from the parallel computation
-  reduce!(dc)
-
 end
+

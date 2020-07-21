@@ -39,9 +39,4 @@ function reset!( c :: CutoffDistances )
   @. c.jmol = 0
 end
 
-function reset!( c :: Vector{CutoffDistances} )
-  for i in 1:size(c,1)
-    reset!(c[i])
-  end
-end
 
