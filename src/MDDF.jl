@@ -63,11 +63,10 @@ module MDDF
   include("./mddf_naive_self.jl")
  
   # Structures and functions for the linked cell method
-  dir="./linkedcells_parallel"
+  dir="./linkedcells"
   include("$dir/LinkedCells.jl")
   include("$dir/DminMol.jl")
   include("$dir/CutoffDistances.jl")
-  include("$dir/reduce.jl")
   include("$dir/partialsort_cutoff.jl")
   include("$dir/updatecounters.jl")
   include("$dir/icell1D.jl")
@@ -78,10 +77,17 @@ module MDDF
   include("$dir/cutoffdcell.jl")
   include("$dir/cutoffdistances.jl")
   include("$dir/mddf_linkedcells.jl")
-
   include("$dir/cutoffdcell_self.jl")
   include("$dir/cutoffdistances_self.jl")
   include("$dir/mddf_linkedcells_self.jl")
+
+  # for the parallel version
+  dir="./linkedcells_parallel"
+  include("$dir/FrameData.jl")
+  include("$dir/sum.jl")
+  include("$dir/mddf_frame.jl")
+  include("$dir/mddf_frame_self.jl")
+  include("$dir/mddf_linkedcells_parallel.jl")
 
   # Parser to the default mddf method in each case
   #include("./mddf.jl")

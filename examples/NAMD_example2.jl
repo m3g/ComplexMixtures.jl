@@ -22,65 +22,68 @@ solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2,n_random_samples=1000)
+options = MDDF.Options(output="example.dat",binstep=0.2,n_random_samples=10000)
 
 # Run MDDF calculation, and get the resutls in the R structure
 println("Naive:")
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-@time N = MDDF.mddf_naive(trajectory,options)
+@time N = MDDF.mddf_linkedcells(trajectory,options)
 
 # Run MDDF calculation, and get the resutls in the R structure
 println("LinkedCells:")
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-@time R = MDDF.mddf_linkedcells(trajectory,options)
+@time R = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
 plot(layout=(7,1))
 
+nlabel="lc"
+rlabel="lcP"
+
 sp=1
 plot!(ylabel="MDDF",subplot=sp)
-plot!(N.d,N.mddf,subplot=sp,label="naive - mddf")
-plot!(N.d,N.rdf,subplot=sp,label="naive - rdf")
-scatter!(R.d,R.mddf,subplot=sp,label="new - mddf")
-scatter!(R.d,R.rdf,subplot=sp,label="new - rdf")
+plot!(N.d,N.mddf,subplot=sp,label="$nlabel - mddf")
+plot!(N.d,N.rdf,subplot=sp,label="$nlabel - rdf")
+scatter!(R.d,R.mddf,subplot=sp,label="$rlabel - mddf")
+scatter!(R.d,R.rdf,subplot=sp,label="$rlabel - rdf")
 plot!(legend=:topright,subplot=sp)
 
 sp=2
 plot!(ylabel="KB",subplot=sp)
-plot!(N.d,N.kb,subplot=sp,label="naive - mddf")
-plot!(N.d,N.kb_rdf,subplot=sp,label="naive - rdf")
-scatter!(R.d,R.kb,subplot=sp,label="new - mddf")
-scatter!(R.d,R.kb_rdf,subplot=sp,label="new - rdf")
+plot!(N.d,N.kb,subplot=sp,label="$nlabel - mddf")
+plot!(N.d,N.kb_rdf,subplot=sp,label="$nlabel - rdf")
+scatter!(R.d,R.kb,subplot=sp,label="$rlabel - mddf")
+scatter!(R.d,R.kb_rdf,subplot=sp,label="$rlabel - rdf")
 plot!(legend=:topright,subplot=sp)
 
 sp=3
 plot!(ylabel="Count",subplot=sp)
-plot!(N.d,N.md_count,subplot=sp,label="naive",linewidth=3,alpha=0.5)
-scatter!(R.d,R.md_count,subplot=sp,label="new")
-plot!(N.d,N.md_count_random,subplot=sp,label="naive - rand",linewidth=3,alpha=0.5)
-scatter!(R.d,R.md_count_random,subplot=sp,label="new -rand")
+plot!(N.d,N.md_count,subplot=sp,label="$nlabel",linewidth=3,alpha=0.5)
+scatter!(R.d,R.md_count,subplot=sp,label="$rlabel")
+plot!(N.d,N.md_count_random,subplot=sp,label="$nlabel - rand",linewidth=3,alpha=0.5)
+scatter!(R.d,R.md_count_random,subplot=sp,label="$rlabel -rand")
 
 sp=4
 plot!(ylabel="Shell vol", subplot=sp)
-plot!(N.d,N.volume.shell,subplot=sp,label="naive")
-scatter!(R.d,R.volume.shell,subplot=sp,label="new")
+plot!(N.d,N.volume.shell,subplot=sp,label="$nlabel")
+scatter!(R.d,R.volume.shell,subplot=sp,label="$rlabel")
 
 sp=5
 plot!(ylabel="Sum MD", subplot=sp)
-plot!(N.d,N.sum_md_count,subplot=sp,label="naive - md")
-scatter!(R.d,R.sum_md_count,subplot=sp,label="new - md")
+plot!(N.d,N.sum_md_count,subplot=sp,label="$nlabel - md")
+scatter!(R.d,R.sum_md_count,subplot=sp,label="$rlabel - md")
 
 sp=6
 plot!(ylabel="Sum RAND", subplot=sp)
-plot!(N.d,N.sum_md_count_random,subplot=sp,label="naive - rand")
-plot!(N.d,N.sum_rdf_count,subplot=sp,label="naive - rdf")
-scatter!(R.d,R.sum_md_count_random,subplot=sp,label="new - rand")
-scatter!(R.d,R.sum_rdf_count,subplot=sp,label="new - rdf")
+plot!(N.d,N.sum_md_count_random,subplot=sp,label="$nlabel - rand")
+plot!(N.d,N.sum_rdf_count,subplot=sp,label="$nlabel - rdf")
+scatter!(R.d,R.sum_md_count_random,subplot=sp,label="$rlabel - rand")
+scatter!(R.d,R.sum_rdf_count,subplot=sp,label="$rlabel - rdf")
 plot!(legend=:topleft,subplot=sp)
 
 sp=7
 plot!(ylabel="Atom contributions", subplot=sp)
-plot!(N.d,N.solute_atom,subplot=sp,label="naive")
-scatter!(R.d,R.solute_atom,subplot=sp,label="new")
+plot!(N.d,N.solute_atom,subplot=sp,label="$nlabel")
+scatter!(R.d,R.solute_atom,subplot=sp,label="$rlabel")
 
 plot!(size=(800,1300))
 savefig("./plots.pdf")
