@@ -163,12 +163,12 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   dref_mol = framedata.dref_mol
   x_solvent_random = framedata.x_solvent_random
   lc_solvent = framedata.lc_solvent
+  nsamples = framedata.nsamples
   moveaux = framedata.moveaux
   solute = trajectory.solute
   solvent = trajectory.solvent
   x_solute = trajectory.x_solute
   x_solvent = trajectory.x_solvent
-  nsamples = framedata.nsamples
 
   # Reset counters for this frame
   reset!(volume_frame)
@@ -284,7 +284,7 @@ end
 function sum!( R1 :: Result, R2 :: Result )
 
   @. R1.md_count += R2.md_count
-  @. R1.md_count_random = R2.md_count_random
+  @. R1.md_count_random += R2.md_count_random
 
   @. R1.solute_atom += R2.solute_atom
   @. R1.solvent_atom += R2.solvent_atom
