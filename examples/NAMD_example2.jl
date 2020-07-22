@@ -22,7 +22,7 @@ solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=14 )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2)
+options = MDDF.Options(output="example.dat",binstep=0.2,n_random_samples=1000)
 
 # Run MDDF calculation, and get the resutls in the R structure
 println("Naive:")

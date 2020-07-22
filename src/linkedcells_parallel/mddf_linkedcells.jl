@@ -47,7 +47,6 @@ function mddf_linkedcells(trajectory, options :: Options)
 
   # Safe passing of frame counter to the threads
   tframe = zeros(Int64,nthreads)
-  
 
   # Create data structures required for multithreading
   framedata = Vector{FrameData}(undef,nthreads)
@@ -149,13 +148,11 @@ end
 #
 
 function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options, R :: Result)
-  println(iframe)
 
   # Simplify code by assigning some shortened names
   trajectory = framedata.trajectory
   volume_frame = framedata.volume_frame
   rdf_count_random_frame = framedata.rdf_count_random_frame
-  sides = framedata.sides
   box = framedata.box
   solute_center = framedata.solute_center
   dc = framedata.dc
@@ -278,7 +275,7 @@ end
 
 #
 # Sum the counts of two Results structures, adding the result to the first structure
-# R1 = R1 + R2
+# as in R1 = R1 + R2
 #
 
 function sum!( R1 :: Result, R2 :: Result )
