@@ -29,7 +29,7 @@ trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 options = MDDF.Options(output="example.dat",binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
-@time R = MDDF.mddf_linkedcells(trajectory,options)
+@time R = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
 plot(layout=(4,1))
 

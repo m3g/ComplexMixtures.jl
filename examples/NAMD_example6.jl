@@ -22,11 +22,12 @@ solvent_indexes = copy(solute_indexes)
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2)
+options = MDDF.Options(output="example.dat",binstep=0.2,n_random_samples=100)
 
 # Run MDDF calculation, and get the resutls in the R structure
+nlabel="lcP"
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
-N = MDDF.mddf_naive_self(trajectory,options)
+N = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
 trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
 R = MDDF.mddf_linkedcells_self(trajectory,options)
@@ -43,8 +44,8 @@ sp=1
 plot!(ylabel="MDDF or RDF",subplot=sp)
 scatter!(R.d,R.mddf,subplot=sp,label="mddf")
 scatter!(R.d,R.rdf,subplot=sp,label="rdf")
-plot!(N.d,N.mddf,subplot=sp,label="mddf - naive")
-plot!(N.d,N.rdf,subplot=sp,label="rdf - naive")
+plot!(N.d,N.mddf,subplot=sp,label="mddf - $nlabel")
+plot!(N.d,N.rdf,subplot=sp,label="rdf - $nlabel")
 plot!(x,y)
 plot!(legend=:topright,subplot=sp)
 
@@ -52,8 +53,8 @@ sp=2
 plot!(ylabel="KB",subplot=sp)
 scatter!(R.d,R.kb,subplot=sp,label="mddf")
 scatter!(R.d,R.kb_rdf,subplot=sp,label="rdf")
-plot!(N.d,N.kb,subplot=sp,label="mddf - naive")
-plot!(N.d,N.kb_rdf,subplot=sp,label="rdf - naive")
+plot!(N.d,N.kb,subplot=sp,label="mddf - $nlabel")
+plot!(N.d,N.kb_rdf,subplot=sp,label="rdf - $nlabel")
 plot!(legend=:topright,subplot=sp)
 
 sp=3         
@@ -61,8 +62,8 @@ plot!(ylabel="atom contrib",subplot=sp)
 i = 5
 plot!(R.d,R.solute_atom[:,i],subplot=sp,label="new",linewidth=2)
 plot!(R.d,R.solvent_atom[:,i],subplot=sp,label="new",linewidth=2)
-scatter!(N.d,N.solute_atom[:,i],subplot=sp,label="naive")
-scatter!(N.d,N.solvent_atom[:,i],subplot=sp,label="naive")
+scatter!(N.d,N.solute_atom[:,i],subplot=sp,label="$nlabel")
+scatter!(N.d,N.solvent_atom[:,i],subplot=sp,label="$nlabel")
 y1 = similar(R.d)
 y2 = similar(R.d)
 for i in 1:size(R.d,1)
