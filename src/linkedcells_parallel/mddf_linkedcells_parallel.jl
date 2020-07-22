@@ -18,23 +18,23 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   # Number of threads
   nthreads = Threads.nthreads()
 
-  # The number of random samples for numerical normalization
-  nsamples = options.n_random_samples*solvent.nmols
-
   # Initializing the structure that carries the result per thread
   R = [ Result(trajectory,options) for i in 1:nthreads ]
 
   # Check if the solute is the same as the solvent, and if so, use the self
   # routines to compute the mddf and normalize the data accordingly
-  if solute != solvent
+  if solute.index != solvent.index
     mddf_compute! = mddf_frame!
+    nsamples = options.n_random_samples*solvent.nmols
     s = Samples(R[1].nframes_read*trajectory.solute.nmols,
                 R[1].nframes_read*options.n_random_samples)
   else
     mddf_compute! = mddf_frame_self!
+    nsamples = options.n_random_samples
+    npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
     nfix = solvent.nmols^2/npairs
-    s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
-                R.nframes_read*options.n_random_samples*nfix)
+    s = Samples(R[1].nframes_read*(trajectory.solvent.nmols-1),
+                R[1].nframes_read*options.n_random_samples*nfix)
   end
 
   # Safe passing of frame counter to the threads
@@ -46,7 +46,6 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
     framedata[ithread] = FrameData(deepcopy(trajectory),                 # trajectory
                                    Volume(R[1].nbins),                   # volume_frame
                                    zeros(R[1].nbins),                    # rdf_count_random_frame
-                                   zeros(3),                             # sides 
                                    Box(options.lcell),                   # box 
                                    zeros(3),                             # solute_center
                                    CutoffDistances(solvent.natoms),      # dc
@@ -84,12 +83,12 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
       end
       # Actually read the data of the frame that will be considered
       nextframe!(trajectory)
-      @. framedata[ifree].trajectory.x_solute = trajectory.x_solute
-      @. framedata[ifree].trajectory.x_solvent = trajectory.x_solvent
-      @. framedata[ifree].sides = trajectory.sides
       iframe += 1
       iframe_read += 1 
       tframe[ifree] = iframe
+      @. framedata[ifree].trajectory.x_solute = trajectory.x_solute
+      @. framedata[ifree].trajectory.x_solvent = trajectory.x_solvent
+      @. framedata[ifree].trajectory.sides = trajectory.sides
       # Spawn the calculations for this frame
       t[ifree] = Threads.@spawn mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
       free[ifree] = false
