@@ -89,8 +89,8 @@ module MDDF
   include("$dir/mddf_frame_self.jl")
   include("$dir/mddf_linkedcells_parallel.jl")
 
-  # Parser to the default mddf method in each case
-  #include("./mddf.jl")
+  # Parser to the default mddf method
+  mddf = mddf_linkedcells_parallel
 
 end
 
