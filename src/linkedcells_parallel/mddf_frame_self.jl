@@ -22,6 +22,9 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
   x_solute = trajectory.x_solute
   x_solvent = trajectory.x_solvent
 
+  # Number of pairs of the computation
+  npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
+
   # Reset counters for this frame
   reset!(volume_frame)
   @. rdf_count_random_frame = 0.
