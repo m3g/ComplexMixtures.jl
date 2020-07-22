@@ -7,7 +7,6 @@ mutable struct FrameData
   trajectory # trajectory format
   volume_frame :: Volume
   rdf_count_random_frame :: Vector{Float64}
-  sides :: Vector{Float64}
   box :: Box
   solute_center :: Vector{Float64}
   
