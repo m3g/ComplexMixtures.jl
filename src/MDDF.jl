@@ -31,6 +31,7 @@ module MDDF
   include("./Options.jl")
 
   # Structures and functions to read different types of trajectories
+  include("./trajectory_formats/ChemFiles.jl")
   include("./trajectory_formats/NamdDCD.jl")
   include("./trajectory_formats/PDBTraj.jl")
 
