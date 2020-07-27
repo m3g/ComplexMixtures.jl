@@ -12,7 +12,7 @@ struct ChemFile
   # Mandatory data for things to work
   #
   filename :: String
-  format :: Union{Nothing,String}
+  format :: AbstractString
   stream :: Vector{Chemfiles.Trajectory} # mutable such that we can close it and open it again
   nframes :: Int64 
 
@@ -42,10 +42,10 @@ end
 # will be able to read the first frame of the trajectory
 #
 
-function ChemFile( filename :: String, solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent; format=nothing )
+function ChemFile( filename :: String, solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent; format="" )
 
   stream = Vector{Chemfiles.Trajectory}(undef,1)
-  stream[1] = open_ChemFile(filename,format=format)
+  stream[1] = Chemfiles.Trajectory(filename,'r',format)
   
   # Get the number of frames (the output of Chemfiles comes in UInt64 format, which is converted
   # to Int using (UInt % Int)
@@ -58,7 +58,7 @@ function ChemFile( filename :: String, solute :: SoluteOrSolvent, solvent :: Sol
   Chemfiles.close(stream[1])
 
   # Reopen the stream, so that nextrame can read the first frame
-  stream[1] = open_ChemFile(filename,format=format)
+  stream[1] = Chemfiles.Trajectory(filename,'r',format)
 
   return ChemFile( filename, # trajectory file name 
                    format, # trajectory format, is provided by the user
@@ -118,17 +118,6 @@ end
 getsides(trajectory :: ChemFile, iframe) = trajectory.sides
 
 #
-# Function to open the Chemfiles.Trajectory stream
-#
-function open_ChemFile( filename; format = nothing )
-  if format == nothing
-    return Chemfiles.Trajectory(filename,'r')
-  else
-    return Chemfiles.Trajectory(filename,'r',format=format)
-  end
-end
-
-#
 # Function that closes the IO Stream of the trajectory
 #
 closetraj( trajectory :: ChemFile ) = Chemfiles.close( trajectory.stream[1] )
@@ -138,11 +127,6 @@ closetraj( trajectory :: ChemFile ) = Chemfiles.close( trajectory.stream[1] )
 #
 function firstframe( trajectory :: ChemFile )  
   Chemfiles.close(trajectory.stream[1])
-  trajectory.stream[1] = open_ChemFile(trajectory.filename,format=trajectory.format)
+  trajectory.stream[1] = Chemfiles.Trajectory(filename,'r',format)
 end
-
-
-
-
-
 
