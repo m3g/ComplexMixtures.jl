@@ -1,0 +1,20 @@
+REMARK original generated coordinate pdb file
+ATOM      1  N   ALA     1      -9.229 -14.861  -5.481  1.00  0.00      PROT N
+ATOM      2  HT1 ALA     1     -10.048 -15.427  -5.569  0.00  0.00      PROT  
+ATOM      3  HT2 ALA     1      -9.488 -13.913  -5.295  0.00  0.00      PROT  
+ATOM      4  HT3 ALA     1      -8.652 -15.208  -4.741  0.00  0.00      PROT  
+ATOM      5  CA  ALA     1      -8.483 -14.912  -6.726  1.00  0.00      PROT C
+ATOM      6  HA  ALA     1      -8.185 -15.947  -6.894  1.00  0.00      PROT H
+ATOM      7  CB  ALA     1      -9.383 -14.465  -7.880  1.00  0.00      PROT C
+ATOM      8  HB1 ALA     1     -10.428 -14.602  -7.600  1.00  0.00      PROT H
+ATOM      9  HB2 ALA     1      -9.200 -13.413  -8.098  1.00  0.00      PROT H
+ATOM     10  HB3 ALA     1      -9.164 -15.063  -8.765  1.00  0.00      PROT H
+ATOM     11  C   ALA     1      -7.227 -14.047  -6.599  1.00  0.00      PROT C
+ATOM     12  O   ALA     1      -7.083 -13.048  -7.303  1.00  0.00      PROT O
+ATOM     13  OH2 TIP3    1     -28.223  19.920 -27.748  1.00  0.00      WAT1 O
+ATOM     14  H1  TIP3    1     -27.453  20.358 -27.476  1.00  0.00      WAT1 H
+ATOM     15  H2  TIP3    1     -27.834  19.111 -28.148  1.00  0.00      WAT1 H
+ATOM     16  OH2 TIP3    2      24.875 -18.446  36.131  1.00  0.00      WAT1 O
+ATOM     17  H1  TIP3    2      24.067 -18.280  36.553  1.00  0.00      WAT1 H
+ATOM     18  H2  TIP3    2      24.689 -18.071  35.242  1.00  0.00      WAT1 H
+END
