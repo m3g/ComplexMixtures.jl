@@ -1,9 +1,7 @@
 module MDDF
 
   using Printf
-  using OffsetArrays
   using Parameters
-  using Statistics
   using ProgressMeter
 
   include("./version.jl")
