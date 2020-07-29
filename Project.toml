@@ -1,2 +1,4 @@
-[deps]
-OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+name = "MDDF"
+uuid = "3e2a44c0-b035-43a9-9648-92ae7cfe5693"
+authors = ["Leandro Martinez <leandro@iqm.unicamp.br>"]
+version = "0.1.0"
