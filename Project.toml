@@ -4,4 +4,7 @@ authors = ["Leandro Martinez <leandro@iqm.unicamp.br>"]
 version = "0.1.0"
 
 [deps]
+Chemfiles = "46823bd8-5fb3-5f92-9aa0-96921f3dd015"
+Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
