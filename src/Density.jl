@@ -14,10 +14,10 @@ function reset!( d :: Density )
   d.solvent_bulk = 0.
 end
 
-function Base.show( io :: IO, d :: Density ) 
-  println(" Mean solute density: $(d.solute) ")
-  println(" Mean solvent density: $(d.solvent) ")
-  println(" Mean solvent bulk density: $(d.solvent_bulk) ")
-end
+#function Base.show( io :: IO, d :: Density ) 
+#  println(" Mean solute density: $(d.solute) ")
+#  println(" Mean solvent density: $(d.solvent) ")
+#  println(" Mean solvent bulk density: $(d.solvent_bulk) ")
+#end
 
 

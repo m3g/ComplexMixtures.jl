@@ -18,12 +18,12 @@ function reset!( v :: Volume )
   @. v.shell = 0.
 end
 
-function Base.show( io :: IO, v :: Volume ) 
-  n = length(v.shell)
-  println(" Mean total box volume: $(v.total) ")
-  println(" Mean bulk volume: $(v.bulk) ")
-  println(" Mean solute domain volume: $(v.domain) ")
-  println(" Volumes of first, medium, and last solvation shells: $(v.shell[1]), $(v.shell[round(Int64,n/2)]), $(v.shell[n])")
-end
+#function Base.show( io :: IO, v :: Volume ) 
+#  n = length(v.shell)
+#  println(" Mean total box volume: $(v.total) ")
+#  println(" Mean bulk volume: $(v.bulk) ")
+#  println(" Mean solute domain volume: $(v.domain) ")
+#  println(" Volumes of first, medium, and last solvation shells: $(v.shell[1]), $(v.shell[round(Int64,n/2)]), $(v.shell[n])")
+#end
 
 

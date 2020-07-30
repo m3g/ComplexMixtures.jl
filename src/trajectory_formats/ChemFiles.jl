@@ -127,6 +127,6 @@ closetraj( trajectory :: ChemFile ) = Chemfiles.close( trajectory.stream[1] )
 #
 function firstframe( trajectory :: ChemFile )  
   Chemfiles.close(trajectory.stream[1])
-  trajectory.stream[1] = Chemfiles.Trajectory(filename,'r',format)
+  trajectory.stream[1] = Chemfiles.Trajectory(trajectory.filename,'r',trajectory.format)
 end
 
