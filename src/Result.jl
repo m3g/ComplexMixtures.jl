@@ -9,43 +9,38 @@ struct Result
   d :: Vector{Float64}
 
   # Data to compute the MDDF distribution and corresponding KB integral
-
   md_count :: Vector{Float64}
   md_count_random :: Vector{Float64}
-  
   sum_md_count :: Vector{Float64}
   sum_md_count_random :: Vector{Float64}
-
   mddf :: Vector{Float64}
   kb :: Vector{Float64}
 
   # Atomic contributions to the MDDFs
-
   solute_atom :: Array{Float64}
   solvent_atom :: Array{Float64}
   
   # Data to compute a RDF and the KB integral from this count
-
   rdf_count :: Vector{Float64}
   rdf_count_random :: Vector{Float64}
-
   sum_rdf_count :: Vector{Float64}
   sum_rdf_count_random :: Vector{Float64}
-
   rdf :: Vector{Float64}
   kb_rdf :: Vector{Float64}
 
   # Overall densities and volumes
-
   density :: Density
   volume :: Volume
 
   # Options of the calculation
-
   options :: Options
   irefatom :: Int64
   lastframe_read :: Int64
   nframes_read :: Int64
+
+  # File name(s) of the trajectories in this results 
+  files :: Vector{String}
+  weights :: Vector{Float64}
 
 end
 
@@ -121,7 +116,8 @@ function Result( trajectory, options :: Options )
                 lastframe_read=lastframe_read,
                 nframes_read=nframes_read,
                 solute_natomspermol=trajectory.solute.natomspermol,
-                solvent_natomspermol=trajectory.solvent.natomspermol)
+                solvent_natomspermol=trajectory.solvent.natomspermol,
+                files=[trajectory.filename],weights=[1.0])
 
 end
 
@@ -136,7 +132,9 @@ function Result(;options :: Options,
                 lastframe_read :: Int64,
                 nframes_read :: Int64,
                 solute_natomspermol :: Int64,
-                solvent_natomspermol :: Int64)
+                solvent_natomspermol :: Int64,
+                files :: Vector{String},
+                weights :: Vector{Float64})
 
   return Result( nbins, # number of bins of histogram
                  dmax, # maximum distance to be considered (cutoff or dbulk)
@@ -160,7 +158,9 @@ function Result(;options :: Options,
                  options, # all input options
                  irefatom, # reference atom for RDF calculation
                  lastframe_read, # last frame read
-                 nframes_read # number of frames actually used for computing
+                 nframes_read, # number of frames actually used for computing
+                 files, # List of files that are considered in this results
+                 weights # List of the weight of the data read from each file
                )      
 end
 
@@ -169,6 +169,12 @@ end
 #
 
 function Base.show( io :: IO, R :: Result ) 
+
+  println(" Trajectory files and weights: ")
+  for i in 1:length(R.files) 
+    println("   $(R.files[i]) - w = $(R.weights[i])")
+  end
+  println()
 
   ifar = trunc(Int64,R.nbins - 1.0/R.options.binstep)
 

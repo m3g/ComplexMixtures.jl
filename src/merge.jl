@@ -25,6 +25,14 @@ function merge( r :: Vector{Result} )
   solute_natomspermol = size(r[1].solute_atom,2)
   solvent_natomspermol = size(r[1].solvent_atom,2)
   
+  # List of files and weights
+  nfiles = 0
+  for ir in 1:nr
+    nfiles += length(r[ir].files)
+  end
+  files = Vector{String}(undef,nfiles) 
+  weights = Vector{Float64}(undef,nfiles)
+
   # Final resuls
   R = Result(options=r[1].options,
              nbins=r[1].nbins,
@@ -33,12 +41,13 @@ function merge( r :: Vector{Result} )
              lastframe_read=r[nr].lastframe_read,
              nframes_read=nframes_read,
              solute_natomspermol=solute_natomspermol,
-             solvent_natomspermol=solvent_natomspermol) 
+             solvent_natomspermol=solvent_natomspermol,
+             files=files,
+             weights=weights) 
 
   # Average results weighting the data considering the number of frames of each data set
-
   @. R.d = r[1].d
-  
+  ifile = 0
   for ir in 1:nr
  
     w = r[ir].nframes_read / nframes_read
@@ -72,6 +81,12 @@ function merge( r :: Vector{Result} )
     R.volume.bulk += w*r[ir].volume.bulk
     R.volume.domain += w*r[ir].volume.domain
     R.volume.shell += w*r[ir].volume.shell
+
+    for j in 1:length(r[ir].files)
+      ifile += 1
+      R.files[ifile] = r[ir].files[j]
+      R.weights[ifile] = w*r[ir].weights[j]
+    end
 
   end
 
