@@ -7,6 +7,12 @@
 # http://github.com/m3g/MDDF
 #  
 
+# With default input options
+
+mddf_linkedcells_parallel(trajectory) = mddf_linkedcells_parallel(trajectory,Options())
+
+# With explicit Options provided
+
 function mddf_linkedcells_parallel(trajectory, options :: Options)  
 
   # Simplify code by assigning some shortened names

@@ -8,6 +8,12 @@
 # http://github.com/m3g/MDDF
 #  
 
+# Input with default input options
+
+mddf_naive(trajectory) = mddf_naive(trajectory,Options())
+
+# With explicit passing of input options
+
 function mddf_naive(trajectory, options :: Options)  
 
   # Simplify code by assigning some shortened names

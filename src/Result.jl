@@ -40,10 +40,6 @@ struct Result
   density :: Density
   volume :: Volume
 
-  # Name of output files
-
-  file :: OutputFiles
-
   # Options of the calculation
 
   options :: Options
@@ -59,14 +55,6 @@ end
 #
 
 function Result( trajectory, options :: Options ) 
-
-  # Names of auxiliary output files
-  atom_contrib_solvent = FileOperations.remove_extension(options.output)*
-                                 "-ATOM_CONTRIB_SOLVENT."*
-                            FileOperations.file_extension(options.output)
-  atom_contrib_solute = FileOperations.remove_extension(options.output)*
-                            "-ATOM_CONTRIB_SOLUTE."*
-                            FileOperations.file_extension(options.output)
 
   # Check for simple input errors
   if options.stride < 1
@@ -124,8 +112,27 @@ function Result( trajectory, options :: Options )
   # Actual number of frames that are read considering lastframe and stride
   nframes_read = (lastframe_read - options.firstframe)/options.stride + 1
 
-
   # Return data structure built up
+
+  return Result(options=options,
+                nbins=nbins,
+                dmax=dmax,
+                irefatom=irefatom,
+                lastframe_read=lastframe_read,
+                nframes_read=nframes_read)
+
+end
+
+#
+# Generator with keyword parameters for the options that must be given
+#
+
+function Result(;options :: Options,
+                nbins :: Int64,
+                dmax :: Float64, 
+                irefatom :: Int64, 
+                last_frame_read :: Int64,
+                nframes_read :: Int64)
 
   return Result( nbins, # number of bins of histogram
                  dmax, # maximum distance to be considered (cutoff or dbulk)
@@ -146,16 +153,16 @@ function Result( trajectory, options :: Options )
                  zeros(Float64,nbins), # kb_rdf
                  Density(), # mutable scalars for results
                  Volume(nbins), # mutable vector and scalars for results
-                 OutputFiles( options.output, # name of main output file
-                              atom_contrib_solvent, # name of solvent atom contribution file
-                              atom_contrib_solute ), # name of solute atom contribution file,
                  options, # all input options
                  irefatom, # reference atom for RDF calculation
                  lastframe_read, # last frame read
                  nframes_read # number of frames actually used for computing
                )      
-
 end
+
+#
+# What to show at the REPL
+#
 
 function Base.show( io :: IO, R :: Result ) 
 

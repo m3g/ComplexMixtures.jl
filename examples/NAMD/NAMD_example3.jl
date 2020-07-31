@@ -20,7 +20,7 @@ solvent_indexes = copy(solute_indexes)
 solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
 
 # Input options for the calcualtion
-options = MDDF.Options(output="example.dat",binstep=0.2)
+options = MDDF.Options(binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
 nlabel="lcP"

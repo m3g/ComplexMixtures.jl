@@ -3,6 +3,8 @@ module MDDF
   using Printf
   using Parameters
   using ProgressMeter
+  using Statistics
+  using FortranFiles
 
   include("./version.jl")
 
@@ -80,7 +82,7 @@ module MDDF
   include("$dir/cutoffdistances_self.jl")
   include("$dir/mddf_linkedcells_self.jl")
 
-  # for the parallel version
+  # for the linked-cell-parallel version
   dir="./linkedcells_parallel"
   include("$dir/FrameData.jl")
   include("$dir/sum.jl")

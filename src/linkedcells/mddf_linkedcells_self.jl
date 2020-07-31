@@ -7,6 +7,12 @@
 # http://github.com/m3g/MDDF
 #  
 
+# With default input options
+
+mddf_linkedcells_self(trajectory) = mddf_linkedcells_self(trajectory,Options())
+
+# With explicit options provided
+
 function mddf_linkedcells_self(trajectory, options :: Options)  
 
   # Simplify code by assigning some shortened names

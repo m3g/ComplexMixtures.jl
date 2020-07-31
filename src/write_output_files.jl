@@ -2,6 +2,15 @@
 # Function to write the final results to output files
 #
 
+  # Names of auxiliary output files
+  atom_contrib_solvent = FileOperations.remove_extension(options.output)*
+                                 "-ATOM_CONTRIB_SOLVENT."*
+                            FileOperations.file_extension(options.output)
+  atom_contrib_solute = FileOperations.remove_extension(options.output)*
+                            "-ATOM_CONTRIB_SOLUTE."*
+                            FileOperations.file_extension(options.output)
+
+
 function write_output_files(result :: Result)
 
 

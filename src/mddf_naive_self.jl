@@ -8,6 +8,12 @@
 # http://github.com/m3g/MDDF
 #  
 
+# With default input options
+
+mddf_naive_self(trajectory) = mddf_naive_self(trajectory,Options())
+
+# With explicit options provided
+
 function mddf_naive_self(trajectory, options :: Options)  
 
   # Simplify code by assigning some shortened names
