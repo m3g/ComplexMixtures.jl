@@ -18,8 +18,8 @@ struct NamdDCD
   sides :: Array{Float64}
 
   # Data structures of the solute and solvent 
-  solute :: SoluteOrSolvent
-  solvent :: SoluteOrSolvent
+  solute :: Selection
+  solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
   x_solute :: Array{Float64}
@@ -44,7 +44,7 @@ end
 # appropriate lengths and, importantly, with the i/o stream OPENED, ready to read the first
 # trajectory frame using the "nextframe" function.
 
-function NamdDCD( filename :: String, solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent )
+function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection)
 
   stream = FortranFile(filename)
 

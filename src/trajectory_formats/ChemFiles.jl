@@ -20,8 +20,8 @@ struct ChemFile
   sides :: Vector{Float64}
 
   # Solute and solvent data
-  solute :: SoluteOrSolvent
-  solvent :: SoluteOrSolvent
+  solute :: Selection
+  solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
   x_solute :: Array{Float64}  # (solute.natoms,3)
@@ -42,7 +42,7 @@ end
 # will be able to read the first frame of the trajectory
 #
 
-function ChemFile( filename :: String, solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent; format="" )
+function ChemFile( filename :: String, solute :: Selection, solvent :: Selection; format="" )
 
   stream = Vector{Chemfiles.Trajectory}(undef,1)
   stream[1] = Chemfiles.Trajectory(filename,'r',format)

@@ -9,7 +9,7 @@
 #
 
 function updatecounters!(R :: Result, 
-                         solute :: SoluteOrSolvent, solvent :: SoluteOrSolvent,
+                         solute :: Selection, solvent :: Selection,
                          dc :: CutoffDistances, options :: Options,
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
 
@@ -67,7 +67,7 @@ end
 
 function updatecounters!(irefatom :: Int64, md_count_random :: AbstractVector{Float64},
                          rdf_count_random_frame :: AbstractVector{Float64},
-                         solvent :: SoluteOrSolvent, dc :: CutoffDistances,
+                         solvent :: Selection, dc :: CutoffDistances,
                          options :: Options, 
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
 

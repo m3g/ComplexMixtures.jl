@@ -12,7 +12,7 @@ function cutoffdcell_self!(cutoff :: Float64,
                            box :: Box,
                            i :: Int64, j :: Int64, k :: Int64,
                            dc :: CutoffDistances,
-                           solvent :: SoluteOrSolvent,
+                           solvent :: Selection,
                            imol :: Int64)
 
   # Check if this box needs to be wrapped. If so, the distance calculation has to take
