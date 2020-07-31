@@ -14,10 +14,10 @@ resname = "TIP3"
 natomspermol = 3
 
 solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
-solute = MDDF.Solute( solute_indexes, natomspermol=natomspermol )
+solute = MDDF.Selection( solute_indexes, natomspermol=natomspermol )
 
 solvent_indexes = copy(solute_indexes)
-solvent = MDDF.Solvent( solvent_indexes, natomspermol=natomspermol )
+solvent = MDDF.Selection( solvent_indexes, natomspermol=natomspermol )
 
 # Input options for the calcualtion
 options = MDDF.Options(binstep=0.2)

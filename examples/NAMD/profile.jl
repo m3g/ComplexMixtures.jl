@@ -10,7 +10,7 @@ atoms = PDBTools.readPDB("./structure.pdb")
 # The solute is a single protein molecule (infinte dilution case). In this case,
 # use the option nmols=1
 solute_indexes = [ atom.index for atom in filter( atom -> PDBTools.isprotein(atom), atoms ) ]
-solute = MDDF.Solute( solute_indexes, nmols=1 )
+solute = MDDF.Selection( solute_indexes, nmols=1 )
 
 # Input options for the calcualtion
 options = MDDF.Options(binstep=0.2,lastframe=1,lcell=2)
@@ -22,7 +22,7 @@ for num in [ 10000000 ]
   println(" n = ", num) 
 
   solvent_indexes = [ atom.index for atom in filter( atom -> (atom.resname == "TIP3" && atom.resnum <= num ), atoms ) ]
-  solvent = MDDF.Solvent( solvent_indexes, natomspermol=3 )
+  solvent = MDDF.Selection( solvent_indexes, natomspermol=3 )
 
   # Initialize trajectroy data structure and open input stream
 

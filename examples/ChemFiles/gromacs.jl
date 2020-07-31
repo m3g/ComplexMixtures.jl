@@ -15,13 +15,13 @@ atoms = PDBTools.readPDB("../gromacs_files/system.pdb")
 # The solute is a single protein molecule (infinte dilution case). In this case,
 # use the option nmols=1
 solute_indexes = PDBTools.selindex(atoms,"protein")
-solute = MDDF.Solute( solute_indexes, nmols=1 )
+solute = MDDF.Selection( solute_indexes, nmols=1 )
 
 # The solvent is the EMIM cation, which has 20 atoms. Use the natomspermol to indicate how many
 # atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
 # of the selection into individual molecules.
 solvent_indexes = PDBTools.selindex(atoms,"resname EMI")
-solvent = MDDF.Solvent( solvent_indexes, natomspermol=20 )
+solvent = MDDF.Selection( solvent_indexes, natomspermol=20 )
 
 # Input options for the calcualtion
 options = MDDF.Options(binstep=0.2)
