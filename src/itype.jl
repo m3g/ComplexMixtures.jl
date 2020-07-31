@@ -12,4 +12,4 @@ function itype(iatom :: Int64, natomspermol :: Int64)
 end
 
 # Calling using the structures of Solute and Solvent, to clear up the code above
-itype(iatom :: Int64, s :: SoluteOrSolvent) = itype(iatom,s.natomspermol)
+itype(iatom :: Int64, s :: Selection) = itype(iatom,s.natomspermol)

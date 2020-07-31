@@ -13,7 +13,7 @@ function format(x)
   end
 end
 
-function write_tables(R :: Result, filename :: String)
+function write(R :: Result, filename :: String)
 
   # Names of output files containing atomic contibutions
   atom_contrib_solvent = FileOperations.remove_extension(filename)*

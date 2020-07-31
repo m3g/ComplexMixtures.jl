@@ -2,7 +2,7 @@
 # Update the data with the data accumulated in a frame, for the non-self distributions
 #
 function update_counters_frame!(R :: Result, rdf_count_random_frame :: Vector{Float64},
-                                volume_frame :: Volume, solute :: SoluteOrSolvent,
+                                volume_frame :: Volume, solute :: Selection,
                                 nsamples :: Int64, n_solvent_in_bulk :: Int64)
 
     @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame
@@ -22,7 +22,7 @@ end
 #
 function update_counters_frame!(R :: Result, rdf_count_random_frame :: Vector{Float64},
                                 volume_frame :: Volume, 
-                                solvent :: SoluteOrSolvent, 
+                                solvent :: Selection, 
                                 nsamples :: Int64, npairs :: Int64, n_solvent_in_bulk :: Union{Int64,Float64})
 
   @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame

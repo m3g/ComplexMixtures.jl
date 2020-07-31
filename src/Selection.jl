@@ -2,7 +2,7 @@
 # Structure that contains the information about the solute and solvent molecules
 #
 
-struct SoluteOrSolvent
+struct Selection
 
   natoms :: Int64 # Total number of atoms
   nmols :: Int64 # Number of molecules
@@ -15,28 +15,21 @@ end
 
 # Initialize providing the file name, and calling by default VMDselect
 
-Solute( file :: String, selection :: String; 
+Selection( file :: String, selection :: String; 
         vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) =
-  SoluteOrSolvent( VMDselect(file,selection,vmd=vmd), nmols = nmols, natomspermol = natomspermol )
-
-Solvent( file :: String, selection :: String; 
-         vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) =
-  SoluteOrSolvent( VMDselect(file,selection,vmd=vmd), nmols = nmols, natomspermol = natomspermol )
+  Selection( VMDselect(file,selection,vmd=vmd), nmols = nmols, natomspermol = natomspermol )
 
 # Initializers from the indexes of the atoms directly
 
-Solute( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) = 
-   SoluteOrSolvent(indexes,nmols=nmols,natomspermol=natomspermol)
-
-Solvent( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) = 
-   SoluteOrSolvent(indexes,nmols=nmols,natomspermol=natomspermol)
+Selection( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) = 
+   Selection(indexes,nmols=nmols,natomspermol=natomspermol)
 
 # Function to initialize the structures
 
-function SoluteOrSolvent( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
+function Selection( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
 
   if nmols == 0 && natomspermol == 0
-    error("In Solute, needs to set nmols or natomspermol.")
+    error("Set nmols or natomspermol when defining a selection.")
   end
 
   natoms = length(indexes)
@@ -63,12 +56,12 @@ function SoluteOrSolvent( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspe
     end
   end
 
-  return SoluteOrSolvent(natoms,nmols,natomspermol,indexes,imol)
+  return Selection(natoms,nmols,natomspermol,indexes,imol)
 
 end
           
 import Base.show
-function Base.show( io :: IO, s :: SoluteOrSolvent )
+function Base.show( io :: IO, s :: Selection )
   if s.nmols == 1
     mol = "molecule"
   else

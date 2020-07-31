@@ -9,6 +9,6 @@ function viewmol(i :: Int64, x :: AbstractArray{Float64}, n :: Int64)
 end
 
 # From the structure of the solute or solvent
-viewmol(i :: Int64, x :: AbstractArray{Float64}, s :: SoluteOrSolvent) =
+viewmol(i :: Int64, x :: AbstractArray{Float64}, s :: Selection) =
   viewmol(i, x, s.natomspermol)
 
