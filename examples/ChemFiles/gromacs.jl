@@ -30,7 +30,15 @@ options = MDDF.Options(binstep=0.2)
 # Chemfiles package to read the trajectory. This package reads the trajectories
 # in many common simulation formats
 trajectory = MDDF.ChemFile("../gromacs_files/trajectory.xtc",solute,solvent)
-@time R = MDDF.mddf(trajectory,options)
+
+results = Vector{MDDF.Result}(undef,2)
+
+@time results[1] = MDDF.mddf(trajectory,options)
+
+trajectory = MDDF.ChemFile("../gromacs_files/trajectory.xtc",solute,solvent)
+@time results[2] = MDDF.mddf(trajectory,options)
+
+R = MDDF.merge(results)
 
 plot(layout=(6,1))
 

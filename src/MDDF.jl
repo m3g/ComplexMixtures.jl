@@ -57,6 +57,8 @@ module MDDF
   include("./Result.jl")
   include("./Samples.jl")
   include("./finalresults.jl")
+  include("./merge.jl")
+  include("./save.jl")
 
   # Implementation of mddf using naive algorithms
   include("./update_counters_frame.jl")

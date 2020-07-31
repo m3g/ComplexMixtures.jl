@@ -5,23 +5,25 @@
 # of the set provided weighted by the number of frames read in each Result set.
 #
 
-function merge( results :: Vector{Results} )
+function merge( r :: Vector{Result} )
 
-  nr = length(results)
+  nr = length(r)
   nframes_read = r[1].nframes_read
   error = false
   for ir in 2:nr
-    nframes_read += r.nframes_read
+    nframes_read += r[ir].nframes_read
     if r[ir].nbins != r[1].nbins
       println("ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.")
     end
-    if (r[ir].dmax - r[1].dmax) > 1.d-8
+    if (r[ir].dmax - r[1].dmax) > 1.e-8
       println("ERROR: To merge Results, the maximum distance of the of the histograms of both sets must be the same.")
     end
   end
   if error
     error(" Incompatible set of results to merge. ")
   end
+  solute_natomspermol = size(r[1].solute_atom,2)
+  solvent_natomspermol = size(r[1].solvent_atom,2)
   
   # Final resuls
   R = Result(options=r[1].options,
@@ -29,16 +31,29 @@ function merge( results :: Vector{Results} )
              dmax=r[1].dmax,
              irefatom=r[1].irefatom,
              lastframe_read=r[nr].lastframe_read,
-             nframes_read=nframes_read) 
+             nframes_read=nframes_read,
+             solute_natomspermol=solute_natomspermol,
+             solvent_natomspermol=solvent_natomspermol) 
 
   # Average results weighting the data considering the number of frames of each data set
+
+  @. R.d = r[1].d
   
   for ir in 1:nr
  
     w = r[ir].nframes_read / nframes_read
 
-    @. R.md_count = w*r[ir].md_count 
+    @. R.mddf += w*r[ir].mddf
+    @. R.kb += w*r[ir].kb
+
+    @. R.rdf += w*r[ir].rdf
+    @. R.kb_rdf += w*r[ir].kb_rdf
+
+    @. R.md_count += w*r[ir].md_count 
     @. R.md_count_random += w*r[ir].md_count_random
+
+    @. R.sum_md_count += w*r[ir].sum_md_count
+    @. R.sum_md_count_random += w*r[ir].sum_md_count_random
 
     @. R.solute_atom += w*r[ir].solute_atom
     @. R.solvent_atom += w*r[ir].solvent_atom
@@ -46,11 +61,14 @@ function merge( results :: Vector{Results} )
     @. R.rdf_count += w*r[ir].rdf_count
     @. R.rdf_count_random += w*r[ir].rdf_count_random
 
+    @. R.sum_rdf_count += w*r[ir].sum_rdf_count
+    @. R.sum_rdf_count_random += w*r[ir].sum_rdf_count_random
+
     R.density.solute += w*r[ir].density.solute
     R.density.solvent += w*r[ir].density.solvent
     R.density.solvent_bulk += w*r[ir].density.solvent_bulk
  
-    R.volume.totall += w*r[ir].volume.total.
+    R.volume.total += w*r[ir].volume.total
     R.volume.bulk += w*r[ir].volume.bulk
     R.volume.domain += w*r[ir].volume.domain
     R.volume.shell += w*r[ir].volume.shell

@@ -110,7 +110,7 @@ function Result( trajectory, options :: Options )
   end
  
   # Actual number of frames that are read considering lastframe and stride
-  nframes_read = (lastframe_read - options.firstframe)/options.stride + 1
+  nframes_read = round(Int64,(lastframe_read - options.firstframe + 1)/options.stride)
 
   # Return data structure built up
 
@@ -119,7 +119,9 @@ function Result( trajectory, options :: Options )
                 dmax=dmax,
                 irefatom=irefatom,
                 lastframe_read=lastframe_read,
-                nframes_read=nframes_read)
+                nframes_read=nframes_read,
+                solute_natomspermol=trajectory.solute.natomspermol,
+                solvent_natomspermol=trajectory.solvent.natomspermol)
 
 end
 
@@ -131,8 +133,10 @@ function Result(;options :: Options,
                 nbins :: Int64,
                 dmax :: Float64, 
                 irefatom :: Int64, 
-                last_frame_read :: Int64,
-                nframes_read :: Int64)
+                lastframe_read :: Int64,
+                nframes_read :: Int64,
+                solute_natomspermol :: Int64,
+                solvent_natomspermol :: Int64)
 
   return Result( nbins, # number of bins of histogram
                  dmax, # maximum distance to be considered (cutoff or dbulk)
@@ -143,8 +147,8 @@ function Result(;options :: Options,
                  zeros(Float64,nbins), # sum_md_count_random
                  zeros(Float64,nbins), # mddf
                  zeros(Float64,nbins), # kb
-                 zeros(Float64,nbins,trajectory.solute.natomspermol), # Array to store the solute atom contributions
-                 zeros(Float64,nbins,trajectory.solvent.natomspermol), # Array to store the solvent atom contributions
+                 zeros(Float64,nbins,solute_natomspermol), # Array to store the solute atom contributions
+                 zeros(Float64,nbins,solvent_natomspermol), # Array to store the solvent atom contributions
                  zeros(Float64,nbins), # rdf_count
                  zeros(Float64,nbins), # rdf_Count_random
                  zeros(Float64,nbins), # sum_rdf_count
