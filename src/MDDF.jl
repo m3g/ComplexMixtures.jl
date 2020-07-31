@@ -57,10 +57,11 @@ module MDDF
   include("./finalresults.jl")
   include("./merge.jl")
   include("./save.jl")
-  include("./write_tables.jl")
-  include("./update_counters_frame.jl")
+  include("./read.jl")
+  include("./write.jl")
 
   # Implementation of mddf using naive algorithms
+  include("./update_counters_frame.jl")
   include("./mddf_naive.jl")
   include("./mddf_naive_self.jl")
  
