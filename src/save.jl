@@ -13,34 +13,32 @@ function write( R :: Result, filename :: String)
 end
 
 function read(filename :: String)
-  R = read_wg(filename)
-  GC.gc()
-  return R
-end
-
-function read_wg(filename :: String)
   f = open(filename,"r")
-  R = JSON3.read(f,Result)
-  # Need to convert the solute and solvent atom contributions, because
+  r = JSON3.read(f,Result)
+  # Need to reshape the solute and solvent atom contributions, because
   # the data is read in a single column
-  #for i in 1:S.input.nsave 
-  #  for iat in 1:S.input.n
-  #    traj.atoms[i].x[iat,1] = S.traj.atoms[i].x[iat]
-  #    traj.atoms[i].x[iat,2] = S.traj.atoms[i].x[iat+S.input.n]
-  #    traj.atoms[i].status[iat] = S.traj.atoms[i].status[iat]
-  #  end
-  #  traj.potential[i] = S.traj.potential[i]
-  #  traj.kinetic[i] = S.traj.kinetic[i]
-  #  traj.total[i] = S.traj.total[i]
-  #  traj.time[i] = S.traj.time[i]
-  #  traj.nenc[i] = S.traj.nenc[i]
-  #  traj.U[i] = S.traj.U[i]
-  #  traj.S[i] = S.traj.S[i]
-  #  traj.D[i] = S.traj.D[i]
-  #  traj.I[i] = S.traj.I[i]
-  #end
-  #input = S.input
-  #S = nothing
-  return R
+  return Result(r.nbins,
+                r.dmax,
+                r.d,
+                r.md_count,
+                r.md_count_random,
+                r.sum_md_count,
+                r.sum_md_count_random,
+                r.mddf,
+                r.kb,
+                reshape(r.solute_atom,r.nbins,:),
+                reshape(r.solvent_atom,r.nbins,:),
+                r.rdf_count,
+                r.rdf_count_random,
+                r.sum_rdf_count,
+                r.sum_rdf_count_random,
+                r.rdf,
+                r.kb_rdf,
+                r.density,
+                r.volume,
+                r.options,
+                r.irefatom,
+                r.lastframe_read,
+                r.nframes_read)
 end
 
