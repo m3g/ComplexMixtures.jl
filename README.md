@@ -1,2 +1,3 @@
-# MDDF
-Package to perform minimum-distance distribution analyses of complex solute-solvent interactions
+### MDDF
+
+A package to study solute-solvent interactions using simulations.
