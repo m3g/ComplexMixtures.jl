@@ -19,11 +19,6 @@ Selection( file :: String, selection :: String;
         vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) =
   Selection( VMDselect(file,selection,vmd=vmd), nmols = nmols, natomspermol = natomspermol )
 
-# Initializers from the indexes of the atoms directly
-
-Selection( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) = 
-   Selection(indexes,nmols=nmols,natomspermol=natomspermol)
-
 # Function to initialize the structures
 
 function Selection( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
