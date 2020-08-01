@@ -1,4 +1,14 @@
 using Documenter, MDDF
 push!(LOAD_PATH,"../src/")
-makedocs(sitename="My Documentation")
+makedocs(
+    modules= [MDDF],
+    sitename="MDDF.jl",
+    pages = [
+        "Introduction" => "index.md",
+        "Selections" => "selection.md"
+    ]
+
+)
+
+
 
