@@ -1,7 +1,7 @@
 using Documenter, MDDF
 push!(LOAD_PATH,"../src/")
 makedocs(
-    modules= [MDDF],
+    modules=[MDDF],
     sitename="MDDF.jl",
     pages = [
         "Introduction" => "index.md",
@@ -12,7 +12,6 @@ makedocs(
         "Computing the MDDF" => "mddf.md",
         "Results" => "results.md",
         "Multiple trajectories" => "multiple.md",
-        "Save results" => "save.md",
         "Parallel execution" => "parallel.md",
         "Options" => "options.md",
         "Examples" => "examples.md",
