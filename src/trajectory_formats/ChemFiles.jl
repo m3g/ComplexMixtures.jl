@@ -42,6 +42,9 @@ end
 # will be able to read the first frame of the trajectory
 #
 
+Trajectory( filename :: String, solute :: Selection, solvent :: Selection, format="") =
+  Chemfile(filename,solute,solvent,format)
+
 function ChemFile( filename :: String, solute :: Selection, solvent :: Selection; format="" )
 
   stream = Vector{Chemfiles.Trajectory}(undef,1)

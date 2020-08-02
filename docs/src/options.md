@@ -1,4 +1,4 @@
-# Options
+# [Options](@id options)
 
 There are some options to control what exactly is going to be computed
 by MDDF. These options can be defined by the user and passed to the

@@ -1,16 +1,18 @@
 
 # Quick Guide
 
-Of course, follow the [`installation`] instructions first. Start `julia` and
-load the MDDF package, using:
+Of course, follow the [installation](@ref Installation) instructions first. 
+Start `julia` and load the MDDF package, using:
 
 ```julia
 using MDDF
 ```
-And here we will use the `PDBTools` package to obtain the selections
+And here we will use the `PDBTools` package to obtain the selections of
+the solute and solvent molecules: 
 ```julia
 using PDBTools
 ```
+(see [Set solute and solvent](@ref selections) for details).
 
 The fastest way to understand how to use this package is through an
 example.  
