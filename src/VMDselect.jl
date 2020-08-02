@@ -7,6 +7,10 @@
 
 function VMDselect( inputfile :: String, selection :: String; vmd="vmd" )
 
+  if ! isfile(inputfile)
+    error("Could not find file: $inputfile")
+  end
+
   local index_list :: String 
   local readnext :: Bool = false
 
@@ -19,7 +23,7 @@ function VMDselect( inputfile :: String, selection :: String; vmd="vmd" )
   Base.write(vmd_input,"exit \n")
   Base.close(vmd_input)
 
-  vmd_output = read(`$vmd -dispdev text -e ./VMDINPUT_TMP.VMD`, String)
+  vmd_output = Base.read(`$vmd -dispdev text -e ./VMDINPUT_TMP.VMD`, String)
 
   for line in split(vmd_output,"\n")
     if readnext
