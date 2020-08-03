@@ -150,7 +150,9 @@ MDDF.save(results,"./results.json")
 
 # Plot the some of the most important results 
 plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
+savefig("./mddf.pdf")
 plot(results.d,results.kb,xlabel="d",ylabel="KB") # plot the KB 
+savefig("./kb.pdf")
 ```
 
 

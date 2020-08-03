@@ -11,13 +11,15 @@ such that the `results` variable contain the `Result` data structure. By
 default, the histograms contain 500 bins (`binstep=0.002` and
 `cutoff=10.`) such that all data-vectors will contain 500 lines.
 
+To know how to save and load saved data, read the [next](@ref save) section.
+
 ## The Result data structure: main data
 
 The most important data to be read from `resutls` are the distances,
 minimum-distance distribution function, and KB integrals. These data is
-stored in the following vectors: 
+stored in the following vectors:
 
-### Distances of the histograms: `results.d`
+## Distances of the histograms: `results.d`
 The following vector will contain values ranging from 0. to `cutoff`,
 and the distance at each bin is the distance in that bin for which half
 of the volume of the bin is within `d`, and half of the volume is above
@@ -33,7 +35,7 @@ julia> results.d
 
 ```
 
-### Minimum-distance distribution function: `results.mddf`
+## Minimum-distance distribution function: `results.mddf`
 
 The `results.mddf` vector will contain the main result, which the
 minimum-distance distribution function. For a properly-sampled
@@ -63,7 +65,7 @@ using Plots
 plot(results.d,results.mddf,xlabel="d/A",ylabel="mddf(d) / L/mol") 
 ```
 
-### Kirkwood-Buff integral: `results.kb`
+## Kirkwood-Buff integral: `results.kb`
 
 The `results.kb` vector will contain the Kirkwood-Buff integral computed
 as a function of the minimum-distance to the solute. For properly
@@ -92,49 +94,23 @@ using Plots
 plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol") 
 ```
 
-## Save and load results
+## Units
 
-Three functions serve the purpose of saving and loading the results
-obtained with MDDF:
+* The distance is assumed to be in ``\textrm{\AA}``, as this is the most common
+  distance units in molecular simulations. The coordinates of the atoms
+  are assumed be provided in ``\textrm{\AA}``. 
 
-### Save data to recover it later 
+* The minimum-distance distribution function is unit-less, since it is the
+  ratio of the density at each distance divided by the bulk density.
 
-```julia
-MDDF.save(results,"results.json")
-```
-where `results` is the output data structure of the `MDDF.mddf()`
-calculation, and `results.json` is the output file to be created. The
-file is written in `JSON` format, thus is not naturally human-readable.
+* The Kirkwood-Buff integrals are returned in ``\textrm{cm}^3~\textrm{mol}^{-1}``, if the
+  coordinates were provided in ``\textrm{\AA}``.
 
-### Recover saved data
-
-```julia
-results = MDDF.read("results.json")
-```
-The `MDDF.read` function reads the output of the `save` function above,
-and restores the results data structure.
-
-### Write data to human-readable format
-
-If you Want the results to be written as simple ASCII tables such that
-you can read them with another analysis program, plotting graphic, or
-just want to inspect the data visually, use:
-
-```julia
-MDDF.write(results,"results.dat")
-```
-Three files will be created by this function:
-
-`results.dat`: Contains the main results, as the MDDF and KB-integral data.
-
-`results-ATOM_CONTRIB_SOLVENT.dat`: contains the contribution of each
-atom type of the solvent to the MDDF.
-
-`results-ATOM_CONTRIB_SOLUTE.dat`: contains the contribution of each
-atom type of the solute to the MDDF.
-
-
-
+!!! warning
+    If the coordinates are not in ``\textrm{\AA}``, the calculation will 
+    proceed normaly, but the units of the KB integrals, which has units
+    of volume per mol, should be
+    converted to conform the length unit provided. 
 
 
 

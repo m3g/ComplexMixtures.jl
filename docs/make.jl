@@ -1,4 +1,6 @@
-using Documenter, MDDF
+#using DocumenterLaTeX
+using Documenter
+using MDDF
 push!(LOAD_PATH,"../src/")
 makedocs(
     modules=[MDDF],
@@ -11,6 +13,7 @@ makedocs(
         "Loading the trajectory" => "trajectory.md",
         "Computing the MDDF" => "mddf.md",
         "Results" => "results.md",
+        "Save and load" => "save.md",
         "Multiple trajectories" => "multiple.md",
         "Parallel execution" => "parallel.md",
         "Options" => "options.md",
