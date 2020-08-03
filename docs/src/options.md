@@ -38,7 +38,7 @@ estimated from the density within `dbulk` and `cutoff`. If `false`, the
 density of the solvent is estimated from the density outside `dbulk` by
 exclusion. Default: `false`. 
 
-### Options that most users probably will never change:
+### Options that most users will probably never change:
 
 `irefatom`: Integer, index of the reference atom in the solvent molecule
 used to compute the shell volumes and domain volumes in the Monte-Carlo
