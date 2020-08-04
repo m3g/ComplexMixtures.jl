@@ -5,6 +5,7 @@ module MDDF
   using ProgressMeter
   using Statistics
   using FortranFiles
+  using PDBTools
 
   include("./version.jl")
 

@@ -11,17 +11,37 @@ struct Selection
   index :: Vector{Int64} # Index of each atom in the full vector of coordinates
   imol :: Vector{Int64} # index of the molecule to which each atom belongs
 
+  name :: Vector{String} # Types of the atoms, to be used in the atom-contributions
+
 end
 
 # Initialize providing the file name, and calling by default VMDselect
 
-Selection( file :: String, selection :: String; 
-        vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 ) =
-  Selection( VMDselect(file,selection,vmd=vmd), nmols = nmols, natomspermol = natomspermol )
+function Selection( file :: String, selection :: String; 
+                    vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 )
+  indexes, names = VMDselect(file,selection,vmd=vmd)
+  return Selection( indexes, names, nmols = nmols, natomspermol = natomspermol )
+end
+
+# If the input is a vector of PDBTools.Atom types, load the index and types
+
+function Selection( atoms :: Vector{PDBTools.Atom}; nmols :: Int64 = 0, natomspermol :: Int64 = 0)
+  index = [ at.index for at in atoms ]
+  name = [ at.name for at in atoms ]
+  return Selection( index, name, nmols=nmols, natomspermol=natomspermol )
+end
+
+# If no names are provided, just repeat the indexes
+
+function Selection( index :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0)
+  name = [ "$(index[i])" for i in 1:length(index) ]
+  return Selection( index, name, nmols=nmols, natomspermol=natomspermol )
+end
 
 # Function to initialize the structures
 
-function Selection( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
+function Selection( indexes :: Vector{Int64}, names :: Vector{Int64}; 
+                    nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
 
   if nmols == 0 && natomspermol == 0
     error("Set nmols or natomspermol when defining a selection.")
@@ -51,7 +71,7 @@ function Selection( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :
     end
   end
 
-  return Selection(natoms,nmols,natomspermol,indexes,imol)
+  return Selection(natoms,nmols,natomspermol,indexes,imol,names)
 
 end
           
