@@ -10,7 +10,7 @@
 
 function updatecounters!(R :: Result, 
                          solute :: Selection, solvent :: Selection,
-                         dc :: CutoffDistances, options :: Options,
+                         dc :: CutoffDistances, 
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
 
   for i in 1:solvent.nmols
@@ -34,7 +34,7 @@ function updatecounters!(R :: Result,
   # Update the reference atom counter
   for i in 1:solvent.nmols
     if dref_mol[i] < R.cutoff
-      ibin = setbin(dref_mol[i],options.binstep)
+      ibin = setbin(dref_mol[i],R.options.binstep)
       R.rdf_count[ibin] += 1
     end
   end
@@ -66,10 +66,9 @@ end
 # counters associated to the random distribution
 #
 
-function updatecounters!(irefatom :: Int64, md_count_random :: AbstractVector{Float64},
+function updatecounters!(R :: Result,
                          rdf_count_random_frame :: AbstractVector{Float64},
                          solvent :: Selection, dc :: CutoffDistances,
-                         options :: Options, 
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
 
   for i in 1:solvent.nmols
@@ -90,8 +89,8 @@ function updatecounters!(irefatom :: Int64, md_count_random :: AbstractVector{Fl
 
   # Update the reference atom counter
   for i in 1:solvent.nmols
-    if dref_mol[i] < options.dbulk
-      ibin = setbin(dref_mol[i],options.binstep)
+    if dref_mol[i] < R.cutoff
+      ibin = setbin(dref_mol[i],R.options.binstep)
       rdf_count_random_frame[ibin] += 1
     end
   end
@@ -99,13 +98,13 @@ function updatecounters!(irefatom :: Int64, md_count_random :: AbstractVector{Fl
   # Sort the vectors such that the elements with distances 
   # smaller than the cutoff are at the begining, this is used to random 
   # sample the bulk molecules afterwards
-  partialsort_cutoff!(dmin_mol,options.dbulk,by=x->x.d)
+  partialsort_cutoff!(dmin_mol,R.cutoff,by=x->x.d)
 
   # Add distances to the counters
   i = 1
-  while i <= solvent.nmols && dmin_mol[i].d <= options.dbulk 
-    ibin = setbin(dmin_mol[i].d,options.binstep)
-    md_count_random[ibin] += 1
+  while i <= solvent.nmols && dmin_mol[i].d <= R.cutoff
+    ibin = setbin(dmin_mol[i].d,R.options.binstep)
+    R.md_count_random[ibin] += 1
     i = i + 1
   end
 
