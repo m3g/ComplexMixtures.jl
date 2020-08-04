@@ -36,8 +36,10 @@ module MDDF
   include("./trajectory_formats/NamdDCD.jl")
   include("./trajectory_formats/PDBTraj.jl")
   # Default reading with the Chemfiles infrastructure
-  Trajectory( filename :: String, solute :: Selection, solvent :: Selection, format="") =
-    Chemfile(filename,solute,solvent,format)
+  Trajectory( filename :: String, 
+              solute :: Selection, solvent :: Selection, 
+              ; format :: String = "") =
+    ChemFile(filename,solute,solvent,format=format)
 
 
   # Structure used for periodic boundary conditions
@@ -64,6 +66,7 @@ module MDDF
   include("./save.jl")
   include("./read.jl")
   include("./write.jl")
+  include("./contrib.jl")
 
   # Implementation of mddf using naive algorithms
   include("./update_counters_frame.jl")
