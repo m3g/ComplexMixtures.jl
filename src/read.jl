@@ -29,6 +29,8 @@ function read(filename :: String)
                 r.options,
                 r.irefatom,
                 r.lastframe_read,
-                r.nframes_read)
+                r.nframes_read,     
+                r.files,
+                r.weights)
 end
 
