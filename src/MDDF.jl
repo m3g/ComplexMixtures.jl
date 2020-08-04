@@ -30,6 +30,7 @@ module MDDF
   include("./Density.jl")
   include("./Volume.jl")
   include("./Options.jl")
+  include("./inbulk.jl")
 
   # Structures and functions to read different types of trajectories
   include("./trajectory_formats/ChemFiles.jl")

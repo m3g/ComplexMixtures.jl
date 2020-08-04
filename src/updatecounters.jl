@@ -33,7 +33,7 @@ function updatecounters!(R :: Result,
 
   # Update the reference atom counter
   for i in 1:solvent.nmols
-    if dref_mol[i] < options.dbulk
+    if dref_mol[i] < R.cutoff
       ibin = setbin(dref_mol[i],options.binstep)
       R.rdf_count[ibin] += 1
     end
@@ -42,20 +42,21 @@ function updatecounters!(R :: Result,
   # Sort the vectors such that the elements with distances 
   # smaller than the cutoff are at the begining, this is used to random 
   # sample the bulk molecules afterwards
-  partialsort_cutoff!(dmin_mol,options.dbulk,by=x->x.d)
+  partialsort_cutoff!(dmin_mol,R.cutoff,by=x->x.d)
 
   # Add distances to the counters
   n_solvent_in_bulk = 0
   i = 1
-  while i <= solvent.nmols && dmin_mol[i].d < options.dbulk 
+  while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
     ibin = setbin(dmin_mol[i].d,options.binstep)
     R.md_count[ibin] += 1
     R.solute_atom[ibin,itype(dmin_mol[i].iat,solute)] += 1 
     R.solvent_atom[ibin,itype(dmin_mol[i].jat,solvent)] += 1 
     i = i + 1
+    if inbulk(dmin_mol[i].d,R)
+      n_solvent_in_bulk += 1
+    end
   end
-  n_solvent_in_bulk = solvent.nmols - i + 1
-
   return n_solvent_in_bulk
 
 end

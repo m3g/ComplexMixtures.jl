@@ -24,7 +24,7 @@ solvent = MDDF.Selection( solvent_indexes, natomspermol=3 )
 trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
-options = MDDF.Options(binstep=0.2,n_random_samples=50)
+options = MDDF.Options(binstep=0.2,n_random_samples=10)
 
 # Run MDDF calculation, and get the resutls in the R structure
 @time R = MDDF.mddf_linkedcells_parallel(trajectory,options)

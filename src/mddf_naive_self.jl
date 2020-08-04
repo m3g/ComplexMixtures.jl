@@ -38,9 +38,6 @@ function mddf_naive_self(trajectory, options :: Options)
   # Auxiliar vector to contain the center of coordinates of a solute
   solute_center = zeros(3)
   
-  # Counter for the total number of bulk molecules
-  nbulk = 0
-
   # Structure to organize counters for each frame only
   volume_frame = Volume(R.nbins)
   rdf_count_random_frame = zeros(R.nbins)
