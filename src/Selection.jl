@@ -40,7 +40,7 @@ end
 
 # Function to initialize the structures
 
-function Selection( indexes :: Vector{Int64}, names :: Vector{Int64}; 
+function Selection( indexes :: Vector{Int64}, names :: Vector{String}; 
                     nmols :: Int64 = 0, natomspermol :: Int64 = 0) 
 
   if nmols == 0 && natomspermol == 0
