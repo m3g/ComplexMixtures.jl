@@ -15,8 +15,8 @@ function merge( r :: Vector{Result} )
     if r[ir].nbins != r[1].nbins
       println("ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.")
     end
-    if (r[ir].dmax - r[1].dmax) > 1.e-8
-      println("ERROR: To merge Results, the maximum distance of the of the histograms of both sets must be the same.")
+    if (r[ir].cutoff - r[1].cutoff) > 1.e-8
+      println("ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.")
     end
   end
   if error
@@ -36,7 +36,8 @@ function merge( r :: Vector{Result} )
   # Final resuls
   R = Result(options=r[1].options,
              nbins=r[1].nbins,
-             dmax=r[1].dmax,
+             dbulk=r[1].dbulk,
+             cutoff=r[1].cutoff,
              irefatom=r[1].irefatom,
              lastframe_read=r[nr].lastframe_read,
              nframes_read=nframes_read,

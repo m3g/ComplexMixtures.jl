@@ -93,7 +93,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     # Add the box side information to the box structure, in this frame
     @. box.sides = sides
     # Compute the number of cells in each dimension
-    @. box.nc = max(1,trunc(Int64,box.sides/(options.cutoff/box.lcell)))
+    @. box.nc = max(1,trunc(Int64,box.sides/(R.cutoff/box.lcell)))
     @. box.l = box.sides/box.nc
 
     # Will wrap everthing relative to one atom of the first solute molecule, and
@@ -107,7 +107,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     initcells!(x_solvent,box,lc_solvent)
 
     # Check if the cutoff is not too large considering the periodic cell size
-    if options.cutoff > sides[1]/2. || options.cutoff > sides[2]/2. || options.cutoff > sides[3]/2.
+    if R.cutoff > sides[1]/2. || R.cutoff > sides[2]/2. || R.cutoff > sides[3]/2.
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
@@ -123,7 +123,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
       # in the dc structure
-      cutoffdistances_self!(options.cutoff,x_this_solute,x_solvent,lc_solvent,box,dc,
+      cutoffdistances_self!(R.cutoff,x_this_solute,x_solvent,lc_solvent,box,dc,
                             solvent,isolvent)
 
       # For each solute molecule, update the counters (this is highly suboptimal, because
@@ -167,7 +167,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       # Compute all distances between solute and solvent atoms which are smaller than the 
       # cutoff (this is the most computationally expensive part), the distances are returned
       # in the dc structure (here we do not use the self function)
-      cutoffdistances!(options.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
+      cutoffdistances!(R.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
 
       # Update the counters and get the number of solvent molecules in bulk
       updatecounters!(R.irefatom,R.md_count_random,rdf_count_random_frame,

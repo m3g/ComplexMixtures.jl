@@ -75,7 +75,7 @@ function mddf_naive_self(trajectory, options :: Options)
     R.density.solute = R.density.solvent
 
     # Check if the cutoff is not too large considering the periodic cell size
-    if options.cutoff > sides[1]/2. || options.cutoff > sides[2]/2. || options.cutoff > sides[3]/2.
+    if R.cutoff > sides[1]/2. || R.cutoff > sides[2]/2. || R.cutoff > sides[3]/2.
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 

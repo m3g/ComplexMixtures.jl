@@ -8,7 +8,8 @@ function read(filename :: String)
   # Need to reshape the solute and solvent atom contributions, because
   # the data is read in a single column
   return Result(r.nbins,
-                r.dmax,
+                r.dbulk,
+                r.cutoff,
                 r.d,
                 r.md_count,
                 r.md_count_random,

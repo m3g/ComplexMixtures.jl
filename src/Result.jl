@@ -5,7 +5,8 @@
 struct Result
 
   nbins :: Int64
-  dmax :: Float64
+  dbulk :: Float64
+  cutoff :: Float64
   d :: Vector{Float64}
 
   # Data to compute the MDDF distribution and corresponding KB integral
@@ -63,7 +64,10 @@ function Result( trajectory, options :: Options )
   end
 
   # Check for problems in dbulk and cutoff definitions
-  dmax = options.dbulk
+  cutoff = dbulk
+  if (options.dbulk/options.binstep)%1 > 1.e-5
+    error("in MDDF options: dbulk must be a multiple of binstep.")
+  end
   if options.usecutoff
     if options.dbulk >= options.cutoff 
       error(" in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). ")
@@ -74,12 +78,9 @@ function Result( trajectory, options :: Options )
     if ((options.cutoff-options.dbulk)/options.binstep)%1 > 1.e-5
       error("in MDDF options: (cutoff-dbulk) must be a multiple of binstep. ")
     end
-    dmax = options.cutoff
+    cutoff = options.cutoff
   end
-  if (options.dbulk/options.binstep)%1 > 1.e-5
-    error("in MDDF options: dbulk must be a multiple of binstep.")
-  end
-  nbins = setbin(dmax,options.binstep)-1
+  nbins = setbin(cutoff,options.binstep)-1
 
   if options.irefatom > trajectory.solvent.natoms 
     error("in MDDF options: Reference atom index", options.irefatom, " is greater than number of "*
@@ -111,7 +112,8 @@ function Result( trajectory, options :: Options )
 
   return Result(options=options,
                 nbins=nbins,
-                dmax=dmax,
+                dbulk=dbulk,
+                cutoff=cutoff,
                 irefatom=irefatom,
                 lastframe_read=lastframe_read,
                 nframes_read=nframes_read,
@@ -127,7 +129,8 @@ end
 
 function Result(;options :: Options,
                 nbins :: Int64,
-                dmax :: Float64, 
+                dbulk :: Float64, 
+                cutoff :: Float64, 
                 irefatom :: Int64, 
                 lastframe_read :: Int64,
                 nframes_read :: Int64,
@@ -137,7 +140,8 @@ function Result(;options :: Options,
                 weights :: Vector{Float64})
 
   return Result( nbins, # number of bins of histogram
-                 dmax, # maximum distance to be considered (cutoff or dbulk)
+                 dbulk, # Distance over which the system is considered as bulk
+                 cutoff, # maximum distance to be considered 
                  zeros(Float64,nbins), # d - vector of distances
                  zeros(Float64,nbins), # md_count
                  zeros(Float64,nbins), # md_count_random
