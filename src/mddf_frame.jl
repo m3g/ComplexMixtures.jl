@@ -62,6 +62,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   n_solvent_in_bulk = 0
   local n_solvent_in_bulk_last
   for isolute in 1:solute.nmols
+
     # We need to do this one solute molecule at a time to avoid exploding the memory
     # requirements
     x_this_solute = viewmol(isolute,x_solute,solute)

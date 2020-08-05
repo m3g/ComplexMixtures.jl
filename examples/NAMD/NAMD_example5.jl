@@ -3,7 +3,7 @@
 #
 
 using PDBTools
-using MDDF
+#using MDDF
 using Plots
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)

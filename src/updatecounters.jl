@@ -4,15 +4,14 @@
 #
 
 #
-# If the R structure is provided, update md_count, rdf_count and the atom-specific
-# counters
+# If the solute and solvent selections are provided, 
+# update md_count, rdf_count and the atom-specific counters
 #
 
 function updatecounters!(R :: Result, 
                          solute :: Selection, solvent :: Selection,
                          dc :: CutoffDistances, 
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
-
   for i in 1:solvent.nmols
     dmin_mol[i] = DminMol(+Inf,i,0,0)
     dref_mol[i] = +Inf
@@ -45,24 +44,30 @@ function updatecounters!(R :: Result,
   partialsort_cutoff!(dmin_mol,R.cutoff,by=x->x.d)
 
   # Add distances to the counters
-  n_solvent_in_bulk = 0
+  n_solvent_in_domain = 0
   i = 1
-  while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
+  while i <= solvent.nmols && dmin_mol[i].d <= R.cutoff
     ibin = setbin(dmin_mol[i].d,R.options.binstep)
     R.md_count[ibin] += 1
     R.solute_atom[ibin,itype(dmin_mol[i].iat,solute)] += 1 
     R.solvent_atom[ibin,itype(dmin_mol[i].jat,solvent)] += 1 
     i = i + 1
-    if inbulk(dmin_mol[i].d,R)
-      n_solvent_in_bulk += 1
+    if dmin_mol[i].d <= R.dbulk 
+      n_solvent_in_domain += 1
     end
   end
+  if ! R.options.usecutoff
+    n_solvent_in_bulk = solvent.nmols - (i-1)
+  else
+    n_solvent_in_bulk = (i-1) - n_solvent_in_domain 
+  end
+  
   return n_solvent_in_bulk
 
 end
 
 #
-# If the md_count_random and rdf_count_random_frame are provided instead, update the
+# If the rdf_count_random_frame is provided, update the
 # counters associated to the random distribution
 #
 

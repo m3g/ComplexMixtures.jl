@@ -20,7 +20,7 @@ solvent_indexes = PDBTools.select(atoms,"resname TMAO")
 solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
 
 # Input options for the calcualtion
-options = MDDF.Options(binstep=0.2,n_random_samples=100)
+options = MDDF.Options(binstep=0.2,n_random_samples=1000,lastframe=1)
 
 nlabel="lc"
 rlabel="lcP"

@@ -6,6 +6,8 @@ module MDDF
   using Statistics
   using FortranFiles
   using PDBTools
+  using StructTypes
+  using JSON3
 
   include("./version.jl")
 
@@ -72,7 +74,6 @@ module MDDF
 
   # Implementation of mddf using naive algorithms
   include("./update_counters_frame.jl")
-  include("./inbulk.jl")
   include("./mddf_naive.jl")
   include("./mddf_naive_self.jl")
  
