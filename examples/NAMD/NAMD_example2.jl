@@ -3,6 +3,7 @@
 #
 
 using MDDF
+using PDBTools
 using Plots
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
@@ -20,7 +21,7 @@ solvent_indexes = PDBTools.select(atoms,"resname TMAO")
 solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
 
 # Input options for the calcualtion
-options = MDDF.Options(binstep=0.2,n_random_samples=1000,lastframe=1)
+options = MDDF.Options(binstep=0.2,n_random_samples=1000)
 
 nlabel="lc"
 rlabel="lcP"

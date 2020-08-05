@@ -2,7 +2,8 @@
 # Self - Water
 #
 
-include("../src/MDDF.jl")
+using MDDF
+using Plots
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
 using PDBTools
@@ -10,24 +11,18 @@ atoms = PDBTools.readPDB("./structure.pdb")
 
 # Self correlation, thus the solute and solvent indexes are identical
 
-resname = "TIP3"
-natomspermol = 3
-
-solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
-solute = MDDF.Selection( solute_indexes, natomspermol=natomspermol )
-
-solvent_indexes = copy(solute_indexes)
-solvent = MDDF.Selection( solvent_indexes, natomspermol=natomspermol )
+water_atoms = PDBTools.select(atoms,"water")
+water = MDDF.Selection( water_atoms, natomspermol=3)
 
 # Input options for the calcualtion
 options = MDDF.Options(binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
 nlabel="lcP"
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",water)
 @time N = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",water)
 @time R = MDDF.mddf_linkedcells_self(trajectory,options)
 
 using Plots
@@ -57,7 +52,7 @@ plot!(legend=:topright,subplot=sp)
 
 sp=3         
 plot!(ylabel="atom contrib",subplot=sp)
-for i in 1:solute.natomspermol
+for i in 1:water.natomspermol
   scatter!(R.d,R.solute_atom[:,i],subplot=sp,label="",linewidth=2)
   plot!(N.d,N.solute_atom[:,i],subplot=sp,label="")
 end
