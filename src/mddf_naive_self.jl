@@ -108,12 +108,16 @@ function mddf_naive_self(trajectory, options :: Options)
         dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,x_this_solvent,R.irefatom)
 
         # Update histogram for computation of MDDF
-        if dmin <= options.dbulk
+        if dmin <= R.cutoff
           ibin = setbin(dmin,options.binstep)
           R.md_count[ibin] += 1
           R.solute_atom[ibin,iatom] += 1 
           R.solvent_atom[ibin,jatom] += 1 
-        else
+          if R.options.usecutoff && dmin > R.dbulk
+            n_jmol_in_bulk += 1
+            jmol_in_bulk[n_jmol_in_bulk] = jmol
+          end
+        elseif ! R.options.usecutoff
           n_jmol_in_bulk += 1
           jmol_in_bulk[n_jmol_in_bulk] = jmol
         end
