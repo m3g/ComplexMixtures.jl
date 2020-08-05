@@ -33,7 +33,7 @@ function updatecounters!(R :: Result,
 
   # Update the reference atom counter
   for i in 1:solvent.nmols
-    if dref_mol[i] < R.cutoff
+    if dref_mol[i] <= R.cutoff
       ibin = setbin(dref_mol[i],R.options.binstep)
       R.rdf_count[ibin] += 1
     end
@@ -48,7 +48,7 @@ function updatecounters!(R :: Result,
   n_solvent_in_bulk = 0
   i = 1
   while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
-    ibin = setbin(dmin_mol[i].d,options.binstep)
+    ibin = setbin(dmin_mol[i].d,R.options.binstep)
     R.md_count[ibin] += 1
     R.solute_atom[ibin,itype(dmin_mol[i].iat,solute)] += 1 
     R.solvent_atom[ibin,itype(dmin_mol[i].jat,solvent)] += 1 
@@ -80,7 +80,7 @@ function updatecounters!(R :: Result,
     if dc.d[i] < dmin_mol[jmol].d
       dmin_mol[jmol].d = dc.d[i]
     end
-    if itype(dc.jat[i],solvent) == irefatom
+    if itype(dc.jat[i],solvent) == R.irefatom
       if dc.d[i] < dref_mol[jmol]
         dref_mol[jmol] = dc.d[i] 
       end
@@ -89,7 +89,7 @@ function updatecounters!(R :: Result,
 
   # Update the reference atom counter
   for i in 1:solvent.nmols
-    if dref_mol[i] < R.cutoff
+    if dref_mol[i] <= R.cutoff
       ibin = setbin(dref_mol[i],R.options.binstep)
       rdf_count_random_frame[ibin] += 1
     end

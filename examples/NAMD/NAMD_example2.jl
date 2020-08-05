@@ -2,39 +2,37 @@
 # Water - TMAO
 #
 
+using MDDF
 using Plots
-nogtk()
-
-include("../src/MDDF.jl")
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
 using PDBTools
 atoms = PDBTools.readPDB("./structure.pdb")
 
 # The solute is water, with 3 atoms
-solute_indexes = [ atom.index for atom in filter( atom -> (atom.resname == "TIP3"), atoms ) ]
+solute_indexes = PDBTools.select(atoms,"water")
 solute = MDDF.Selection( solute_indexes, natomspermol=3 )
 
 # The solvent is TMAO, which has 14 atoms. Use the natomspermol to indicate how many
 # atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
 # of the selection into individual molecules.
-solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO", atoms ) ]
+solvent_indexes = PDBTools.select(atoms,"resname TMAO")
 solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
 
 # Input options for the calcualtion
-options = MDDF.Options(binstep=0.2,n_random_samples=1000)
+options = MDDF.Options(binstep=0.2,n_random_samples=100)
 
 nlabel="lc"
 rlabel="lcP"
 
 # Run MDDF calculation, and get the resutls in the R structure
 println("$nlabel:")
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
 @time N = MDDF.mddf_linkedcells(trajectory,options)
 
 # Run MDDF calculation, and get the resutls in the R structure
 println("$rlabel:")
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
 @time R = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
 #println("naive:")

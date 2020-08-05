@@ -64,7 +64,7 @@ function Result( trajectory, options :: Options )
   end
 
   # Check for problems in dbulk and cutoff definitions
-  cutoff = dbulk
+  cutoff = options.dbulk
   if (options.dbulk/options.binstep)%1 > 1.e-5
     error("in MDDF options: dbulk must be a multiple of binstep.")
   end
@@ -112,7 +112,7 @@ function Result( trajectory, options :: Options )
 
   return Result(options=options,
                 nbins=nbins,
-                dbulk=dbulk,
+                dbulk=options.dbulk,
                 cutoff=cutoff,
                 irefatom=irefatom,
                 lastframe_read=lastframe_read,

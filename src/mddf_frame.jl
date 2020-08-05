@@ -116,7 +116,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     cutoffdistances!(R.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
 
     # Update the counters of the random distribution
-    updatecounters!(R,,rdf_count_random_frame,solvent,dc,dmin_mol,dref_mol)
+    updatecounters!(R,rdf_count_random_frame,solvent,dc,dmin_mol,dref_mol)
 
 
   end # random solvent sampling

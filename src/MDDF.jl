@@ -26,11 +26,15 @@ module MDDF
   include("./VMDselect.jl")
 
   # Input and Output data structures
+  include("./FileOperations.jl")
   include("./OutputFiles.jl")
   include("./Density.jl")
   include("./Volume.jl")
   include("./Options.jl")
-  include("./inbulk.jl")
+
+  # Structures used to store results
+  include("./Result.jl")
+  include("./Samples.jl")
 
   # Structures and functions to read different types of trajectories
   include("./trajectory_formats/ChemFiles.jl")
@@ -59,9 +63,6 @@ module MDDF
   include("./viewmol.jl")
 
   # Structures to report results
-  include("./FileOperations.jl")
-  include("./Result.jl")
-  include("./Samples.jl")
   include("./finalresults.jl")
   include("./merge.jl")
   include("./save.jl")
@@ -71,6 +72,7 @@ module MDDF
 
   # Implementation of mddf using naive algorithms
   include("./update_counters_frame.jl")
+  include("./inbulk.jl")
   include("./mddf_naive.jl")
   include("./mddf_naive_self.jl")
  

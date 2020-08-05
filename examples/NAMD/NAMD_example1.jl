@@ -2,7 +2,7 @@
 # Protein - TMAO (compare new and old implementations)
 #
 
-include("../src/MDDF.jl")
+using MDDF
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
 using PDBTools
@@ -32,7 +32,7 @@ solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
 #                        natomspermol=14 ) 
 
 # Initialize trajectroy data structure and open input stream
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
 options = MDDF.Options(binstep=0.2)
