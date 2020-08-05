@@ -120,11 +120,11 @@ function mddf_naive(trajectory, options :: Options)
           R.md_count[ibin] += 1
           R.solute_atom[ibin,iatom] += 1 
           R.solvent_atom[ibin,jatom] += 1 
-          if usecutoff && dmin > R.dbulk
+          if R.options.usecutoff && dmin > R.dbulk
             n_jmol_in_bulk += 1
             jmol_in_bulk[n_jmol_in_bulk] = jmol
           end
-        elseif ! usecutoff
+        elseif ! R.options.usecutoff
           n_jmol_in_bulk += 1
           jmol_in_bulk[n_jmol_in_bulk] = jmol
         end
