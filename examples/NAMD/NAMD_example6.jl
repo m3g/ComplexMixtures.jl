@@ -2,38 +2,27 @@
 # Self - TMAO
 #
 
-include("../src/MDDF.jl")
+using MDDF
+using PDBTools
+using Plots
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
-using PDBTools
 atoms = PDBTools.readPDB("./structure.pdb")
 
 # Self correlation, thus the solute and solvent indexes are identical
-
-resname = "TMAO"
-natomspermol = 14
-#resname = "TIP3"
-#natomspermol = 3
-
-solute_indexes = [ atom.index for atom in filter( atom -> atom.resname == resname, atoms ) ]
-solute = MDDF.Selection( solute_indexes, natomspermol=natomspermol )
-
-solvent_indexes = copy(solute_indexes)
-solvent = MDDF.Selection( solvent_indexes, natomspermol=natomspermol )
+solute_indexes = PDBTools.select(atoms,"resname TMAO")
+solute = MDDF.Selection( solute_indexes, natomspermol=14 )
 
 # Input options for the calcualtion
 options = MDDF.Options(binstep=0.2,n_random_samples=100)
 
 # Run MDDF calculation, and get the resutls in the R structure
 nlabel="lcP"
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",solute)
 N = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
-trajectory = MDDF.NamdDCD("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",solute)
 R = MDDF.mddf_linkedcells_self(trajectory,options)
-
-using Plots
-nogtk()
 
 plot(layout=(4,1))
 

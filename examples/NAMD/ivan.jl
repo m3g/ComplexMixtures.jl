@@ -19,11 +19,44 @@ solute = MDDF.Selection(protein,nmols=1 )
 water = PDBTools.select(atoms,"water")
 solvent = MDDF.Selection(water,natomspermol=3)
 
+options = MDDF.Options(lastframe=15,binstep=0.2)
+
 # Initialize trajectroy data structure and open input stream
+#R = MDDF.mddf(trajectory,options)
+#MDDF.save(R,"ivan.json")
+
 trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
+lc = MDDF.mddf_linkedcells(trajectory,options)
 
-R = MDDF.mddf(trajectory)
-MDDF.save(R,"ivan.json")
+trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
+lcP = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
-plot(R.d,R.mddf,linewidth=2,label="")
+plot(layout=(5,1))
+
+sp=1
+plot!(ylabel="mddf",sp=sp)
+plot!(lc.d,lc.mddf,linewidth=2,label="lc",subplot=sp)
+scatter!(lcP.d,lcP.mddf,linewidth=2,label="lcP",subplot=sp)
+
+sp=2
+plot!(ylabel="md_count",sp=sp)
+plot!(lc.d,lc.md_count,linewidth=2,label="lc",subplot=sp)
+scatter!(lcP.d,lcP.md_count,linewidth=2,label="lcP",subplot=sp)
+
+sp=3
+plot!(ylabel="md_count_random",sp=sp)
+plot!(lc.d,lc.md_count_random,linewidth=2,label="lc",subplot=sp)
+scatter!(lcP.d,lcP.md_count_random,linewidth=2,label="lcP",subplot=sp)
+
+sp=4
+plot!(ylabel="rdf_count",sp=sp)
+plot!(lc.d,lc.rdf_count,linewidth=2,label="lc",subplot=sp)
+scatter!(lcP.d,lcP.rdf_count,linewidth=2,label="lcP",subplot=sp)
+
+sp=5
+plot!(ylabel="rdf_count_random",sp=sp)
+plot!(lc.d,lc.rdf_count_random,linewidth=2,label="lc",subplot=sp)
+scatter!(lcP.d,lcP.rdf_count_random,linewidth=2,label="lcP",subplot=sp)
+
+plot!(size=(400,800))
 savefig("./plots.pdf")

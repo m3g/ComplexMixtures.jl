@@ -119,11 +119,11 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     # Update the counters of the random distribution
     updatecounters!(R,rdf_count_random_frame,solvent,dc,dmin_mol,dref_mol)
 
-
   end # random solvent sampling
 
   # Update counters with the data of this frame
   update_counters_frame!(R, rdf_count_random_frame, volume_frame, solute,
                          nsamples, n_solvent_in_bulk)
-
+   
+  return 0
 end
