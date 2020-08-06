@@ -2,25 +2,30 @@
 # Protein - TMAO (compare new and old implementations)
 #
 
+using Random
+Random.seed!(4321)
+
 using MDDF
+using PDBTools
+using Plots
+using DelimitedFiles
+ENV["GKSwstype"] = "nul"
+
+cd("./example1")
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
-using PDBTools
-atoms = PDBTools.readPDB("./structure.pdb")
+atoms = PDBTools.readPDB("../NAMD/structure.pdb")
 
 # The solute is a single protein molecule (infinte dilution case). In this case,
 # use the option nmols=1
-solute_indexes = [ atom.index for atom in filter( atom -> PDBTools.isprotein(atom), atoms ) ]
+solute_indexes = PDBTools.select(atoms,"protein")
 solute = MDDF.Selection( solute_indexes, nmols=1 )
 
 # The solvent is TMAO, which has 14 atoms. Use the natomspermol to indicate how many
 # atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
 # of the selection into individual molecules.
-solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TMAO", atoms ) ]
+solvent_indexes = PDBTools.select(atoms,"resname TMAO")
 solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
-
-#solvent_indexes = [ atom.index for atom in filter( atom -> atom.resname == "TIP3", atoms ) ]
-#solvent = MDDF.Selection( solvent_indexes, natomspermol=3 )
 
 # Alternativelly (to PDBTools, we can use VMD in background and its powerfull selections syntax,
 # but you need VMD installed:
@@ -32,22 +37,18 @@ solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
 #                        natomspermol=14 ) 
 
 # Initialize trajectroy data structure and open input stream
-trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("../NAMD/trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
 options = MDDF.Options(binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
-#R = MDDF.mddf_naive(trajectory,options)
-#R = MDDF.mddf_naive(trajectory,options)
 R = MDDF.mddf_linkedcells_parallel(trajectory,options)
 
+MDDF.save(R,"test.json")
+MDDF.write(R,"test.dat",solute,solvent)
 
-using DelimitedFiles
-using Plots
-nogtk()
-
-old = readdlm("./gmd.dat",comments=true,comment_char='#')
+old = readdlm("./test_reference.dat",comments=true,comment_char='#')
 
 plot(layout=(6,1))
 
@@ -97,4 +98,7 @@ plot!(legend=:topleft,subplot=sp)
 #println(z[R.nbins])
 
 plot!(size=(800,1300))
-savefig("./plots.pdf")
+savefig("./test.pdf")
+
+cd("../")
+

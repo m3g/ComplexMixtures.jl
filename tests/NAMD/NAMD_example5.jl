@@ -61,6 +61,7 @@ plot!(R.d,R.md_count_random,subplot=sp,label="R rand")
 plot!(legend=:topleft,subplot=sp)
 
 plot!(size=(600,800))
+savefig("./example5.pdf")
 savefig("./plots.pdf")
 
 

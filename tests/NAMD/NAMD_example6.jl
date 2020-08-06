@@ -72,4 +72,5 @@ plot!(N.d,N.md_count,subplot=sp,label="N md")
 plot!(legend=:topleft,subplot=sp)
 
 plot!(size=(600,800))
+savefig("./example6.pdf")
 savefig("./plots.pdf")

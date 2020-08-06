@@ -59,4 +59,5 @@ plot!(lc.d,lc.rdf_count_random,linewidth=2,label="lc",subplot=sp)
 scatter!(lcP.d,lcP.rdf_count_random,linewidth=2,label="lcP",subplot=sp)
 
 plot!(size=(400,800))
+savefig("./ivan.pdf")
 savefig("./plots.pdf")

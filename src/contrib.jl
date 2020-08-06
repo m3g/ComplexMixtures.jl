@@ -11,7 +11,7 @@ function contrib(s :: Selection, atom_contributions :: Array{Float64}, namelist 
   natoms = size(atom_contributions,2)
   c = zeros(nbins)
   for i in 1:natoms
-    if s.name[i] in namelist
+    if s.names[i] in namelist
       c += atom_contributions[:,i]
     end
   end

@@ -96,6 +96,7 @@ plot!(N.d,N.rdf_count_random,subplot=sp,label="$nlabel - rand",linewidth=3,alpha
 scatter!(R.d,R.rdf_count_random,subplot=sp,label="$rlabel -rand")
 
 plot!(size=(800,1500))
+savefig("./example2.pdf")
 savefig("./plots.pdf")
 
 

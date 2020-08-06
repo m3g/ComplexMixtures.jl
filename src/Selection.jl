@@ -11,7 +11,7 @@ struct Selection
   index :: Vector{Int64} # Index of each atom in the full vector of coordinates
   imol :: Vector{Int64} # index of the molecule to which each atom belongs
 
-  name :: Vector{String} # Types of the atoms, to be used in the atom-contributions
+  names :: Vector{String} # Types of the atoms, to be used in the atom-contributions
 
 end
 
@@ -26,16 +26,16 @@ end
 # If the input is a vector of PDBTools.Atom types, load the index and types
 
 function Selection( atoms :: Vector{PDBTools.Atom}; nmols :: Int64 = 0, natomspermol :: Int64 = 0)
-  index = [ at.index for at in atoms ]
-  name = [ at.name for at in atoms ]
-  return Selection( index, name, nmols=nmols, natomspermol=natomspermol )
+  indexes = [ at.index for at in atoms ]
+  names = [ at.name for at in atoms ]
+  return Selection( indexes, names, nmols=nmols, natomspermol=natomspermol )
 end
 
 # If no names are provided, just repeat the indexes
 
-function Selection( index :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0)
-  name = [ "$(index[i])" for i in 1:length(index) ]
-  return Selection( index, name, nmols=nmols, natomspermol=natomspermol )
+function Selection( indexes :: Vector{Int64}; nmols :: Int64 = 0, natomspermol :: Int64 = 0)
+  names = [ "$(index[i])" for i in 1:length(index) ]
+  return Selection( indexes, names, nmols=nmols, natomspermol=natomspermol )
 end
 
 # Function to initialize the structures

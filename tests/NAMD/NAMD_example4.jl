@@ -82,4 +82,5 @@ plot!(legend=:topleft,subplot=sp)
 #println(z[R.nbins])
 
 plot!(size=(800,1300))
+savefig("./example4.pdf")
 savefig("./plots.pdf")
