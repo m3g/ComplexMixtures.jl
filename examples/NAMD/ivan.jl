@@ -19,7 +19,7 @@ solute = MDDF.Selection(protein,nmols=1 )
 water = PDBTools.select(atoms,"water")
 solvent = MDDF.Selection(water,natomspermol=3)
 
-options = MDDF.Options(lastframe=15,binstep=0.2)
+#options = MDDF.Options(lastframe=15,binstep=0.2)
 
 # Initialize trajectroy data structure and open input stream
 #R = MDDF.mddf(trajectory,options)
