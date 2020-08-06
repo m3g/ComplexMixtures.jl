@@ -102,20 +102,12 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
 
     # Check thread status
     for ithread in 1:nthreads
-      try 
-        if istaskstarted(t[ithread])
-          # If the task is done, add the results of this computation to
-          # the final results
-          if istaskdone(t[ithread])
-            free[ithread] = true
-            ndone += 1
-            next!(progress)
-          else
-            free[ithread] = false
-          end
+      if ! free[ithread]
+        if istaskdone(t[ithread])
+          ndone += 1
+          free[ithread] = true
+          next!(progress)
         end
-      catch 
-        free[ithread] = true
       end
     end
 
