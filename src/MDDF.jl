@@ -66,6 +66,7 @@ module MDDF
   include("./save.jl")
   include("./read.jl")
   include("./write.jl")
+  include("./which_types.jl")
   include("./contrib.jl")
 
   # Implementation of mddf using naive algorithms
