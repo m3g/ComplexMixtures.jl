@@ -71,7 +71,7 @@ function Selection( indexes :: Vector{Int64}, names :: Vector{String};
     end
   end
 
-  return Selection(natoms,nmols,natomspermol,indexes,imol,names)
+  return Selection(natoms,nmols,natomspermol,indexes,imol,names[1:natomspermol])
 
 end
           
