@@ -24,8 +24,8 @@ write(R :: Result, filename :: String,
 # Optional passing of atom names
 
 function write(R :: Result, filename :: String; 
-               solute_names :: Vector{String} = nothing, 
-               solvent_names :: Vector{String} = nothing)
+               solute_names :: Vector{String} = ["nothing"], 
+               solvent_names :: Vector{String} = ["nothing"])
 
   # Names of output files containing atomic contibutions
   atom_contrib_solvent = FileOperations.remove_extension(filename)*
@@ -109,7 +109,7 @@ function write(R :: Result, filename :: String;
   println(output,"#")
   println(output,"# Atoms: ")
   for i in 1:size(R.solvent_atom,2)
-    if solvent_names == nothing
+    if solvent_names[1] == "nothing"
       println(output,@sprintf("# %9i",i))
     else
       println(output,@sprintf("# %9i %5s",i, solvent_names[i]))
@@ -141,7 +141,7 @@ function write(R :: Result, filename :: String;
   println(output,"#")
   println(output,"# Atoms:")
   for i in 1:size(R.solute_atom,2)
-    if solute_names == nothing 
+    if solute_names[1] == "nothing" 
       println(output,@sprintf("# %9i",i))
     else
       println(output,@sprintf("# %9i %5s",i, solute_names[i]))
