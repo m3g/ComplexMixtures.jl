@@ -15,12 +15,12 @@ struct Selection
 
 end
 
-# Initialize providing the file name, and calling by default VMDselect
+# Initialize providing the file name, and calling by default PDBTools.select
 
 function Selection( file :: String, selection :: String; 
-                    vmd :: String = "vmd", nmols :: Int64 = 0, natomspermol :: Int64 = 0 )
-  indexes, names = VMDselect(file,selection,vmd=vmd)
-  return Selection( indexes, names, nmols = nmols, natomspermol = natomspermol )
+                    nmols :: Int64 = 0, natomspermol :: Int64 = 0 )
+  sel = PDBTools.readPDB(file,selection)
+  return Selection( sel, nmols = nmols, natomspermol = natomspermol )
 end
 
 # If the input is a vector of PDBTools.Atom types, load the index and types

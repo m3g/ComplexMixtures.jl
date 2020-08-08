@@ -10,8 +10,7 @@ function which_types(s :: Selection, indexes :: Vector{Int64})
   for i in indexes
     isel = findfirst( ind -> ind == i, s.index )
     if isel == nothing
-      println(" ERROR: atom in input list is not part of solvent (or solute).")
-      return 0
+      error(" Atom in input list is not part of solvent (or solute).")
     else
       it = itype(isel,s.natomspermol)  
       if ! (it in selected_types)

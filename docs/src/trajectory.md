@@ -28,13 +28,13 @@ produced with NAMD, Gromacs, LAMMPS, Amber, etc.
     Therefore if you want to reuse the same trajectory for another MDDF 
     computation in the same script, you need to reload it. For example:
     ```julia
-    solute = MDDF.select("system.pdb","protein")
+    solute = MDDF.Selection("system.pdb","protein",nmols=1)
     # Compute the protein-water MDDF
-    solvent = MDDF.select("system.pdb","water")
+    solvent = MDDF.Selection("system.pdb","water",natomspermol=3)
     trajectory = MDDF.Trajectory("trajectory.xtc",solute,solvent)
     R_water = MDDF.mddf(trajectory)
     # Compute the protein-urea MDDF
-    solvent = MDDF.select("system.pdb","resname URE")
+    solvent = MDDF.Selection("system.pdb","resname URE",natomspermol=8)
     trajectory = MDDF.Trajectory("trajectory.xtc",solute,solvent)
     R_urea = MDDF.mddf(trajectory)
     ```

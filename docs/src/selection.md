@@ -10,9 +10,22 @@ as:
 indexes = [ 1, 2, 3, 4, 5 ]
 solute = MDDF.Selection(indexes,nmols=1)
 ```
-We need to inform, as well, how many molecules compose the solute, in
-this case 1. Of course, writing explicit the lists of atoms can be
-cumbersome, and selection tools are provided.      
+
+!!! note
+    We need to inform the `Selection` function about the number of atoms of
+    each molecule (using `natomspermol=3`, for example), or the number 
+    of molecules (using `nmols=1000`, for example),
+    such that the atoms belonging to each molecule can be determined
+    without ambiguity. 
+
+The atom names can be also provided such that some of the output files
+contain more information on the [atomic contributions](@ref contrib). In this
+case the syntax is:
+```julia
+indexes = [ 1, 2, 3, 4, 5 ]
+names = [ "H1", "H2", "H3", "H4", "C" ]
+solute = MDDF.Selection(indexes,names,nmols=1)
+```
 
 !!! warning
     The indexing in MDDF is 1-based. That means that the first atom of
@@ -23,42 +36,46 @@ cumbersome, and selection tools are provided.
 
 ## Using PDBTools
 
-[PDBTools](https://github.com/m3g/PDBTools) is a simple package we developed to read and write PDB files,
-which provides a simple selection tool. Install it according to the
-instructions. Given a PDB file of the simulated system, the solute can
+[PDBTools](https://github.com/m3g/PDBTools) is a package we developed to read and 
+write PDB files,
+which provides a simple selection tool. It is installed as a dependency 
+of MDDF.  Given a PDB file of the simulated system, the solute can
 be defined as, for example,
 ```julia
-indexes = PDBTools.select("system.pdb","protein")
-solute = MDDF.Selection(indexes,nmols=1)
+using PDBTools
+atoms = PDBTools.readPDB("system.pdb")
+protein = PDBTools.select(atoms,"protein")
+solute = MDDF.Selection(protein,nmols=1)
 ```
 If the solvent is, for instance, water, the indexes of the water
 molecules can be obtained with:
 ```julia
-indexes = PDBTools.select("system.pdb","water")
-solvent = MDDF.Selection(indexes,natomspermol=3)
+water = PDBTools.select(atoms,"water")
+solvent = MDDF.Selection(water,natomspermol=3)
 ```
-or, alternatively,
+or, alternatively, a more compact syntax can be used, for example:
 ```julia
-indexes = PDBTools.select("system.pdb","resname TIP3P")
-solvent = MDDF.Selection(indexes,natomspermol=3)
+water = PDBTools.select("system.pdb","resname TIP3P")
+solvent = MDDF.Selection(water,natomspermol=3)
 ```
-We need to inform the `Selection` function about the number of atoms of
-each molecule, or the number of molecules (one information is obtained
-from the other), such that the identity of the atoms of each molecule
-can be obtained.   
 
+or even providing just the names of the input file and selection, which
+will run PDBTools in background:
+```julia
+solvent = MDDF.Selection("sytem.pdb","water",water,natomspermol=3)
+```
 ## Using VMD
 
 [VMD](https://www.ks.uiuc.edu/Research/vmd/) is a very popular and
 powerful package for visualization of simulations. It contains a very
-versatile library to read topologies and trajectory files, and a
+versatile library to read toppologies and trajectory files, and a
 powerful selection syntax. We provide here a wrapper to VMD which allows
 using its capabilities.  
 
 For example, the solute can be defined with: 
 ```julia
-indexes = MDDF.VMDSelect("./system.gro","protein",vmd="/usr/bin/vmd")
-solute = MDDF.Selection(indexes,nmols=1)
+indexes, names = MDDF.VMDSelect("./system.gro","protein",vmd="/usr/bin/vmd")
+solute = MDDF.Selection(indexes,names,nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and
