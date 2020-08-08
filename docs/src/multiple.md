@@ -2,7 +2,7 @@
 
 Very commonly, one has multiple trajectories of the same system, and we
 want to obtain the average results of all trajectories. We provide a
-simple scheme average the results of multiple MDDF calculations:
+simple scheme to average the results of multiple MDDF calculations:
 
 ### Create a vector of result data structures, without initialization
 
@@ -14,7 +14,8 @@ these file names:
 trajs = [ "traj1.xtc" , "traj2.xtc" , "traj3.xtc" ]
 ```
 
-And define a vector of `MDDF.Result` types with 3 positions, without initialization:
+And define a vector of `MDDF.Result` types with 3 positions, with undefined
+initialization:
 
 ```julia
 results = Vector{MDDF.Result}(undef,3)
@@ -26,9 +27,10 @@ The calculation on the multiple trajectories is then performed in a
 simple loop, such as
 
 ```julia
-solute = MDDF.Selection(solute_indexes,nmols=1)
-solvent = MDDF.Selection(solvent_indexes,natomspermol=14)
-for i in 1:3
+atoms = PDBTools.readPDB("./system.pdb")
+solute = MDDF.Selection(atoms,"protein",nmols=1)
+solvent = MDDF.Selection(atoms,"resname TMAO",,natomspermol=14)
+for i in 1:3 # alternatively use 1:length(trajs) 
   trajectory = MDDF.Trajectory(trajs[i],solute,solvent)
   results[i] = MDDF.mddf(trajectory)
 end
@@ -45,7 +47,7 @@ R = MDDF.merge(results)
 ```
 
 The `R` structure generated contains the averaged results of all
-calculations, with weights consisting of the number of frames of each
+calculations, with weights proportional to the number of frames of each
 trajectory. That is, if the first trajectory had 2000 frames, and the
 second and third trajectories have 1000 frames each, the first
 trajectory will have a weight of 0.5 on the final results. The `merge` function

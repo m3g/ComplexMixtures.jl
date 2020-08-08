@@ -57,7 +57,7 @@ the MDDF, and that all values are zero at very short distances, smaller
 than the radii of the atoms.
 
 The three columns of the `results.solvent_atom` array correspond to the
-thee atoms of the water molecule, for example. The sequence of atoms
+thee atoms of the water molecule in this example. The sequence of atoms
 correspond to that of the PDB file, but can be retrieved with:
 
 ```julia
@@ -106,7 +106,7 @@ The `MDDF.contrib` function receives three parameters:
 
 To select simply by the index of the atoms of the molecules, just
 provide a list of indexes to the `MDDF.contrib` function. For example,
-to select the hydrogen atoms, which are the second and third atom of the 
+to select the hydrogen atoms, which are the second and third atoms of the 
 water molecule, use:
 
 ```julia
@@ -153,7 +153,7 @@ plot!(xlabel="Distance / Å",ylabel="MDDF")
 
 ## General selections using PDBTools
 
-More interesting and general might to select atoms of a complex
+More interesting and general is to select atoms of a complex
 molecule, like a protein, using residue names, types, etc. Here we
 illustrate how this is done by providing selection strings to
 `MDDF.contrib` to obtain the contributions to the MDDF of different

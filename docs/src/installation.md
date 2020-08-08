@@ -10,14 +10,9 @@ julia> import Pkg
 julia> Pkg.add("https://github.com/m3g/MDDF")
 
 ```
-We recomend installation of the Plots and PDBTools packages, which are
-used in the examples provided with the package: 
-```julia
-julia> using Pkg
-
-julia> Pkg.add("https://github.com/m3g/PDBTools",Plots)
-
-```
+The [PDBTools](http://m3g.iqm.unicamp.br/PDBTools) 
+package will is one dependency that will be installed by default, and 
+that will be used many times throughout the user guide. 
 
 If you are first-time `julia` user, load these packages for the first
 time after installation. Loading the `Plots` package, in particular, may

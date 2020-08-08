@@ -74,11 +74,11 @@ sampled simulations, it is expected to converge at large distances.
 julia> results.kb
 500-element Array{Float64,1}:
      0.0
-    -4.3249356504752985
-   -12.9804719721525
+    -0.3249356504752985
+    -2.9804719721525
      ⋮
- 35907.72186381783
- 35860.13624162115
+    0.72186381783
+    1.13624162115
 
 ```
 
@@ -101,7 +101,7 @@ plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol")
   are assumed be provided in ``\textrm{\AA}``. 
 
 * The minimum-distance distribution function is unit-less, since it is the
-  ratio of the density at each distance divided by the bulk density.
+  ratio of the density at each distance divided by an ideal-gas density.
 
 * The Kirkwood-Buff integrals are returned in ``\textrm{cm}^3~\textrm{mol}^{-1}``, if the
   coordinates were provided in ``\textrm{\AA}``.

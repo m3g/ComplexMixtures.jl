@@ -18,53 +18,64 @@ The fastest way to understand how to use this package is through an
 example.  
 
 Let us consider a system consisting of three components: a protein,
-water, a cossolvent, and TMAO (trimetylamine-N-oxyde), which is a common
-osmolyte known to stabilize protein structures.  
+water, a cossolvent: TMAO (trimetylamine-N-oxyde), which is a common
+osmolyte known to stabilize protein structures. A picture of this system
+is shown below, with the protein in blue, water, and TMAO molecules. The
+system was constructed with [Packmol](http://m3g.iqm.unicamp.br/packmol)
+and the figure was produced with
+[VMD](https://www.ks.uiuc.edu/Research/vmd/).
+
+```@raw html
+<img src="../figures/proteinTMAO.png" width=60%>
+```
+
 
 We want to study the interactions of the protein with TMAO, for example.
 The computation of the MDDF is performed by defining the solute and
-solvent selections, and running the calculation on the trajectory:
-
-### Extract the indexes of the protein and TMAO atoms
-
-The computation of the MDDF requires the indexes of the atoms of the
-simulation which belong to the solute and the solvent, in this case the
-protein and TMAO molecules. Here we will use the `PDBTools` package,
-which provides a simple selection syntax.
-```julia
-protein_indexes = PDBTools.selindex("system.pdb","protein")
-TMAO_indexes = PDBTools.selindex("system.pdb","resname TMAO")
-```
-The `protein_indexes` and `TMAO_indexes` are simply vectors containing
-the indexes of the atoms of each selection (in a one-based scheme, that
-is, the first atom is atom 1). 
-
-!!! warning
-    
-    All the indexes in MDDF are 1-based. That means that the first
-    atom in your structure file has index 1 in the coordinates vector.
-    Please be careful when defining the selections.
+solvent selections, and running the calculation on the trajectory.
 
 ### Define the protein as the solute
 
-To define the protein solute, we need to provide a list of the indexes of the
-atoms of the protein, and the number of protein molecules in the
-simulation (most commonly 1):
+To define the protein as the solute, we will use the PDBTools package,
+which provides a handy selection syntax. First, read the PDB file using 
+```julia
+atoms = PDBTools.readPDB("./system.pdb")
 
+```
+Then, let us select the protein atoms:
+```julia
+protein = PDBTools.readPDB(atoms,"protein")
+
+```
+And, finally, let us use the `MDDF.Selection` function to setup the
+structure required by MDDF:
 ```julia
 solute = MDDF.Selection(protein_indexes,nmols=1)
+
 ```
+
+!!! note
+    It is necessary to indicate how many molecules (in this case,
+    `nmols=1`, so that MDDF knows that the solute is to be considered
+    as single structure. In this case there is no ambiguity, but if
+    the solute was a miscele, for example, this option would let 
+    MDDF know that one wants to consider the miscele as a single 
+    structure.
+
 
 ### Define TMAO the solvent to be considered
 
 Equivalently, the solvent is set up with:
 ```julia
-solvent = MDDF.Selection(TMAO_indexes,natomspermol=14)
+tmao = PDBTools.select(atoms,"resname TMAO")
+solvent = MDDF.Selection(tmao,natomspermol=14)
+
 ```
-We need to provide either the number of TMAO molecules (with the `nmols`
-keyword) or the number of atoms per molecule, as shown above. Since
-there are typically many solvent molecules, it is easier to provide the
-number of atoms per molecule with `natomspermol=14`. 
+
+!!! note
+    Here we opted to provide the number of atoms of a TMAO molecules (with the
+    `natomspermol` keyword). This is generally more practical for small
+    molecules than to provide the number of molecules.
 
 ### Set the Trajectory structure
 
@@ -75,7 +86,8 @@ with:
 trajectory = MDDF.Trajectory("trajectory.dcd",solute,solvent)
 ```
 In the case, the trajectory is of NAMD "dcd" format. All formats
-supported by `Chemfiles` are automatically recognized. 
+supported by [Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) 
+are automatically recognized. 
 
 ### Finally, run the computation and get the results:
 
@@ -83,9 +95,12 @@ If default options are used (as the bin size of the histograms, read all
 frames without skipping any), just run the `mddf` with:
 ```julia
 results = MDDF.mddf(trajectory)
-```
 
-### The results data structure obtained
+```
+Some optional parameters for the computation are available in the
+[Options](@ref options) section.
+
+### The `results` data structure obtained
 
 The `results` data structure contains all the results of the MDDF
 calculation, including:
@@ -98,12 +113,36 @@ function at each distance.
 That means, for example, that 
 ```julia
 plot(results.d,results.mddf,xlabel="d / \AA",ylabel="MDDF") 
+
 ```
 results in the expected plot of the MDDF of TMAO as a function of the
-distance to the protein.
+distance to the protein:
+
+```@raw html
+<img src="../figures/mddf.png" width="60%">
+
+```
 
 The Kirkwood-Buff integral corresponding to that distribution is
-provided in the `results.kb` vector.  
+provided in the `results.kb` vector, and can be also directly plotted 
+with   
+
+```julia
+plot(results.d,results.kb,xlabel="d / \AA",ylabel="MDDF") 
+
+
+```
+to obtain:
+
+```@raw html
+<img src="../figures/kb.png" width="60%">
+
+```
+
+See the [Atomic and group contributions](@ref contrib) section for a
+detailed account on how to obtain a molecular picture of the solvation
+by splitting the MDDF in the contributions of each type of atom of the
+solvent, each type of residue of the protein, etc.
 
 ### Save the results
 
@@ -123,7 +162,7 @@ MDDF.write(results,"./results.dat")
 
 ### Summary
 
-The complete running example, therefore, should be:
+The complete running example, therefore, is:
 
 ```julia
 # Load packages
@@ -131,16 +170,19 @@ using PDBTools
 using MDDF 
 using Plots
 
-# Select indexes
-protein_indexes = PDBTools.selindex("system.pdb","protein")
-TMAO_indexes = PDBTools.selindex("system.pdb","resname TMAO")
+# Load PDB file of the system
+atoms = PDBTools.readPDB("./system.pdb")
+
+# Select the protein and the TMAO molecules
+protein = PDBTools.select(atoms,"protein")
+tmao = PDBTools.select(atoms,"resname TMAO")
 
 # Setup solute and solvent structures
-solute = MDDF.Selection(protein_indexes,nmols=1)
-solvent = MDDF.Selection(TMAO_indexes,natomspermol=14)
+solute = MDDF.Selection(protein,nmols=1)
+solvent = MDDF.Selection(tmao,natomspermol=14)
 
 # Setup the Trajectory structure
-trajectory = MDDF.Trajectory("trajectory.dcd",solute,solvent)
+trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
 
 # Run the calculation and get results
 results = MDDF.mddf(trajectory)
@@ -153,7 +195,22 @@ plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
 savefig("./mddf.pdf")
 plot(results.d,results.kb,xlabel="d",ylabel="KB") # plot the KB 
 savefig("./kb.pdf")
+
 ```
+Given that this code is saved into a file named `example.jl`, 
+it can be run within the Julia REPL with:
+```julia
+julia> include("example.jl")
+
+```
+or directly with:
+```
+% julia -t 4 example.jl
+
+```
+where `-t 4` is optional and defines how many processors will be used
+in the calculation.
+
 
 
 
