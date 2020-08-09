@@ -12,6 +12,7 @@ module MDDF
   include("./version.jl")
 
   # Function to rigid-body move molecules
+  include("./random.jl")
   include("./MoveAux.jl")
   include("./centerofcoordinates.jl")
   include("./eulermat.jl")

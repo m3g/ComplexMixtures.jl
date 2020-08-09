@@ -78,7 +78,7 @@ function mddf_naive(trajectory, options :: Options)
 
     # Sample randomly the indexes of the solute molecules that will be reference
     # molecules for the random solvent distributions
-    i_solute_ref = rand(1:solute.nmols,options.n_random_samples) 
+    i_solute_ref = random(1:solute.nmols,options.n_random_samples) 
 
     # Counter for the cumulative number of solvent molecules found to be in bulk
     # relative to each solute molecule
@@ -141,9 +141,9 @@ function mddf_naive(trajectory, options :: Options)
         for i in findall( i -> i == imol, i_solute_ref )
           # Choose randomly one molecule from the bulk
           if n_jmol_in_bulk > 0
-            jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
+            jmol = jmol_in_bulk[random(1:n_jmol_in_bulk)]
           else
-            jmol = rand(1:solvent.nmols)
+            jmol = random(1:solvent.nmols)
           end
           # Generate new random coordinates (translation and rotation) for this molecule
           x_ref = viewmol(jmol,x_solvent,solvent)

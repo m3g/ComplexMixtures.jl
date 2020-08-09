@@ -96,13 +96,20 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
       @. framedata[ifree].trajectory.x_solvent = trajectory.x_solvent
       @. framedata[ifree].trajectory.sides = trajectory.sides
       # Spawn the calculations for this frame
+      #mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
       t[ifree] = Threads.@spawn mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
       free[ifree] = false
     end
 
+    # Wait a little bit before checking
+    sleep(options.sleep)
+
     # Check thread status
     for ithread in 1:nthreads
       if ! free[ithread]
+        if istaskfailed(t[ithread])
+          error(" Computation of MDDF failed in thread: ", ithread)
+        end
         if istaskdone(t[ithread])
           ndone += 1
           free[ithread] = true
@@ -110,9 +117,6 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
         end
       end
     end
-
-    # Wait a little bit before checking all again
-    sleep(options.sleep)
 
   end
   closetraj(trajectory)

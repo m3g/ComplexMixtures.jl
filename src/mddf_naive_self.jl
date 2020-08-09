@@ -140,9 +140,9 @@ function mddf_naive_self(trajectory, options :: Options)
       for i in 1:options.n_random_samples
         # Choose randomly one molecule
         if n_jmol_in_bulk > 0
-          jmol = jmol_in_bulk[rand(1:n_jmol_in_bulk)]
+          jmol = jmol_in_bulk[random(1:n_jmol_in_bulk)]
         else
-          jmol = rand(1:solvent.nmols)
+          jmol = random(1:solvent.nmols)
         end
         # Generate new random coordinates (translation and rotation) for this molecule
         x_this_solvent = viewmol(jmol,x_solvent,solvent)

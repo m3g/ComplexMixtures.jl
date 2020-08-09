@@ -16,10 +16,10 @@ function random_move!(x_ref :: AbstractArray{Float64},
   scale = 100.
 
   # Generate random coordiantes for the center of mass
-  @. aux.newcm = -scale*sides/2 + rand(Float64)*scale*sides
+  @. aux.newcm = -scale*sides/2 + random(Float64)*scale*sides
 
   # Generate random rotation angles 
-  @. aux.angles = (2*pi)*rand(Float64)
+  @. aux.angles = (2*pi)*random(Float64)
 
   # Copy the coordinates of the molecule chosen to the random-coordinates vector
   for i in 1:size(x_new,1)
