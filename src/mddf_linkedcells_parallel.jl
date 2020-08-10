@@ -25,11 +25,11 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   x_solvent = trajectory.x_solvent
 
   # Number of threads
-  nthreads = Threads.nthreads()-1
+  nspawn = Threads.nthreads()-1
 
   # Initializing the structure that carries the result per thread
   R0 = Result(trajectory,options)
-  R = [ Result(trajectory,options,irefatom=R0.irefatom) for i in 1:nthreads ]
+  R = [ Result(trajectory,options,irefatom=R0.irefatom) for i in 1:nspawn ]
 
   # Check if the solute is the same as the solvent, and if so, use the self
   # routines to compute the mddf and normalize the data accordingly
@@ -48,28 +48,28 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   end
 
   # Safe passing of frame counter to the threads
-  tframe = zeros(Int64,nthreads)
+  tframe = zeros(Int64,nspawn)
 
   # Create data structures required for multithreading
-  framedata = Vector{FrameData}(undef,nthreads)
-  for ithread in 1:nthreads
-    framedata[ithread] = FrameData(deepcopy(trajectory),                 # trajectory
-                                   Volume(R[1].nbins),                   # volume_frame
-                                   zeros(R[1].nbins),                    # rdf_count_random_frame
-                                   Box(options.lcell),                   # box 
-                                   zeros(3),                             # solute_center
-                                   CutoffDistances(solvent.natoms),      # dc
-                                   Vector{DminMol}(undef,solvent.nmols), # dmin_mol 
-                                   zeros(solvent.nmols),                 # dref_mol
-                                   similar(x_solvent),                   # x_solvent_random
-                                   LinkedCells(solvent.natoms),          # lc_solvent
-                                   MoveAux(solvent.natomspermol),        # moveaux
-                                   nsamples)                             # nsamples
+  framedata = Vector{FrameData}(undef,nspawn)
+  for ispawn in 1:nspawn
+    framedata[ispawn] = FrameData(deepcopy(trajectory),                 # trajectory
+                                  Volume(R[1].nbins),                   # volume_frame
+                                  zeros(R[1].nbins),                    # rdf_count_random_frame
+                                  Box(options.lcell),                   # box 
+                                  zeros(3),                             # solute_center
+                                  CutoffDistances(solvent.natoms),      # dc
+                                  Vector{DminMol}(undef,solvent.nmols), # dmin_mol 
+                                  zeros(solvent.nmols),                 # dref_mol
+                                  similar(x_solvent),                   # x_solvent_random
+                                  LinkedCells(solvent.natoms),          # lc_solvent
+                                  MoveAux(solvent.natomspermol),        # moveaux
+                                  nsamples)                             # nsamples
   end
 
   # Tasks
-  t = Vector{Task}(undef,nthreads)
-  free = ones(Bool,nthreads)
+  t = Vector{Task}(undef,nspawn)
+  free = ones(Bool,nspawn)
 
   # Skip initial frames if desired
   iframe = 0 # Counter for all frames of the input file
@@ -100,24 +100,23 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
       @. framedata[ifree].trajectory.x_solvent = trajectory.x_solvent
       @. framedata[ifree].trajectory.sides = trajectory.sides
       # Spawn the calculations for this frame
-      #mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
-      ispawn = ifree + 1
-      t[ifree] = ThreadPools.@tspawnat ispawn mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
+      t[ifree] = ThreadPools.@tspawnat ifree+1 mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
       free[ifree] = false
+      #mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
     end
 
     # Wait a little bit before checking
     sleep(options.sleep)
 
     # Check thread status
-    for ithread in 1:nthreads
-      if ! free[ithread]
-        if istaskfailed(t[ithread])
-          error(" Computation of MDDF failed in thread: $ithread", fetch(t[ithread]))
+    for ispawn in 1:nspawn
+      if ! free[ispawn]
+        if istaskfailed(t[ispawn])
+          error(" Computation of MDDF failed in thread: $ispawn", fetch(t[ispawn]))
         end
-        if istaskdone(t[ithread])
+        if istaskdone(t[ispawn])
           ndone += 1
-          free[ithread] = true
+          free[ispawn] = true
           next!(progress)
         end
       end
@@ -127,8 +126,8 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   closetraj(trajectory)
 
   # Sum up the results of all threads into the data of thread one (R1<-R1+R2)
-  for ithread in 2:nthreads
-    sum!(R[1],R[ithread])
+  for ispawn in 2:nspawn
+    sum!(R[1],R[ispawn])
   end
 
   # Setup the final data structure with final values averaged over the number of frames,
