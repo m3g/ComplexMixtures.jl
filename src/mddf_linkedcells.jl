@@ -21,28 +21,28 @@ function mddf_linkedcells(trajectory, options :: Options)
   x_solute = trajectory.x_solute
   x_solvent = trajectory.x_solvent
 
+  # Initializing the structure that carries all results
+  R = Result(trajectory,options)
+
   # Check if the solute is the same as the solvent, and if so, use the self
   # routines to compute the mddf and normalize the data accordingly
   if solute.index != solvent.index
     mddf_compute! = mddf_frame!
     nsamples = options.n_random_samples*solvent.nmols
-    s = Samples(R[1].nframes_read*trajectory.solute.nmols,
-                R[1].nframes_read*options.n_random_samples)
+    s = Samples(R.nframes_read*trajectory.solute.nmols,
+                R.nframes_read*options.n_random_samples)
   else
     mddf_compute! = mddf_frame_self!
     nsamples = options.n_random_samples
     npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
     nfix = solvent.nmols^2/npairs
-    s = Samples(R[1].nframes_read*(trajectory.solvent.nmols-1),
-                R[1].nframes_read*options.n_random_samples*nfix)
+    s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
+                R.nframes_read*options.n_random_samples*nfix)
   end
 
 
   # The number of random samples for numerical normalization
   nsamples = options.n_random_samples*solvent.nmols
-
-  # Initializing the structure that carries all results
-  R = Result(trajectory,options)
 
   # Data structure to be passed to mddf_frame
   framedata = FrameData(trajectory,                           # trajectory
@@ -79,8 +79,6 @@ function mddf_linkedcells(trajectory, options :: Options)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
-  s = Samples(R.nframes_read*trajectory.solute.nmols,
-              R.nframes_read*options.n_random_samples)
   finalresults!(R,options,trajectory,s)
 
   return R

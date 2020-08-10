@@ -11,7 +11,7 @@ mddf_choose(trajectory) = mddf_choose(trajectory,Options())
 
 # Choose among serial or parallel version
 
-function mddf_choose(trajectory,options)
+function mddf_choose(trajectory,options :: Options)
   nthreads = Threads.nthreads()
   if nthreads == 1
     mddf_linkedcells(trajectory,options)
@@ -20,3 +20,4 @@ function mddf_choose(trajectory,options)
   end
 end
 
+const mddf = mddf_choose

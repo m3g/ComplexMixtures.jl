@@ -18,4 +18,5 @@ solvent = MDDF.Selection(water,natomspermol=3)
 options = MDDF.Options()
 
 trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
-lcP = MDDF.mddf_linkedcells_parallel(trajectory,options)
+
+lcP = MDDF.mddf(trajectory,options)
