@@ -124,5 +124,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   # Update counters with the data of this frame
   update_counters_frame!(R, rdf_count_random_frame, volume_frame, solute,
                          nsamples, n_solvent_in_bulk)
+ 
+  GC.gc()
    
 end
