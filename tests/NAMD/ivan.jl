@@ -29,8 +29,8 @@ options = MDDF.Options()
 #lc = MDDF.mddf_linkedcells(trajectory,options)
 
 #trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
-#lcP = MDDF.mddf_linkedcells_parallel(trajectory,options)
-lcP = MDDF.read("./ivan.json")
+lcP = MDDF.mddf_linkedcells_parallel(trajectory,options)
+#lcP = MDDF.read("./ivan.json")
 
 plot(layout=(5,1))
 

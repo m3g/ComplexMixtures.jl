@@ -89,9 +89,9 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     for j in 1:solvent.nmols
       # Choose randomly one molecule from the bulk, if there are actually bulk molecules
       if n_solvent_in_bulk_last != 0
-        jmol = dmin_mol[random(rng,solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol
+        jmol = dmin_mol[random(solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol
       else
-        jmol = random(rng,1:solvent.nmols)
+        jmol = random(1:solvent.nmols)
       end
       # Indexes of this molecule in the x_solvent array
       x_ref = viewmol(jmol,x_solvent,solvent)
@@ -108,7 +108,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     initcells!(x_solvent_random,box,lc_solvent)
 
     # Choose randomly one solute molecule to be the solute in this sample
-    i_rand_mol = random(rng,1:solvent.nmols)
+    i_rand_mol = random(1:solvent.nmols)
     x_this_solute = viewmol(i_rand_mol,x_solvent,solvent)
 
     # Compute all distances between solute and solvent atoms which are smaller than the 
