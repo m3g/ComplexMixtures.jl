@@ -1,5 +1,5 @@
-for i in `seq 1 4`; do
+for i in `seq 1 16`; do
   echo $i
-  julia error2.jl &
+  time julia -t $i test_parallel.jl >& /dev/null
 done
-wait_for.tcl leandro julia 1 
+wait_for.tcl leandro julia 1

@@ -25,7 +25,7 @@
   lcell :: Int64 = 2
 
   # Sleep time between checks of threads for multple spawn
-  sleep = 0.1
+  sleep = 0.01
 
 end
 

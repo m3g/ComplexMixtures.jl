@@ -25,10 +25,11 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   x_solvent = trajectory.x_solvent
 
   # Number of threads
-  nthreads = Threads.nthreads()
+  nthreads = Threads.nthreads()-1
 
   # Initializing the structure that carries the result per thread
-  R = [ Result(trajectory,options) for i in 1:nthreads ]
+  R0 = Result(trajectory,options)
+  R = [ Result(trajectory,options,irefatom=R0.irefatom) for i in 1:nthreads ]
 
   # Check if the solute is the same as the solvent, and if so, use the self
   # routines to compute the mddf and normalize the data accordingly
@@ -100,7 +101,8 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
       @. framedata[ifree].trajectory.sides = trajectory.sides
       # Spawn the calculations for this frame
       #mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
-      t[ifree] = Threads.@spawn mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
+      ispawn = ifree + 1
+      t[ifree] = ThreadPools.@tspawnat ispawn mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
       free[ifree] = false
     end
 

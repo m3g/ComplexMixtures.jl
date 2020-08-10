@@ -8,6 +8,7 @@ module MDDF
   using PDBTools
   using StructTypes
   using JSON3
+  using ThreadPools
   import Random
 
   include("./version.jl")

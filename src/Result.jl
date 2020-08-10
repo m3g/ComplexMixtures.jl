@@ -50,7 +50,7 @@ end
 # input parameters for consistency
 #
 
-function Result( trajectory, options :: Options ) 
+function Result( trajectory, options :: Options; irefatom = -1 ) 
 
   # Check for simple input errors
   if options.stride < 1
@@ -88,14 +88,16 @@ function Result( trajectory, options :: Options )
   end
 
   # Set reference atom as the closest one to the center of coordinates of the molecule, as default
-  if options.irefatom == -1
-    nextframe!(trajectory)
-    xfirst = @view(trajectory.x_solvent[1:trajectory.solvent.natomspermol,1:3])
-    cm = centerofcoordinates(xfirst)
-    dmin, one, irefatom = minimumdistance(cm,xfirst)
-    firstframe(trajectory)
-  else
-    irefatom = options.irefatom
+  if irefatom == -1
+    if options.irefatom == -1
+      nextframe!(trajectory)
+      xfirst = @view(trajectory.x_solvent[1:trajectory.solvent.natomspermol,1:3])
+      cm = centerofcoordinates(xfirst)
+      dmin, one, irefatom = minimumdistance(cm,xfirst)
+      firstframe(trajectory)
+    else
+      irefatom = options.irefatom
+    end
   end
 
   # Last frame to be considered
