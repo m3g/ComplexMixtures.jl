@@ -103,7 +103,7 @@ module MDDF
   include("./mddf_linkedcells_parallel.jl")
 
   # Parser to the default mddf method
-  mddf = mddf_chose
+  mddf = mddf_choose
 
 end
 
