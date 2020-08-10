@@ -8,6 +8,7 @@ module MDDF
   using PDBTools
   using StructTypes
   using JSON3
+  import Random
 
   include("./version.jl")
 

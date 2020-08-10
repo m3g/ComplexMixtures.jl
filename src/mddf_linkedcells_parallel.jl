@@ -15,6 +15,9 @@ mddf_linkedcells_parallel(trajectory) = mddf_linkedcells_parallel(trajectory,Opt
 
 function mddf_linkedcells_parallel(trajectory, options :: Options)  
 
+  # Initialize vector for random number generator
+  init_random()
+
   # Simplify code by assigning some shortened names
   solute = trajectory.solute
   solvent = trajectory.solvent
@@ -108,7 +111,7 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
     for ithread in 1:nthreads
       if ! free[ithread]
         if istaskfailed(t[ithread])
-          error(" Computation of MDDF failed in thread: ", ithread)
+          error(" Computation of MDDF failed in thread: $ithread", fetch(t[ithread]))
         end
         if istaskdone(t[ithread])
           ndone += 1
