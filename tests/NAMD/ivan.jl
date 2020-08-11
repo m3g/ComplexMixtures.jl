@@ -2,7 +2,7 @@
 # Protein - TMAO (compare new and old implementations)
 #
 
-using MDDF
+include("../../src/MDDF.jl")
 using PDBTools
 using Plots
 
@@ -25,12 +25,12 @@ options = MDDF.Options()
 #R = MDDF.mddf(trajectory,options)
 #MDDF.save(R,"ivan.json")
 
-#trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
+trajectory = MDDF.NamdDCD("$dir/6Mnative.dcd",solute,solvent)
 #lc = MDDF.mddf_linkedcells(trajectory,options)
 
 #trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
-lcP = MDDF.mddf_linkedcells_parallel(trajectory,options)
-#lcP = MDDF.read("./ivan.json")
+lcP = MDDF.mddf(trajectory,options)
+#lcP = MDDF.load("./ivan.json")
 
 plot(layout=(5,1))
 

@@ -1,8 +1,8 @@
 #
-# Function to read the json saved results file into the Result data structure
+# Function to load the json saved results file into the Result data structure
 #
 
-function read(filename :: String)
+function load(filename :: String)
   f = open(filename,"r")
   r = JSON3.read(f,Result)
   # Need to reshape the solute and solvent atom contributions, because

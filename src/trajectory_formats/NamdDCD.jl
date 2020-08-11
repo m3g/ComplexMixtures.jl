@@ -2,7 +2,7 @@
 # Structure to contain DCD trajectories produces with Namd. 
 #
 
-using FortranFiles
+import FortranFiles
 
 struct NamdDCD
 

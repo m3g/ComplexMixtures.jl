@@ -150,9 +150,9 @@ The results can be saved into a file (with JSON format) with:
 ```julia
 MDDF.save(results,"./results.json")
 ```
-And these results can be read aftwerwards with:
+And these results can be loaded aftwerwards with:
 ```julia
-MDDF.read("./results.json")
+MDDF.load("./results.json")
 ```
 Alternatively, a human-readable set of output files can be obtained to
 be analyzed in other software (or plotted with alternative tools), with

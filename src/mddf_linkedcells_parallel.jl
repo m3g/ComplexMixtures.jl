@@ -26,6 +26,10 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
 
   # Number of threads
   nspawn = Threads.nthreads()-1
+  if nspawn == 0
+    error(" Parallel version must be executed only with more than 1 thread. ")
+  end
+
 
   # Initializing the structure that carries the result per thread
   R0 = Result(trajectory,options)

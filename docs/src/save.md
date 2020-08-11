@@ -12,12 +12,12 @@ where `results` is the output data structure of the `MDDF.mddf()`
 calculation, and `results.json` is the output file to be created. The
 file is written in `JSON` format, thus is not naturally human-readable.
 
-## Recover saved data
+## Load saved data
 
 ```julia
-results = MDDF.read("results.json")
+results = MDDF.load("results.json")
 ```
-The `MDDF.read` function reads the output of the `save` function above,
+The `MDDF.load` function reads the output of the `save` function above,
 and restores the results data structure.
 
 ## Write data in a human-readable format

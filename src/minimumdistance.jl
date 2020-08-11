@@ -79,7 +79,7 @@ end
 #
 
 function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64},
-                         sides :: Vector{Float64})
+                         sides :: AbstractVector{Float64})
   iatom = 0
   jatom = 0
   dmin = +Inf
@@ -102,7 +102,7 @@ end
 # computation of the volume shell by Monte-Caro integration
 
 function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64},
-                         jrefatom :: Int64, sides :: Vector{Float64})
+                         jrefatom :: Int64, sides :: AbstractVector{Float64})
   iatom = 0
   jatom = 0
   drefatom = +Inf

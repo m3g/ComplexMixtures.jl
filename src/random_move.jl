@@ -8,7 +8,7 @@
 #
 
 function random_move!(x_ref :: AbstractArray{Float64},
-                      irefatom :: Int64, sides :: Vector{Float64},
+                      irefatom :: Int64, sides :: AbstractVector{Float64},
                       x_new :: AbstractArray{Float64}, aux :: MoveAux )
 
   # To avoid boundary problems, the center of coordinates are generated in a 

@@ -39,4 +39,5 @@ examples/teste*.xyz
 *test.dat
 *test-ATOM_CONTRIB_SOLUTE.dat
 *test-ATOM_CONTRIB_SOLVENT.dat
+*traj200.pdb
 
