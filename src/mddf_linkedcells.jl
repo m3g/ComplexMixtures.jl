@@ -58,6 +58,8 @@ function mddf_linkedcells(trajectory, options :: Options)
                         MoveAux(solvent.natomspermol),        # moveaux
                         nsamples)                             # nsamples        
 
+  # Print some information about this run
+  title(R,solute,solvent)
 
   # Computing all minimum-distances
   progress = Progress(R.lastframe_read-options.firstframe+1,1)
@@ -80,6 +82,7 @@ function mddf_linkedcells(trajectory, options :: Options)
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
   finalresults!(R,options,trajectory,s)
+  println(bars)
 
   return R
 

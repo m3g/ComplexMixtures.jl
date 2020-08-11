@@ -11,8 +11,6 @@ module MDDF
   using ThreadPools
   import Random
 
-  include("./version.jl")
-
   # Function to rigid-body move molecules
   include("./random.jl")
   include("./MoveAux.jl")
@@ -40,6 +38,9 @@ module MDDF
   # Structures used to store results
   include("./Result.jl")
   include("./Samples.jl")
+
+  # Function to print some data about the run
+  include("./title.jl")
 
   # Structures and functions to read different types of trajectories
   include("./trajectory_formats/ChemFiles.jl")

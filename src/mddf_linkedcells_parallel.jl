@@ -30,7 +30,6 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
     error(" Parallel version must be executed only with more than 1 thread. ")
   end
 
-
   # Initializing the structure that carries the result per thread
   R0 = Result(trajectory,options)
   R = [ Result(trajectory,options,irefatom=R0.irefatom) for i in 1:nspawn ]
@@ -81,6 +80,9 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
     nextframe!(trajectory)
     iframe += 1
   end
+
+  # Print some information about this run
+  title(R[1],solute,solvent,nspawn)
 
   ndone = 0
   iframe_read = 0 # Counter for the frames that are actually being considered
@@ -137,6 +139,7 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
   finalresults!(R[1],options,trajectory,s)
+  println(bars)
   return R[1]
 
 end
