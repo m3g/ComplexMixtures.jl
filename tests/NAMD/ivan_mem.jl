@@ -1,6 +1,7 @@
 #
 # Protein - TMAO (compare new and old implementations)
 #
+# Run with: julia -t 2 --track-allocation=user
 
 using Profile
 
