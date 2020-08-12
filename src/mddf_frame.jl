@@ -60,7 +60,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   end
 
   n_solvent_in_bulk = 0
-  local n_solvent_in_bulk_last
+  n_solvent_in_bulk_last = 0
   for isolute in 1:solute.nmols
 
     # We need to do this one solute molecule at a time to avoid exploding the memory
@@ -83,13 +83,14 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   #
   # Computing the random-solvent distribution to compute the random minimum-distance count
   #
+  bulk_range = (solvent.nmols-n_solvent_in_bulk_last+1):solvent.nmols
   for i in 1:options.n_random_samples
 
     # generate random solvent box, and store it in x_solvent_random
     for j in 1:solvent.nmols
       # Choose randomly one molecule from the bulk, if there are actually bulk molecules
       if n_solvent_in_bulk_last != 0
-        jmol = dmin_mol[random(solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol
+        jmol = dmin_mol[random(bulk_range)].jmol
       else
         jmol = random(1:solvent.nmols)
       end
