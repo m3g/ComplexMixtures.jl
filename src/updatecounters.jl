@@ -13,7 +13,7 @@ function updatecounters!(R :: Result,
                          dc :: CutoffDistances, 
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
   for i in 1:solvent.nmols
-    dmin_mol[i] = DminMol(+Inf,i,0,0)
+    dmin_mol[i].d = +Inf
     dref_mol[i] = +Inf
   end
   for i in 1:dc.nd[1]
@@ -77,7 +77,7 @@ function updatecounters!(R :: Result,
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
 
   for i in 1:solvent.nmols
-    dmin_mol[i] = DminMol(+Inf,i,0,0)
+    dmin_mol[i].d = +Inf
     dref_mol[i] = +Inf
   end
   for i in 1:dc.nd[1]

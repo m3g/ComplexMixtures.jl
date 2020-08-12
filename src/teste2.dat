@@ -1,0 +1,39 @@
+ 1.0                   644 
+ 0.5                   365 
+ 0.3333333333333333    264 
+ 0.25                  214 
+ 0.2                   183 
+ 0.16666666666666666   163 
+ 0.14285714285714285   149 
+ 0.125                 138 
+ 0.1111111111111111    132 
+ 0.1                   127 
+ 0.09090909090909091   123 
+ 0.08333333333333333   113 
+ 0.07692307692307693   112 
+ 0.07142857142857142   109 
+ 0.06666666666666667   112 
+
+Number of observations               = 15
+Mean of independent variable         = 0.2212153
+Mean of dependent variable           = 196.5333
+Standard dev. of ind. variable             = 0.24588
+Standard dev. of dep. variable             = 142.3767
+Correlation coefficient              = 0.9997687
+Regression coefficient (SLOPE)             = 578.9157
+Standard error of coefficient        = 3.454281
+t - value for coefficient            = 167.5937
+Regression constant (INTERCEPT)            = 68.46835
+Standard error of constant           = 1.121246
+t - value for constant               = 61.0645
+
+Analysis of variance
+Source             d.f   Sum of squares    Mean Square       F
+Regression     1  283664.4    283664.4    28087.64
+Residual       13 131.2904    10.09926
+Total          14 283795.7
+
+
+y = 68.468 + 578.92 * x
+
+Regression of set 0 results to set 1

@@ -61,7 +61,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
   dc = CutoffDistances(solvent.natoms)
 
   # Vectors used to parse the minimum distance data
-  dmin_mol = Vector{DminMol}(undef,solvent.nmols)
+  dmin_mol = [ DminMol(+Inf,i,0,0) for i in 1:solvent.nmols ]
   dref_mol = zeros(solvent.nmols)
 
   # Computing all minimum-distances
@@ -137,12 +137,13 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     #
     # Computing the random-solvent distribution to compute the random minimum-distance count
     #
+    bulk_range = solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols
     for i in 1:options.n_random_samples
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols
         # Choose randomly one molecule from the bulk, if there are actually bulk molecules
         if n_solvent_in_bulk_last != 0
-          jmol = dmin_mol[random(solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol
+          jmol = dmin_mol[random(bulk_range)].jmol
         else
           jmol = random(1:solvent.nmols)
         end

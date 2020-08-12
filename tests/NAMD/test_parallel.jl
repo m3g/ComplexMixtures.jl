@@ -13,5 +13,5 @@ water = MDDF.Selection( water_atoms, natomspermol=3)
 options = MDDF.Options(binstep=0.2)
 
 trajectory = MDDF.Trajectory("./trajectory.dcd",water)
-@time R = MDDF.mddf_linkedcells_parallel(trajectory,options)
+@time R = MDDF.mddf(trajectory,options)
 

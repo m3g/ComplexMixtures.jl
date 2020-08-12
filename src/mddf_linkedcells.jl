@@ -45,18 +45,18 @@ function mddf_linkedcells(trajectory, options :: Options)
   nsamples = options.n_random_samples*solvent.nmols
 
   # Data structure to be passed to mddf_frame
-  framedata = FrameData(trajectory,                           # trajectory
-                        Volume(R.nbins),                      # volume_frame
-                        zeros(R.nbins),                       # rdf_count_random_frame
-                        Box(options.lcell),                   # box 
-                        zeros(3),                             # solute_center
-                        CutoffDistances(solvent.natoms),      # dc
-                        Vector{DminMol}(undef,solvent.nmols), # dmin_mol 
-                        zeros(solvent.nmols),                 # dref_mol
-                        similar(x_solvent),                   # x_solvent_random
-                        LinkedCells(solvent.natoms),          # lc_solvent
-                        MoveAux(solvent.natomspermol),        # moveaux
-                        nsamples)                             # nsamples        
+  framedata = FrameData(trajectory,                                       # trajectory
+                        Volume(R.nbins),                                  # volume_frame
+                        zeros(R.nbins),                                   # rdf_count_random_frame
+                        Box(options.lcell),                               # box 
+                        zeros(3),                                         # solute_center
+                        CutoffDistances(solvent.natoms),                  # dc
+                        [ DminMol(+Inf,i,0,0) for i in 1:solvent.nmols ], # dmin_mol
+                        zeros(solvent.nmols),                             # dref_mol
+                        similar(x_solvent),                               # x_solvent_random
+                        LinkedCells(solvent.natoms),                      # lc_solvent
+                        MoveAux(solvent.natomspermol),                    # moveaux
+                        nsamples)                                         # nsamples        
 
   # Print some information about this run
   title(R,solute,solvent)

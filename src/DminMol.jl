@@ -3,9 +3,9 @@
 #
 
 mutable struct DminMol
-  d
-  jmol
-  iat
-  jat
+  d :: Float64
+  jmol :: Int64
+  iat :: Int64
+  jat :: Int64
 end
 
