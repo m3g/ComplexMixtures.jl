@@ -1,4 +1,4 @@
-module MDDF
+module ComplexMixtures
 
   using Printf
   using Parameters

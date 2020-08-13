@@ -1,11 +1,8 @@
-     
+#     
 # mddf_linkedcells
 #
 # Computes the MDDF using linked cells  
 #
-# http://m3g.iqm.unicamp.br/
-# http://github.com/m3g/MDDF
-#  
 
 # With default input options
 

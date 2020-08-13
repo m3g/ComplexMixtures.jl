@@ -46,7 +46,7 @@ function write(R :: Result, filename :: String;
 
   output = open(filename,"w")
   println(output,@sprintf("#"))
-  println(output,@sprintf("# Output of MDDF"))
+  println(output,@sprintf("# Output of ComplexMixtures - MDDF"))
   println(output,@sprintf("# Trajectory files and weights:"))
   for i in 1:length(R.files)
     println(output,"#  $(R.files[i]) - w = $(R.weights[i])")

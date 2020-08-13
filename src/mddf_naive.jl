@@ -4,9 +4,6 @@
 # Computes the MDDF using the naive algorithm consisting of computing all distances
 # useful for development purposes
 #
-# http://m3g.iqm.unicamp.br/
-# http://github.com/m3g/MDDF
-#  
 
 # Input with default input options
 

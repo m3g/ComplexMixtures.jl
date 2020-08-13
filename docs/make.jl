@@ -1,4 +1,5 @@
 #using DocumenterLaTeX
+include("../src/ComplexMixtures.jl")
 using Documenter
 using ComplexMixtures
 push!(LOAD_PATH,"../src/")
