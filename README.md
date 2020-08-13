@@ -1,4 +1,4 @@
-### ComplexMixtures
+# ComplexMixtures
 
 A package to study the structure of solutions formed by solutes and solvents of complex molecular shape.
 
