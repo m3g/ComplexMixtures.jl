@@ -4,8 +4,8 @@
 
 cd("./example2")
 
+include("../../src/MDDF.jl")
 using PDBTools
-using MDDF
 using Plots
 ENV["GKSwstype"] = "nul"
 
@@ -30,7 +30,7 @@ trajectory = MDDF.Trajectory("../NAMD/trajectory.dcd",solute,solvent)
 options = MDDF.Options(binstep=0.2,n_random_samples=10)
 
 # Run MDDF calculation, and get the resutls in the R structure
-@time R = MDDF.mddf_linkedcells_parallel(trajectory,options)
+@time R = MDDF.mddf(trajectory,options)
 
 MDDF.save(R,"test.json")
 MDDF.write(R,"test.dat",solute,solvent)

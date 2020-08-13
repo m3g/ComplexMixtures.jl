@@ -5,7 +5,8 @@
 using Random
 Random.seed!(4321)
 
-using MDDF
+#using MDDF
+include("../../src/MDDF.jl")
 using PDBTools
 using Plots
 using DelimitedFiles
@@ -43,7 +44,7 @@ trajectory = MDDF.Trajectory("../NAMD/trajectory.dcd",solute,solvent)
 options = MDDF.Options(binstep=0.2)
 
 # Run MDDF calculation, and get the resutls in the R structure
-R = MDDF.mddf_linkedcells_parallel(trajectory,options)
+R = MDDF.mddf(trajectory,options)
 
 MDDF.save(R,"test.json")
 MDDF.write(R,"test.dat",solute,solvent)
