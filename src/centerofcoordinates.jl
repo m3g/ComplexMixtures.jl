@@ -14,6 +14,7 @@ function centerofcoordinates!(cm :: Vector{Float64}, coor :: AbstractArray{Float
     cm[3] = cm[3] + coor[i,3]
   end
   @. cm = cm / n
+  return nothing
 end
 
 # without previous allocation

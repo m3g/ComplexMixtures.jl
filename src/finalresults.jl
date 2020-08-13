@@ -88,4 +88,5 @@ function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples
 
   end
 
+  return nothing
 end

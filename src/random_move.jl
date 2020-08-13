@@ -36,5 +36,6 @@ function random_move!(x_ref :: AbstractArray{Float64},
   # Move molecule to new position
   move!(x_new,aux)
 
+  return nothing
 end
 

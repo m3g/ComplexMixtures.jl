@@ -16,6 +16,7 @@ function reset!( v :: Volume )
   v.bulk = 0.
   v.domain = 0.
   @. v.shell = 0.
+  return nothing
 end
 
 #function Base.show( io :: IO, v :: Volume ) 

@@ -35,5 +35,6 @@ function cutoffdistances_self!(cutoff :: Float64,
     end
   end
 
+  return nothing
 end
 

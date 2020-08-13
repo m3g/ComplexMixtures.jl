@@ -9,6 +9,7 @@ function writexyz(x :: AbstractArray{Float64}, file :: String)
     println(f,"H $(x[i,1]) $(x[i,2]) $(x[i,3])")
   end
   close(f)
+  return nothing
 end
 
 

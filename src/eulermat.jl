@@ -77,5 +77,6 @@ function eulermat!( aux :: MoveAux )
   aux.A[3,2] = -c2*s1
   aux.A[3,3] = c1*c2         
 
+  return nothing
 end
  

@@ -12,6 +12,7 @@ function reset!( d :: Density )
   d.solute = 0.
   d.solvent = 0.
   d.solvent_bulk = 0.
+  return nothing
 end
 
 #function Base.show( io :: IO, d :: Density ) 

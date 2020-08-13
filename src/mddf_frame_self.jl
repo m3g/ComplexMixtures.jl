@@ -125,4 +125,5 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
   update_counters_frame!(R,rdf_count_random_frame,volume_frame,solvent,
                          nsamples,npairs,n_solvent_in_bulk)              
 
+  return nothing
 end

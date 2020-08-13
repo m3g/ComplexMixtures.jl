@@ -12,6 +12,7 @@ function wrap!(x :: AbstractArray{Float64},
   for i in 1:size(x,1)
     wrapone!(@view(x[i,1:3]),sides,center)
   end
+  return nothing
 end
 
 @inline function wrapone!(x :: AbstractVector{Float64}, 
@@ -26,6 +27,7 @@ end
     end
     x[i] = x[i] + center[i]
   end
+  return nothing
 end
 
 # Without modifying input x
@@ -45,6 +47,7 @@ function wrap!(x :: AbstractArray{Float64},
   for i in 1:size(x,1)
     wrapone!(@view(x[i,1:3]),sides)
   end
+  return nothing
 end
 
 @inline function wrapone!(x :: AbstractVector{Float64}, 
@@ -57,5 +60,6 @@ end
       x[i] = x[i] + sides[i]
     end
   end
+  return nothing
 end
 

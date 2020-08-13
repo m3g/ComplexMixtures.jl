@@ -112,6 +112,7 @@ function updatecounters!(R :: Result,
     R.md_count_random[ibin] += 1
     i = i + 1
   end
-
+  
+  return nothing
 end
 

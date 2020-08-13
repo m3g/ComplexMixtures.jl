@@ -17,12 +17,14 @@ function sum!( R1 :: Result, R2 :: Result )
   sum!(R1.density,R2.density)
   sum!(R1.volume,R2.volume)
 
+  return nothing
 end
 
 function sum!( D1 :: Density, D2 :: Density )
   D1.solute += D2.solute
   D1.solvent += D2.solvent
   D1.solvent_bulk += D2.solvent_bulk
+  return nothing
 end
 
 function sum!( V1 :: Volume, V2 :: Volume )
@@ -30,4 +32,5 @@ function sum!( V1 :: Volume, V2 :: Volume )
   V1.bulk += V2.bulk
   V1.domain += V2.domain
   @. V1.shell += V2.shell
+  return nothing
 end

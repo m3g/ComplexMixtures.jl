@@ -48,4 +48,5 @@ function cutoffdcell!(cutoff :: Float64,
     jat = lc_solvent.nextatom[jat]
   end
 
+  return nothing
 end

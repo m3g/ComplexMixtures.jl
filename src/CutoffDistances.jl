@@ -37,11 +37,14 @@ function reset!( c :: CutoffDistances )
   @. c.jat = 0
   @. c.imol = 0
   @. c.jmol = 0
+  return nothing
 end
 
 function reset!( c :: Vector{CutoffDistances} )
   for i in 1:size(c,1)
     reset!(c[i])
   end
+  return nothing
 end
+ 
 

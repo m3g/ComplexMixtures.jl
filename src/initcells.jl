@@ -27,6 +27,7 @@ function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells)
     lc.firstatom[icell] = iat
   end
 
+  return nothing
 end
 
  

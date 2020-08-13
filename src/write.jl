@@ -173,5 +173,6 @@ function write(R :: Result, filename :: String;
   println(" Wrote main output file: ", filename)
   println()
 
+  return nothing
 end
 

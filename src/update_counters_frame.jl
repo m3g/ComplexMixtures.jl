@@ -23,6 +23,7 @@ function update_counters_frame!(R :: Result, rdf_count_random_frame :: Vector{Fl
   R.volume.domain = R.volume.domain + volume_frame.domain
   R.density.solvent_bulk = R.density.solvent_bulk + (n_solvent_in_bulk/solute.nmols) / volume_frame.bulk
 
+  return nothing
 end
 
 #
@@ -53,5 +54,6 @@ function update_counters_frame!(R :: Result, rdf_count_random_frame :: Vector{Fl
   R.density.solvent_bulk = R.density.solvent_bulk + 
                            (solvent.nmols-1)*(n_solvent_in_bulk/npairs) / volume_frame.bulk
 
+  return nothing
 end
 

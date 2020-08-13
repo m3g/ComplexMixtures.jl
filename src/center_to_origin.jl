@@ -7,4 +7,5 @@ function center_to_origin!(x :: AbstractArray{Float64}, center :: AbstractVector
       x[i,j] = x[i,j] - center[j]
     end
   end
+  return nothing
 end
