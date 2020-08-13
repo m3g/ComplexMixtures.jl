@@ -4,7 +4,7 @@
 
 If this package was useful to you, please cite the following papers:
 
-* L. Martínez, **MDDF.jl: A package to study the structure of solutions
+* L. Martínez, **ComplexMixtures: A package to study the structure of solutions
   of solute and solvent of complex geometries.** To be published, 2020.
 
 * L. Martínez, S. Shimizu, **Molecular interpretation of preferential

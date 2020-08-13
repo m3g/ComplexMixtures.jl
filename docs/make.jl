@@ -1,10 +1,10 @@
 #using DocumenterLaTeX
 using Documenter
-using MDDF
+using ComplexMixtures
 push!(LOAD_PATH,"../src/")
 makedocs(
-    modules=[MDDF],
-    sitename="MDDF.jl",
+    modules=[ComplexMixtures],
+    sitename="ComplexMixtures",
     pages = [
         "Introduction" => "index.md",
         "Installation" => "installation.md",

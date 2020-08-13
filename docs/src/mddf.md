@@ -1,12 +1,12 @@
 # Computing the Minimum-Distance Distribution Function
 
-The main function of the MDDF package actually computes the MDDF between
+The main function of the ComplexMixtures package actually computes the MDDF between
 the solute and the solvent chosen. 
 
 It is run with the following command:
 
 ```julia
-results = MDDF.mddf(trajectory)  
+results = ComplexMixtures.mddf(trajectory)  
 ```
 
 The MDDF along with other results, like the corresponding KB integrals,
@@ -24,16 +24,16 @@ significantly anymore the structure of the solvent. The default value is
 10 Angstroms, but for large solvent molecules this might not be enough.
 To increase dbulk, use:  
 ```julia
-options = MDDF.Options(dbulk=15.)
-results = MDDF.mddf(trajectory,options)
+options = ComplexMixtures.Options(dbulk=15.)
+results = ComplexMixtures.mddf(trajectory,options)
 ```
 
 `stride` defines if some frames will be skip during the calculation (for
 speedup). For example, if `stride=5`, only one in five frames will be
 considered. Adjust stride with:  
 ```julia
-options = MDDF.Options(stride=5)
-results = MDDF.mddf(trajectory,options)
+options = ComplexMixtures.Options(stride=5)
+results = ComplexMixtures.mddf(trajectory,options)
 ```
 
 See the [Options](@ref options) section for further details and other options

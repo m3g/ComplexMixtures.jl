@@ -1,6 +1,6 @@
 # Introduction
 
-MDDF is a package to study the solute and solvent interactions of
+*ComplexMixtures* is a package to study the solute and solvent interactions of
 mixtures of molecules of complex shape. Conventional radial distribution
 functions are not appropriate to represent the structure of a solvent
 around a solute with many atoms, and a variable, non-spherical shape.     

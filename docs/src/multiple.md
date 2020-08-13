@@ -14,11 +14,11 @@ these file names:
 trajs = [ "traj1.xtc" , "traj2.xtc" , "traj3.xtc" ]
 ```
 
-And define a vector of `MDDF.Result` types with 3 positions, with undefined
+And define a vector of `ComplexMixtures.Result` types with 3 positions, with undefined
 initialization:
 
 ```julia
-results = Vector{MDDF.Result}(undef,3)
+results = Vector{ComplexMixtures.Result}(undef,3)
 ```
 
 ### Run the calculations in a loop
@@ -28,11 +28,11 @@ simple loop, such as
 
 ```julia
 atoms = PDBTools.readPDB("./system.pdb")
-solute = MDDF.Selection(atoms,"protein",nmols=1)
-solvent = MDDF.Selection(atoms,"resname TMAO",,natomspermol=14)
+solute = ComplexMixtures.Selection(atoms,"protein",nmols=1)
+solvent = ComplexMixtures.Selection(atoms,"resname TMAO",,natomspermol=14)
 for i in 1:3 # alternatively use 1:length(trajs) 
-  trajectory = MDDF.Trajectory(trajs[i],solute,solvent)
-  results[i] = MDDF.mddf(trajectory)
+  trajectory = ComplexMixtures.Trajectory(trajs[i],solute,solvent)
+  results[i] = ComplexMixtures.mddf(trajectory)
 end
 ```
 
@@ -43,7 +43,7 @@ the results of each calculation. To merge these results in a single
 result data structure, use:
 
 ```julia
-R = MDDF.merge(results)
+R = ComplexMixtures.merge(results)
 ```
 
 The `R` structure generated contains the averaged results of all

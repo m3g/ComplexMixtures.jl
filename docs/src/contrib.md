@@ -7,7 +7,7 @@ distance, it is natural to decompose that peak into the contributions of
 each type of solute or solvent atom to that peak.     
 
 To obtain the atomic contributions of an atom or group of atoms, the
-`MDDF.contrib` functions are provided. For example, in a system composed
+`ComplexMixtures.contrib` functions are provided. For example, in a system composed
 of a protein and water, we would have defined the solute and solvent
 using:
 
@@ -19,8 +19,8 @@ solvent = PDBTools.select(atoms,"water",natomspermol=3)
 
 The MDDF calculation is executed with:
 ```julia
-trajectory = MDDF.Trajectory("trajectory.dcd",solute,solvent)
-results = MDDF.mddf(trajectory)
+trajectory = ComplexMixtures.Trajectory("trajectory.dcd",solute,solvent)
+results = ComplexMixtures.mddf(trajectory)
 ```
 
 ## Atomic contributions in the result data structure
@@ -90,13 +90,13 @@ plot!(xlabel="Distance / Å",ylabel="MDDF")
 
 To plot the contributions of the hydrogen atoms of water to the total
 MDDF, we have to select the two atoms, named `H1` and `H2`. The
-`MDDF.contrib` function provides several practical ways of doing that,
+`ComplexMixtures.contrib` function provides several practical ways of doing that,
 with or without the use of `PDBTools`. 
 
-The `MDDF.contrib` function receives three parameters: 
+The `ComplexMixtures.contrib` function receives three parameters: 
 
 1. The `solute` or `solvent` data structure, created with
-   `MDDF.Selection`. 
+   `ComplexMixtures.Selection`. 
 2. The array of atomic contributions (here `results.solute_atom` or
    `results.solvent_atom`), corresponding to the selection in 1.
 3. A selection of a group of atoms within the molecule of interest,
@@ -105,13 +105,13 @@ The `MDDF.contrib` function receives three parameters:
 ### Selecting by indexes within the molecule
 
 To select simply by the index of the atoms of the molecules, just
-provide a list of indexes to the `MDDF.contrib` function. For example,
+provide a list of indexes to the `ComplexMixtures.contrib` function. For example,
 to select the hydrogen atoms, which are the second and third atoms of the 
 water molecule, use:
 
 ```julia
 julia> indexes = [ 2, 3 ]
-julia> h_contrib = MDDF.contrib(solvent,R.solvent_atom,indexes)
+julia> h_contrib = ComplexMixtures.contrib(solvent,R.solvent_atom,indexes)
 500-element Array{Float64,1}:
  0.0
  0.0
@@ -131,13 +131,13 @@ results in:
 ### Selecting by atom name
 
 The exact same plot above could be obtained by providing lists of atom names
-instead of indexes to the `MDDF.contrib` function:
+instead of indexes to the `ComplexMixtures.contrib` function:
 
 ```julia
 oxygen = ["OH2"]
-o_contrib = MDDF.contrib(solvent,R.solvent_atom,oxgyen) 
+o_contrib = ComplexMixtures.contrib(solvent,R.solvent_atom,oxgyen) 
 hydrogens = ["H1","H2"]
-h_contrib = MDDF.contrib(solvent,R.solvent_atom,hydrogens)
+h_contrib = ComplexMixtures.contrib(solvent,R.solvent_atom,hydrogens)
 
 ```
 
@@ -156,7 +156,7 @@ plot!(xlabel="Distance / Å",ylabel="MDDF")
 More interesting and general is to select atoms of a complex
 molecule, like a protein, using residue names, types, etc. Here we
 illustrate how this is done by providing selection strings to
-`MDDF.contrib` to obtain the contributions to the MDDF of different
+`ComplexMixtures.contrib` to obtain the contributions to the MDDF of different
 types of residues of a protein to the total MDDF. 
 
 For example, if we want to split the contributions of the charged and
@@ -165,10 +165,10 @@ code. Here, `solute` refers to the protein.
 
 ```julia
 charged_residues = PDBTools.select(atoms,"charged")
-charged_contrib = MDDF.contrib(solute,R.solute_atoms,charged_residues)
+charged_contrib = ComplexMixtures.contrib(solute,R.solute_atoms,charged_residues)
 
 neutral_residues = PDBTools.select(atoms,"neutral")
-neutral_contrib = MDDF.contrib(solute,R.solute_atoms,neutral_residues)
+neutral_contrib = ComplexMixtures.contrib(solute,R.solute_atoms,neutral_residues)
 
 ```
 The `charged` and `neutral` outputs are vectors containing the

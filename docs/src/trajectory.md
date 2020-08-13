@@ -3,7 +3,7 @@
 
 To initialize a trajectory file for computation, use the command
 ```julia
-trajectory = MDDF.Trajectory("trajectory.xtc",solute,solvent)
+trajectory = ComplexMixtures.Trajectory("trajectory.xtc",solute,solvent)
 ```
 where `solute` and `solvent` are defined with the `Selection` function 
 described [before](@ref selections). This function opens the stream for
@@ -20,7 +20,7 @@ produced with NAMD, Gromacs, LAMMPS, Amber, etc.
     Chemfiles from the extension of the file. However, it can be
     provided by the user with the `format` keyword, for example:
     ```julia
-    trajectory = MDDF.Trajectory("trajectory.xtc",solute,solvent,format="xtc")
+    trajectory = ComplexMixtures.Trajectory("trajectory.xtc",solute,solvent,format="xtc")
     ```
 
 !!! note 
@@ -28,15 +28,15 @@ produced with NAMD, Gromacs, LAMMPS, Amber, etc.
     Therefore if you want to reuse the same trajectory for another MDDF 
     computation in the same script, you need to reload it. For example:
     ```julia
-    solute = MDDF.Selection("system.pdb","protein",nmols=1)
+    solute = ComplexMixtures.Selection("system.pdb","protein",nmols=1)
     # Compute the protein-water MDDF
-    solvent = MDDF.Selection("system.pdb","water",natomspermol=3)
-    trajectory = MDDF.Trajectory("trajectory.xtc",solute,solvent)
-    R_water = MDDF.mddf(trajectory)
+    solvent = ComplexMixtures.Selection("system.pdb","water",natomspermol=3)
+    trajectory = ComplexMixtures.Trajectory("trajectory.xtc",solute,solvent)
+    R_water = ComplexMixtures.mddf(trajectory)
     # Compute the protein-urea MDDF
-    solvent = MDDF.Selection("system.pdb","resname URE",natomspermol=8)
-    trajectory = MDDF.Trajectory("trajectory.xtc",solute,solvent)
-    R_urea = MDDF.mddf(trajectory)
+    solvent = ComplexMixtures.Selection("system.pdb","resname URE",natomspermol=8)
+    trajectory = ComplexMixtures.Trajectory("trajectory.xtc",solute,solvent)
+    R_urea = ComplexMixtures.mddf(trajectory)
     ```
 
 

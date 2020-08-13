@@ -5,7 +5,7 @@ the MDDF, KB integrals, and atomic contributions. The following section
 will assume that the computation was performed by calling the `mddf`
 function with 
 ```julia
-results = MDDF.mddf(trajectory)
+results = ComplexMixtures.mddf(trajectory)
 ``` 
 such that the `results` variable contain the `Result` data structure. By
 default, the histograms contain 500 bins (`binstep=0.002` and

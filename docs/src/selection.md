@@ -1,14 +1,14 @@
 
 # [Set the solute and solvent selections](@id selections)
 
-The solute and solvent are defined in MDDF as lists (vectors) of the
+The solute and solvent are defined in ComplexMixtures as lists (vectors) of the
 indexes of the atoms of the system. The solute and solvent information
 is stored in the `Selection` structure. For example, if the solute is a
 molecule formed by the first 5 atoms of the system, it would be defined
 as:     
 ```julia
 indexes = [ 1, 2, 3, 4, 5 ]
-solute = MDDF.Selection(indexes,nmols=1)
+solute = ComplexMixtures.Selection(indexes,nmols=1)
 ```
 
 !!! note
@@ -24,11 +24,11 @@ case the syntax is:
 ```julia
 indexes = [ 1, 2, 3, 4, 5 ]
 names = [ "H1", "H2", "H3", "H4", "C" ]
-solute = MDDF.Selection(indexes,names,nmols=1)
+solute = ComplexMixtures.Selection(indexes,names,nmols=1)
 ```
 
 !!! warning
-    The indexing in MDDF is 1-based. That means that the first atom of
+    The indexing in ComplexMixtures is 1-based. That means that the first atom of
     your structure file is in position 1 of the coordinates. Please be
     careful if using any selection tool to be sure that your selection
     is correct.
@@ -39,30 +39,30 @@ solute = MDDF.Selection(indexes,names,nmols=1)
 [PDBTools](https://github.com/m3g/PDBTools) is a package we developed to read and 
 write PDB files,
 which provides a simple selection tool. It is installed as a dependency 
-of MDDF.  Given a PDB file of the simulated system, the solute can
+of ComplexMixtures.  Given a PDB file of the simulated system, the solute can
 be defined as, for example,
 ```julia
 using PDBTools
 atoms = PDBTools.readPDB("system.pdb")
 protein = PDBTools.select(atoms,"protein")
-solute = MDDF.Selection(protein,nmols=1)
+solute = ComplexMixtures.Selection(protein,nmols=1)
 ```
 If the solvent is, for instance, water, the indexes of the water
 molecules can be obtained with:
 ```julia
 water = PDBTools.select(atoms,"water")
-solvent = MDDF.Selection(water,natomspermol=3)
+solvent = ComplexMixtures.Selection(water,natomspermol=3)
 ```
 or, alternatively, a more compact syntax can be used, for example:
 ```julia
 water = PDBTools.select("system.pdb","resname TIP3P")
-solvent = MDDF.Selection(water,natomspermol=3)
+solvent = ComplexMixtures.Selection(water,natomspermol=3)
 ```
 
 or even providing just the names of the input file and selection, which
 will run PDBTools in background:
 ```julia
-solvent = MDDF.Selection("sytem.pdb","water",water,natomspermol=3)
+solvent = ComplexMixtures.Selection("sytem.pdb","water",water,natomspermol=3)
 ```
 ## Using VMD
 
@@ -74,8 +74,8 @@ using its capabilities.
 
 For example, the solute can be defined with: 
 ```julia
-indexes, names = MDDF.VMDSelect("./system.gro","protein",vmd="/usr/bin/vmd")
-solute = MDDF.Selection(indexes,names,nmols=1)
+indexes, names = ComplexMixtures.VMDSelect("./system.gro","protein",vmd="/usr/bin/vmd")
+solute = ComplexMixtures.Selection(indexes,names,nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and

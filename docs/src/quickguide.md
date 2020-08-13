@@ -2,10 +2,10 @@
 # Quick Guide
 
 Of course, follow the [installation](@ref Installation) instructions first. 
-Start `julia` and load the MDDF package, using:
+Start `julia` and load the ComplexMixtures package, using:
 
 ```julia
-using MDDF
+using ComplexMixtures
 ```
 And here we will use the `PDBTools` package to obtain the selections of
 the solute and solvent molecules: 
@@ -47,19 +47,19 @@ Then, let us select the protein atoms:
 protein = PDBTools.readPDB(atoms,"protein")
 
 ```
-And, finally, let us use the `MDDF.Selection` function to setup the
-structure required by MDDF:
+And, finally, let us use the `ComplexMixtures.Selection` function to setup the
+structure required by the MDDF calculation:
 ```julia
-solute = MDDF.Selection(protein_indexes,nmols=1)
+solute = ComplexMixtures.Selection(protein_indexes,nmols=1)
 
 ```
 
 !!! note
     It is necessary to indicate how many molecules (in this case,
-    `nmols=1`, so that MDDF knows that the solute is to be considered
+    `nmols=1`, so that ComplexMixtures knows that the solute is to be considered
     as single structure. In this case there is no ambiguity, but if
     the solute was a miscele, for example, this option would let 
-    MDDF know that one wants to consider the miscele as a single 
+    ComplexMixtures know that one wants to consider the miscele as a single 
     structure.
 
 
@@ -68,7 +68,7 @@ solute = MDDF.Selection(protein_indexes,nmols=1)
 Equivalently, the solvent is set up with:
 ```julia
 tmao = PDBTools.select(atoms,"resname TMAO")
-solvent = MDDF.Selection(tmao,natomspermol=14)
+solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
 
 ```
 
@@ -83,7 +83,7 @@ The `solute` and `solvent` data structures are then fed into the
 `Trajectory` data structure, together with the trajectory file name,
 with:
 ```julia
-trajectory = MDDF.Trajectory("trajectory.dcd",solute,solvent)
+trajectory = ComplexMixtures.Trajectory("trajectory.dcd",solute,solvent)
 ```
 In the case, the trajectory is of NAMD "dcd" format. All formats
 supported by [Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) 
@@ -94,7 +94,7 @@ are automatically recognized.
 If default options are used (as the bin size of the histograms, read all
 frames without skipping any), just run the `mddf` with:
 ```julia
-results = MDDF.mddf(trajectory)
+results = ComplexMixtures.mddf(trajectory)
 
 ```
 Some optional parameters for the computation are available in the
@@ -148,16 +148,16 @@ solvent, each type of residue of the protein, etc.
 
 The results can be saved into a file (with JSON format) with:
 ```julia
-MDDF.save(results,"./results.json")
+ComplexMixtures.save(results,"./results.json")
 ```
 And these results can be loaded aftwerwards with:
 ```julia
-MDDF.load("./results.json")
+ComplexMixtures.load("./results.json")
 ```
 Alternatively, a human-readable set of output files can be obtained to
 be analyzed in other software (or plotted with alternative tools), with
 ```julia
-MDDF.write(results,"./results.dat")
+ComplexMixtures.write(results,"./results.dat")
 ```
 
 ### Summary
@@ -167,7 +167,7 @@ The complete running example, therefore, is:
 ```julia
 # Load packages
 using PDBTools
-using MDDF 
+using ComplexMixtures 
 using Plots
 
 # Load PDB file of the system
@@ -178,17 +178,17 @@ protein = PDBTools.select(atoms,"protein")
 tmao = PDBTools.select(atoms,"resname TMAO")
 
 # Setup solute and solvent structures
-solute = MDDF.Selection(protein,nmols=1)
-solvent = MDDF.Selection(tmao,natomspermol=14)
+solute = ComplexMixtures.Selection(protein,nmols=1)
+solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
 
 # Setup the Trajectory structure
-trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
+trajectory = ComplexMixtures.Trajectory("./trajectory.dcd",solute,solvent)
 
 # Run the calculation and get results
-results = MDDF.mddf(trajectory)
+results = ComplexMixtures.mddf(trajectory)
 
 # Save the reults to recover them later if required
-MDDF.save(results,"./results.json")
+ComplexMixtures.save(results,"./results.json")
 
 # Plot the some of the most important results 
 plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
