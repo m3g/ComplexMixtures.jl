@@ -21,11 +21,10 @@ solvent = MDDF.Selection(water,natomspermol=3)
 options = MDDF.Options(n_random_samples=1,lastframe=1)
 
 trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
-
 lcP = MDDF.mddf(trajectory,options)
 
-Profile.clear_malloc_data()
-
 trajectory = MDDF.Trajectory("$dir/6Mnative.dcd",solute,solvent)
+
+Profile.clear_malloc_data()
 lcP = MDDF.mddf(trajectory,options)
 

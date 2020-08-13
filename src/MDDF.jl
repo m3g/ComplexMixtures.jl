@@ -11,6 +11,17 @@ module MDDF
   using ThreadPools
   import Random
 
+  # Input and Output data structures
+  include("./FileOperations.jl")
+  include("./OutputFiles.jl")
+  include("./Density.jl")
+  include("./Volume.jl")
+  include("./Options.jl")
+
+  # Structures used to store results
+  include("./Result.jl")
+  include("./Samples.jl")
+
   # Function to rigid-body move molecules
   include("./random.jl")
   include("./MoveAux.jl")
@@ -27,17 +38,6 @@ module MDDF
 
   # Select solute and solvent using VMD
   include("./VMDselect.jl")
-
-  # Input and Output data structures
-  include("./FileOperations.jl")
-  include("./OutputFiles.jl")
-  include("./Density.jl")
-  include("./Volume.jl")
-  include("./Options.jl")
-
-  # Structures used to store results
-  include("./Result.jl")
-  include("./Samples.jl")
 
   # Function to print some data about the run
   include("./title.jl")
