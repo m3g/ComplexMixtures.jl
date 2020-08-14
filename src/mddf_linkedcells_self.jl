@@ -108,7 +108,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
-    n_solvent_in_bulk = 0
+    n_solvent_in_bulk = 0.
     local n_solvent_in_bulk_last
     for isolvent in 1:solvent.nmols-1
       next!(progress)

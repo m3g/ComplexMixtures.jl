@@ -60,7 +60,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     error("in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe")
   end
 
-  n_solvent_in_bulk = 0
+  n_solvent_in_bulk = 0.
   local n_solvent_in_bulk_last
   for isolvent in 1:solvent.nmols-1
     # We need to do this one solute molecule at a time to avoid exploding the memory
