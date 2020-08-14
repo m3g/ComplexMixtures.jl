@@ -27,5 +27,8 @@
   # Sleep time between checks of threads for multple spawn
   sleep = 0.01
 
+  # Force garbage collection in parallel runs to avoid memory overflow
+  GC = true
+
 end
 

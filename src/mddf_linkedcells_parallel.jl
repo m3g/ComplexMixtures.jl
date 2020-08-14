@@ -121,7 +121,9 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
           ndone += 1
           free[ispawn] = true
           next!(progress)
-          GC.gc() # voltar: why we need this anyway??? There should not be so much garbage.
+          if options.GC
+            GC.gc() # why we need this anyway??? There should not be so much garbage.
+          end
         end
       end
     end
