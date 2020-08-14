@@ -22,7 +22,6 @@ function title(R :: Result,
                solvent :: Selection)
 
   println(bars)
-println("by column")
   println("Starting MDDF calculation:")
   println("  $(R.nframes_read) frames will be considered")
   println("  Solute: $(solute.natoms) atoms belonging to $(solute.nmols) molecules.")
