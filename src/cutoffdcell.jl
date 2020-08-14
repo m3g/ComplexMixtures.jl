@@ -30,9 +30,9 @@ function cutoffdcell!(cutoff :: Float64,
   jat = lc_solvent.firstatom[icell]
   while jat > 0
     if wrapped 
-      d = distance(@view(x_solvent[jat,1:3]),xat,box.sides)
+      d = distance(@view(x_solvent[1:3,jat]),xat,box.sides)
     else
-      d = distance(@view(x_solvent[jat,1:3]),xat)
+      d = distance(@view(x_solvent[1:3,jat]),xat)
     end
     if d <= cutoff
       dc.nd[1] += 1

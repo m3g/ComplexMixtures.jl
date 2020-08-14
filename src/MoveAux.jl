@@ -9,5 +9,5 @@ struct MoveAux
   A :: Matrix{Float64}
   x :: Matrix{Float64}
 end
-MoveAux(n) = MoveAux(zeros(3), zeros(3), zeros(3), zeros(3,3), zeros(n,3))
+MoveAux(n) = MoveAux(zeros(3), zeros(3), zeros(3), zeros(3,3), zeros(3,n))
 

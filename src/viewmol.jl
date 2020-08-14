@@ -5,7 +5,7 @@
 function viewmol(i :: Int64, x :: AbstractArray{Float64}, n :: Int64)
   first = (i-1)* n + 1
   last = first + n - 1
-  return @view(x[first:last,1:3])
+  return @view(x[1:3,first:last])
 end
 
 # From the structure of the solute or solvent

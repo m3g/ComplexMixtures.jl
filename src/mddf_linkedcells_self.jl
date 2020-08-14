@@ -24,7 +24,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
   # store that randomly generated solvent box (the size of the random vector
   # is one molecule smaller, because the solvent does not contain the reference
   # solute molecule
-  x_solvent_random = Array{Float64}(undef,solvent.natoms,3)
+  x_solvent_random = Array{Float64}(undef,3,solvent.natoms)
 
   # Vector to annotate if the solvent molecule is a bulk molecule
   solvent_in_bulk = zeros(Int64,solvent.nmols)

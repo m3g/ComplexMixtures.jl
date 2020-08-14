@@ -19,8 +19,8 @@ function cutoffdistances!(cutoff :: Float64,
   reset!(dc)
 
   # Loop over solute atoms
-  for iat in 1:size(x_solute,1)
-    xat = @view(x_solute[iat,1:3])
+  for iat in 1:size(x_solute,2)
+    xat = @view(x_solute[1:3,iat])
     # Check the cell of this atom
     i, j, k = icell3D(xat,box)
     # Loop over vicinal cells to compute distances to solvent atoms, and

@@ -30,7 +30,7 @@ function mddf_naive(trajectory, options :: Options)
 
   # Vector that will contain randomly generated solvent molecules (one at a time, 
   # in this naive algoritm)
-  x_solvent_random = Array{Float64}(undef,solvent.natomspermol,3)
+  x_solvent_random = Array{Float64}(undef,3,solvent.natomspermol)
 
   # Vector that wil contain the solute center of coordinates at each frame
   solute_center = Vector{Float64}(undef,3)

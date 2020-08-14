@@ -36,9 +36,9 @@ function cutoffdcell_self!(cutoff :: Float64,
       continue    
     end
     if wrapped 
-      d = distance(@view(x_solvent[jat,1:3]),xat,box.sides)
+      d = distance(@view(x_solvent[1:3,jat]),xat,box.sides)
     else
-      d = distance(@view(x_solvent[jat,1:3]),xat)
+      d = distance(@view(x_solvent[1:3,jat]),xat)
     end
     if d <= cutoff
       dc.nd[1] += 1

@@ -23,15 +23,15 @@ function random_move!(x_ref :: AbstractArray{Float64},
   @. aux.angles = (2*pi)*random(Float64)
 
   # Copy the coordinates of the molecule chosen to the random-coordinates vector
-  for i in 1:size(x_new,1)
-    x_new[i,1] = x_ref[i,1]
-    x_new[i,2] = x_ref[i,2]
-    x_new[i,3] = x_ref[i,3]
+  for i in 1:size(x_new,2)
+    x_new[1,i] = x_ref[1,i]
+    x_new[2,i] = x_ref[2,i]
+    x_new[3,i] = x_ref[3,i]
   end
   
   # Take care that this molecule is not split by periodic boundary conditions, by
   # wrapping its coordinates around its reference atom
-  wrap!(x_new,sides,@view(x_ref[irefatom,1:3]))
+  wrap!(x_new,sides,@view(x_ref[1:3,irefatom]))
 
   # Move molecule to new position
   move!(x_new,aux)

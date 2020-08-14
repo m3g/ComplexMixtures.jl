@@ -24,8 +24,8 @@ struct ChemFile
   solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-  x_solute :: Array{Float64}  # (solute.natoms,3)
-  x_solvent :: Array{Float64} # (solvent.natoms,3)
+  x_solute :: Array{Float64}  # (3,solute.natoms)
+  x_solvent :: Array{Float64} # (3,solvent.natoms)
 
   #
   # Additional data required for input/output functions
@@ -66,8 +66,8 @@ function ChemFile( filename :: String, solute :: Selection, solvent :: Selection
                    nframes, 
                    sides, # array containing box sides
                    solute, solvent,
-                   zeros(Float64,solute.natoms,3),    
-                   zeros(Float64,solvent.natoms,3),  
+                   zeros(Float64,3,solute.natoms),    
+                   zeros(Float64,3,solvent.natoms),  
                    natoms, # Total number of atoms
                  )
 end
@@ -99,14 +99,14 @@ function nextframe!( trajectory :: ChemFile )
   # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
   # but the code in general is more clear aftwerwards by doing this)
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i,1] = positions[1,trajectory.solute.index[i]]
-    trajectory.x_solute[i,2] = positions[2,trajectory.solute.index[i]]
-    trajectory.x_solute[i,3] = positions[3,trajectory.solute.index[i]]
+    trajectory.x_solute[1,i] = positions[1,trajectory.solute.index[i]]
+    trajectory.x_solute[2,i] = positions[2,trajectory.solute.index[i]]
+    trajectory.x_solute[3,i] = positions[3,trajectory.solute.index[i]]
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i,1] = positions[1,trajectory.solvent.index[i]]
-    trajectory.x_solvent[i,2] = positions[2,trajectory.solvent.index[i]]
-    trajectory.x_solvent[i,3] = positions[3,trajectory.solvent.index[i]]
+    trajectory.x_solvent[1,i] = positions[1,trajectory.solvent.index[i]]
+    trajectory.x_solvent[2,i] = positions[2,trajectory.solvent.index[i]]
+    trajectory.x_solvent[3,i] = positions[3,trajectory.solvent.index[i]]
   end
 
 end

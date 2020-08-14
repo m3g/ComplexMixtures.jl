@@ -9,8 +9,8 @@
 function wrap!(x :: AbstractArray{Float64}, 
                sides :: AbstractVector{Float64}, 
                center :: AbstractVector{Float64})
-  for i in 1:size(x,1)
-    wrapone!(@view(x[i,1:3]),sides,center)
+  for i in 1:size(x,2)
+    wrapone!(@view(x[1:3,i]),sides,center)
   end
   return nothing
 end
@@ -44,8 +44,8 @@ end
 
 function wrap!(x :: AbstractArray{Float64}, 
                sides :: AbstractVector{Float64})
-  for i in 1:size(x,1)
-    wrapone!(@view(x[i,1:3]),sides)
+  for i in 1:size(x,2)
+    wrapone!(@view(x[1:3,i]),sides)
   end
   return nothing
 end

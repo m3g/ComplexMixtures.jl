@@ -20,8 +20,8 @@ function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells)
   @. lc.nextatom = 0
 
   # Initialize cell, firstatom and nexatom
-  for iat in 1:size(x,1)
-    ic, jc, kc = icell3D(@view(x[iat,1:3]),box)
+  for iat in 1:size(x,2)
+    ic, jc, kc = icell3D(@view(x[1:3,iat]),box)
     icell = icell1D(box.nc,ic,jc,kc)
     lc.nextatom[iat] = lc.firstatom[icell]
     lc.firstatom[icell] = iat

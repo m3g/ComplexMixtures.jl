@@ -27,7 +27,7 @@ function mddf_naive_self(trajectory, options :: Options)
   jmol_in_bulk = Vector{Int64}(undef,solvent.nmols)
 
   # Vector that will contain randomly generated solvent molecules
-  x_solvent_random = Array{Float64}(undef,solvent.natomspermol,3)
+  x_solvent_random = Array{Float64}(undef,3,solvent.natomspermol)
 
   # Auxiliary structure to random generation of solvent coordiantes
   moveaux = MoveAux(solvent.natomspermol)
@@ -86,7 +86,7 @@ function mddf_naive_self(trajectory, options :: Options)
 
       # Wrap all molecules relative to the reference atom of this solute molecule 
       # (solute and solvent are the same here, so everything is wrapped)
-      @. solute_center = x_this_solute[R.irefatom,1:3]
+      @. solute_center = x_this_solute[1:3,R.irefatom]
       wrap!(x_solvent,sides,solute_center)
       center_to_origin!(x_solvent,solute_center)
 

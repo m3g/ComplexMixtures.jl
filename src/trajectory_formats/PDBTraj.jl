@@ -15,7 +15,7 @@ struct PDBTraj
   stream :: IOStream
   nframes :: Int64 
 
-  # This Array (nframes,3) must be filled up with the size of the periodic cell
+  # This Array (3,nframes) must be filled up with the size of the periodic cell
   sides :: Array{Float64}
 
   # Solute and solvent data
@@ -23,8 +23,8 @@ struct PDBTraj
   solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-  x_solute :: Array{Float64}  # (solute.natoms,3)
-  x_solvent :: Array{Float64} # (solvent.natoms,3)
+  x_solute :: Array{Float64}  # (3,solute.natoms)
+  x_solvent :: Array{Float64} # (3,solvent.natoms)
 
   #
   # Additional data required for input/output functions
@@ -68,16 +68,16 @@ function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection)
   # The function "getsides", below, must be adapted accordingly to return the correct
   # sides of the periodic box in each frame.
 
-  sides = zeros(Float64,nframes,3)
+  sides = zeros(Float64,3,nframes)
   stream = open(pdbfile,"r")
   iframe = 0
   for line in eachline(stream)
     s = split(line)
     if s[1] == "CRYST1"
       iframe = iframe + 1
-      sides[iframe,1] = parse(Float64,s[2])
-      sides[iframe,2] = parse(Float64,s[3])
-      sides[iframe,3] = parse(Float64,s[4])
+      sides[1,iframe] = parse(Float64,s[2])
+      sides[2,iframe] = parse(Float64,s[3])
+      sides[3,iframe] = parse(Float64,s[4])
     end
   end
   close(stream)
@@ -90,10 +90,10 @@ function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection)
                   nframes, 
                   sides, # array containing box sides
                   solute, solvent,
-                  zeros(Float64,solute.natoms,3),    
-                  zeros(Float64,solvent.natoms,3),  
+                  zeros(Float64,3,solute.natoms),    
+                  zeros(Float64,3,solvent.natoms),  
                   natoms, # Total number of atoms
-                  Array{Float64}(undef,natoms,3) # Auxiliary array for reading
+                  Array{Float64}(undef,3,natoms) # Auxiliary array for reading
                 )
 end
 
@@ -121,22 +121,22 @@ function nextframe!( trajectory :: PDBTraj )
     line = split(record)
     if line[1] == "ATOM" || line[1] == "HETATM"
       iatom = iatom + 1
-      trajectory.x_read[iatom,1] = parse(Float64,record[31:38])
-      trajectory.x_read[iatom,2] = parse(Float64,record[39:46])
-      trajectory.x_read[iatom,3] = parse(Float64,record[47:54])
+      trajectory.x_read[1,iatom] = parse(Float64,record[31:38])
+      trajectory.x_read[2,iatom] = parse(Float64,record[39:46])
+      trajectory.x_read[3,iatom] = parse(Float64,record[47:54])
     end
   end
 
   # Save coordinates of solute and solvent in trajectory arrays
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i,1] = trajectory.x_read[trajectory.solute.index[i],1]
-    trajectory.x_solute[i,2] = trajectory.x_read[trajectory.solute.index[i],2]
-    trajectory.x_solute[i,3] = trajectory.x_read[trajectory.solute.index[i],3]
+    trajectory.x_solute[1,i] = trajectory.x_read[1,trajectory.solute.index[i]]
+    trajectory.x_solute[2,i] = trajectory.x_read[2,trajectory.solute.index[i]]
+    trajectory.x_solute[3,i] = trajectory.x_read[3,trajectory.solute.index[i]]
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i,1] = trajectory.x_read[trajectory.solvent.index[i],1]
-    trajectory.x_solvent[i,2] = trajectory.x_read[trajectory.solvent.index[i],2]
-    trajectory.x_solvent[i,3] = trajectory.x_read[trajectory.solvent.index[i],3]
+    trajectory.x_solvent[1,i] = trajectory.x_read[1,trajectory.solvent.index[i]]
+    trajectory.x_solvent[2,i] = trajectory.x_read[2,trajectory.solvent.index[i]]
+    trajectory.x_solvent[3,i] = trajectory.x_read[3,trajectory.solvent.index[i]]
   end
 
 end
@@ -147,7 +147,7 @@ end
 function getsides(trajectory :: PDBTraj, iframe)
   # Sides is expected to be an array that contains the sides for each frame, and we return the
   # vector containing the sides of the current fraem
-  return @view(trajectory.sides[iframe,:]) 
+  return @view(trajectory.sides[1:3,iframe]) 
 end
 
 #

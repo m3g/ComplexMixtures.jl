@@ -21,7 +21,7 @@ struct NamdDCD
   solute :: Selection
   solvent :: Selection
 
-  # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
+  # Coordinates of the solute and solvent atoms in a frame (3,natoms) for each array:
   x_solute :: Array{Float64}
   x_solvent :: Array{Float64}
 
@@ -81,8 +81,8 @@ function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection)
   return NamdDCD( filename, stream, nframes, 
                   sides, # sides vector (if in dcd) or array to be filled up later
                   solute, solvent,
-                  zeros(Float64,solute.natoms,3), # solute atom coordinates
-                  zeros(Float64,solvent.natoms,3), # solvent atom coordinates
+                  zeros(Float64,3,solute.natoms), # solute atom coordinates
+                  zeros(Float64,3,solvent.natoms), # solvent atom coordinates
                   sides_in_dcd, lastatom,
                   Vector{Float64}(undef,6), # auxiliary vector to read sides
                   Vector{Float32}(undef,lastatom), # auxiliary x
@@ -124,14 +124,14 @@ function nextframe!( trajectory:: NamdDCD )
 
   # Save coordinates of solute and solvent in trajectory arrays
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i,1] = trajectory.x_read[trajectory.solute.index[i]]
-    trajectory.x_solute[i,2] = trajectory.y_read[trajectory.solute.index[i]]
-    trajectory.x_solute[i,3] = trajectory.z_read[trajectory.solute.index[i]]
+    trajectory.x_solute[1,i] = trajectory.x_read[trajectory.solute.index[i]]
+    trajectory.x_solute[2,i] = trajectory.y_read[trajectory.solute.index[i]]
+    trajectory.x_solute[3,i] = trajectory.z_read[trajectory.solute.index[i]]
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i,1] = trajectory.x_read[trajectory.solvent.index[i]]
-    trajectory.x_solvent[i,2] = trajectory.y_read[trajectory.solvent.index[i]]
-    trajectory.x_solvent[i,3] = trajectory.z_read[trajectory.solvent.index[i]]
+    trajectory.x_solvent[1,i] = trajectory.x_read[trajectory.solvent.index[i]]
+    trajectory.x_solvent[2,i] = trajectory.y_read[trajectory.solvent.index[i]]
+    trajectory.x_solvent[3,i] = trajectory.z_read[trajectory.solvent.index[i]]
   end
 
 end

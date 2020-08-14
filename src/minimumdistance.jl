@@ -11,9 +11,9 @@
 function minimumdistance(x :: AbstractVector{Float64}, y :: AbstractArray{Float64})
   jatom = 0
   dmin = +Inf
-  ny = size(y,1)
+  ny = size(y,2)
   for j in 1:ny
-    d = distance(x,@view(y[j,1:3]))
+    d = distance(x,@view(y[1:3,j]))
     if d < dmin
       jatom = j 
       dmin = d
@@ -28,11 +28,11 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   iatom = 0
   jatom = 0
   dmin = +Inf
-  nx = size(x,1)
-  ny = size(y,1)
+  nx = size(x,2)
+  ny = size(y,2)
   for i in 1:nx
      for j in 1:ny
-       d = distance(@view(x[i,1:3]),@view(y[j,1:3]))
+       d = distance(@view(x[1:3,i]),@view(y[1:3,j]))
        if d < dmin
          iatom = i 
          jatom = j 
@@ -52,11 +52,11 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   jatom = 0
   drefatom = +Inf
   dmin = +Inf
-  nx = size(x,1)
-  ny = size(y,1)
+  nx = size(x,2)
+  ny = size(y,2)
   for i in 1:nx
      for j in 1:ny
-       d = distance(@view(x[i,1:3]),@view(y[j,1:3]))
+       d = distance(@view(x[1:3,i]),@view(y[1:3,j]))
        # Minimum distance of any solvent atom to the solute
        if d < dmin
          iatom = i
@@ -83,11 +83,11 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   iatom = 0
   jatom = 0
   dmin = +Inf
-  nx = size(x,1)
-  ny = size(y,1)
+  nx = size(x,2)
+  ny = size(y,2)
   for i in 1:nx
      for j in 1:ny
-       d = distance(@view(x[i,1:3]),@view(y[j,1:3]),sides)
+       d = distance(@view(x[1:3,i]),@view(y[1:3,j]),sides)
        if d < dmin
          iatom = i
          jatom = j
@@ -107,11 +107,11 @@ function minimumdistance(x :: AbstractArray{Float64}, y :: AbstractArray{Float64
   jatom = 0
   drefatom = +Inf
   dmin = +Inf
-  nx = size(x,1)
-  ny = size(y,1)
+  nx = size(x,2)
+  ny = size(y,2)
   for i in 1:nx
      for j in 1:ny
-       d = distance(@view(x[i,1:3]),@view(y[j,1:3]),sides)
+       d = distance(@view(x[1:3,i]),@view(y[1:3,j]),sides)
        # Minimum distance of any solvent atom to the solute
        if d < dmin
          iatom = i
