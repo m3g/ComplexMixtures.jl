@@ -28,7 +28,7 @@
   sleep = 0.01
 
   # Force garbage collection in parallel runs to avoid memory overflow
-  GC = true
+  GC = false
 
 end
 
