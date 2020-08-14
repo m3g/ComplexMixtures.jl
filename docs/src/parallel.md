@@ -32,6 +32,18 @@ julia -t 4 example.jl
     is not very large. In particular, running with only `-t 2` will 
     not parallelize the calculation at all.
 
+!!! warning
+    If the calculations get `Killed` by no apparent reason, that is probably
+    because you are running out of memory because of the many parallel computations
+    running. One way to aleviate this problem is to force garbage collection,
+    using
+    ```julia
+    options = ComplexMixtures.Options(GC=true)
+    R = ComplexMixtures.mddf(trajectory,options)
 
+    ```     
+    Unfortunately, this slows the calculations quite a bit, and the parallelization
+    to many processors becomes not very satisfactory. We are working to improve
+    this.
 
 
