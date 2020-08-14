@@ -27,8 +27,10 @@
   # Sleep time between checks of threads for multple spawn
   sleep = 0.01
 
-  # Force garbage collection in parallel runs to avoid memory overflow
-  GC = false
+  # Force garbage collection in parallel runs to avoid memory overflow, 
+  # whenever free memory in the system is smaller than GC_threshold
+  GC :: Bool = true
+  GC_threshold :: Float64 = 0.1
 
 end
 
