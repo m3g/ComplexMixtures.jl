@@ -60,10 +60,12 @@ the cell length is `cutoff/lcell`). Default: 2.
 calculations in parallel. Default 0.1 s. 
 
 `GC`: Bool, force garbage collection in parallel runs, to avoid memory
-overflow. Default: `false`. That this might be required is probably a result of
-something that can vastly improved in memory management. This slows down
-parallel runs significantly.
+overflow. Default: `true`. That this might be required is probably a result of
+something that can vastly improved in memory management. This may slow down
+parallel runs significantly if the GC runs too often.
 
-
-
+`GC_threshold`: Float64, minimum fraction of the total memory of the
+system required to force a GC run. That is, if `GC_threshold=0.1`, which
+is the default, every time the free memory becomes less or equal to 10%
+of the total memory available, a GC run occurs.  
 
