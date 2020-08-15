@@ -38,11 +38,15 @@ julia -t 4 example.jl
     running. One way to aleviate this problem is to force garbage collection,
     using
     ```julia
-    options = ComplexMixtures.Options(GC=true)
+    options = ComplexMixtures.Options(GC=true,GC_threshold=0.5)
     R = ComplexMixtures.mddf(trajectory,options)
 
     ```     
-    Unfortunately, this slows the calculations quite a bit, and the parallelization
+    The `GC_threshold=0.5` indicates that if the free memory is smaller than 50%
+    of the total memory of the machine, a garbage-collection run will occur. The  
+    default parameters are `GC=true` and `GC_threshold=0.1`.  
+
+    Unfortunately, this may slow the calculations quite a bit, and the parallelization
     to many processors becomes not very satisfactory. We are working to improve
     this.
 
