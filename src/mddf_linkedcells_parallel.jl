@@ -121,7 +121,7 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
           ndone += 1
           free[ispawn] = true
           next!(progress)
-          if options.GC && (Sys.memory_free() / Sys.memory_total() < Options.GC_threshold)
+          if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
             GC.gc() # why we need this anyway??? There should not be so much garbage.
           end
         end

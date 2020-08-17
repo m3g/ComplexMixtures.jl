@@ -1,5 +1,7 @@
-for i in `seq 1 16`; do
+for i in `seq 1 32`; do
+  echo "----------------------------------------------------"
   echo $i
-  time julia -t $i test_parallel.jl >& /dev/null
+  time julia -t $i emilia.jl 
 done
-wait_for.tcl leandro julia 1
+echo "----------------------------------------------------"
+
