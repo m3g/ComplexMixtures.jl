@@ -44,7 +44,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
   @. box.nc = max(1,trunc(Int64,box.sides/(R.cutoff/box.lcell)))
   @. box.l = box.sides/box.nc
 
-  # Will wrap everthing relative to the reference atom of the first molecule
+  # Will wrap everything relative to the reference atom of the first molecule
   # and move everything such that that center is in the origin. This is important
   # to simplify the computation of cell indexes, as the minimum coordinates are 
   # automatically -side/2 at each direction
