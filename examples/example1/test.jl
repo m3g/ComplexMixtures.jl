@@ -2,52 +2,40 @@
 # Protein - TMAO (compare new and old implementations)
 #
 
-using Random
-Random.seed!(4321)
-
-#using MDDF
-include("../../src/MDDF.jl")
+using MDDF
 using PDBTools
 using Plots
 using DelimitedFiles
-ENV["GKSwstype"] = "nul"
-
-cd("./example1")
+ENV["GKSwstype"] = "nul" 
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
 atoms = PDBTools.readPDB("../NAMD/structure.pdb")
 
 # The solute is a single protein molecule (infinte dilution case). In this case,
 # use the option nmols=1
-solute_indexes = PDBTools.select(atoms,"protein")
-solute = MDDF.Selection( solute_indexes, nmols=1 )
+protein = PDBTools.select(atoms,"protein")
+solute = MDDF.Selection(protein,nmols=1)
 
 # The solvent is TMAO, which has 14 atoms. Use the natomspermol to indicate how many
 # atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
 # of the selection into individual molecules.
-solvent_indexes = PDBTools.select(atoms,"resname TMAO")
-solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
-
-# Alternativelly (to PDBTools, we can use VMD in background and its powerfull selections syntax,
-# but you need VMD installed:
-#
-#solute = MDDF.Selection( MDDF.VMDselect("structure.pdb","protein",vmd="/usr/local/bin/vmd"), 
-#                      nmols=1 )
-#
-#solvent = MDDF.Selection( MDDF.VMDselect("structure.pdb","resname TMAO",vmd="/usr/local/bin/vmd"), 
-#                        natomspermol=14 ) 
+tmao = PDBTools.select(atoms,"resname TMAO")
+solvent = MDDF.Selection(tmao,natomspermol=14)
 
 # Initialize trajectroy data structure and open input stream
 trajectory = MDDF.Trajectory("../NAMD/trajectory.dcd",solute,solvent)
 
-# Input options for the calcualtion
+# Input options for the calculation
 options = MDDF.Options(binstep=0.2)
 
-# Run MDDF calculation, and get the resutls in the R structure
+# Run MDDF calculation, and get the results in the R structure
 R = MDDF.mddf(trajectory,options)
 
-MDDF.save(R,"test.json")
-MDDF.write(R,"test.dat",solute,solvent)
+# Save data for future loeading
+MDDF.save(R,"example1.json")
+
+# Save data in human-readable format
+MDDF.write(R,"example1.dat",solute,solvent)
 
 old = readdlm("./test_reference.dat",comments=true,comment_char='#')
 
