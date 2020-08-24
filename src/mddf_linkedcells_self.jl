@@ -96,7 +96,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
     # Will wrap everthing relative to one atom of the first solute molecule, and
     # put that center at the origin, such that the minimum coordinates for cell indexing
     # is -side/2 at each direction
-    @. solute_center = x_solvent[R.irefatom,1:3]
+    @. solute_center = x_solvent[1:3,R.irefatom]
     wrap!(x_solvent,sides,solute_center)
     center_to_origin!(x_solvent,solute_center)
 
