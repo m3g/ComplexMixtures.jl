@@ -48,6 +48,15 @@ function Selection( indexes :: Vector{Int64}, names :: Vector{String};
   end
 
   natoms = length(indexes)
+  if natoms == 0
+    error(" Vector of atom indexes is empty. ")
+  end
+  if length(names) == 0
+    error(" Vector of atom names was explicitly provided but is empty. ")
+  end
+  if length(names) != natoms
+    error(" The vector of atom indexes has a different number of elements than the vector of atom names. ")
+  end
   if nmols != 0
     if natoms%nmols != 0
       error(" Number of atoms in selection must be a multiple of nmols.")
