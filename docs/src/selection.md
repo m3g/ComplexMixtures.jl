@@ -74,7 +74,7 @@ using its capabilities.
 
 For example, the solute can be defined with: 
 ```julia
-indexes, names = ComplexMixtures.VMDSelect("./system.gro","protein",vmd="/usr/bin/vmd")
+indexes, names = ComplexMixtures.VMDselect("./system.gro","protein",vmd="/usr/bin/vmd")
 solute = ComplexMixtures.Selection(indexes,names,nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
@@ -82,7 +82,7 @@ supported. But VMD needs to be installed and is run in background, and
 it takes a few seconds.     
 
 !!! warning
-    VMD uses 0-based indexing and `VMDSelect` adjusts that. However, if
+    VMD uses 0-based indexing and `VMDselect` adjusts that. However, if
     a selection is performed by index, as with `index 1`, VMD will
     select the second atom, and the output will be `[2]`. Selections by
     type, name, segment, residue name, etc, won't be a problem.
