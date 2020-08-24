@@ -91,7 +91,7 @@ function mddf_naive(trajectory, options :: Options)
       # Wrap the solute molecule relative to its reference atom, which will provide
       # reference coordinates for wrapping the solvent molecules (this is to prevent
       # the solute molecule of being split through periodic conditions
-      @. solute_center = x_this_solute[R.irefatom,1:3]
+      @. solute_center = x_this_solute[1:3,R.irefatom]
       wrap!(x_this_solute,sides,solute_center)
 
       # counter for the number of solvent molecules in bulk for this solute molecule

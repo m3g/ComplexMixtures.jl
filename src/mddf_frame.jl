@@ -45,7 +45,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   # and move everything such that that center is in the origin. This is important
   # to simplify the computation of cell indexes, as the minimum coordinates are 
   # automatically -side/2 at each direction
-  @. solute_center = x_solute[R.irefatom,1:3]
+  @. solute_center = x_solute[1:3,R.irefatom]
   wrap!(x_solute,sides,solute_center)
   center_to_origin!(x_solute,solute_center)
   wrap!(x_solvent,sides,solute_center)
