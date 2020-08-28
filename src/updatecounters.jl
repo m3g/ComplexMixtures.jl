@@ -36,7 +36,7 @@ function updatecounters!(R :: Result,
   # Update the reference atom counter
   n_dref_in_bulk = 0
   for i in 1:solvent.nmols
-    if dref_mol[i] <= R.cutoff
+    if dref_mol[i] < R.cutoff
       ibin = setbin(dref_mol[i],R.options.binstep)
       R.rdf_count[ibin] += 1
     end
@@ -51,7 +51,7 @@ function updatecounters!(R :: Result,
   # Add distances to the counters
   n_solvent_in_domain = 0
   i = 1
-  while i <= solvent.nmols && dmin_mol[i].d <= R.cutoff
+  while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
     ibin = setbin(dmin_mol[i].d,R.options.binstep)
     R.md_count[ibin] += 1
     R.solute_atom[ibin,itype(dmin_mol[i].iat,solute)] += 1 
@@ -99,7 +99,7 @@ function updatecounters!(R :: Result,
 
   # Update the reference atom counter
   for i in 1:solvent.nmols
-    if dref_mol[i] <= R.cutoff
+    if dref_mol[i] < R.cutoff
       ibin = setbin(dref_mol[i],R.options.binstep)
       rdf_count_random_frame[ibin] += 1
     end
@@ -112,7 +112,7 @@ function updatecounters!(R :: Result,
 
   # Add distances to the counters
   i = 1
-  while i <= solvent.nmols && dmin_mol[i].d <= R.cutoff
+  while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
     ibin = setbin(dmin_mol[i].d,R.options.binstep)
     R.md_count_random[ibin] += 1
     i = i + 1

@@ -40,7 +40,7 @@ function cutoffdcell_self!(cutoff :: Float64,
     else
       d = distance(@view(x_solvent[1:3,jat]),xat)
     end
-    if d <= cutoff
+    if d < cutoff
       dc.nd[1] += 1
       # If the number of distances found is greater than maxdim,
       # we need to increase the size of the vectors by 50%

@@ -105,7 +105,7 @@ function mddf_naive_self(trajectory, options :: Options)
         dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,x_this_solvent,R.irefatom)
 
         # Update histogram for computation of MDDF
-        if dmin <= R.cutoff
+        if dmin < R.cutoff
           ibin = setbin(dmin,options.binstep)
           R.md_count[ibin] += 1
           R.solute_atom[ibin,iatom] += 1 
@@ -120,7 +120,7 @@ function mddf_naive_self(trajectory, options :: Options)
         end
 
         # Update histogram for the computation of the RDF
-        if drefatom <= options.dbulk
+        if drefatom < options.dbulk
           ibin = setbin(drefatom,options.binstep) 
           R.rdf_count[ibin] += 1
         end
@@ -148,12 +148,12 @@ function mddf_naive_self(trajectory, options :: Options)
         dmin, iatom, jatom, drefatom = minimumdistance(x_this_solute,
                                                        x_solvent_random,
                                                        R.irefatom)
-        if dmin <= options.dbulk
+        if dmin < options.dbulk
           ibin = setbin(dmin,options.binstep)
           R.md_count_random[ibin] += 1
         end
         # Use the position of the reference atom to compute the shell volume by Monte-Carlo integration
-        if drefatom <= options.dbulk
+        if drefatom < options.dbulk
           ibin = setbin(drefatom,options.binstep)
           rdf_count_random_frame[ibin] += 1
         end
