@@ -128,7 +128,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
       # at this point with acceptable memory requirements
       n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R,solvent,solvent,dc,dmin_mol,dref_mol)
-      nbulk += n_dref_in_bulk_last / (solvent.nmols^2/npairs) 
+      nbulk += n_dref_in_bulk
     end
     nbulk = nbulk / (solvent.nmols^2/npairs) 
 
