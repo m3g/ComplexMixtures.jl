@@ -80,7 +80,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     n_dmin_in_bulk_last, n_dref_in_bulk = updatecounters!(R,solvent,solvent,dc,dmin_mol,dref_mol)
     nbulk += n_dref_in_bulk
   end 
-  nbulk = nbulk / (solvent.nmols^2/npair)
+  nbulk = nbulk / (solvent.nmols^2/npairs)
 
   #
   # Computing the random-solvent distribution to compute the random minimum-distance count
