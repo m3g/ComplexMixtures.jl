@@ -57,7 +57,7 @@ function updatecounters!(R :: Result,
     R.solute_atom[ibin,itype(dmin_mol[i].iat,solute)] += 1 
     R.solvent_atom[ibin,itype(dmin_mol[i].jat,solvent)] += 1 
     i = i + 1
-    if ! inbulk(dmin_mol[i].d)
+    if ! inbulk(dmin_mol[i].d,R)
       n_solvent_in_domain += 1
     end
   end
