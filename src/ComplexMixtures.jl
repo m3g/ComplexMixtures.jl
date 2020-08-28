@@ -63,6 +63,7 @@ module ComplexMixtures
   include("./sphereradiusfromshellvolume.jl")
   include("./setbin.jl")
   include("./viewmol.jl")
+  include("./inbulk.jl")
 
   # Structures to report results
   include("./finalresults.jl")

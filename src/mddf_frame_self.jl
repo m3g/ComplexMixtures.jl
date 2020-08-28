@@ -60,8 +60,8 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     error("in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe")
   end
 
-  n_solvent_in_bulk = 0.
-  local n_solvent_in_bulk_last
+  nbulk = 0.
+  local n_dmin_in_bulk
   for isolvent in 1:solvent.nmols-1
     # We need to do this one solute molecule at a time to avoid exploding the memory
     # requirements
@@ -77,9 +77,10 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     # within updatecounters there are loops over solvent molecules, in such a way that
     # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
     # at this point with acceptable memory requirements
-    n_solvent_in_bulk_last = updatecounters!(R,solvent,solvent,dc,dmin_mol,dref_mol)
-    n_solvent_in_bulk += n_solvent_in_bulk_last / (solvent.nmols^2/npairs) 
+    n_dmin_in_bulk_last, n_dref_in_bulk = updatecounters!(R,solvent,solvent,dc,dmin_mol,dref_mol)
+    nbulk += n_dref_in_bulk
   end 
+  nbulk = nbulk / (solvent.nmols^2/npair)
 
   #
   # Computing the random-solvent distribution to compute the random minimum-distance count
@@ -88,8 +89,8 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     # generate random solvent box, and store it in x_solvent_random
     for j in 1:solvent.nmols
       # Choose randomly one molecule from the bulk, if there are actually bulk molecules
-      if n_solvent_in_bulk_last != 0
-        jmol = dmin_mol[random(solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols)].jmol
+      if n_dmin_in_bulk != 0
+        jmol = dmin_mol[random(solvent.nmols-n_dmin_in_bulk+1:solvent.nmols)].jmol
       else
         jmol = random(1:solvent.nmols)
       end
@@ -123,7 +124,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
 
   # Update global counters with the data of this frame
   update_counters_frame!(R,rdf_count_random_frame,volume_frame,solvent,
-                         nsamples,npairs,n_solvent_in_bulk)              
+                         nsamples,npairs,nbulk)              
 
   return nothing
 end

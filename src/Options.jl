@@ -18,8 +18,6 @@
   cutoff :: Float64 = 10.
   usecutoff :: Bool = false
 
-  density_fix :: Bool = false
-
   # Linked cell length will be (cutoff/lcell), might be tunned for maximum
   # performance
   lcell :: Int64 = 2

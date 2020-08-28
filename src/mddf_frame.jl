@@ -59,8 +59,8 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     error("in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe")
   end
 
-  n_solvent_in_bulk = 0
-  n_solvent_in_bulk_last = 0
+  local n_dmin_in_bulk 
+  nbulk = 0
   for isolute in 1:solute.nmols
 
     # We need to do this one solute molecule at a time to avoid exploding the memory
@@ -76,20 +76,20 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     # within updatecounters there are loops over solvent molecules, in such a way that
     # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
     # at this point with acceptable memory requirements
-    n_solvent_in_bulk_last = updatecounters!(R,solute,solvent,dc,dmin_mol,dref_mol)
-    n_solvent_in_bulk += n_solvent_in_bulk_last
+    n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R,solute,solvent,dc,dmin_mol,dref_mol)
+    nbulk += n_dref_in_bulk
   end
 
   #
   # Computing the random-solvent distribution to compute the random minimum-distance count
   #
-  bulk_range = (solvent.nmols-n_solvent_in_bulk_last+1):solvent.nmols
+  bulk_range = (solvent.nmols-n_dmin_in_bulk+1):solvent.nmols
   for i in 1:options.n_random_samples
 
     # generate random solvent box, and store it in x_solvent_random
     for j in 1:solvent.nmols
       # Choose randomly one molecule from the bulk, if there are actually bulk molecules
-      if n_solvent_in_bulk_last != 0
+      if n_dmin_in_bulk != 0
         jmol = dmin_mol[random(bulk_range)].jmol
       else
         jmol = random(1:solvent.nmols)
@@ -124,7 +124,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
 
   # Update counters with the data of this frame
   update_counters_frame!(R, rdf_count_random_frame, volume_frame, solute,
-                         nsamples, n_solvent_in_bulk)
+                         nsamples, nbulk)
  
   return nothing
 end

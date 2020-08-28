@@ -1,12 +1,15 @@
 #
-# Function that updates the counters in R and returns n_solvent_in_bulk given
+# Function that updates the counters in R and returns n_dmin_in_bulk given
 # the output of cutoffdistances
+#
 #
 
 #
 # If the solute and solvent selections are provided, 
 # update md_count, rdf_count and the atom-specific counters
 #
+# returns: n_dmin_in_bulk: number of molecules with all the atoms in the bulk
+#          n_dref_in_bulk: number of molecules with the reference atom in the bulk
 
 function updatecounters!(R :: Result, 
                          solute :: Selection, solvent :: Selection,
@@ -31,11 +34,13 @@ function updatecounters!(R :: Result,
   end
 
   # Update the reference atom counter
+  n_dref_in_bulk = 0
   for i in 1:solvent.nmols
     if dref_mol[i] <= R.cutoff
       ibin = setbin(dref_mol[i],R.options.binstep)
       R.rdf_count[ibin] += 1
     end
+    n_dref_in_bulk += inbulk(dref_mol[i],R)
   end
 
   # Sort the vectors such that the elements with distances 
@@ -52,17 +57,17 @@ function updatecounters!(R :: Result,
     R.solute_atom[ibin,itype(dmin_mol[i].iat,solute)] += 1 
     R.solvent_atom[ibin,itype(dmin_mol[i].jat,solvent)] += 1 
     i = i + 1
-    if dmin_mol[i].d <= R.dbulk 
+    if ! inbulk(dmin_mol[i].d)
       n_solvent_in_domain += 1
     end
   end
-  if ! R.options.usecutoff
-    n_solvent_in_bulk = solvent.nmols - (i-1)
+  if R.options.usecutoff
+    n_dmin_in_bulk = (i-1) - n_solvent_in_domain 
   else
-    n_solvent_in_bulk = (i-1) - n_solvent_in_domain 
+    n_dmin_in_bulk = solvent.nmols - (i-1)
   end
   
-  return n_solvent_in_bulk
+  return n_dmin_in_bulk, n_dref_in_bulk
 
 end
 

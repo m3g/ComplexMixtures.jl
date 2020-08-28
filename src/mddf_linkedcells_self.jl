@@ -108,8 +108,8 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       error("in MDDF: cutoff or dbulk > periodic_dimension/2 ")
     end
 
-    n_solvent_in_bulk = 0.
-    local n_solvent_in_bulk_last
+    nbulk = 0.
+    local n_dmin_in_bulk
     for isolvent in 1:solvent.nmols-1
       next!(progress)
 
@@ -127,19 +127,20 @@ function mddf_linkedcells_self(trajectory, options :: Options)
       # within updatecounters there are loops over solvent molecules, in such a way that
       # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
       # at this point with acceptable memory requirements
-      n_solvent_in_bulk_last = updatecounters!(R,solvent,solvent,dc,dmin_mol,dref_mol)
-      n_solvent_in_bulk += n_solvent_in_bulk_last / (solvent.nmols^2/npairs) 
+      n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R,solvent,solvent,dc,dmin_mol,dref_mol)
+      nbulk += n_dref_in_bulk_last / (solvent.nmols^2/npairs) 
     end
+    nbulk = nbulk / (solvent.nmols^2/npairs) 
 
     #
     # Computing the random-solvent distribution to compute the random minimum-distance count
     #
-    bulk_range = solvent.nmols-n_solvent_in_bulk_last+1:solvent.nmols
+    bulk_range = solvent.nmols-n_dmin_in_bulk+1:solvent.nmols
     for i in 1:options.n_random_samples
       # generate random solvent box, and store it in x_solvent_random
       for j in 1:solvent.nmols
         # Choose randomly one molecule from the bulk, if there are actually bulk molecules
-        if n_solvent_in_bulk_last != 0
+        if n_dmin_in_bulk != 0
           jmol = dmin_mol[random(bulk_range)].jmol
         else
           jmol = random(1:solvent.nmols)
@@ -174,7 +175,7 @@ function mddf_linkedcells_self(trajectory, options :: Options)
 
     # Update global counters with the data of this frame
     update_counters_frame!(R,rdf_count_random_frame,volume_frame,solvent,
-                           nsamples,npairs,n_solvent_in_bulk)
+                           nsamples,npairs,nbulk)
 
   end # frames
   closetraj(trajectory)
