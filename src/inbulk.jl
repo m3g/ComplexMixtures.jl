@@ -5,12 +5,12 @@
 function inbulk(d :: Float64, R :: Result)
   if R.options.usecutoff
     if d >= R.dbulk && d < R.cutoff 
-      return 1
+      return true
     end
   else
     if d >= R.dbulk
-      return 1
+      return true
     end
   end
-  return 0
+  return false
 end
