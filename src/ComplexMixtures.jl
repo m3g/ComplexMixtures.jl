@@ -95,7 +95,6 @@ module ComplexMixtures
   include("./mddf_linkedcells.jl")
   include("./cutoffdcell_self.jl")
   include("./cutoffdistances_self.jl")
-  include("./mddf_linkedcells_self.jl")
 
   # for the linked-cell-parallel version
   include("./FrameData.jl")
