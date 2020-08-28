@@ -37,10 +37,6 @@ function mddf_linkedcells(trajectory, options :: Options)
                 R.nframes_read*options.n_random_samples*nfix)
   end
 
-
-  # The number of random samples for numerical normalization
-  nsamples = options.n_random_samples*solvent.nmols
-
   # Data structure to be passed to mddf_frame
   framedata = FrameData(trajectory,                                       # trajectory
                         Volume(R.nbins),                                  # volume_frame
