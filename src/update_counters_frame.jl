@@ -12,7 +12,7 @@ function update_counters_frame!(R :: Result, rdf_count_random_frame :: Vector{Fl
   if ! R.options.usecutoff
     volume_frame.bulk = volume_frame.total - volume_frame.domain
   else
-    ibulk = setbin(R.dbulk,R.options.binstep)
+    ibulk = setbin(R.dbulk+0.5*R.options.binstep,R.options.binstep)
     for i in ibulk:R.nbins
       volume_frame.bulk = volume_frame.bulk + volume_frame.shell[i]
     end
@@ -42,7 +42,7 @@ function update_counters_frame!(R :: Result, rdf_count_random_frame :: Vector{Fl
   if ! R.options.usecutoff
     volume_frame.bulk = volume_frame.total - volume_frame.domain
   else
-    ibulk = setbin(R.dbulk,R.options.binstep)
+    ibulk = setbin(R.dbulk+0.5*R.options.binstep,R.options.binstep)
     for i in ibulk:R.nbins
       volume_frame.bulk = volume_frame.bulk + volume_frame.shell[i]
     end
