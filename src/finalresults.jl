@@ -18,13 +18,17 @@ function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples
     R.d[i] = shellradius(i,options.binstep)
   end
 
+  # Adjust density of the random distribution to take into account the
+  # solute volume
+  density_adjust = R.volume.total / R.volume.bulk  
+
   # Counters
   @. R.md_count = R.md_count / s.count
   @. R.solute_atom = R.solute_atom / s.count
   @. R.solvent_atom = R.solvent_atom / s.count
-  @. R.md_count_random = R.md_count_random / s.random
+  @. R.md_count_random = density_adjust * R.md_count_random / s.random
   @. R.rdf_count = R.rdf_count / s.count
-  @. R.rdf_count_random = R.rdf_count_random / s.random
+  @. R.rdf_count_random = density_adjust * R.rdf_count_random / s.random
 
   # Volumes and Densities
   R.volume.total = R.volume.total / R.nframes_read
@@ -36,12 +40,6 @@ function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples
   R.volume.bulk = R.volume.bulk / R.nframes_read
 
   R.density.solvent_bulk = R.density.solvent_bulk / R.nframes_read
-
-  # Fix the number of random samples using the bulk density
-  if options.density_fix
-    density_fix = R.density.solvent_bulk/R.density.solvent
-    @. R.md_count_random = R.md_count_random * density_fix 
-  end
 
   #
   # Computing the distribution functions and KB integrals, from the MDDF
