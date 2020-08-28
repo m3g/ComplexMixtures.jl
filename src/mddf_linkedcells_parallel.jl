@@ -35,12 +35,10 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   # routines to compute the mddf and normalize the data accordingly
   if solute.index != solvent.index
     mddf_compute! = mddf_frame!
-    nsamples = options.n_random_samples*solvent.nmols
     s = Samples(R[1].nframes_read*trajectory.solute.nmols,
                 R[1].nframes_read*options.n_random_samples)
   else
     mddf_compute! = mddf_frame_self!
-    nsamples = options.n_random_samples
     npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
     nfix = solvent.nmols^2/npairs
     s = Samples(R[1].nframes_read*(trajectory.solvent.nmols-1),
@@ -53,18 +51,7 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   # Create data structures required for multithreading
   framedata = Vector{FrameData}(undef,nspawn)
   for ispawn in 1:nspawn
-    framedata[ispawn] = FrameData(deepcopy(trajectory),                             # trajectory
-                                  Volume(R[1].nbins),                               # volume_frame
-                                  zeros(R[1].nbins),                                # rdf_count_random_frame
-                                  Box(options.lcell),                               # box 
-                                  zeros(3),                                         # solute_center
-                                  CutoffDistances(solvent.natoms),                  # dc
-                                  [ DminMol(+Inf,i,0,0) for i in 1:solvent.nmols ], # dmin_mol 
-                                  zeros(solvent.nmols),                             # dref_mol
-                                  similar(x_solvent),                               # x_solvent_random
-                                  LinkedCells(solvent.natoms),                      # lc_solvent
-                                  MoveAux(solvent.natomspermol),                    # moveaux
-                                  nsamples)                                         # nsamples
+    framedata[ispawn] = FrameData(deepcopy(trajectory),R[1])
   end
 
   # Tasks

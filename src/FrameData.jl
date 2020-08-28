@@ -7,6 +7,7 @@ mutable struct FrameData
   trajectory # trajectory format
   volume_frame :: Volume
   rdf_count_random_frame :: Vector{Float64}
+  md_count_random_frame :: Vector{Float64}
   box :: Box
   solute_center :: Vector{Float64}
   
@@ -18,6 +19,21 @@ mutable struct FrameData
   lc_solvent :: LinkedCells
 
   moveaux :: MoveAux
-  nsamples :: Int64
 
 end
+
+function FrameData( trajectory, R :: Result ) 
+  return FrameData(trajectory,                                       # trajectory
+                   Volume(R.nbins),                                  # volume_frame
+                   zeros(R.nbins),                                   # rdf_count_random_frame
+                   zeros(R.nbins),                                   # md_count_random_frame
+                   Box(R.options.lcell),                             # box 
+                   zeros(3),                                         # solute_center
+                   CutoffDistances(trajectory.solvent.natoms),       # dc       
+                   [ DminMol(+Inf,i,0,0) for i in 1:trajectory.solvent.nmols ], # dmin_mol
+                   zeros(trajectory.solvent.nmols),                             # dref_mol
+                   similar(trajectory.x_solvent),                               # x_solvent_random
+                   LinkedCells(trajectory.solvent.natoms),                      # lc_solvent
+                   MoveAux(trajectory.solvent.natomspermol))                    # moveaux
+end
+

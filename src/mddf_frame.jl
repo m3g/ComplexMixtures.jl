@@ -8,6 +8,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   trajectory = framedata.trajectory
   volume_frame = framedata.volume_frame
   rdf_count_random_frame = framedata.rdf_count_random_frame
+  md_count_random_frame = framedata.md_count_random_frame
   box = framedata.box
   solute_center = framedata.solute_center
   dc = framedata.dc
@@ -15,7 +16,6 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   dref_mol = framedata.dref_mol
   x_solvent_random = framedata.x_solvent_random
   lc_solvent = framedata.lc_solvent
-  nsamples = framedata.nsamples
   moveaux = framedata.moveaux
   solute = trajectory.solute
   solvent = trajectory.solvent
@@ -25,6 +25,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   # Reset counters for this frame
   reset!(volume_frame)
   @. rdf_count_random_frame = 0.
+  @. md_count_random_frame = 0.
   
   # get pbc sides in this frame
   sides = getsides(trajectory,iframe)
@@ -118,13 +119,12 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     cutoffdistances!(R.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
 
     # Update the counters of the random distribution
-    updatecounters!(R,rdf_count_random_frame,solvent,dc,dmin_mol,dref_mol)
+    updatecounters!(R,rdf_count_random_frame,md_count_random_frame,solvent,dc,dmin_mol,dref_mol)
 
   end # random solvent sampling
 
   # Update counters with the data of this frame
-  update_counters_frame!(R, rdf_count_random_frame, volume_frame, solute,
-                         nsamples, nbulk)
+  update_counters_frame!(R, rdf_count_random_frame, md_count_random_frame, volume_frame, solute, solvent, nbulk)
  
   return nothing
 end

@@ -78,6 +78,7 @@ end
 
 function updatecounters!(R :: Result,
                          rdf_count_random_frame :: AbstractVector{Float64},
+                         md_count_random_frame :: AbstractVector{Float64},
                          solvent :: Selection, dc :: CutoffDistances,
                          dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
 
@@ -114,7 +115,7 @@ function updatecounters!(R :: Result,
   i = 1
   while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
     ibin = setbin(dmin_mol[i].d,R.options.binstep)
-    R.md_count_random[ibin] += 1
+    md_count_random_frame[ibin] += 1
     i = i + 1
   end
   

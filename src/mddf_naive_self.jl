@@ -17,9 +17,6 @@ function mddf_naive_self(trajectory, options :: Options)
   solvent = trajectory.solvent
   x_solvent = trajectory.x_solvent
   
-  # The number of random samples for numerical normalization
-  nsamples = options.n_random_samples
-
   # Initializing the structure that carries all resuts
   R = Result(trajectory,options)
 
@@ -163,7 +160,7 @@ function mddf_naive_self(trajectory, options :: Options)
 
     # Update global counters with the data of this frame
     update_counters_frame!(R,rdf_count_random_frame,volume_frame,solvent,
-                           nsamples,npairs,n_solvent_in_bulk)
+                           npairs,n_solvent_in_bulk)
 
   end # frames
   closetraj(trajectory)
