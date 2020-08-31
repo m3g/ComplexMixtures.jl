@@ -68,7 +68,6 @@ function updatecounters!(R :: Result,
   end
   
   return n_dmin_in_bulk, n_dref_in_bulk
-
 end
 
 #

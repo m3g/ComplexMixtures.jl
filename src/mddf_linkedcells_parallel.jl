@@ -35,7 +35,7 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   # routines to compute the mddf and normalize the data accordingly
   if solute.index != solvent.index
     mddf_compute! = mddf_frame!
-    s = Samples(R[1].nframes_read*trajectory.solute.nmols,
+    s = Samples(R[1].nframes_read*(trajectory.solute.nmols-1),
                 R[1].nframes_read*options.n_random_samples)
   else
     mddf_compute! = mddf_frame_self!

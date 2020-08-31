@@ -61,7 +61,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   end
 
   local n_dmin_in_bulk 
-  nbulk = 0
+  n_solvent_in_bulk = 0.
   for isolute in 1:solute.nmols
 
     # We need to do this one solute molecule at a time to avoid exploding the memory
@@ -78,7 +78,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
     # at this point with acceptable memory requirements
     n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R,solute,solvent,dc,dmin_mol,dref_mol)
-    nbulk += n_dref_in_bulk
+    n_solvent_in_bulk += n_dref_in_bulk
   end
 
   #
@@ -124,7 +124,8 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   end # random solvent sampling
 
   # Update counters with the data of this frame
-  update_counters_frame!(R, rdf_count_random_frame, md_count_random_frame, volume_frame, solute, solvent, nbulk)
+  update_counters_frame!(R, rdf_count_random_frame, md_count_random_frame, volume_frame, 
+                         solute, solvent, n_solvent_in_bulk)
  
   return nothing
 end
