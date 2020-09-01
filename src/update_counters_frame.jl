@@ -7,10 +7,12 @@ function update_counters_frame!(R :: Result,
                                 volume_frame :: Volume, solute :: Selection, solvent :: Selection,
                                 n_solvent_in_bulk :: Float64)
 
+  # Volume of each bin shell and of the solute domain
   @. volume_frame.shell = 
         volume_frame.total * (rdf_count_random_frame/(R.options.n_random_samples*solvent.nmols))
   volume_frame.domain = sum(volume_frame.shell)
-  # Volume of the bulk region
+
+  # Volume and density of the bulk region in this frame
   if ! R.options.usecutoff
     volume_frame.bulk = volume_frame.total - volume_frame.domain
   else
@@ -30,6 +32,8 @@ function update_counters_frame!(R :: Result,
   @. R.md_count_random = 
         R.md_count_random + md_count_random_frame*fillup_factor
 
+  # Update final counters, which have to be normalized by the number of frames 
+  # at the end 
   @. R.volume.shell = R.volume.shell + volume_frame.shell
   R.volume.bulk = R.volume.bulk + volume_frame.bulk
   R.volume.domain = R.volume.domain + volume_frame.domain
