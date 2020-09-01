@@ -40,6 +40,6 @@ examples/teste*.xyz
 *test-ATOM_CONTRIB_SOLVENT.dat
 *traj200.pdb
 *.mem
-#*example*.dat
-#*example*.json
+*example*.dat
+*example*.json
 
