@@ -78,19 +78,6 @@ function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples
     end
     R.kb_rdf[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
-    # Normalizations by constant density (the rdf is only for debugging, should be identical)
-    if R.volume.shell[ibin] > 0.
-      R.mddf_cd[ibin] = R.md_count[ibin] / (R.volume.shell[ibin]*R.density.solvent_bulk)
-      R.rdf_cd[ibin] = R.rdf_count[ibin] / (R.volume.shell[ibin]*R.density.solvent_bulk)
-      R.mddf_hd[ibin] = R.md_count[ibin] / (R.volume.shell[ibin]*R.density.solvent)
-      R.rdf_hd[ibin] = R.rdf_count[ibin] / (R.volume.shell[ibin]*R.density.solvent)
-    else
-      R.mddf_cd[ibin] = 0.
-      R.rdf_cd[ibin] = 0.
-      R.mddf_hd[ibin] = 0.
-      R.rdf_hd[ibin] = 0.
-    end
-
   end
 
   return nothing

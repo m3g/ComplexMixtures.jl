@@ -14,7 +14,8 @@
 function updatecounters!(R :: Result, 
                          solute :: Selection, solvent :: Selection,
                          dc :: CutoffDistances, 
-                         dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
+                         dmin_mol :: Vector{DminMol}, dref_mol :: Vector{Float64})
+
   for i in 1:solvent.nmols
     dmin_mol[i].d = +Inf
     dref_mol[i] = +Inf
@@ -74,12 +75,11 @@ end
 # If the rdf_count_random_frame is provided, update the
 # counters associated to the random distribution
 #
-
 function updatecounters!(R :: Result,
-                         rdf_count_random_frame :: AbstractVector{Float64},
-                         md_count_random_frame :: AbstractVector{Float64},
+                         rdf_count_random_frame :: Vector{Float64},
+                         md_count_random_frame :: Vector{Float64},
                          solvent :: Selection, dc :: CutoffDistances,
-                         dmin_mol :: Vector{DminMol}, dref_mol :: AbstractVector{Float64})
+                         dmin_mol :: Vector{DminMol}, dref_mol :: Vector{Float64})
 
   for i in 1:solvent.nmols
     dmin_mol[i].d = +Inf

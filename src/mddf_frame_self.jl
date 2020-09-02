@@ -22,9 +22,6 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
   x_solute = trajectory.x_solute
   x_solvent = trajectory.x_solvent
 
-  # Number of pairs of the computation
-  npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
-
   # Reset counters for this frame
   reset!(volume_frame)
   @. rdf_count_random_frame = 0.
@@ -61,7 +58,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     error("in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe")
   end
 
-  nbulk = 0.
+  n_solvent_in_bulk = 0.
   local n_dmin_in_bulk
   for isolvent in 1:solvent.nmols-1
     # We need to do this one solute molecule at a time to avoid exploding the memory
@@ -78,10 +75,21 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     # within updatecounters there are loops over solvent molecules, in such a way that
     # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
     # at this point with acceptable memory requirements
-    n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R,solvent,solvent,dc,dmin_mol,dref_mol)
-    nbulk += n_dref_in_bulk
+    n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R,solute,solvent,dc,dmin_mol,dref_mol)
+    n_solvent_in_bulk += n_dref_in_bulk
   end 
-  nbulk = nbulk / (solvent.nmols^2/npairs)
+  # The normalization bellow is tricky. The number that comes out from updatecounters is the
+  # sum, for every solvent molecule (minus one) of the distances that were not found to be in
+  # the solute domain. The total number of distances is n*(n-1), but we called updatecounters
+  # only (n-1) times, so the actual sum of the distances considered is (n-1)^2. From this set
+  # the number of distances returned in n_dref_in_bulk is r=(n-1)^2-nd/2, where nd is the
+  # number of distances in the domain. Thus, the number of distances in the domain, considering
+  # symetric terms, is nd=2(n-1)^2-2r. The actual total number of distances in the bulk
+  # is, now taking into consideration the last molecule, nb=n(n-1)-nd, or 
+  # nb = n(n-1) - 2(n-1)^2 + 2r = n^2 - n -2n^2 + 4n - 2 + 2r = -n^2 + n + 2n -2 + 2r = 
+  #    = -n(n-1) + 2(n-1) + 2r . Dividing by (n-1) to get the average nb per solute molecule
+  # considered, one gets 2r/(n-1)-n+2, which is the equation below. 
+  n_solvent_in_bulk = 2*n_solvent_in_bulk/(solvent.nmols-1) - solvent.nmols + 2
 
   #
   # Computing the random-solvent distribution to compute the random minimum-distance count
@@ -119,13 +127,14 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     cutoffdistances!(R.cutoff,x_this_solute,x_solvent_random,lc_solvent,box,dc)
 
     # Update the counters and get the number of solvent molecules in bulk
-    updatecounters!(R,rdf_count_random_frame,md_count_random_frame,solvent,dc,dmin_mol,dref_mol)
+    updatecounters!(R,rdf_count_random_frame,md_count_random_frame,
+                    solvent,dc,dmin_mol,dref_mol)
 
   end # random solvent sampling
 
   # Update global counters with the data of this frame
-  update_counters_frame!(R,rdf_count_random_frame,md_count_random_frame,volume_frame,solvent,
-                         npairs,nbulk)              
+  update_counters_frame!(R,rdf_count_random_frame,md_count_random_frame,volume_frame,
+                         solute,solvent,n_solvent_in_bulk)              
 
   return nothing
 end

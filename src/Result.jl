@@ -16,8 +16,6 @@ struct Result
   sum_md_count_random :: Vector{Float64}
   mddf :: Vector{Float64}
   kb :: Vector{Float64}
-  mddf_cd :: Vector{Float64}
-  mddf_hd :: Vector{Float64}
 
   # Atomic contributions to the MDDFs
   solute_atom :: Array{Float64}
@@ -30,8 +28,6 @@ struct Result
   sum_rdf_count_random :: Vector{Float64}
   rdf :: Vector{Float64}
   kb_rdf :: Vector{Float64}
-  rdf_cd :: Vector{Float64}
-  rdf_hd :: Vector{Float64}
 
   # Overall densities and volumes
   density :: Density
@@ -155,8 +151,6 @@ function Result(;options :: Options,
                  zeros(Float64,nbins), # sum_md_count_random
                  zeros(Float64,nbins), # mddf
                  zeros(Float64,nbins), # kb
-                 zeros(Float64,nbins), # mddf_cd
-                 zeros(Float64,nbins), # mddf_hd
                  zeros(Float64,nbins,solute_natomspermol), # Array to store the solute atom contributions
                  zeros(Float64,nbins,solvent_natomspermol), # Array to store the solvent atom contributions
                  zeros(Float64,nbins), # rdf_count
@@ -165,8 +159,6 @@ function Result(;options :: Options,
                  zeros(Float64,nbins), # sum_rdf_count_random
                  zeros(Float64,nbins), # rdf
                  zeros(Float64,nbins), # kb_rdf
-                 zeros(Float64,nbins), # rdf_cd
-                 zeros(Float64,nbins), # rdf_hd
                  Density(), # mutable scalars for results
                  Volume(nbins), # mutable vector and scalars for results
                  options, # all input options
