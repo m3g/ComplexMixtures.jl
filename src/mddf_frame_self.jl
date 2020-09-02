@@ -86,10 +86,10 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
   # number of distances in the domain. Thus, the number of distances in the domain, considering
   # symetric terms, is nd=2(n-1)^2-2r. The actual total number of distances in the bulk
   # is, now taking into consideration the last molecule, nb=n(n-1)-nd, or 
-  # nb = n(n-1) - 2(n-1)^2 + 2r = n^2 - n -2n^2 + 4n - 2 + 2r = -n^2 + n + 2n -2 + 2r = 
-  #    = -n(n-1) + 2(n-1) + 2r . Dividing by (n-1) to get the average nb per solute molecule
-  # considered, one gets 2r/(n-1)-n+2, which is the equation below. 
-  n_solvent_in_bulk = 2*n_solvent_in_bulk/(solvent.nmols-1) - solvent.nmols + 2
+  # nb = n(n-1) - 2(n-1)^2 + 2r = 2(r-1)+2n-n(n-1) 
+  # Averaging this nb over the total number of molecules, n, gives
+  # nb/n = (2/n)(r-1)-n+3, which is the equation bellow. 
+  n_solvent_in_bulk = (2/solvent.nmols)*(n_solvent_in_bulk-1) - solvent.nmols + 3
 
   #
   # Computing the random-solvent distribution to compute the random minimum-distance count
