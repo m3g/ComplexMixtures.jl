@@ -76,6 +76,7 @@ module ComplexMixtures
 
   # Tools
   include("./tools/gr.jl")
+  include("./tools/overview.jl")
 
   # Structures and functions for the linked cell method
   include("./LinkedCells.jl")

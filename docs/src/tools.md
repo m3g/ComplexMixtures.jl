@@ -2,6 +2,44 @@
 
 Some tools are provided to analyze the results:
 
+## Overview of the solvent and solute properties 
+
+The overview function displays global properties of the solute and
+solvent molecules in the simulation, given the results. For example,
+this is the output from a simple simulation of pure water:
+
+```julia
+julia> ComplexMixtures.overview(R)
+
+ Overview: 
+
+ Solvent properties: 
+ ------------------- 
+
+ Simulation concentration: 51.398872485722066 mol L⁻¹
+ Molar volume: 19.455679699545684 cm³ mol⁻¹
+
+ Concentration in bulk: 56.20970009706161 mol L⁻¹
+ Molar volume in bulk: 17.790523668925882 cm³ mol⁻¹ 
+
+ Solute properties: 
+ ------------------ 
+
+ Simulation Concentration: 56.13503056725589 mol L⁻¹
+ Simulation molar volume: 17.814188215358516 cm³ mol⁻¹
+
+ Using with dbulk=15.0 Å: 
+ Volume of the solute domain: 8492.91003652388 cm³ mol⁻¹
+ Molar volume of the solute domain: 5.114550052577582e54 mol L⁻¹
+
+```
+
+In this case, since solute and solvent are equivalent and the system is
+homogeneous, the molar volumes and concentrations are similar. This is
+not the case if the molecules are different or if the solute is at
+infinite dilution (in which case the bulk solvent density might be
+different from the solvent density in the simulation). 
+
 ## Computing radial distribution functions
 
 The distributions returned by the `mddf` function (meaning `mddf` and
