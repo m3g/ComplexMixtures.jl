@@ -9,10 +9,6 @@
 
 function finalresults!(R :: Result, options :: Options, trajectory :: Trajectory, samples :: Samples)
   
-  # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
-  mole = 6.022140857e23
-  convert = mole / 1.e24
-
   # Setup the distance vector
   for i in 1:R.nbins
     R.d[i] = shellradius(i,options.binstep)
@@ -62,7 +58,8 @@ function finalresults!(R :: Result, options :: Options, trajectory :: Trajectory
       R.sum_md_count[ibin] = R.sum_md_count[ibin-1] + R.md_count[ibin]
       R.sum_md_count_random[ibin] = R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
     end
-    R.kb[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_md_count[ibin] - R.sum_md_count_random[ibin])
+    R.kb[ibin] = units.Angs3tocm3permol*
+                 (1/R.density.solvent_bulk)*(R.sum_md_count[ibin] - R.sum_md_count_random[ibin])
 
     # For the RDF
 
@@ -76,7 +73,8 @@ function finalresults!(R :: Result, options :: Options, trajectory :: Trajectory
       R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
       R.sum_rdf_count_random[ibin] = R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
     end
-    R.kb_rdf[ibin] = convert*(1/R.density.solvent_bulk)*(R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
+    R.kb_rdf[ibin] = units.Angs3tocm3permol*
+                     (1/R.density.solvent_bulk)*(R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
   end
 

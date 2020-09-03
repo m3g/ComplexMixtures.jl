@@ -17,6 +17,7 @@ module ComplexMixtures
   include("./Density.jl")
   include("./Volume.jl")
   include("./Options.jl")
+  include("./Units.jl")
 
   # Function to rigid-body move molecules
   include("./random.jl")
