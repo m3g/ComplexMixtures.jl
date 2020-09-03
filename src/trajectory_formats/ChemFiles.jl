@@ -6,7 +6,7 @@
 
 import Chemfiles
 
-struct ChemFile
+struct ChemFile <: Trajectory
 
   #
   # Mandatory data for things to work

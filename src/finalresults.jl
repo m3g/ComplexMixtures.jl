@@ -7,7 +7,7 @@
 # This function modified the values contained in the R data structure
 #
 
-function finalresults!(R :: Result, options :: Options, trajectory, samples :: Samples)
+function finalresults!(R :: Result, options :: Options, trajectory :: Trajectory, samples :: Samples)
   
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
   mole = 6.022140857e23

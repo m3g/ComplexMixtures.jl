@@ -3,6 +3,8 @@
 # because of the memory issue (https://github.com/chemfiles/Chemfiles.jl/issues/44)
 #
 
+abstract type Trajectory end
+
 function Trajectory( filename :: String, 
                      solute :: Selection, solvent :: Selection;
                      format :: String = "")

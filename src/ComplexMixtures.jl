@@ -18,10 +18,6 @@ module ComplexMixtures
   include("./Volume.jl")
   include("./Options.jl")
 
-  # Structures used to store results
-  include("./Result.jl")
-  include("./Samples.jl")
-
   # Function to rigid-body move molecules
   include("./random.jl")
   include("./MoveAux.jl")
@@ -39,15 +35,18 @@ module ComplexMixtures
   # Select solute and solvent using VMD
   include("./VMDselect.jl")
 
-  # Function to print some data about the run
-  include("./title.jl")
-
   # Structures and functions to read different types of trajectories
+  include("./Trajectory.jl")
   include("./trajectory_formats/ChemFiles.jl")
   include("./trajectory_formats/NamdDCD.jl")
   include("./trajectory_formats/PDBTraj.jl")
-  # Default reading with the Chemfiles infrastructure
-  include("./Trajectory.jl")
+
+  # Structures used to store results
+  include("./Result.jl")
+  include("./Samples.jl")
+
+  # Function to print some data about the run
+  include("./title.jl")
 
   # Structure used for periodic boundary conditions
   include("./wrap.jl")
@@ -74,17 +73,13 @@ module ComplexMixtures
   include("./which_types.jl")
   include("./contrib.jl")
 
-  # Implementation of mddf using naive algorithms
-  include("./update_counters_frame.jl")
-  include("./mddf_naive.jl")
-  include("./mddf_naive_self.jl")
- 
   # Structures and functions for the linked cell method
   include("./LinkedCells.jl")
   include("./DminMol.jl")
   include("./CutoffDistances.jl")
   include("./partialsort_cutoff.jl")
   include("./updatecounters.jl")
+  include("./update_counters_frame.jl")
   include("./icell1D.jl")
   include("./wrap_cell.jl")
   include("./icell3D.jl")

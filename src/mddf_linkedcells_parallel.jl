@@ -4,7 +4,7 @@
 # Computes the MDDF using linked cells, in parallel
 #
 
-function mddf_linkedcells_parallel(trajectory, options :: Options, 
+function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options, 
                                    samples :: Samples, mddf_compute!)  
 
   # Initialize vector for random number generator

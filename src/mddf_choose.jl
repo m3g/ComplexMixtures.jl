@@ -7,7 +7,7 @@
 
 # With default input options
 
-mddf_choose(trajectory) = mddf_choose(trajectory,Options())
+mddf_choose(trajectory :: Trajectory) = mddf_choose(trajectory,Options())
 
 # Choose among serial or parallel version, and self and non-self versions
 
@@ -21,7 +21,7 @@ mddf_choose(trajectory) = mddf_choose(trajectory,Options())
 # it by (n-1)/2, so that we have a count proportional to n as well, leading
 # to the correct weight relative to the random sample. 
 
-function mddf_choose(trajectory,options :: Options)
+function mddf_choose(trajectory :: Trajectory, options :: Options)
   nthreads = Threads.nthreads()
   # If the solute and the solvent are the same
   if trajectory.solute.index == trajectory.solvent.index

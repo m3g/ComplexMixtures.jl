@@ -4,7 +4,7 @@
 
 mutable struct FrameData
 
-  trajectory # trajectory format
+  trajectory :: Trajectory 
   volume_frame :: Volume
   rdf_count_random_frame :: Vector{Float64}
   md_count_random_frame :: Vector{Float64}
@@ -22,8 +22,8 @@ mutable struct FrameData
 
 end
 
-function FrameData( trajectory, R :: Result ) 
-  return FrameData(trajectory,                                       # trajectory
+function FrameData(trajectory :: Trajectory, R :: Result ) 
+  return FrameData(trajectory :: Trajectory,                         # trajectory
                    Volume(R.nbins),                                  # volume_frame
                    zeros(R.nbins),                                   # rdf_count_random_frame
                    zeros(R.nbins),                                   # md_count_random_frame

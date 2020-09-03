@@ -50,7 +50,7 @@ end
 # input parameters for consistency
 #
 
-function Result( trajectory, options :: Options; irefatom = -1 ) 
+function Result( trajectory :: Trajectory, options :: Options; irefatom = -1 ) 
 
   # Check for simple input errors
   if options.stride < 1
@@ -109,6 +109,9 @@ function Result( trajectory, options :: Options; irefatom = -1 )
  
   # Actual number of frames that are read considering lastframe and stride
   nframes_read = round(Int64,(lastframe_read - options.firstframe + 1)/options.stride)
+  if nframes_read == 0
+    error("Number of frames to read is zero. Check input parameters.")
+  end
 
   # Return data structure built up
 

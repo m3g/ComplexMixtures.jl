@@ -6,7 +6,7 @@
 # trajectory formats
 #
 
-struct PDBTraj
+struct PDBTraj <: Trajectory
 
   #
   # Mandatory data for things to work

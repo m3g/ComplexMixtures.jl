@@ -4,7 +4,7 @@
 # Computes the MDDF using linked cells, serial version
 #  
 
-function mddf_linkedcells(trajectory, options :: Options, 
+function mddf_linkedcells(trajectory :: Trajectory, options :: Options, 
                           samples :: Samples, mddf_compute!)  
 
   # Initializing the structure that carries all results

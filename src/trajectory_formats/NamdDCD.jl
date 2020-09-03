@@ -4,7 +4,7 @@
 
 import FortranFiles
 
-struct NamdDCD
+struct NamdDCD <: Trajectory
 
   #
   # Mandatory data for things to work
