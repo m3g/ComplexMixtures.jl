@@ -1,7 +1,7 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
 authors = ["Leandro Martinez <leandro@iqm.unicamp.br>"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 Chemfiles = "46823bd8-5fb3-5f92-9aa0-96921f3dd015"
