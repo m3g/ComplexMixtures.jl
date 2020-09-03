@@ -19,6 +19,7 @@ makedocs(
         "Multiple trajectories" => "multiple.md",
         "Parallel execution" => "parallel.md",
         "Options" => "options.md",
+        "Tools" => "tools.md",
         "Examples" => "examples.md",
         "References" => "references.md"
     ]
