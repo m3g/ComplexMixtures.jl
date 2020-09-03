@@ -7,7 +7,7 @@
 # This function modified the values contained in the R data structure
 #
 
-function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples)
+function finalresults!(R :: Result, options :: Options, trajectory, samples :: Samples)
   
   # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
   mole = 6.022140857e23
@@ -19,12 +19,12 @@ function finalresults!(R :: Result, options :: Options, trajectory, s :: Samples
   end
 
   # Counters
-  @. R.md_count = R.md_count / s.count
-  @. R.solute_atom = R.solute_atom / s.count
-  @. R.solvent_atom = R.solvent_atom / s.count
-  @. R.md_count_random = R.md_count_random / s.random
-  @. R.rdf_count = R.rdf_count / s.count
-  @. R.rdf_count_random = R.rdf_count_random / s.random
+  @. R.md_count = R.md_count / (samples.md*R.nframes_read)
+  @. R.solute_atom = R.solute_atom / (samples.md*R.nframes_read)
+  @. R.solvent_atom = R.solvent_atom / (samples.md*R.nframes_read)
+  @. R.md_count_random = R.md_count_random / (samples.random*R.nframes_read)
+  @. R.rdf_count = R.rdf_count / (samples.md*R.nframes_read)
+  @. R.rdf_count_random = R.rdf_count_random / (samples.random*R.nframes_read)
 
   # Volumes and Densities
   R.volume.total = R.volume.total / R.nframes_read

@@ -1,16 +1,11 @@
 #     
 # mddf_linkedcells
 #
-# Computes the MDDF using linked cells  
+# Computes the MDDF using linked cells, in parallel
 #
 
-# With default input options
-
-mddf_linkedcells_parallel(trajectory) = mddf_linkedcells_parallel(trajectory,Options())
-
-# With explicit Options provided
-
-function mddf_linkedcells_parallel(trajectory, options :: Options)  
+function mddf_linkedcells_parallel(trajectory, options :: Options, 
+                                   samples :: Samples, mddf_compute!)  
 
   # Initialize vector for random number generator
   init_random()
@@ -30,20 +25,6 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
   # Initializing the structure that carries the result per thread
   R0 = Result(trajectory,options)
   R = [ Result(trajectory,options,irefatom=R0.irefatom) for i in 1:nspawn ]
-
-  # Check if the solute is the same as the solvent, and if so, use the self
-  # routines to compute the mddf and normalize the data accordingly
-  if solute.index != solvent.index
-    mddf_compute! = mddf_frame!
-    s = Samples(R[1].nframes_read*(trajectory.solute.nmols-1),
-                R[1].nframes_read*options.n_random_samples)
-  else
-    mddf_compute! = mddf_frame_self!
-    npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
-    nfix = solvent.nmols^2/npairs
-    s = Samples(R[1].nframes_read*(trajectory.solvent.nmols-1),
-                R[1].nframes_read*options.n_random_samples*nfix)
-  end
 
   # Safe passing of frame counter to the threads
   tframe = zeros(Int64,nspawn)
@@ -125,8 +106,9 @@ function mddf_linkedcells_parallel(trajectory, options :: Options)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
-  finalresults!(R[1],options,trajectory,s)
+  finalresults!(R[1],options,trajectory,samples)
   println(bars)
+
   return R[1]
 
 end

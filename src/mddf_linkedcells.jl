@@ -1,45 +1,20 @@
 #     
 # mddf_linkedcells
 #
-# Computes the MDDF using linked cells  
+# Computes the MDDF using linked cells, serial version
 #  
 
-# With default input options
-
-mddf_linkedcells(trajectory) = mddf_linkedcells(trajectory,Options())
-
-# With explicit options provided
-
-function mddf_linkedcells(trajectory, options :: Options)  
-
-  # Simplify code by assigning some shortened names
-  solute = trajectory.solute
-  solvent = trajectory.solvent
-  x_solute = trajectory.x_solute
-  x_solvent = trajectory.x_solvent
+function mddf_linkedcells(trajectory, options :: Options, 
+                          samples :: Samples, mddf_compute!)  
 
   # Initializing the structure that carries all results
   R = Result(trajectory,options)
-
-  # Check if the solute is the same as the solvent, and if so, use the self
-  # routines to compute the mddf and normalize the data accordingly
-  if solute.index != solvent.index
-    mddf_compute! = mddf_frame!
-    s = Samples(R.nframes_read*trajectory.solute.nmols,
-                R.nframes_read*options.n_random_samples)
-  else
-    mddf_compute! = mddf_frame_self!
-    npairs = round(Int64,solvent.nmols*(solvent.nmols-1)/2)
-    nfix = solvent.nmols^2/npairs
-    s = Samples(R.nframes_read*(trajectory.solvent.nmols-1),
-                R.nframes_read*options.n_random_samples*nfix)
-  end
 
   # Data structure to be passed to mddf_frame
   framedata = FrameData(trajectory,R)
 
   # Print some information about this run
-  title(R,solute,solvent)
+  title(R,trajectory.solute,trajectory.solvent)
 
   # Computing all minimum-distances
   progress = Progress(R.lastframe_read-options.firstframe+1,1)
@@ -61,7 +36,7 @@ function mddf_linkedcells(trajectory, options :: Options)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
-  finalresults!(R,options,trajectory,s)
+  finalresults!(R,options,trajectory,samples)
   println(bars)
 
   return R
