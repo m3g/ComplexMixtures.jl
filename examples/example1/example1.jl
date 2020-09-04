@@ -1,43 +1,48 @@
 #
-# Protein - TMAO (compare naive and linkedcells)
+# Protein - TMAO (compare new and old implementations)
 #
 
-using MDDF
+include("../../src/ComplexMixtures.jl")
 using PDBTools
 using Plots
 using DelimitedFiles
-nogtk()
+ENV["GKSwstype"] = "nul" 
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
-atoms = PDBTools.readPDB("./structure.pdb")
+atoms = PDBTools.readPDB("../../test/data/NAMD/structure.pdb")
 
 # The solute is a single protein molecule (infinte dilution case). In this case,
 # use the option nmols=1
-solute_indexes = PDBTools.select(atoms,"protein")
-solute = MDDF.Selection( solute_indexes, nmols=1 )
+protein = PDBTools.select(atoms,"protein")
+solute = ComplexMixtures.Selection(protein,nmols=1)
 
 # The solvent is TMAO, which has 14 atoms. Use the natomspermol to indicate how many
 # atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
 # of the selection into individual molecules.
-solvent_indexes = PDBTools.select(atoms,"resname TMAO")
-solvent = MDDF.Selection( solvent_indexes, natomspermol=14 )
+tmao = PDBTools.select(atoms,"resname TMAO")
+solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
 
-# Input options for the calcualtion
-options = MDDF.Options(binstep=0.2,lastframe=-1)
+# Initialize trajectroy data structure and open input stream
+trajectory = ComplexMixtures.Trajectory("../../test/data/NAMD/trajectory.dcd",solute,solvent)
 
-# Run MDDF calculation, and get the resutls in the R structure
-trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
-@time N = MDDF.mddf_naive(trajectory,options)
+# Input options for the calculation
+options = ComplexMixtures.Options(binstep=0.2)
 
-trajectory = MDDF.Trajectory("./trajectory.dcd",solute,solvent)
-@time R = MDDF.mddf_linkedcells_parallel(trajectory,options)
+# Run ComplexMixtures calculation, and get the results in the R structure
+R = ComplexMixtures.mddf(trajectory,options)
 
-old = readdlm("./gmd.dat",comments=true,comment_char='#')
+# Save data for future loeading
+ComplexMixtures.save(R,"example1.json")
+
+# Save data in human-readable format
+ComplexMixtures.write(R,"example1.dat",solute,solvent)
+
+old = readdlm("./old_reference.dat",comments=true,comment_char='#')
 
 plot(layout=(6,1))
 
 sp=1
-plot!(ylabel="MDDF",subplot=sp)
+plot!(ylabel="mddf",subplot=sp)
 plot!(old[:,1],old[:,2],subplot=sp,label="old")
 plot!(R.d,R.mddf,subplot=sp,label="new - mddf")
 plot!(R.d,R.rdf,subplot=sp,label="new - rdf")
@@ -82,5 +87,6 @@ plot!(legend=:topleft,subplot=sp)
 #println(z[R.nbins])
 
 plot!(size=(800,1300))
-savefig("./example4.pdf")
-savefig("./plots.pdf")
+savefig("./example1.pdf")
+
+
