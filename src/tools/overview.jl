@@ -34,7 +34,7 @@ function Base.show( io :: IO, ov :: Overview )
   println()
   println(" Using with dbulk=$(ov.R.dbulk) Å: ") 
   println(" Volume of the solute domain: $(ov.domain_volume) cm³ mol⁻¹") 
-  println(" Molar volume of the solute domain: $(ov.domain_molar_volume) mol L⁻¹") 
+  println(" Molar volume of the solute domain: $(ov.domain_molar_volume) L mol ⁻¹") 
   println()
   println(bars)
 end
@@ -44,7 +44,7 @@ function overview(R :: Result)
   ov = Overview(R = R)
 
   ov.domain_volume = R.volume.domain * units.Angs3tocm3permol
-  ov.domain_molar_volume = ov.domain_volume * units.Angs3toLpermol
+  ov.domain_molar_volume = R.volume.domain * units.Angs3toLpermol
 
   ov.density.solute = R.density.solute * units.SitesperAngs3tomolperL 
   ov.density.solvent = R.density.solvent * units.SitesperAngs3tomolperL  
