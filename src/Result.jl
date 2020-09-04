@@ -2,47 +2,63 @@
 # Structures to contain the results of the MDDF calculation
 #
 
-struct Result
+macro ResultFields()
+  ex = quote
+    nbins :: Int64
+    dbulk :: Float64
+    cutoff :: Float64
+    d :: Vector{Float64} = zeros(nbins)
 
-  nbins :: Int64
-  dbulk :: Float64
-  cutoff :: Float64
-  d :: Vector{Float64}
+    # Data to compute the MDDF distribution and corresponding KB integral
+    md_count :: Vector{Float64} = zeros(nbins)
+    md_count_random :: Vector{Float64} = zeros(nbins)
+    sum_md_count :: Vector{Float64} = zeros(nbins)
+    sum_md_count_random :: Vector{Float64} = zeros(nbins)
+    mddf :: Vector{Float64} = zeros(nbins)
+    kb :: Vector{Float64} = zeros(nbins)
 
-  # Data to compute the MDDF distribution and corresponding KB integral
-  md_count :: Vector{Float64}
-  md_count_random :: Vector{Float64}
-  sum_md_count :: Vector{Float64}
-  sum_md_count_random :: Vector{Float64}
-  mddf :: Vector{Float64}
-  kb :: Vector{Float64}
+    # Properties of the solute and solvent selections
+    autocorrelation :: Bool
+    solvent :: SolSummary
+    solute :: SolSummary
 
-  # Atomic contributions to the MDDFs
-  solute_atom :: Array{Float64}
-  solvent_atom :: Array{Float64}
-  
-  # Data to compute a RDF and the KB integral from this count
-  rdf_count :: Vector{Float64}
-  rdf_count_random :: Vector{Float64}
-  sum_rdf_count :: Vector{Float64}
-  sum_rdf_count_random :: Vector{Float64}
-  rdf :: Vector{Float64}
-  kb_rdf :: Vector{Float64}
+    # Atomic contributions to the MDDFs
+    solute_atom :: Array{Float64} = zeros(nbins,solute.natomspermol)
+    solvent_atom :: Array{Float64} = zeros(nbins,solvent.natomspermol)
+    
+    # Data to compute a RDF and the KB integral from this count
+    rdf_count :: Vector{Float64} = zeros(nbins)
+    rdf_count_random :: Vector{Float64} = zeros(nbins)
+    sum_rdf_count :: Vector{Float64} = zeros(nbins)
+    sum_rdf_count_random :: Vector{Float64} = zeros(nbins)
+    rdf :: Vector{Float64} = zeros(nbins)
+    kb_rdf :: Vector{Float64} = zeros(nbins)
 
-  # Overall densities and volumes
-  density :: Density
-  volume :: Volume
+    # Overall densities and volumes
+    density :: Density = Density()
+    volume :: Volume = Volume(nbins)
 
-  # Options of the calculation
-  options :: Options
-  irefatom :: Int64
-  lastframe_read :: Int64
-  nframes_read :: Int64
+    # Options of the calculation
+    options :: Options
+    irefatom :: Int64
+    lastframe_read :: Int64
+    nframes_read :: Int64
 
-  # File name(s) of the trajectories in this results 
-  files :: Vector{String}
-  weights :: Vector{Float64}
+    # File name(s) of the trajectories in this results 
+    files :: Vector{String}
+    weights :: Vector{Float64} 
+  end
+  esc(ex)
+end
 
+@with_kw_noshow struct Result
+  @ResultFields()
+end
+
+# The mutable version is used for reading saved data, because some vectors
+# need to be reshaped
+@with_kw_noshow mutable struct MutableResult
+  @ResultFields()
 end
 
 #
@@ -122,81 +138,17 @@ function Result( trajectory :: Trajectory, options :: Options; irefatom = -1 )
                 irefatom=irefatom,
                 lastframe_read=lastframe_read,
                 nframes_read=nframes_read,
-                solute_natomspermol=trajectory.solute.natomspermol,
-                solvent_natomspermol=trajectory.solvent.natomspermol,
+                autocorrelation=isautocorrelation(trajectory),
+                solute=SolSummary(trajectory.solute),
+                solvent=SolSummary(trajectory.solvent),
                 files=[trajectory.filename],weights=[1.0])
 
-end
-
-#
-# Generator with keyword parameters for the options that must be given
-#
-
-function Result(;options :: Options,
-                nbins :: Int64,
-                dbulk :: Float64, 
-                cutoff :: Float64, 
-                irefatom :: Int64, 
-                lastframe_read :: Int64,
-                nframes_read :: Int64,
-                solute_natomspermol :: Int64,
-                solvent_natomspermol :: Int64,
-                files :: Vector{String},
-                weights :: Vector{Float64})
-
-  return Result( nbins, # number of bins of histogram
-                 dbulk, # Distance over which the system is considered as bulk
-                 cutoff, # maximum distance to be considered 
-                 zeros(Float64,nbins), # d - vector of distances
-                 zeros(Float64,nbins), # md_count
-                 zeros(Float64,nbins), # md_count_random
-                 zeros(Float64,nbins), # sum_md_count
-                 zeros(Float64,nbins), # sum_md_count_random
-                 zeros(Float64,nbins), # mddf
-                 zeros(Float64,nbins), # kb
-                 zeros(Float64,nbins,solute_natomspermol), # Array to store the solute atom contributions
-                 zeros(Float64,nbins,solvent_natomspermol), # Array to store the solvent atom contributions
-                 zeros(Float64,nbins), # rdf_count
-                 zeros(Float64,nbins), # rdf_Count_random
-                 zeros(Float64,nbins), # sum_rdf_count
-                 zeros(Float64,nbins), # sum_rdf_count_random
-                 zeros(Float64,nbins), # rdf
-                 zeros(Float64,nbins), # kb_rdf
-                 Density(), # mutable scalars for results
-                 Volume(nbins), # mutable vector and scalars for results
-                 options, # all input options
-                 irefatom, # reference atom for RDF calculation
-                 lastframe_read, # last frame read
-                 nframes_read, # number of frames actually used for computing
-                 files, # List of files that are considered in this results
-                 weights # List of the weight of the data read from each file
-               )      
 end
 
 #
 # What to show at the REPL
 #
 
-function Base.show( io :: IO, R :: Result ) 
-
-  println(" Trajectory files and weights: ")
-  for i in 1:length(R.files) 
-    println("   $(R.files[i]) - w = $(R.weights[i])")
-  end
-  println()
-
-  ifar = trunc(Int64,R.nbins - 1.0/R.options.binstep)
-
-  long_range_mean = mean( R.mddf[ifar:R.nbins] )
-  long_range_std = std( R.mddf[ifar:R.nbins] )
-  println(" Long range MDDF mean (expected 1.0): ", long_range_mean, " +/- ", long_range_std)
-
-  long_range_mean = mean( R.rdf[ifar:R.nbins] )
-  long_range_std = std( R.rdf[ifar:R.nbins] )
-  println(" Long range RDF mean (expected 1.0): ", long_range_mean, " +/- ", long_range_std)
-
-end
-
-
+Base.show( io :: IO, R :: Result ) = Base.show(overview(R))
 
 
