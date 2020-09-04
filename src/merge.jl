@@ -22,8 +22,6 @@ function merge( r :: Vector{Result} )
   if error
     error(" Incompatible set of results to merge. ")
   end
-  solute_natomspermol = size(r[1].solute_atom,2)
-  solvent_natomspermol = size(r[1].solvent_atom,2)
   
   # List of files and weights
   nfiles = 0
@@ -41,8 +39,9 @@ function merge( r :: Vector{Result} )
              irefatom=r[1].irefatom,
              lastframe_read=r[nr].lastframe_read,
              nframes_read=nframes_read,
-             solute_natomspermol=solute_natomspermol,
-             solvent_natomspermol=solvent_natomspermol,
+             autocorrelation=r[1].autocorrelation,
+             solute = r[1].solute,
+             solvent = r[1].solvent,
              files=files,
              weights=weights) 
 
