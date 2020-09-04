@@ -4,34 +4,13 @@
 
 function load(filename :: String)
   f = open(filename,"r")
-  r = JSON3.read(f,Result)
+  R = JSON3.read(f,MutableResult)
   # Need to reshape the solute and solvent atom contributions, because
   # the data is read in a single column
-  return Result(r.nbins,
-                r.dbulk,
-                r.cutoff,
-                r.d,
-                r.md_count,
-                r.md_count_random,
-                r.sum_md_count,
-                r.sum_md_count_random,
-                r.mddf,
-                r.kb,
-                reshape(r.solute_atom,r.nbins,:),
-                reshape(r.solvent_atom,r.nbins,:),
-                r.rdf_count,
-                r.rdf_count_random,
-                r.sum_rdf_count,
-                r.sum_rdf_count_random,
-                r.rdf,
-                r.kb_rdf,
-                r.density,
-                r.volume,
-                r.options,
-                r.irefatom,
-                r.lastframe_read,
-                r.nframes_read,     
-                r.files,
-                r.weights)
+  solute_atom = reshape(R.solute_atom,R.nbins,:)
+  solvent_atom = reshape(R.solvent_atom,R.nbins,:)
+  R.solute_atom = solute_atom
+  R.solvent_atom = solvent_atom
+  return Result([getfield(R,field) for field in fieldnames(Result)]...)
 end
 
