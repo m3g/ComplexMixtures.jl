@@ -4,33 +4,47 @@ Some tools are provided to analyze the results:
 
 ## Overview of the solvent and solute properties 
 
-The overview function displays global properties of the solute and
-solvent molecules in the simulation, given the results. For example,
-this is the output from a simple simulation of pure water:
+The output to the REPL of the Result structure provides an overview of the
+properties of the solution. The data can be retrieved into a data structure
+using the `overview` function. Examples:     
 
 ```julia
-julia> ComplexMixtures.overview(R)
+...
+julia> results = ComplexMixtures.mddf(trajectory)
 
- Overview: 
+julia> results
+
+-------------------------------------------------------------------------------
+
+ MDDF Overview: 
 
  Solvent properties: 
  ------------------- 
 
- Simulation concentration: 51.398872485722066 mol L⁻¹
- Molar volume: 19.455679699545684 cm³ mol⁻¹
+ Simulation concentration: 1.5209006318095133 mol L⁻¹
+ Molar volume: 657.5051512801567 cm³ mol⁻¹
 
- Concentration in bulk: 56.20970009706161 mol L⁻¹
- Molar volume in bulk: 17.790523668925882 cm³ mol⁻¹ 
+ Concentration in bulk: 1.4918842545752287 mol L⁻¹
+ Molar volume in bulk: 670.2932864484995 cm³ mol⁻¹ 
 
  Solute properties: 
  ------------------ 
 
- Simulation Concentration: 56.13503056725589 mol L⁻¹
- Simulation molar volume: 17.814188215358516 cm³ mol⁻¹
+ Simulation Concentration: 1.5209006318095133 mol L⁻¹
+ Estimated solute partial molar volume: 657.5051512801567 cm³ mol⁻¹
 
- Using with dbulk=15.0 Å: 
- Volume of the solute domain: 8492.91003652388 cm³ mol⁻¹
- Molar volume of the solute domain: 5.114550052577582e54 mol L⁻¹
+ Using with dbulk = 20.0Å: 
+ Molar volume of the solute domain: 30292.570006549242 cm³ mol⁻¹
+
+ Auto-correlation: true
+
+ Trajectory files and weights: 
+   ./vinicius.xtc - w = 1.0
+
+ Long range MDDF mean (expected 1.0): 1.1090804621839963 +/- 0.04298849642932878
+ Long range RDF mean (expected 1.0): 1.15912932236198 +/- 0.05735018864444404
+
+-------------------------------------------------------------------------------
 
 ```
 
@@ -39,6 +53,16 @@ homogeneous, the molar volumes and concentrations are similar. This is
 not the case if the molecules are different or if the solute is at
 infinite dilution (in which case the bulk solvent density might be
 different from the solvent density in the simulation). 
+
+To retrieve the data of the overview strcture use, for example:
+
+```julia
+julia> overview = ComplexMixtures.overview(results);
+
+julia> overview.solute_molar_volume
+657.5051512801567
+
+```
 
 ## Computing radial distribution functions
 
