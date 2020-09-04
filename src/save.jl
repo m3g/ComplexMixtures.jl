@@ -1,6 +1,8 @@
 using StructTypes
 using JSON3
 
+StructTypes.StructType(::Type{SolSummary}) = StructTypes.Struct()
+StructTypes.StructType(::Type{MutableResult}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Result}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
