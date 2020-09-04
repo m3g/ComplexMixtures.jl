@@ -46,8 +46,8 @@ plot!(legend=:topright,subplot=sp)
 
 sp=3
 plot!(ylabel="Count",subplot=sp)
-scatter!(R.d,R.md_count,subplot=sp,label="new")
-scatter!(R.d,R.md_count_random,subplot=sp,label="new -rand")
+plot!(R.d,R.md_count,subplot=sp,label="new")
+plot!(R.d,R.md_count_random,subplot=sp,label="new -rand")
 
 sp=4
 plot!(ylabel="Shell vol", subplot=sp)
@@ -55,12 +55,12 @@ plot!(R.d,R.volume.shell,subplot=sp,label="new")
 
 sp=5
 plot!(ylabel="Sum MD", subplot=sp)
-scatter!(R.d,R.sum_md_count,subplot=sp,label="new - md")
+plot!(R.d,R.sum_md_count,subplot=sp,label="new - md")
 
 sp=6
 plot!(ylabel="Sum RAND", subplot=sp)
-scatter!(R.d,R.sum_md_count_random,subplot=sp,label="new - rand")
-scatter!(R.d,R.sum_rdf_count,subplot=sp,label="new - rdf")
+plot!(R.d,R.sum_md_count_random,subplot=sp,label="new - rand")
+plot!(R.d,R.sum_rdf_count,subplot=sp,label="new - rdf")
 plot!(legend=:topleft,subplot=sp)
 
 plot!(size=(800,1300))
