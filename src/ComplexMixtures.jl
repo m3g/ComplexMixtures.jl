@@ -43,6 +43,8 @@ module ComplexMixtures
   include("./trajectory_formats/PDBTraj.jl")
 
   # Structures used to store results
+  include("./isautocorrelation.jl")
+  include("./SolSummary.jl")
   include("./Result.jl")
   include("./Samples.jl")
 
