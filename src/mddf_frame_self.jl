@@ -80,16 +80,17 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
   end 
   # The normalization bellow is tricky. The number that comes out from updatecounters is the
   # sum, for every solvent molecule (minus one) of the distances that were not found to be in
-  # the solute domain. The total number of distances is n*(n-1), but we called updatecounters
-  # only (n-1) times, so the actual sum of the distances considered is (n-1)^2. From this set
-  # the number of distances returned in n_dref_in_bulk is r=(n-1)^2-nd/2, where nd is the
+  # the solute domain. The total number of distances is n^2, because the sum inside updatecounter
+  # is made for all molecules (the same function is used for cross-distribution), but we called updatecounters
+  # only (n-1) times, so the actual sum of the distances considered is n(n-1). From this set
+  # the number of distances returned in n_dref_in_bulk is r=n(n-1)-nd/2, where nd is the
   # number of distances in the domain. Thus, the number of distances in the domain, considering
-  # symetric terms, is nd=2(n-1)^2-2r. The actual total number of distances in the bulk
-  # is, now taking into consideration the last molecule, nb=n(n-1)-nd, or 
-  # nb = n(n-1) - 2(n-1)^2 + 2r = 2(r-1)+2n-n(n-1) 
-  # Averaging this nb over the total number of molecules, n, gives
-  # nb/n = (2/n)(r-1)-n+3, which is the equation bellow. 
-  n_solvent_in_bulk = (2/solvent.nmols)*(n_solvent_in_bulk-1) - solvent.nmols + 3
+  # symmetric terms, is nd=2n(n-1)-2r. The average number of distances in the domain, per
+  # molecule, is thus nd/n=2(n-1)-2r/n. Finally, the number of solvent molecules in 
+  # bulk, for each molecule, is the total number of other molecules, (n-1), minus the
+  # number of molecules in the domain, that is (n-1)-nd/n=(n-1)-2(n-1)+2r/n, which
+  # finally simplifies to 2r/n-(n-1), which is the equation bellow. 
+  n_solvent_in_bulk = 2*n_solvent_in_bulk/solvent.nmols - (solvent.nmols-1)
 
   #
   # Computing the random-solvent distribution to compute the random minimum-distance count
