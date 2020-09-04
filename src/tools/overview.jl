@@ -3,7 +3,7 @@
 # natural units
 #
 
-@with_kw mutable struct Overview
+@with_kw_noshow mutable struct Overview
   R :: Result
   domain_volume :: Float64 = 0.
   domain_molar_volume :: Float64 = 0.
