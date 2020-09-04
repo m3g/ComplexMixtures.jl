@@ -42,4 +42,5 @@ examples/teste*.xyz
 *.mem
 *example*.dat
 *example*.json
+*example*.pdf
 

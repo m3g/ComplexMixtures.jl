@@ -2,38 +2,36 @@
 # Protein - Water
 #
 
-cd("./example2")
-
-include("../../src/MDDF.jl")
+using ComplexMixtures ; const CM = ComplexMixtures
 using PDBTools
 using Plots
 ENV["GKSwstype"] = "nul"
 
 # Here we use the PDBTools package to read the pdb file (from http://github.com/m3g/PDBTools)
-atoms = PDBTools.readPDB("../NAMD/structure.pdb")
+atoms = readPDB("../../test/data/NAMD/structure.pdb")
 
 # The solute is a single protein molecule (infinte dilution case). In this case,
 # use the option nmols=1
-solute_indexes = PDBTools.select(atoms,"protein")
-solute = MDDF.Selection( solute_indexes, nmols=1 )
+solute_indexes = select(atoms,"protein")
+solute = CM.Selection( solute_indexes, nmols=1 )
 
 # The solvent is Water, which has 3 atoms. Use the natomspermol to indicate how many
 # atoms each molecule has, such that there is no ambiguity on how to split the coordinates 
 # of the selection into individual molecules.
-solvent_indexes = PDBTools.select(atoms,"resname TIP3")
-solvent = MDDF.Selection( solvent_indexes, natomspermol=3 )
+solvent_indexes = select(atoms,"resname TIP3")
+solvent = CM.Selection( solvent_indexes, natomspermol=3 )
 
 # Initialize trajectroy data structure and open input stream
-trajectory = MDDF.Trajectory("../NAMD/trajectory.dcd",solute,solvent)
+trajectory = CM.Trajectory("../../test/data/NAMD/trajectory.dcd",solute,solvent)
 
 # Input options for the calcualtion
-options = MDDF.Options(binstep=0.2,n_random_samples=10)
+options = CM.Options(binstep=0.2)
 
-# Run MDDF calculation, and get the resutls in the R structure
-@time R = MDDF.mddf(trajectory,options)
+# Run CM calculation, and get the resutls in the R structure
+@time R = CM.mddf(trajectory,options)
 
-MDDF.save(R,"test.json")
-MDDF.write(R,"test.dat",solute,solvent)
+CM.save(R,"example1.json")
+CM.write(R,"example1.dat",solute,solvent)
 
 plot(layout=(4,1))
 
@@ -67,8 +65,6 @@ plot!(R.d,R.md_count_random,subplot=sp,label="R rand")
 plot!(legend=:topleft,subplot=sp)
 
 plot!(size=(600,800))
-savefig("./test.pdf")
-
-cd("../")
+savefig("./example2.pdf")
 
 
