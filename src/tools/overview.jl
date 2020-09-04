@@ -5,7 +5,6 @@
 
 @with_kw_noshow mutable struct Overview
   R :: Result
-  domain_volume :: Float64 = 0.
   domain_molar_volume :: Float64 = 0.
   density :: Density = Density()
   solvent_molar_volume :: Float64 = 0.
@@ -33,8 +32,7 @@ function Base.show( io :: IO, ov :: Overview )
   println(" Simulation molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹")
   println()
   println(" Using with dbulk=$(ov.R.dbulk) Å: ") 
-  println(" Volume of the solute domain: $(ov.domain_volume) cm³ mol⁻¹") 
-  println(" Molar volume of the solute domain: $(ov.domain_molar_volume) L mol ⁻¹") 
+  println(" Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹") 
   println()
   println(bars)
 end
@@ -43,8 +41,7 @@ function overview(R :: Result)
 
   ov = Overview(R = R)
 
-  ov.domain_volume = R.volume.domain * units.Angs3tocm3permol
-  ov.domain_molar_volume = R.volume.domain * units.Angs3toLpermol
+  ov.domain_molar_volume = R.volume.domain * units.Angs3tocm3permol
 
   ov.density.solute = R.density.solute * units.SitesperAngs3tomolperL 
   ov.density.solvent = R.density.solvent * units.SitesperAngs3tomolperL  
