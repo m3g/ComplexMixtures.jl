@@ -78,7 +78,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
     n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R,solute,solvent,dc,dmin_mol,dref_mol)
     n_solvent_in_bulk += n_dref_in_bulk
   end 
-  # The normalization bellow is tricky. The number that comes out from updatecounters is the
+  # The normalization below is tricky. The number that comes out from updatecounters is the
   # sum, for every solvent molecule (minus one) of the distances that were not found to be in
   # the solute domain. The total number of distances is n^2, because the sum inside updatecounter
   # is made for all molecules (the same function is used for cross-distribution), but we called updatecounters
@@ -89,7 +89,7 @@ function mddf_frame_self!(iframe :: Int64, framedata :: FrameData, options :: Op
   # molecule, is thus nd/n=2(n-1)-2r/n. Finally, the number of solvent molecules in 
   # bulk, for each molecule, is the total number of other molecules, (n-1), minus the
   # number of molecules in the domain, that is (n-1)-nd/n=(n-1)-2(n-1)+2r/n, which
-  # finally simplifies to 2r/n-(n-1), which is the equation bellow. 
+  # finally simplifies to 2r/n-(n-1), which is the equation below. 
   n_solvent_in_bulk = 2*n_solvent_in_bulk/solvent.nmols - (solvent.nmols-1)
 
   #
