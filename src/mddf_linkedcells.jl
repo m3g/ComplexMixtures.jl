@@ -17,7 +17,7 @@ function mddf_linkedcells(trajectory :: Trajectory, options :: Options,
   title(R,trajectory.solute,trajectory.solvent)
 
   # Computing all minimum-distances
-  progress = Progress(R.lastframe_read-options.firstframe+1,1)
+  progress = Progress(R.nframes_read,1)
   for iframe in 1:R.lastframe_read
 
     # reading coordinates of next frame
