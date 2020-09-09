@@ -19,8 +19,8 @@ end
 # solvent are the same
 
 function Trajectory( filename :: String, 
-                    solvent :: Selection; 
-                    format :: String = "")
+                     solvent :: Selection; 
+                     format :: String = "")
   if format == "dcd" || FileOperations.file_extension(filename) == "dcd"
     NamdDCD(filename,solvent,solvent)
   else
