@@ -92,8 +92,8 @@ function write(R :: Result, filename :: String;
     line = line*"  "*format(R.kb[i])                           #  3-KB INT
     line = line*"  "*format(R.md_count[i])                     #  4-MD COUNT
     line = line*"  "*format(R.md_count_random[i])              #  5-COUNT RAND
-    line = line*"  "*format(R.md_count[i])                     #  6-SUM MD
-    line = line*"  "*format(R.md_count_random[i])              #  7-SUM RAND
+    line = line*"  "*format(R.sum_md_count[i])                 #  6-SUM MD
+    line = line*"  "*format(R.sum_md_count_random[i])          #  7-SUM RAND
     line = line*"  "*format(R.volume.shell[i])                 #  8-SHELL VOL
     println(output,line)
   end
