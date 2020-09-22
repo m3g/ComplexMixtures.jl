@@ -1,4 +1,5 @@
-#using DocumenterLaTeX
+import Pkg
+Pkg.add("Documenter")
 using ComplexMixtures
 using Documenter
 using ComplexMixtures
@@ -24,6 +25,9 @@ makedocs(
         "References" => "references.md"
     ]
 )
-
-
-
+deploydocs(
+    repo = "github.com/m3g/ComplexMixtures.git",
+    target = "build",
+    branch = "gh-pages",
+    versions = ["stable" => "v^", "v#.#" ],
+)
