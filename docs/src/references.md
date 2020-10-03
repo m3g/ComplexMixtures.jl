@@ -15,7 +15,7 @@ If this package was useful to you, please cite the following papers:
 ## Related work
 
 * V. Piccoli, L. Martínez, **Correlated counterion effects in the solvation
-  of proteins by ionic-liquids.** To appear, 2020.
+  of proteins by ionic-liquids.** J. Mol. Liq. 320, 114347, 2020.
 
 * I. P. de Oliveira, L. Martínez, **The shift in urea orientation at
   protein surfaces at low pH is compatible with a direct mechanism of
