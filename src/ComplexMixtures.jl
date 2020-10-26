@@ -84,7 +84,7 @@ module ComplexMixtures
   # Structures and functions for the linked cell method
   include("./LinkedCells.jl")
   include("./DminMol.jl")
-  include("./CutoffDistances.jl")
+  include("./CutoffDistances_Struct.jl")
   include("./partialsort_cutoff.jl")
   include("./updatecounters.jl")
   include("./update_counters_frame.jl")
