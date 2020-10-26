@@ -53,6 +53,15 @@ trajectory and want to obtain reproducible results for that short
 trajectory. For long trajectories (most desirable and common), this
 value can even be decreased to speed up the calculations. 
 
+`seed`: Seed for random number generator. If `-1`, the seed will be
+generated from the entropy of the system. If your results are dependent
+on the seed, is is probable that you do not have enough sampling. Mostly
+used for testing purposes. Two runs are only identical if ran with
+the same seed and in serial mode.   
+
+`nthreads`: How many threads to use. By default, all available threads
+will be used (for multi-threading, one for managing, `n-1` for computation).  
+
 `lcell`: Integer, the cell length of the linked-cell method (actually
 the cell length is `cutoff/lcell`). Default: 2.  
 
