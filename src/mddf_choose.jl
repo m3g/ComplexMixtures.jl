@@ -26,7 +26,11 @@ function mddf_choose(trajectory :: Trajectory, options :: Options)
   # Initialize vector for random number generator
   init_random(options.seed)
 
-  nthreads = Threads.nthreads()
+  if options.nthreads < 0
+    nthreads = Threads.nthreads()
+  else
+    nthreads = options.nthreads
+  end
   # If the solute and the solvent are the same
   if trajectory.solute.index == trajectory.solvent.index
     samples = Samples(md=(trajectory.solvent.nmols-1)/2,

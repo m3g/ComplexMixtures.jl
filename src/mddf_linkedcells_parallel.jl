@@ -14,7 +14,11 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
   x_solvent = trajectory.x_solvent
 
   # Number of threads
-  nspawn = Threads.nthreads()-1
+  if options.nthreads < 0
+    nspawn = Threads.nthreads() - 1
+  else
+    nspawn = options.nthreads - 1
+  end
   if nspawn == 0
     error(" Parallel version must be executed only with more than 1 thread. ")
   end

@@ -33,6 +33,9 @@
   # Seed for random number generator (use -1 to get non-reproducible runs)
   seed :: Int64 = 1234567
 
+  # Manually chose on how many threads to run (-1 to use all threads)
+  nthreads :: Int64 = -1
+
 end
 
 
