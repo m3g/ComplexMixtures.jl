@@ -30,6 +30,9 @@
   GC :: Bool = true
   GC_threshold :: Float64 = 0.1
 
+  # Seed for random number generator (use -1 to get non-reproducible runs)
+  seed :: Int64 = 1234567
+
 end
 
 

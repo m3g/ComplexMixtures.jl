@@ -7,9 +7,6 @@
 function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options, 
                                    samples :: Samples, mddf_compute!)  
 
-  # Initialize vector for random number generator
-  init_random()
-
   # Simplify code by assigning some shortened names
   solute = trajectory.solute
   solvent = trajectory.solvent

@@ -22,6 +22,10 @@ mddf_choose(trajectory :: Trajectory) = mddf_choose(trajectory,Options())
 # to the correct weight relative to the random sample. 
 
 function mddf_choose(trajectory :: Trajectory, options :: Options)
+
+  # Initialize vector for random number generator
+  init_random(options.seed)
+
   nthreads = Threads.nthreads()
   # If the solute and the solvent are the same
   if trajectory.solute.index == trajectory.solvent.index

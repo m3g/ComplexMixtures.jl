@@ -4,8 +4,6 @@ using ComplexMixtures, PDBTools
 using Random
 const CM = ComplexMixtures
 
-Random.seed!(321)
-
 # Example 1: protein-tmao with NAMD
 
 dir="./data/NAMD"
