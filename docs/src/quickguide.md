@@ -42,15 +42,15 @@ which provides a handy selection syntax. First, read the PDB file using
 atoms = PDBTools.readPDB("./system.pdb")
 
 ```
-Then, let us select the protein atoms:
+Then, let us select the protein atoms (here we are using the `PDBTools.select` function):
 ```julia
-protein = PDBTools.readPDB(atoms,"protein")
+protein = select(atoms,"protein")
 
 ```
 And, finally, let us use the `ComplexMixtures.Selection` function to setup the
 structure required by the MDDF calculation:
 ```julia
-solute = ComplexMixtures.Selection(protein_indexes,nmols=1)
+solute = ComplexMixtures.Selection(protein,nmols=1)
 
 ```
 
@@ -67,7 +67,7 @@ solute = ComplexMixtures.Selection(protein_indexes,nmols=1)
 
 Equivalently, the solvent is set up with:
 ```julia
-tmao = PDBTools.select(atoms,"resname TMAO")
+tmao = select(atoms,"resname TMAO")
 solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
 
 ```
