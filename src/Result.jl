@@ -151,4 +151,3 @@ end
 
 Base.show( io :: IO, R :: Result ) = Base.show(overview(R))
 
-
