@@ -3,11 +3,13 @@
 # package testing routines
 #
 
-import Base.isapprox
 const CMTypes = Union{Result,Density,Volume,SolSummary,Options} 
+
+import Base.isapprox
 function isapprox( r1 :: T, r2 :: T; debug = false ) where T <: CMTypes
   check = true
-  for field in fieldnames(typeof(r1)) 
+  diff_list = Symbol[]
+  for field in fieldnames(T) 
     if field == :files
       continue
     end
@@ -16,8 +18,13 @@ function isapprox( r1 :: T, r2 :: T; debug = false ) where T <: CMTypes
     if ! isapprox(x,y)
       check = false
       if debug
-        println(" Data in $field field differ. ")
+        push!(diff_list,field)
       end
+    end
+  end
+  if debug
+    for field in diff_list
+      println(" Data in $field field differ. ")
     end
   end
   return check
