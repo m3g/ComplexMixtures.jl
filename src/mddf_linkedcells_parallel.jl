@@ -70,7 +70,6 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
       # Spawn the calculations for this frame
       t[ifree] = ThreadPools.@tspawnat ifree+1 mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
       free[ifree] = false
-      #mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
     end
 
     # Wait a little bit before checking
