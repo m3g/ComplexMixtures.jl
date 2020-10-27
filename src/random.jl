@@ -12,3 +12,6 @@ init_random(seed) = Random.seed!(seed)
 random() = rand()
 random(arg) = rand(arg)
 
+# In Julia 1.6 it seems that the generator of rand(UnitRange) will change. If that is
+# the case, the tests will fail (the data has to be regenarated).
+#random(arg :: UnitRange{Int64}) = arg[1] + trunc(Int64,rand()*(arg[end]-arg[1]))
