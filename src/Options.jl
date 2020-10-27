@@ -36,6 +36,9 @@
   # Manually chose on how many threads to run (-1 to use all threads)
   nthreads :: Int64 = -1
 
+  # Do not show any output on the screen on execution of mddf routines
+  silent :: Bool = false
+
 end
 
 

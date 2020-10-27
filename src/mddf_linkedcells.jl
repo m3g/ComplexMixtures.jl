@@ -14,10 +14,12 @@ function mddf_linkedcells(trajectory :: Trajectory, options :: Options,
   framedata = FrameData(trajectory,R)
 
   # Print some information about this run
-  title(R,trajectory.solute,trajectory.solvent)
+  options.silent || title(R,trajectory.solute,trajectory.solvent)
 
   # Computing all minimum-distances
-  progress = Progress(R.nframes_read,1)
+  if ! options.silent 
+    progress = Progress(R.nframes_read,1)
+  end
   for iframe in 1:R.lastframe_read
 
     # reading coordinates of next frame
@@ -30,14 +32,14 @@ function mddf_linkedcells(trajectory :: Trajectory, options :: Options,
     end
     mddf_compute!(iframe,framedata,options,R)   
 
-    next!(progress)
+    options.silent || next!(progress)
   end # frames
   closetraj(trajectory)
 
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
   finalresults!(R,options,trajectory,samples)
-  println(bars)
+  options.silent || println(bars)
 
   return R
 

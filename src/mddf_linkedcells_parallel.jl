@@ -48,11 +48,13 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
   end
 
   # Print some information about this run
-  title(R[1],solute,solvent,nspawn)
+  options.silent || title(R[1],solute,solvent,nspawn)
 
   ndone = 0
   iframe_read = 0 # Counter for the frames that are actually being considered
-  progress = Progress(R[1].nframes_read,1)
+  if ! options.silent 
+    progress = Progress(R[1].nframes_read,1)
+  end
   while ndone < R[1].nframes_read
 
     # Launch for each free thread the computation of a frame
@@ -88,7 +90,7 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
         if istaskdone(t[ispawn])
           ndone += 1
           free[ispawn] = true
-          next!(progress)
+          options.silent || next!(progress)
           if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
             GC.gc() # why we need this anyway??? There should not be so much garbage.
           end
@@ -107,7 +109,7 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
   # Setup the final data structure with final values averaged over the number of frames,
   # sampling, etc, and computes final distributions and integrals
   finalresults!(R[1],options,trajectory,samples)
-  println(bars)
+  options.silent || println(bars)
 
   return R[1]
 
