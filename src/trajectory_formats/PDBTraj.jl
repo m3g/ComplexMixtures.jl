@@ -23,8 +23,8 @@ struct PDBTraj <: Trajectory
   solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-  x_solute :: Array{Float64}  # (3,solute.natoms)
-  x_solvent :: Array{Float64} # (3,solvent.natoms)
+  x_solute :: Array{Float64,2}  # (3,solute.natoms)
+  x_solvent :: Array{Float64,2} # (3,solvent.natoms)
 
   #
   # Additional data required for input/output functions
@@ -32,7 +32,7 @@ struct PDBTraj <: Trajectory
   natoms :: Int64
 
   # Auxiliary vectors to contain all coordinates of a frame on reading 
-  x_read :: Array{Float64} 
+  x_read :: Array{Float64,2} 
 
 end
 
