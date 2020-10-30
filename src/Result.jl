@@ -2,9 +2,9 @@
 # Structures to contain the results of the MDDF calculation
 #
 
-macro ResultFields()
+macro ResultFields_Start()
   ex = quote
-    nbins :: Int64
+    nbins :: Int64 
     dbulk :: Float64
     cutoff :: Float64
     d :: Vector{Float64} = zeros(nbins)
@@ -21,11 +21,30 @@ macro ResultFields()
     autocorrelation :: Bool
     solvent :: SolSummary
     solute :: SolSummary
+   end
+   esc(ex)
+end
 
+macro ResultFields_AtomsMatrix()
+  ex = quote
+    # Atomic contributions to the MDDFs
+    solute_atom :: Array{Float64,2} = zeros(nbins,solute.natomspermol)
+    solvent_atom :: Array{Float64,2} = zeros(nbins,solvent.natomspermol)
+  end
+  esc(ex)
+end
+
+macro ResultFields_AtomsVector()
+  ex = quote
     # Atomic contributions to the MDDFs
     solute_atom :: Array{Float64} = zeros(nbins,solute.natomspermol)
     solvent_atom :: Array{Float64} = zeros(nbins,solvent.natomspermol)
+  end
+  esc(ex)
+end
     
+macro ResultFields_End()
+  ex = quote
     # Data to compute a RDF and the KB integral from this count
     rdf_count :: Vector{Float64} = zeros(nbins)
     rdf_count_random :: Vector{Float64} = zeros(nbins)
@@ -52,13 +71,17 @@ macro ResultFields()
 end
 
 @with_kw_noshow struct Result
-  @ResultFields()
+  @ResultFields_Start()
+  @ResultFields_AtomsMatrix()
+  @ResultFields_End()
 end
 
 # The mutable version is used for reading saved data, because some vectors
 # need to be reshaped
 @with_kw_noshow mutable struct MutableResult
-  @ResultFields()
+  @ResultFields_Start()
+  @ResultFields_AtomsVector()
+  @ResultFields_End()
 end
 
 #
