@@ -15,8 +15,8 @@ struct PDBTraj <: Trajectory
   stream :: IOStream
   nframes :: Int64 
 
-  # This Array (3,nframes) must be filled up with the size of the periodic cell
-  sides :: Array{Float64}
+  # This vector must be filled up with the size vectors of the periodic cell
+  sides :: Vector{Vector{Float64}}
 
   # Solute and solvent data
   solute :: Selection
@@ -63,21 +63,21 @@ function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection)
   # Fill-up the sides vector of the trajectory. We assume here
   # that the sides are stored for each frame in the "CRYST1" field, for each frame.
   # Here, we exemplify the option to read all sides at once and store them in a 
-  # sides(nframes,3) array. Alternatively, the sides could be read for each frame
+  # vector. Alternatively, the sides could be read for each frame
   # independently within the "nextframe!" function, and saved as a sides(3) vector.  
   # The function "getsides", below, must be adapted accordingly to return the correct
   # sides of the periodic box in each frame.
 
-  sides = zeros(Float64,3,nframes)
+  sides = [ zeros(Float64,3) for i in 1:nframes ]
   stream = open(pdbfile,"r")
   iframe = 0
   for line in eachline(stream)
     s = split(line)
     if s[1] == "CRYST1"
       iframe = iframe + 1
-      sides[1,iframe] = parse(Float64,s[2])
-      sides[2,iframe] = parse(Float64,s[3])
-      sides[3,iframe] = parse(Float64,s[4])
+      sides[iframe][1] = parse(Float64,s[2])
+      sides[iframe][2] = parse(Float64,s[3])
+      sides[iframe][3] = parse(Float64,s[4])
     end
   end
   close(stream)
@@ -147,7 +147,7 @@ end
 function getsides(trajectory :: PDBTraj, iframe)
   # Sides is expected to be an array that contains the sides for each frame, and we return the
   # vector containing the sides of the current fraem
-  return @view(trajectory.sides[1:3,iframe]) 
+  return trajectory.sides[frame] 
 end
 
 #
