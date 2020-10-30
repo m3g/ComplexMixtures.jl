@@ -22,8 +22,8 @@ struct NamdDCD <: Trajectory
   solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (3,natoms) for each array:
-  x_solute :: Array{Float64}
-  x_solvent :: Array{Float64}
+  x_solute :: Array{Float64,2}
+  x_solvent :: Array{Float64,2}
 
   #
   # Additional properties that might be required for implementing IO (not necessary for every
