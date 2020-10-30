@@ -15,7 +15,7 @@ struct NamdDCD <: Trajectory
 
   # This vector must be filled up with the size of the periodic cell, if it
   # is not defined in the DCD file. 
-  sides :: Array{Float64}
+  sides :: Vector{Vector{Float64}}
 
   # Data structures of the solute and solvent 
   solute :: Selection
@@ -73,9 +73,9 @@ function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection)
   # be updated upon reading the frame. Alternatively, the user must provide the sides in all
   # frames by filling up an array with the box side data.
   if sides_in_dcd
-    sides = zeros(Float64,3)
+    sides = [ zeros(Float64,3) ]
   else
-    sides = zeros(Float64,nframes,3)
+    sides = [ zeros(Float64,3) for i in 1:nframes ]
   end
 
   return NamdDCD( filename, stream, nframes, 
@@ -112,9 +112,9 @@ function nextframe!( trajectory:: NamdDCD )
   # Read the sides of the box from the DCD file, otherwise they must be set manually before
   if trajectory.sides_in_dcd
     read(trajectory.stream,trajectory.sides_read)
-    trajectory.sides[1] = trajectory.sides_read[1]
-    trajectory.sides[2] = trajectory.sides_read[3]
-    trajectory.sides[3] = trajectory.sides_read[6]
+    trajectory.sides[1][1] = trajectory.sides_read[1]
+    trajectory.sides[1][2] = trajectory.sides_read[3]
+    trajectory.sides[1][3] = trajectory.sides_read[6]
   end
   
   # Read the coordinates  
@@ -152,11 +152,11 @@ end
 function getsides(trajectory :: NamdDCD, iframe)
   # In this (most common) case, sides is a vector and must only be returned
   if trajectory.sides_in_dcd
-    return trajectory.sides
+    return trajectory.sides[1]
   # otherwise, sides is an array that contains the sides for each frame, and we return the
   # vector containing the sides of the current frame
   else
-    return @view(trajectory.sides[iframe,:])
+    return trajectory.sides[iframe]
   end
 end
 
