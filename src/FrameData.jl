@@ -2,7 +2,7 @@
 # Structure to contain data needed to compute the mddf for a single frame
 #
 
-mutable struct FrameData
+mutable struct FrameData{Trajectory}
 
   trajectory :: Trajectory 
   volume_frame :: Volume
@@ -23,7 +23,7 @@ mutable struct FrameData
 end
 
 function FrameData(trajectory :: Trajectory, R :: Result ) 
-  return FrameData(trajectory :: Trajectory,                         # trajectory
+  return FrameData(trajectory,                                       # trajectory
                    Volume(R.nbins),                                  # volume_frame
                    zeros(R.nbins),                                   # rdf_count_random_frame
                    zeros(R.nbins),                                   # md_count_random_frame
