@@ -147,7 +147,7 @@ end
 function getsides(trajectory :: PDBTraj, iframe)
   # Sides is expected to be an array that contains the sides for each frame, and we return the
   # vector containing the sides of the current fraem
-  return trajectory.sides[frame] 
+  return trajectory.sides[iframe] 
 end
 
 #
@@ -159,9 +159,6 @@ closetraj( trajectory :: PDBTraj ) = close( trajectory.stream )
 # Function that returns the trajectory in position to read the first frame
 #
 firstframe( trajectory :: PDBTraj ) = seekstart( trajectory.stream )
-
-
-
 
 
 
