@@ -14,7 +14,7 @@ mutable struct FrameData
   dc :: CutoffDistances
   dmin_mol :: Vector{DminMol}
   dref_mol :: Vector{Float64}
-  x_solvent_random :: Array{Float64} 
+  x_solvent_random :: Array{Float64,2} 
 
   lc_solvent :: LinkedCells
 
