@@ -8,12 +8,17 @@
 #
 # With periodic conditions 
 #
-
 @inline function distance( x :: AbstractVector{Float64}, y :: AbstractVector{Float64}, 
                            sides :: Vector{Float64} )
-  # Wrap x relative to y
-  xnew = wrapone(x,sides,y)
-  return distance(xnew,y)
-
+  d = 0.
+  for i in 1:3
+    dx = (x[i]-y[i])%sides[i]
+    if dx > sides[i]/2
+      dx = dx - sides[i]
+    elseif dx < -sides[i]/2
+      dx = dx + sides[i]
+    end
+    d += dx^2
+  end
+  sqrt(d)
 end
-
