@@ -2,9 +2,9 @@
 # Structure to contain data needed to compute the mddf for a single frame
 #
 
-mutable struct FrameData{Trajectory}
+mutable struct FrameData{T<:Trajectory}
 
-  trajectory :: Trajectory 
+  trajectory :: T
   volume_frame :: Volume
   rdf_count_random_frame :: Vector{Float64}
   md_count_random_frame :: Vector{Float64}
