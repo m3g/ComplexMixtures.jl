@@ -3,6 +3,50 @@ using ComplexMixtures, PDBTools
 using Random
 const CM = ComplexMixtures
 
+@testset "Internals" begin
+
+  dir="./data/NAMD"
+  atoms = readPDB("$dir/structure.pdb")  
+
+  options = CM.Options(lastframe=1,seed=1234567,nthreads=1,silent=true)
+  t_options = @timed options = CM.Options(lastframe=1,seed=1234567,nthreads=1,silent=true)
+  @test t_options.bytes == 0
+
+  protein = CM.Selection(select(atoms,"protein"),nmols=1)
+  t_selection1 = @timed protein = CM.Selection(select(atoms,"protein"),nmols=1)
+  @test t_selection1.bytes == 3064544
+
+  tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
+  t_selection2 = @timed tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
+  @test t_selection2.bytes == 7080880
+
+  traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
+  t_trajectory = @timed traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
+  @test t_trajectory.bytes == 660240
+
+  samples = CM.Samples(md=(traj.solvent.nmols-1)/2,random=options.n_random_samples)
+  t_samples = @timed samples = CM.Samples(md=(traj.solvent.nmols-1)/2,random=options.n_random_samples)
+  @test t_samples.bytes == 256
+
+  R = CM.Result(traj,options)
+  t_result = @timed R = CM.Result(traj,options)
+  @test t_result.bytes == 5968352
+
+  framedata = CM.FrameData(traj,R)
+  t_framedata = @timed framedata = CM.FrameData(traj,R)
+  @test t_framedata.bytes == 229984
+
+  CM.nextframe!(traj)
+  t_nextframe = @timed CM.nextframe!(traj)
+  @test t_nextframe.bytes == 624
+
+  iframe = 1
+  CM.mddf_frame!(iframe,framedata,options,R)
+  t_mddf_frame = @timed CM.mddf_frame!(iframe,framedata,options,R)
+  @test t_mddf_frame.bytes == 144
+
+end
+
 @testset "NAMD" begin
 
   #
@@ -163,6 +207,3 @@ end
   @test t
 
 end
-
-
-
