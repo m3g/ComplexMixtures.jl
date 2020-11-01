@@ -115,15 +115,16 @@ end
 function nextframe!( trajectory :: PDBTraj ) 
 
   iatom = 0
-  line = [ "START" ]
-  while line[1] != "END"
+  record = ""
+  while (length(record) < 3 || record[1:3] != "END")
     record = readline(trajectory.stream)
-    line = split(record)
-    if line[1] == "ATOM" || line[1] == "HETATM"
-      iatom = iatom + 1
-      trajectory.x_read[1,iatom] = parse(Float64,record[31:38])
-      trajectory.x_read[2,iatom] = parse(Float64,record[39:46])
-      trajectory.x_read[3,iatom] = parse(Float64,record[47:54])
+    if length(record) >= 6 
+      if record[1:4] == "ATOM" || record[1:6] == "HETATM"
+        iatom = iatom + 1
+        trajectory.x_read[1,iatom] = parse(Float64,record[31:38])
+        trajectory.x_read[2,iatom] = parse(Float64,record[39:46])
+        trajectory.x_read[3,iatom] = parse(Float64,record[47:54])
+      end
     end
   end
 
