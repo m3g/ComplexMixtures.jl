@@ -15,6 +15,24 @@ tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
 water = CM.Selection(select(atoms,"water"),natomspermol=3)
 
 println(" --------------------------------------------------------------")
+println(" Compiling - single thread ")
+options = CM.Options(stride=1,seed=1234567,nthreads=1,silent=true)
+traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
+@time R = CM.mddf(traj,options);
+println(" Compiling - multi-threaded ")
+options = CM.Options(stride=1,seed=1234567,silent=true)
+traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
+@time R = CM.mddf(traj,options);
+println(" Compiling - self single thread ")
+options = CM.Options(stride=1,seed=1234567,nthreads=1,silent=true)
+traj = CM.Trajectory("$dir/trajectory.dcd",tmao) 
+@time R = CM.mddf(traj,options);
+println(" Compiling - self multi-threaded ")
+options = CM.Options(stride=1,seed=1234567,silent=true)
+traj = CM.Trajectory("$dir/trajectory.dcd",tmao) 
+@time R = CM.mddf(traj,options);
+
+println(" --------------------------------------------------------------")
 println(" Protein-TMAO - Single threaded ")
 options = CM.Options(stride=1,seed=1234567,nthreads=1,silent=true)
 traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
@@ -34,7 +52,7 @@ traj = CM.Trajectory("$dir/trajectory.dcd",water,tmao)
 @time R = CM.mddf(traj,options);
 
 println(" --------------------------------------------------------------")
-println(" water-tmao - nthreads = $nthreads ")
+println(" Water-TMAO - nthreads = $nthreads ")
 options = CM.Options(stride=1,seed=1234567,silent=true)
 traj = CM.Trajectory("$dir/trajectory.dcd",water,tmao) 
 @time R = CM.mddf(traj,options);
