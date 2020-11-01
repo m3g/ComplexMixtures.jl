@@ -22,7 +22,7 @@ const CM = ComplexMixtures
 
   traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
   t_trajectory = @allocated traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
-  @test t_trajectory == 660240
+  @test abs(t_trajectory - 660240) < 8
 
   samples = CM.Samples(md=(traj.solvent.nmols-1)/2,random=options.n_random_samples)
   t_samples = @allocated samples = CM.Samples(md=(traj.solvent.nmols-1)/2,random=options.n_random_samples)
