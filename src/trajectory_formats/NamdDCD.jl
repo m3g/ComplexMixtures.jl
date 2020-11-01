@@ -107,7 +107,7 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!( trajectory:: NamdDCD )
+function nextframe!( trajectory :: NamdDCD )
 
   # Read the sides of the box from the DCD file, otherwise they must be set manually before
   if trajectory.sides_in_dcd
