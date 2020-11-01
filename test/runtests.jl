@@ -72,7 +72,7 @@ const CM = ComplexMixtures
   CM.save(R,"test.json")
   R_load = CM.load("test.json")
   @test R_load ≈ R_save
-  rm("./test.json",force=true)
+  #rm("./test.json",force=true)
 
   # Example 2: water-tmao
   
