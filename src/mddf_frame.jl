@@ -45,7 +45,10 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   # Will wrap everthing relative to the reference atom of the first molecule
   # and move everything such that that center is in the origin. This is important
   # to simplify the computation of cell indexes, as the minimum coordinates are 
-  # automatically -side/2 at each direction
+  # automatically -side/2 at each direction. The reason for wrapping to the solute
+  # center and not to the origin is that if the solute is a protein, for exemple,
+  # the protein gets centered, and hardly ever it will be necessary to wrap the 
+  # coordinates afterwards, accelerating the computation. 
   @. solute_center = @view(x_solute[1:3,R.irefatom])
   wrap!(x_solute,sides,solute_center)
   center_to_origin!(x_solute,solute_center)
