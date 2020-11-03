@@ -6,7 +6,7 @@
 
 import Chemfiles
 
-struct ChemFile <: Trajectory
+struct ChemFile{T<:Vf3} <: Trajectory
 
   #
   # Mandatory data for things to work
@@ -17,15 +17,15 @@ struct ChemFile <: Trajectory
   nframes :: Int64 
 
   # Vector wthat will be fed with the sizes of the periodic box 
-  sides :: Vector{Float64}
+  sides :: Vector{T}
 
   # Solute and solvent data
   solute :: Selection
   solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-  x_solute :: Array{Float64,2}  # (3,solute.natoms)
-  x_solvent :: Array{Float64,2} # (3,solvent.natoms)
+  x_solute :: Vector{T}  # solute.natoms vectors of length 3
+  x_solvent :: Vector{T} # solvent.natoms vectors of lenght 3
 
   #
   # Additional data required for input/output functions
@@ -64,10 +64,10 @@ function ChemFile( filename :: String, solute :: Selection, solvent :: Selection
                    format, # trajectory format, is provided by the user
                    stream,
                    nframes, 
-                   sides, # array containing box sides
+                   [ Vf3(sides) ], # array containing box sides
                    solute, solvent,
-                   zeros(Float64,3,solute.natoms),    
-                   zeros(Float64,3,solvent.natoms),  
+                   zeros(Vf3,solute.natoms),    
+                   zeros(Vf3,solvent.natoms),  
                    natoms, # Total number of atoms
                  )
 end
@@ -77,7 +77,7 @@ function Base.show( io :: IO, trajectory :: ChemFile )
   println(" Trajectory read by Chemfiles with: ")
   println("    $(trajectory.nframes) frames.")
   println("    $(trajectory.natoms) atoms.")
-  println("    PBC sides in current frame: $(trajectory.sides)")
+  println("    PBC sides in current frame: $(trajectory.sides[1])")
 end
 
 #
@@ -94,19 +94,19 @@ function nextframe!( trajectory :: ChemFile )
   frame = Chemfiles.read(trajectory.stream[1])
   positions = Chemfiles.positions(frame)
   sides = Chemfiles.lengths(Chemfiles.UnitCell(frame))
-  @. trajectory.sides = sides
+  trajectory.sides = Vf3(sides)
 
   # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
   # but the code in general is more clear aftwerwards by doing this)
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[1,i] = positions[1,trajectory.solute.index[i]]
-    trajectory.x_solute[2,i] = positions[2,trajectory.solute.index[i]]
-    trajectory.x_solute[3,i] = positions[3,trajectory.solute.index[i]]
+    trajectory.x_solute[i] = Vf3(positions[1,trajectory.solute.index[i]],
+                                 positions[2,trajectory.solute.index[i]],
+                                 positions[3,trajectory.solute.index[i]])
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[1,i] = positions[1,trajectory.solvent.index[i]]
-    trajectory.x_solvent[2,i] = positions[2,trajectory.solvent.index[i]]
-    trajectory.x_solvent[3,i] = positions[3,trajectory.solvent.index[i]]
+    trajectory.x_solvent[i] = Vf3(positions[1,trajectory.solvent.index[i]],
+                                  positions[2,trajectory.solvent.index[i]],
+                                  positions[3,trajectory.solvent.index[i]])
   end
 
 end

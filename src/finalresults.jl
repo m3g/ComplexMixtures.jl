@@ -78,5 +78,5 @@ function finalresults!(R :: Result, options :: Options, trajectory :: Trajectory
 
   end
 
-  return nothing
+  nothing
 end

@@ -5,7 +5,7 @@
 # Modifies the data in the lc structure
 #
                   
-function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells)
+function initcells!(x :: Vector{T}, box :: Box, lc :: LinkedCells) where T <: Vf3
 
   # Count the number of boxes and checks if there is a problem with dimensions
   nboxes = box.nc[1]*box.nc[2]*box.nc[3] 
@@ -20,14 +20,14 @@ function initcells!(x :: AbstractArray{Float64}, box :: Box, lc :: LinkedCells)
   @. lc.nextatom = 0
 
   # Initialize cell, firstatom and nexatom
-  for iat in 1:size(x,2)
-    ic, jc, kc = icell3D(@view(x[1:3,iat]),box)
+  for iat in eachindex(x)
+    ic, jc, kc = icell3D(x[iat],box)
     icell = icell1D(box.nc,ic,jc,kc)
     lc.nextatom[iat] = lc.firstatom[icell]
     lc.firstatom[icell] = iat
   end
 
-  return nothing
+  nothing
 end
 
  

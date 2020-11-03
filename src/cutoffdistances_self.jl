@@ -9,19 +9,19 @@
 #
 
 function cutoffdistances_self!(cutoff :: Float64,
-                               x_solute :: AbstractArray{Float64},
-                               x_solvent :: AbstractArray{Float64},
+                               x_solute :: AbstractVector{T},
+                               x_solvent :: Vector{T},
                                lc_solvent :: LinkedCells,
                                box :: Box, 
                                dc :: CutoffDistances, 
-                               solvent :: Selection, imol :: Int64)
+                               solvent :: Selection, imol :: Int64) where T <: Vf3
 
   # Reset the dc structure 
   reset!(dc)
 
   # Loop over solute atoms
-  for iat in 1:size(x_solute,2)
-    xat = @view(x_solute[1:3,iat])
+  for iat in eachindex(x_solute)
+    xat = x_solute[iat]
     # Check the cell of this atom
     i, j, k = icell3D(xat,box)
     # Loop over vicinal cells to compute distances to solvent atoms, and

@@ -16,5 +16,5 @@ function partialsort_cutoff!(x,cutoff; by = x -> x)
       end
     end
   end
-  return nothing
+  nothing
 end

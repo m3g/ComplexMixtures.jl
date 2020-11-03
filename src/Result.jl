@@ -130,7 +130,7 @@ function Result( trajectory :: Trajectory, options :: Options; irefatom = -1 )
   if irefatom == -1
     if options.irefatom == -1
       nextframe!(trajectory)
-      xfirst = @view(trajectory.x_solvent[1:3,1:trajectory.solvent.natomspermol])
+      xfirst = trajectory.x_solvent[1:trajectory.solvent.natomspermol]
       cm = centerofcoordinates(xfirst)
       dmin, one, irefatom = minimumdistance(cm,xfirst)
       firstframe(trajectory)

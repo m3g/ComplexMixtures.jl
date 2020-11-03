@@ -9,14 +9,11 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   volume_frame = framedata.volume_frame
   rdf_count_random_frame = framedata.rdf_count_random_frame
   md_count_random_frame = framedata.md_count_random_frame
-  box = framedata.box
-  solute_center = framedata.solute_center
   dc = framedata.dc
   dmin_mol = framedata.dmin_mol
   dref_mol = framedata.dref_mol
   x_solvent_random = framedata.x_solvent_random
   lc_solvent = framedata.lc_solvent
-  moveaux = framedata.moveaux
   solute = trajectory.solute
   solvent = trajectory.solvent
   x_solute = trajectory.x_solute
@@ -37,19 +34,16 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
 
   # Add the box side information to the box structure, in this frame
-  @. box.sides = sides
-  # Compute the number of cells in each dimension
-  @. box.nc = max(1,trunc(Int64,box.sides/(R.cutoff/box.lcell)))
-  @. box.l = box.sides/box.nc
+  box = Box(options.lcell,sides,R.cutoff) 
 
   # Will wrap everthing relative to the reference atom of the first molecule
   # and move everything such that that center is in the origin. This is important
   # to simplify the computation of cell indexes, as the minimum coordinates are 
   # automatically -side/2 at each direction. The reason for wrapping to the solute
-  # center and not to the origin is that if the solute is a protein, for exemple,
+  # center and not to the origin is that if the solute is a protein, for example,
   # the protein gets centered, and hardly ever it will be necessary to wrap the 
   # coordinates afterwards, accelerating the computation. 
-  @. solute_center = @view(x_solute[1:3,R.irefatom])
+  solute_center = x_solute[R.irefatom]
   wrap!(x_solute,sides,solute_center)
   center_to_origin!(x_solute,solute_center)
   wrap!(x_solvent,sides,solute_center)
@@ -104,7 +98,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
       # Indexes of the random molecule in random array
       x_rnd = viewmol(j,x_solvent_random,solvent)
       # Generate new random coordinates (translation and rotation) for this molecule
-      random_move!(x_ref,R.irefatom,sides,x_rnd,moveaux)
+      random_move!(x_ref,R.irefatom,sides,x_rnd)
     end
 
     # wrap random solvent coordinates to box, with the center at the origin
@@ -131,5 +125,5 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
   update_counters_frame!(R, rdf_count_random_frame, md_count_random_frame, volume_frame, 
                          solute, solvent, n_solvent_in_bulk)
  
-  return nothing
+  nothing
 end

@@ -21,14 +21,11 @@ function eulermat( beta :: Float64,
    theta = pi * theta / 180.
    A = eulermat( beta, gamma, theta )
    return A
-
 end
 
 function eulermat( beta :: Float64,
                    gamma :: Float64,
                    theta :: Float64 )
-
-  A = Matrix{Float64}(undef,3,3)
 
   c1 = cos(beta) 
   s1 = sin(beta) 
@@ -37,46 +34,15 @@ function eulermat( beta :: Float64,
   c3 = cos(theta) 
   s3 = sin(theta)
 
-  A[1,1] = c2*c3
-  A[1,2] = c1*s3 + c3*s1*s2
-  A[1,3] = s1*s3 - c1*c3*s2
-
-  A[2,1] = -c2*s3
-  A[2,2] = c1*c3 - s1*s2*s3
-  A[2,3] = c1*s2*s3 + c3*s1
-
-  A[3,1] = s2
-  A[3,2] = -c2*s1
-  A[3,3] = c1*c2         
-
+  A = SMatrix{3,3,Float64}( c2*c3,
+                            c1*s3 + c3*s1*s2,
+                            s1*s3 - c1*c3*s2,
+                            -c2*s3,
+                            c1*c3 - s1*s2*s3,
+                            c1*s2*s3 + c3*s1,
+                            s2,
+                            -c2*s1,
+                            c1*c2 )
   return A
-
 end
 
-# Function that performs the same computation, but uptating the provided
-# auxiliary structure, to avoid new allocations
-
-function eulermat!( aux :: MoveAux )
-
-  c1 = cos(aux.angles[1]) 
-  s1 = sin(aux.angles[1]) 
-  c2 = cos(aux.angles[2]) 
-  s2 = sin(aux.angles[2]) 
-  c3 = cos(aux.angles[3]) 
-  s3 = sin(aux.angles[3])
-
-  aux.A[1,1] = c2*c3
-  aux.A[1,2] = c1*s3 + c3*s1*s2
-  aux.A[1,3] = s1*s3 - c1*c3*s2
-
-  aux.A[2,1] = -c2*s3
-  aux.A[2,2] = c1*c3 - s1*s2*s3
-  aux.A[2,3] = c1*s2*s3 + c3*s1
-
-  aux.A[3,1] = s2
-  aux.A[3,2] = -c2*s1
-  aux.A[3,3] = c1*c2         
-
-  return nothing
-end
- 

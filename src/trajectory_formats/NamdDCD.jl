@@ -4,7 +4,7 @@
 
 import FortranFiles
 
-struct NamdDCD <: Trajectory
+struct NamdDCD{T<:Vf3} <: Trajectory
 
   #
   # Mandatory data for things to work
@@ -15,15 +15,15 @@ struct NamdDCD <: Trajectory
 
   # This vector must be filled up with the size of the periodic cell, if it
   # is not defined in the DCD file. 
-  sides :: Vector{Vector{Float64}}
+  sides :: Vector{T}
 
   # Data structures of the solute and solvent 
   solute :: Selection
   solvent :: Selection
 
   # Coordinates of the solute and solvent atoms in a frame (3,natoms) for each array:
-  x_solute :: Array{Float64,2}
-  x_solvent :: Array{Float64,2}
+  x_solute :: Vector{T}
+  x_solvent :: Vector{T}
 
   #
   # Additional properties that might be required for implementing IO (not necessary for every
@@ -73,16 +73,16 @@ function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection)
   # be updated upon reading the frame. Alternatively, the user must provide the sides in all
   # frames by filling up an array with the box side data.
   if sides_in_dcd
-    sides = [ zeros(Float64,3) ]
+    sides = zeros(Vf3,1) 
   else
-    sides = [ zeros(Float64,3) for i in 1:nframes ]
+    sides = zeros(Vf3,nframes) 
   end
 
   return NamdDCD( filename, stream, nframes, 
                   sides, # sides vector (if in dcd) or array to be filled up later
                   solute, solvent,
-                  zeros(Float64,3,solute.natoms), # solute atom coordinates
-                  zeros(Float64,3,solvent.natoms), # solvent atom coordinates
+                  zeros(Vf3,solute.natoms), # solute atom coordinates
+                  zeros(Vf3,solvent.natoms), # solvent atom coordinates
                   sides_in_dcd, lastatom,
                   Vector{Float64}(undef,6), # auxiliary vector to read sides
                   Vector{Float32}(undef,lastatom), # auxiliary x
@@ -112,9 +112,9 @@ function nextframe!( trajectory :: NamdDCD )
   # Read the sides of the box from the DCD file, otherwise they must be set manually before
   if trajectory.sides_in_dcd
     read(trajectory.stream,trajectory.sides_read)
-    trajectory.sides[1][1] = trajectory.sides_read[1]
-    trajectory.sides[1][2] = trajectory.sides_read[3]
-    trajectory.sides[1][3] = trajectory.sides_read[6]
+    trajectory.sides[1] = Vf3(trajectory.sides_read[1],
+                              trajectory.sides_read[3],
+                              trajectory.sides_read[6])
   end
   
   # Read the coordinates  
@@ -124,16 +124,17 @@ function nextframe!( trajectory :: NamdDCD )
 
   # Save coordinates of solute and solvent in trajectory arrays
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[1,i] = trajectory.x_read[trajectory.solute.index[i]]
-    trajectory.x_solute[2,i] = trajectory.y_read[trajectory.solute.index[i]]
-    trajectory.x_solute[3,i] = trajectory.z_read[trajectory.solute.index[i]]
+    trajectory.x_solute[i] = Vf3(trajectory.x_read[trajectory.solute.index[i]],
+                                 trajectory.y_read[trajectory.solute.index[i]],
+                                 trajectory.z_read[trajectory.solute.index[i]])
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[1,i] = trajectory.x_read[trajectory.solvent.index[i]]
-    trajectory.x_solvent[2,i] = trajectory.y_read[trajectory.solvent.index[i]]
-    trajectory.x_solvent[3,i] = trajectory.z_read[trajectory.solvent.index[i]]
+    trajectory.x_solvent[i] = Vf3(trajectory.x_read[trajectory.solvent.index[i]],
+                                  trajectory.y_read[trajectory.solvent.index[i]],
+                                  trajectory.z_read[trajectory.solvent.index[i]])
   end
 
+  nothing
 end
 
 #

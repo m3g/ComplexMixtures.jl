@@ -9,7 +9,12 @@ module ComplexMixtures
   using StructTypes
   using JSON3
   using ThreadPools
+  using StaticArrays
   import Random
+
+  # Type of vector containing performance-critical coordinates 
+  Vf3 = SVector{3,Float64}
+  Vi3 = SVector{3,Int64}
 
   # Input and Output data structures
   include("./FileOperations.jl")
@@ -21,7 +26,6 @@ module ComplexMixtures
 
   # Function to rigid-body move molecules
   include("./random.jl")
-  include("./MoveAux.jl")
   include("./centerofcoordinates.jl")
   include("./eulermat.jl")
   include("./random_move.jl")
