@@ -34,15 +34,15 @@ function eulermat( beta :: Float64,
   c3 = cos(theta) 
   s3 = sin(theta)
 
-  A = SMatrix{3,3,Float64}( c2*c3,
-                            c1*s3 + c3*s1*s2,
-                            s1*s3 - c1*c3*s2,
-                            -c2*s3,
-                            c1*c3 - s1*s2*s3,
-                            c1*s2*s3 + c3*s1,
-                            s2,
-                            -c2*s1,
-                            c1*c2 )
+  A = SMatrix{3,3,Float64,9}( c2*c3,
+                              c1*s3 + c3*s1*s2,
+                              s1*s3 - c1*c3*s2,
+                              -c2*s3,
+                              c1*c3 - s1*s2*s3,
+                              c1*s2*s3 + c3*s1,
+                              s2,
+                              -c2*s1,
+                              c1*c2 )
   return A
 end
 
