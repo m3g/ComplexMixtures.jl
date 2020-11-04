@@ -13,8 +13,8 @@ module ComplexMixtures
   import Random
 
   # Type of vector containing performance-critical coordinates 
-  Vf3 = SVector{3,Float64}
-  Vi3 = SVector{3,Int64}
+  const Vf3 = SVector{3,Float64}
+  const Vi3 = SVector{3,Int64}
 
   # Input and Output data structures
   include("./FileOperations.jl")
