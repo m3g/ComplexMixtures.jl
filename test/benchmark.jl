@@ -42,6 +42,16 @@ traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao)
 @time R = CM.mddf(traj,options_multi);
   
 println(" --------------------------------------------------------------")
+println(" Protein-Water - Single threaded ")
+traj = CM.Trajectory("$dir/trajectory.dcd",protein,water) 
+@time R = CM.mddf(traj,options_single);
+
+println(" --------------------------------------------------------------")
+println(" Protein-Water - nthreads = $nthreads ")
+traj = CM.Trajectory("$dir/trajectory.dcd",protein,water) 
+@time R = CM.mddf(traj,options_multi);
+  
+println(" --------------------------------------------------------------")
 println(" Water-TMAO - Single threaded ")
 traj = CM.Trajectory("$dir/trajectory.dcd",water,tmao) 
 @time R = CM.mddf(traj,options_single);
