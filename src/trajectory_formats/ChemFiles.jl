@@ -94,7 +94,7 @@ function nextframe!( trajectory :: ChemFile )
   frame = Chemfiles.read(trajectory.stream[1])
   positions = Chemfiles.positions(frame)
   sides = Chemfiles.lengths(Chemfiles.UnitCell(frame))
-  trajectory.sides = Vf3(sides)
+  trajectory.sides[1] = Vf3(sides)
 
   # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
   # but the code in general is more clear aftwerwards by doing this)
@@ -115,7 +115,7 @@ end
 # case, returns the 3-element vector corresponding to the box sides of the given frame,
 # it expected that the "nextframe" function fed this information already to the
 # trajectory.sides vector in the current frame
-getsides(trajectory :: ChemFile, iframe) = trajectory.sides
+getsides(trajectory :: ChemFile, iframe) = trajectory.sides[1]
 
 #
 # Function that closes the IO Stream of the trajectory
