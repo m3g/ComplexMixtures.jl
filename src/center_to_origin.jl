@@ -1,11 +1,9 @@
 #
 # Translates atoms of vectory in x array such that center is in the origin
 #
-function center_to_origin!(x :: AbstractArray{Float64}, center :: AbstractVector{Float64})
-  for i in 1:size(x,2)
-    for j in 1:3
-      x[j,i] = x[j,i] - center[j]
-    end
+function center_to_origin!(x :: Vector{T}, center :: T) where T <: Vf3
+  for i in eachindex(x)
+    x[i] = x[i] - center
   end
-  return nothing
+  nothing
 end

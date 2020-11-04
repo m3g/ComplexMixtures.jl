@@ -30,11 +30,11 @@ const CM = ComplexMixtures
 
   R = CM.Result(traj,options)
   t_result = @allocated R = CM.Result(traj,options)
-  @test t_result == 5968352
+  @test t_result == 5968688
 
   framedata = CM.FrameData(traj,R)
   t_framedata = @allocated framedata = CM.FrameData(traj,R)
-  @test t_framedata == 229984
+  @test t_framedata == 228528
 
   CM.nextframe!(traj)
   t_nextframe = @allocated CM.nextframe!(traj)

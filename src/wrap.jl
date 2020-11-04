@@ -1,65 +1,48 @@
 #
-# Functions that wrap the coordinates (x{N,3} array) to obtain minimum images
-# around a defined center
+# Functions that wrap the coordinates 
 # 
-# It modifies the coordinates input vector
+# It modifies the coordinates of the input vector
 #
 
-
-function wrap!(x :: AbstractArray{Float64}, 
-               sides :: AbstractVector{Float64}, 
-               center :: AbstractVector{Float64})
-  for i in 1:size(x,2)
-    wrapone!(@view(x[1:3,i]),sides,center)
+#
+# Wrap to a given center of coordinates
+#
+function wrap!(x :: AbstractVector{T}, 
+               sides :: T, 
+               center :: T) where T <: Vf3
+  for i in eachindex(x)
+    x[i] = wrapone(x[i],sides,center)
   end
-  return nothing
+  nothing
 end
 
-@inline function wrapone!(x :: AbstractVector{Float64}, 
-                          sides :: AbstractVector{Float64}, 
-                          center :: AbstractVector{Float64})
-  for i in 1:3
-    x[i] = (x[i]-center[i])%sides[i]
-    if x[i] > sides[i]/2  
-      x[i] = x[i] - sides[i] 
-    elseif x[i] < -sides[i]/2 
-      x[i] = x[i] + sides[i]
-    end
-    x[i] = x[i] + center[i]
+@inline function wrapone(x :: T, sides :: T, center :: T) where T <: Vf3
+  s = @. (x-center)%sides
+  s = @. wrapx(s,sides) + center
+  return s
+end
+
+@inline function wrapx(x :: Float64, s :: Float64)
+  if x > s/2
+    x = x - s
+  elseif x < -s/2
+    x = x + s
   end
-  return nothing
+  x
 end
 
-# Without modifying input x
-
-@inline function wrapone(x :: AbstractVector{Float64},
-                         sides :: AbstractVector{Float64},
-                         center :: AbstractVector{Float64})
-  xnew = copy(x)
-  wrapone!(xnew,sides,center)
-  return xnew
-end
-
-# If only the sides are provided, wrap to origin
-
-function wrap!(x :: AbstractArray{Float64}, 
-               sides :: AbstractVector{Float64})
-  for i in 1:size(x,2)
-    wrapone!(@view(x[1:3,i]),sides)
+#
+# Wrap to origin
+#
+function wrap!(x :: AbstractVector{T}, sides :: T) where T <: Vf3
+  for i in eachindex(x)
+    x[i] = wrapone(x[i],sides)
   end
-  return nothing
+  nothing
 end
 
-@inline function wrapone!(x :: AbstractVector{Float64}, 
-                          sides :: AbstractVector{Float64})
-  for i in 1:3
-    x[i] = x[i]%sides[i]
-    if x[i] > sides[i]/2  
-      x[i] = x[i] - sides[i] 
-    elseif x[i] < -sides[i]/2 
-      x[i] = x[i] + sides[i]
-    end
-  end
-  return nothing
+@inline function wrapone(x :: T, sides :: T) where T <: Vf3
+  s = @. x%sides
+  s = @. wrapx(s,sides)
+  return s
 end
-

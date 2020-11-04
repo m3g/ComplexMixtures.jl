@@ -118,6 +118,6 @@ function updatecounters!(R :: Result,
     i = i + 1
   end
   
-  return nothing
+  nothing
 end
 

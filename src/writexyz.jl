@@ -1,15 +1,16 @@
 #
 # Print test xyz file
 #
-function writexyz(x :: AbstractArray{Float64}, file :: String)
+function writexyz(x :: Vector{T}, file :: String) where T <: Vf3
   f = open(file,"w")
-  println(f,size(x,2))
+  nx = length(x)
+  println(f,nx)
   println(f,"title")
-  for i in 1:size(x,1)
-    println(f,"H $(x[1,i]) $(x[2,i]) $(x[3,i])")
+  for i in 1:nx
+    println(f,"H $(x[i][1]) $(x[i][2]) $(x[i][3])")
   end
   close(f)
-  return nothing
+  nothing
 end
 
 

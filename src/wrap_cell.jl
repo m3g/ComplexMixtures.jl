@@ -1,7 +1,7 @@
 # Given the indexes of a cell, return the periodic cell which correspondst to
 # it, if the cell is outside the main box
 
-function wrap_cell(nc :: Vector{Int64}, i :: Int64, j :: Int64, k :: Int64)
+function wrap_cell(nc :: T, i :: Int64, j :: Int64, k :: Int64) where T <: Vi3
 
   if i < 1
     i = nc[1] + i

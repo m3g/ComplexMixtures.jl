@@ -2,7 +2,7 @@
 # Returns the i,j,k coordinates of the cell from the coordinates of an atom and box properties
 #
 
-function icell3D(x :: AbstractVector{Float64}, box :: Box)
+function icell3D(x :: T, box :: Box) where T <: Vf3
   i = trunc(Int64,(x[1]+box.sides[1]/2)/box.l[1])+1
   j = trunc(Int64,(x[2]+box.sides[2]/2)/box.l[2])+1
   k = trunc(Int64,(x[3]+box.sides[3]/2)/box.l[3])+1
@@ -16,7 +16,7 @@ end
 
 # if the number of cells in each dimension is different
 
-function icell3D(n :: Vector{Int64}, i1D :: Int64)
+function icell3D(n :: T, i1D :: Int64) where T <: Vi3
   jk = i1D%(n[2]*n[3])
   if jk == 0
     jk = n[2]*n[3]
@@ -44,7 +44,7 @@ end
 
 # If the two dimensions are different
 
-function icell2D(n :: Vector{Int64}, i1D :: Int64)
+function icell2D(n :: T, i1D :: Int64) where T <: Vi3
   j = i1D%n[2]
   if j == 0
     j = n[2]

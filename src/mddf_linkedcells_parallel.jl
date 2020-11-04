@@ -72,9 +72,7 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
       tframe[ifree] = iframe
       @. framedata[ifree].trajectory.x_solute = trajectory.x_solute
       @. framedata[ifree].trajectory.x_solvent = trajectory.x_solvent
-      for iside in eachindex(trajectory.sides)
-        @. framedata[ifree].trajectory.sides[iside] = trajectory.sides[iside]
-      end
+      @. framedata[ifree].trajectory.sides = trajectory.sides
       # Spawn the calculations for this frame
       t[ifree] = ThreadPools.@tspawnat ifree+1 mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
       free[ifree] = false

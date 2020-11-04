@@ -6,14 +6,14 @@
 #
 
 function cutoffdcell_self!(cutoff :: Float64, 
-                           iat :: Int64, xat :: AbstractArray{Float64},
-                           x_solvent :: AbstractArray{Float64},
+                           iat :: Int64, xat :: T,
+                           x_solvent :: Vector{T},
                            lc_solvent :: LinkedCells,
                            box :: Box,
                            i :: Int64, j :: Int64, k :: Int64,
                            dc :: CutoffDistances,
                            solvent :: Selection,
-                           imol :: Int64)
+                           imol :: Int64) where T <: Vf3
 
   # Check if this box needs to be wrapped. If so, the distance calculation has to take
   # that in consideration
@@ -36,9 +36,9 @@ function cutoffdcell_self!(cutoff :: Float64,
       continue    
     end
     if wrapped 
-      d = distance(@view(x_solvent[1:3,jat]),xat,box.sides)
+      d = distance(x_solvent[jat],xat,box.sides)
     else
-      d = distance(@view(x_solvent[1:3,jat]),xat)
+      d = distance(x_solvent[jat],xat)
     end
     if d < cutoff
       dc.nd[1] += 1
@@ -54,5 +54,5 @@ function cutoffdcell_self!(cutoff :: Float64,
     jat = lc_solvent.nextatom[jat]
   end
 
-  return nothing
+  nothing
 end
