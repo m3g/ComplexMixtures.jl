@@ -39,7 +39,7 @@ solvent selections, and running the calculation on the trajectory.
 To define the protein as the solute, we will use the PDBTools package,
 which provides a handy selection syntax. First, read the PDB file using 
 ```julia
-atoms = PDBTools.readPDB("./system.pdb")
+atoms = readPDB("./system.pdb")
 
 ```
 Then, let us select the protein atoms (here we are using the `PDBTools.select` function):
@@ -171,11 +171,11 @@ using ComplexMixtures
 using Plots
 
 # Load PDB file of the system
-atoms = PDBTools.readPDB("./system.pdb")
+atoms = readPDB("./system.pdb")
 
 # Select the protein and the TMAO molecules
-protein = PDBTools.select(atoms,"protein")
-tmao = PDBTools.select(atoms,"resname TMAO")
+protein = select(atoms,"protein")
+tmao = select(atoms,"resname TMAO")
 
 # Setup solute and solvent structures
 solute = ComplexMixtures.Selection(protein,nmols=1)
