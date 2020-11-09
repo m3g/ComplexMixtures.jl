@@ -96,18 +96,18 @@ plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol")
 
 ## Units
 
-* The distance is assumed to be in ``\textrm{\AA}``, as this is the most common
+* The distance is assumed to be in Å, as this is the most common
   distance units in molecular simulations. The coordinates of the atoms
-  are assumed be provided in ``\textrm{\AA}``. 
+  are assumed be provided in Å. 
 
 * The minimum-distance distribution function is unit-less, since it is the
   ratio of the density at each distance divided by an ideal-gas density.
 
-* The Kirkwood-Buff integrals are returned in ``\textrm{cm}^3~\textrm{mol}^{-1}``, if the
-  coordinates were provided in ``\textrm{\AA}``.
+* The Kirkwood-Buff integrals are returned in cm³ mol⁻¹, if the
+  coordinates were provided in Å.
 
 !!! warning
-    If the coordinates are not in ``\textrm{\AA}``, the calculation will 
+    If the coordinates are not in Å, the calculation will 
     proceed normaly, but the units of the KB integrals, which has units
     of volume per mol, should be
     converted to conform the length unit provided. 
