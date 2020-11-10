@@ -30,8 +30,9 @@
   GC :: Bool = true
   GC_threshold :: Float64 = 0.1
 
-  # Seed for random number generator (use -1 to get non-reproducible runs)
-  seed :: Int64 = 1234567
+  # Random number generator options
+  seed :: Int64 = 321
+  StableRNG :: Bool = false
 
   # Manually chose on how many threads to run (-1 to use all threads)
   nthreads :: Int64 = -1
@@ -40,5 +41,4 @@
   silent :: Bool = false
 
 end
-
 

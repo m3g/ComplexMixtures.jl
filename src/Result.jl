@@ -58,7 +58,7 @@ macro ResultFields_End()
     volume :: Volume = Volume(nbins)
 
     # Options of the calculation
-    options :: Options
+    options :: Options{T}
     irefatom :: Int64
     lastframe_read :: Int64
     nframes_read :: Int64
@@ -70,7 +70,7 @@ macro ResultFields_End()
   esc(ex)
 end
 
-@with_kw_noshow struct Result
+@with_kw_noshow struct Result{T}
   @ResultFields_Start()
   @ResultFields_AtomsMatrix()
   @ResultFields_End()
@@ -78,7 +78,7 @@ end
 
 # The mutable version is used for reading saved data, because some vectors
 # need to be reshaped
-@with_kw_noshow mutable struct MutableResult
+@with_kw_noshow mutable struct MutableResult{T}
   @ResultFields_Start()
   @ResultFields_AtomsVector()
   @ResultFields_End()
