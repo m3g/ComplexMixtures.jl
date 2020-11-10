@@ -5,7 +5,7 @@
 #  
 
 function mddf_linkedcells(trajectory :: Trajectory, options :: Options, 
-                          samples :: Samples, mddf_compute!)  
+                          samples :: Samples, RNG, mddf_compute!)  
 
   # Initializing the structure that carries all results
   R = Result(trajectory,options)
@@ -30,7 +30,7 @@ function mddf_linkedcells(trajectory :: Trajectory, options :: Options,
     if iframe%options.stride != 0
       continue
     end
-    mddf_compute!(iframe,framedata,options,R)   
+    mddf_compute!(iframe,framedata,options,RNG,R)   
 
     options.silent || next!(progress)
   end # frames

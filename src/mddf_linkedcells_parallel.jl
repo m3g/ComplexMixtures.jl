@@ -5,7 +5,7 @@
 #
 
 function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options, 
-                                   samples :: Samples, mddf_compute!)  
+                                   samples :: Samples, RNG, mddf_compute!)  
 
   # Simplify code by assigning some shortened names
   solute = trajectory.solute
@@ -74,7 +74,7 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
       @. framedata[ifree].trajectory.x_solvent = trajectory.x_solvent
       @. framedata[ifree].trajectory.sides = trajectory.sides
       # Spawn the calculations for this frame
-      t[ifree] = ThreadPools.@tspawnat ifree+1 mddf_compute!(tframe[ifree],framedata[ifree],options,R[ifree])
+      t[ifree] = ThreadPools.@tspawnat ifree+1 mddf_compute!(tframe[ifree],framedata[ifree],options,RNG,R[ifree])
       free[ifree] = false
     end
 
