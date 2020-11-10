@@ -115,9 +115,8 @@ end
 function nextframe!( trajectory :: PDBTraj ) 
 
   iatom = 0
-  record = ""
-  while (length(record) < 3 || record[1:3] != "END")
-    record = readline(trajectory.stream)
+  record = readline(trajectory.stream)
+  while ((0 < length(record) < 3) || record[1:3] != "END")
     if length(record) >= 6 
       if record[1:4] == "ATOM" || record[1:6] == "HETATM"
         iatom = iatom + 1
@@ -126,6 +125,7 @@ function nextframe!( trajectory :: PDBTraj )
         trajectory.x_read[3,iatom] = parse(Float64,record[47:54])
       end
     end
+    record = readline(trajectory.stream)
   end
 
   # Save coordinates of solute and solvent in trajectory arrays
