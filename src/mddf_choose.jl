@@ -23,8 +23,8 @@ mddf_choose(trajectory :: Trajectory) = mddf_choose(trajectory,Options())
 
 function mddf_choose(trajectory :: Trajectory, options :: Options)
 
-  # Initialize vector for random number generator
-  init_random(options.seed)
+  # Set random number generator
+  RNG = init_random(options) 
 
   if options.nthreads < 0
     nthreads = Threads.nthreads()
@@ -36,18 +36,18 @@ function mddf_choose(trajectory :: Trajectory, options :: Options)
     samples = Samples(md=(trajectory.solvent.nmols-1)/2,
                       random=options.n_random_samples)
     if nthreads == 1
-      mddf_linkedcells(trajectory,options,samples,mddf_frame_self!)
+      mddf_linkedcells(trajectory,options,samples,RNG,mddf_frame_self!)
     else
-      mddf_linkedcells_parallel(trajectory,options,samples,mddf_frame_self!)
+      mddf_linkedcells_parallel(trajectory,options,samples,RNG,mddf_frame_self!)
     end
   # If solute and solvent are different subsets of the simulation
   else
     samples = Samples(md=trajectory.solute.nmols,
                       random=options.n_random_samples)
     if nthreads == 1
-      mddf_linkedcells(trajectory,options,samples,mddf_frame!)
+      mddf_linkedcells(trajectory,options,samples,RNG,mddf_frame!)
     else
-      mddf_linkedcells_parallel(trajectory,options,samples,mddf_frame!)
+      mddf_linkedcells_parallel(trajectory,options,samples,RNG,mddf_frame!)
     end
   end
 end
