@@ -59,6 +59,10 @@ on the seed, is is probable that you do not have enough sampling. Mostly
 used for testing purposes. Two runs are only identical if ran with
 the same seed and in serial mode.   
 
+`StableRNG` (`::Bool`), defaults to `false`. Use a stable random number
+generator from the `StableRNGs` package, to produce identical runs on
+different architectures and Julia versions. Only used for testing. 
+
 `nthreads`: How many threads to use. By default, all available threads
 will be used (for multi-threading, one for managing, `n-1` for computation).  
 
