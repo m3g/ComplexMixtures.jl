@@ -1,6 +1,5 @@
 using Test
 using ComplexMixtures, PDBTools
-using Random
 const CM = ComplexMixtures
 
 @testset "PDB" begin
@@ -11,7 +10,7 @@ const CM = ComplexMixtures
   
   dir="./data/PDB"
   atoms = readPDB("$dir/trajectory.pdb","model 1")  
-  options = CM.Options(stride=1,seed=1234567,nthreads=1,silent=true)
+  options = CM.Options(stride=1,seed=321,StableRNG=true,nthreads=1,silent=true)
  
   # Example 1: protein-tmao
   
@@ -21,8 +20,7 @@ const CM = ComplexMixtures
   tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
   traj = CM.Trajectory("$dir/trajectory.pdb",protein,tmao,format="PDBTraj") 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
   # Example 3: tmao-tmao
   
@@ -31,8 +29,7 @@ const CM = ComplexMixtures
   tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
   traj = CM.Trajectory("$dir/trajectory.pdb",tmao,format="PDBTraj") 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
 end 
 

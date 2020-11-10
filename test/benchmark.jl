@@ -1,6 +1,5 @@
 using Revise
 using ComplexMixtures, PDBTools
-using Random
 const CM = ComplexMixtures
 
 nthreads = Threads.nthreads()
@@ -14,8 +13,8 @@ protein = CM.Selection(select(atoms,"protein"),nmols=1)
 tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
 water = CM.Selection(select(atoms,"water"),natomspermol=3)
 
-options_single = CM.Options(stride=1,seed=1234567,nthreads=1,silent=true,lcell=2)
-options_multi = CM.Options(stride=1,seed=1234567,silent=true,lcell=2)
+options_single = CM.Options(stride=1,seed=321,nthreads=1,silent=true,lcell=2)
+options_multi = CM.Options(stride=1,seed=321,silent=true,lcell=2)
 
 println(" --------------------------------------------------------------")
 println(" Compiling - single thread ")

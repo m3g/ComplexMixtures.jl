@@ -1,7 +1,5 @@
-
 using Test
 using ComplexMixtures, PDBTools
-using Random
 const CM = ComplexMixtures
 
 @testset "NAMD" begin
@@ -12,7 +10,7 @@ const CM = ComplexMixtures
   
   dir="./data/NAMD"
   atoms = readPDB("$dir/structure.pdb")  
-  options = CM.Options(stride=5,seed=1234567,nthreads=1,silent=true)
+  options = CM.Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
   
   # Example 1: protein-tmao
   
@@ -22,8 +20,7 @@ const CM = ComplexMixtures
   tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
   traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
   # Test save and load
   CM.save(R,"test.json")
@@ -39,8 +36,7 @@ const CM = ComplexMixtures
   water = CM.Selection(select(atoms,"water"),natomspermol=3)
   traj = CM.Trajectory("$dir/trajectory.dcd",tmao,water) 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
   # Example 3: tmao-tmao
   
@@ -49,8 +45,7 @@ const CM = ComplexMixtures
   tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
   traj = CM.Trajectory("$dir/trajectory.dcd",tmao) 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
   # Example 3: water-water
   
@@ -59,7 +54,6 @@ const CM = ComplexMixtures
   water = CM.Selection(select(atoms,"water"),natomspermol=3)
   traj = CM.Trajectory("$dir/trajectory.dcd",water) 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
 
 end

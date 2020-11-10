@@ -1,6 +1,5 @@
 using Test
 using ComplexMixtures, PDBTools
-using Random
 const CM = ComplexMixtures
 
 @testset "Gromacs" begin
@@ -11,7 +10,7 @@ const CM = ComplexMixtures
   
   dir="./data/Gromacs"
   atoms = readPDB("$dir/system.pdb")  
-  options = CM.Options(stride=5,seed=1234567,nthreads=1,silent=true)
+  options = CM.Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
   
   # Example 1: protein-EMIM
   
@@ -21,8 +20,7 @@ const CM = ComplexMixtures
   emi = CM.Selection(select(atoms,"resname EMI"),natomspermol=20)
   traj = CM.Trajectory("$dir/trajectory.xtc",protein,emi) 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
   # Example 1: EMIM-DCA
   
@@ -32,8 +30,7 @@ const CM = ComplexMixtures
   dca = CM.Selection(select(atoms,"resname NC"),natomspermol=5)
   traj = CM.Trajectory("$dir/trajectory.xtc",emi,dca) 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
   # Example 1: EMIM-EMIM
   
@@ -42,8 +39,7 @@ const CM = ComplexMixtures
   emi = CM.Selection(select(atoms,"resname EMI"),natomspermol=20)
   traj = CM.Trajectory("$dir/trajectory.xtc",emi) 
   R = CM.mddf(traj,options)
-  t = isapprox(R,R_save,debug=true) 
-  @test t
+  @test isapprox(R,R_save,debug=true) 
   
 end
 

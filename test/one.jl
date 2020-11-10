@@ -1,12 +1,11 @@
 using Revise
 using ComplexMixtures, PDBTools
-using Random
 const CM = ComplexMixtures
 
 dir="./test/data/NAMD"
 atoms = readPDB("$dir/structure.pdb")  
 
-@time options = CM.Options(lastframe=1,seed=1234567,nthreads=1,silent=true)
+@time options = CM.Options(lastframe=1,seed=321,StableRNG=true,nthreads=1,silent=true)
 
 @time tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
 
@@ -24,8 +23,9 @@ atoms = readPDB("$dir/structure.pdb")
 
 @time CM.nextframe!(traj)
 
-iframe = 1
-@time CM.mddf_frame!(iframe,framedata,options,R)
+@time RNG = CM.init_random(options) 
+
+@time CM.mddf_frame!(1,framedata,options,RNG,R)
 
 # self
 
@@ -39,8 +39,9 @@ iframe = 1
 
 @time CM.nextframe!(traj)
 
-iframe = 1
-@time CM.mddf_frame_self!(iframe,framedata,options,R)
+@time RNG = CM.init_random(options) 
+
+@time CM.mddf_frame_self!(1,framedata,options,RNG,R)
 
 
 

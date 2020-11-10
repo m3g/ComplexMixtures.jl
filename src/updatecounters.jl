@@ -16,6 +16,7 @@ function updatecounters!(R :: Result,
                          dc :: CutoffDistances, 
                          dmin_mol :: Vector{DminMol}, dref_mol :: Vector{Float64})
 
+
   for i in 1:solvent.nmols
     dmin_mol[i].d = +Inf
     dref_mol[i] = +Inf
@@ -33,6 +34,7 @@ function updatecounters!(R :: Result,
       end
     end
   end
+
 
   # Update the reference atom counter
   n_dref_in_bulk = 0

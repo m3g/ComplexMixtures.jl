@@ -1,4 +1,5 @@
 using Test
+using StableRNGs
 using ComplexMixtures, PDBTools
 using Random
 const CM = ComplexMixtures
