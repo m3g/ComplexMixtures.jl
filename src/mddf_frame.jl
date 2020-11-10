@@ -2,7 +2,7 @@
 # Computes the MDDF for a single frame, modifies the data in the R (Result) structure
 #
 
-function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options, R :: Result)
+function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options, RNG, R :: Result)
 
   # Simplify code by assigning some shortened names
   trajectory = framedata.trajectory
@@ -89,16 +89,16 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     for j in 1:solvent.nmols
       # Choose randomly one molecule from the bulk, if there are actually bulk molecules
       if n_dmin_in_bulk != 0
-        jmol = dmin_mol[random(bulk_range)].jmol
+        jmol = dmin_mol[random(RNG,bulk_range)].jmol
       else
-        jmol = random(1:solvent.nmols)
+        jmol = random(RNG,1:solvent.nmols)
       end
       # Indexes of this molecule in the x_solvent array
       x_ref = viewmol(jmol,x_solvent,solvent)
       # Indexes of the random molecule in random array
       x_rnd = viewmol(j,x_solvent_random,solvent)
       # Generate new random coordinates (translation and rotation) for this molecule
-      random_move!(x_ref,R.irefatom,sides,x_rnd)
+      random_move!(x_ref,R.irefatom,sides,x_rnd,RNG)
     end
 
     # wrap random solvent coordinates to box, with the center at the origin
@@ -108,7 +108,7 @@ function mddf_frame!(iframe :: Int64, framedata :: FrameData, options :: Options
     initcells!(x_solvent_random,box,lc_solvent)
 
     # Choose randomly one solute molecule to be the solute in this sample
-    i_rand_mol = random(1:solute.nmols)
+    i_rand_mol = random(RNG,1:solute.nmols)
     x_this_solute = viewmol(i_rand_mol,x_solute,solute)
 
     # Compute all distances between solute and solvent atoms which are smaller than the 
