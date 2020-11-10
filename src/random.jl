@@ -1,21 +1,35 @@
 #
-# Replace default random number generator by other that does not 
-# have mutiple-threading problems
+# Replace default random number generator by other that aleviates the
+# mutiple-threading problems
 #
-import Random
-#using Future:randjump
-#const RNGS = [randjump(Random.MersenneTwister(),big(10)^20)]
-#init_random() = foreach(_ -> push!(RNGS, randjump(last(RNGS),big(10)^20)), 2:Threads.nthreads())
-#random() = rand(RNGS[Threads.threadid()])
-#random(arg) = rand(RNGS[Threads.threadid()],arg)
-function init_random(seed) 
-  if seed > 0
-    Random.seed!(seed)
-  end
-end
-random() = rand()
-random(arg) = rand(arg)
 
-# In Julia 1.6 it seems that the generator of rand(UnitRange) will change. If that is
-# the case, the tests will fail (the data has to be regenarated).
-#random(arg :: UnitRange{Int64}) = arg[1] + trunc(Int64,rand()*(arg[end]-arg[1]))
+import Random
+using StableRNGs
+using Future:randjump
+
+function init_random(options)
+  if options.seed > 0
+    if options.StableRNG == true
+      RNG = StableRNGs.StableRNG(options.seed)  
+    else
+      RNG = [randjump(Random.MersenneTwister(options.seed),big(10)^20)] 
+      foreach(_ -> push!(RNG, randjump(last(RNG),big(10)^20)), 2:Threads.nthreads())
+    end
+  else
+    if options.StableRNG == true
+      seed = abs(rand(Int))
+      RNG = StableRNGs.StableRNG(seed)  
+    else
+      RNG = [randjump(Random.MersenneTwister(),big(10)^20)] 
+      foreach(_ -> push!(RNG, randjump(last(RNG),big(10)^20)), 2:Threads.nthreads())
+    end
+  end
+  return RNG
+end
+
+random(RNG :: StableRNGs.LehmerRNG ) = rand(RNG)
+random(RNG :: StableRNGs.LehmerRNG, arg) = rand(RNG,arg)
+
+random(RNG :: Array{T}) where T = rand(RNG[Threads.threadid()])
+random(RNG :: Array{T}, arg) where T = rand(RNG[Threads.threadid()],arg)    
+
