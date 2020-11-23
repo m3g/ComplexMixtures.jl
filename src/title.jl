@@ -6,7 +6,7 @@ const bars = "------------------------------------------------------------------
 function title(R :: Result, 
                solute :: Selection,
                solvent :: Selection,
-               nspawn :: Int64)
+               nspawn :: Int)
 
   println(bars)
   println("Starting MDDF calculation in parallel:")

@@ -14,7 +14,7 @@ function cutoffdistances_self!(cutoff :: Float64,
                                lc_solvent :: LinkedCells,
                                box :: Box, 
                                dc :: CutoffDistances, 
-                               solvent :: Selection, imol :: Int64) where T <: Vf3
+                               solvent :: Selection, imol :: Int64) where T
 
   # Reset the dc structure 
   reset!(dc)

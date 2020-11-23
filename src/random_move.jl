@@ -8,9 +8,9 @@
 #
 
 function random_move!(x_ref :: AbstractVector{T}, 
-                      irefatom :: Int64,
+                      irefatom :: Int,
                       sides :: T,
-                      x_new :: AbstractVector{T}, RNG) where T <: Vf3
+                      x_new :: AbstractVector{T}, RNG) where T
 
   # To avoid boundary problems, the center of coordinates are generated in a 
   # much larger region, and wrapped aftwerwards
@@ -23,9 +23,9 @@ function random_move!(x_ref :: AbstractVector{T},
   newcm = T(ncm1,ncm2,ncm3)
 
   # Generate random rotation angles 
-  beta = (2*pi)*random(RNG,Float64)
-  gamma = (2*pi)*random(RNG,Float64)
-  theta = (2*pi)*random(RNG,Float64)
+  beta = (2*π)*random(RNG,Float64)
+  gamma = (2*π)*random(RNG,Float64)
+  theta = (2*π)*random(RNG,Float64)
 
   # Copy the coordinates of the molecule chosen to the random-coordinates vector
   @. x_new = x_ref

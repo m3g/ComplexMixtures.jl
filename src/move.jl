@@ -4,8 +4,8 @@
 # modifyies the vector x
 #
 
-function move!(x :: AbstractVector{T}, newcm :: T, 
-               beta :: Float64, gamma :: Float64, theta :: Float64) where T <: Vf3
+function move!(x :: AbstractVector{T}, newcm :: AbstractVector, 
+               beta, gamma, theta) where T
   
   # Compute center of coordinates of x
   cm = centerofcoordinates(x)
@@ -19,7 +19,3 @@ function move!(x :: AbstractVector{T}, newcm :: T,
 
   nothing
 end
-
-
-
-

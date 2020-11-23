@@ -1,7 +1,7 @@
 #
 # Print test xyz file
 #
-function writexyz(x :: Vector{T}, file :: String) where T <: Vf3
+function writexyz(x :: Vector{T}, file :: String) where T <: AbstractVector
   f = open(file,"w")
   nx = length(x)
   println(f,nx)

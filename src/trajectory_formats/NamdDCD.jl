@@ -4,7 +4,7 @@
 
 import FortranFiles
 
-struct NamdDCD{T<:Vf3} <: Trajectory
+struct NamdDCD{T<:AbstractVector} <: Trajectory
 
   #
   # Mandatory data for things to work
@@ -44,7 +44,8 @@ end
 # appropriate lengths and, importantly, with the i/o stream OPENED, ready to read the first
 # trajectory frame using the "nextframe" function.
 
-function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection)
+function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection; 
+                  T :: Type = SVector{3,Float64})
 
   stream = FortranFile(filename)
 
@@ -73,16 +74,16 @@ function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection)
   # be updated upon reading the frame. Alternatively, the user must provide the sides in all
   # frames by filling up an array with the box side data.
   if sides_in_dcd
-    sides = zeros(Vf3,1) 
+    sides = zeros(T,1) 
   else
-    sides = zeros(Vf3,nframes) 
+    sides = zeros(T,nframes) 
   end
 
   return NamdDCD( filename, stream, nframes, 
                   sides, # sides vector (if in dcd) or array to be filled up later
                   solute, solvent,
-                  zeros(Vf3,solute.natoms), # solute atom coordinates
-                  zeros(Vf3,solvent.natoms), # solvent atom coordinates
+                  zeros(T,solute.natoms), # solute atom coordinates
+                  zeros(T,solvent.natoms), # solvent atom coordinates
                   sides_in_dcd, lastatom,
                   Vector{Float64}(undef,6), # auxiliary vector to read sides
                   Vector{Float32}(undef,lastatom), # auxiliary x
@@ -107,14 +108,14 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!( trajectory :: NamdDCD )
+function nextframe!(trajectory :: NamdDCD{T}) where T
 
   # Read the sides of the box from the DCD file, otherwise they must be set manually before
   if trajectory.sides_in_dcd
     read(trajectory.stream,trajectory.sides_read)
-    trajectory.sides[1] = Vf3(trajectory.sides_read[1],
-                              trajectory.sides_read[3],
-                              trajectory.sides_read[6])
+    trajectory.sides[1] = T(trajectory.sides_read[1],
+                            trajectory.sides_read[3],
+                            trajectory.sides_read[6])
   end
   
   # Read the coordinates  
@@ -124,14 +125,14 @@ function nextframe!( trajectory :: NamdDCD )
 
   # Save coordinates of solute and solvent in trajectory arrays
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i] = Vf3(trajectory.x_read[trajectory.solute.index[i]],
-                                 trajectory.y_read[trajectory.solute.index[i]],
-                                 trajectory.z_read[trajectory.solute.index[i]])
+    trajectory.x_solute[i] = T(trajectory.x_read[trajectory.solute.index[i]],
+                               trajectory.y_read[trajectory.solute.index[i]],
+                               trajectory.z_read[trajectory.solute.index[i]])
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i] = Vf3(trajectory.x_read[trajectory.solvent.index[i]],
-                                  trajectory.y_read[trajectory.solvent.index[i]],
-                                  trajectory.z_read[trajectory.solvent.index[i]])
+    trajectory.x_solvent[i] = T(trajectory.x_read[trajectory.solvent.index[i]],
+                                trajectory.y_read[trajectory.solvent.index[i]],
+                                trajectory.z_read[trajectory.solvent.index[i]])
   end
 
   nothing

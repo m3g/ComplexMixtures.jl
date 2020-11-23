@@ -6,7 +6,7 @@
 
 import Chemfiles
 
-struct ChemFile{T<:Vf3} <: Trajectory
+struct ChemFile{T<:AbstractVector} <: Trajectory
 
   #
   # Mandatory data for things to work
@@ -42,7 +42,8 @@ end
 # will be able to read the first frame of the trajectory
 #
 
-function ChemFile( filename :: String, solute :: Selection, solvent :: Selection; format="" )
+function ChemFile( filename :: String, solute :: Selection, solvent :: Selection; 
+                   format="" , T :: Type = SVector{3,Float64} )
 
   stream = Vector{Chemfiles.Trajectory}(undef,1)
   stream[1] = Chemfiles.Trajectory(filename,'r',format)
@@ -64,10 +65,10 @@ function ChemFile( filename :: String, solute :: Selection, solvent :: Selection
                    format, # trajectory format, is provided by the user
                    stream,
                    nframes, 
-                   [ Vf3(sides) ], # array containing box sides
+                   [ T(sides) ], # array containing box sides
                    solute, solvent,
-                   zeros(Vf3,solute.natoms),    
-                   zeros(Vf3,solvent.natoms),  
+                   zeros(T,solute.natoms),    
+                   zeros(T,solvent.natoms),  
                    natoms, # Total number of atoms
                  )
 end
@@ -89,24 +90,24 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!( trajectory :: ChemFile ) 
+function nextframe!( trajectory :: ChemFile{T} ) where T 
 
   frame = Chemfiles.read(trajectory.stream[1])
   positions = Chemfiles.positions(frame)
   sides = Chemfiles.lengths(Chemfiles.UnitCell(frame))
-  trajectory.sides[1] = Vf3(sides)
+  trajectory.sides[1] = T(sides)
 
   # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
   # but the code in general is more clear aftwerwards by doing this)
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i] = Vf3(positions[1,trajectory.solute.index[i]],
-                                 positions[2,trajectory.solute.index[i]],
-                                 positions[3,trajectory.solute.index[i]])
+    trajectory.x_solute[i] = T(positions[1,trajectory.solute.index[i]],
+                               positions[2,trajectory.solute.index[i]],
+                               positions[3,trajectory.solute.index[i]])
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i] = Vf3(positions[1,trajectory.solvent.index[i]],
-                                  positions[2,trajectory.solvent.index[i]],
-                                  positions[3,trajectory.solvent.index[i]])
+    trajectory.x_solvent[i] = T(positions[1,trajectory.solvent.index[i]],
+                                positions[2,trajectory.solvent.index[i]],
+                                positions[3,trajectory.solvent.index[i]])
   end
 
 end

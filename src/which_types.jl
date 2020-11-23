@@ -4,8 +4,8 @@
 # even if the indexes contain the indexes of many molecules of the
 # same type
 #
-function which_types(s :: Selection, indexes :: Vector{Int64})
-  selected_types = Vector{Int64}(undef,0)
+function which_types(s :: Selection, indexes :: Vector{Int})
+  selected_types = Vector{Int}(undef,0)
   ntypes = 0
   for i in indexes
     isel = findfirst( ind -> ind == i, s.index )

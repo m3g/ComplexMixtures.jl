@@ -6,7 +6,7 @@
 # trajectory formats
 #
 
-struct PDBTraj{T<:Vf3} <: Trajectory
+struct PDBTraj{T<:AbstractVector} <: Trajectory
 
   #
   # Mandatory data for things to work
@@ -44,7 +44,8 @@ end
 # will be able to read the first frame of the trajectory
 #
 
-function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection)
+function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection; 
+                  T :: Type = SVector{3,Float64})
 
   stream = open(pdbfile,"r")
   
@@ -68,16 +69,16 @@ function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection)
   # The function "getsides", below, must be adapted accordingly to return the correct
   # sides of the periodic box in each frame.
 
-  sides = zeros(Vf3,nframes)
+  sides = zeros(T,nframes)
   stream = open(pdbfile,"r")
   iframe = 0
   for line in eachline(stream)
     s = split(line)
     if s[1] == "CRYST1"
       iframe = iframe + 1
-      sides[iframe] = Vf3( parse(Float64,s[2]),
-                           parse(Float64,s[3]),
-                           parse(Float64,s[4]) )
+      sides[iframe] = T( parse(Float64,s[2]),
+                         parse(Float64,s[3]),
+                         parse(Float64,s[4]) )
     end
   end
   close(stream)
@@ -90,8 +91,8 @@ function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection)
                   nframes, 
                   sides, # array containing box sides
                   solute, solvent,
-                  zeros(Vf3,solute.natoms),    
-                  zeros(Vf3,solvent.natoms),  
+                  zeros(T,solute.natoms),    
+                  zeros(T,solvent.natoms),  
                   natoms, # Total number of atoms
                   Array{Float64}(undef,3,natoms) # Auxiliary array for reading
                 )
@@ -112,7 +113,7 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!( trajectory :: PDBTraj ) 
+function nextframe!( trajectory :: PDBTraj{T} ) where T 
 
   iatom = 0
   record = readline(trajectory.stream)
@@ -130,14 +131,14 @@ function nextframe!( trajectory :: PDBTraj )
 
   # Save coordinates of solute and solvent in trajectory arrays
   for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i] = Vf3(trajectory.x_read[1,trajectory.solute.index[i]],
-                                 trajectory.x_read[2,trajectory.solute.index[i]],
-                                 trajectory.x_read[3,trajectory.solute.index[i]])
+    trajectory.x_solute[i] = T(trajectory.x_read[1,trajectory.solute.index[i]],
+                               trajectory.x_read[2,trajectory.solute.index[i]],
+                               trajectory.x_read[3,trajectory.solute.index[i]])
   end
   for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i] = Vf3(trajectory.x_read[1,trajectory.solvent.index[i]],
-                                  trajectory.x_read[2,trajectory.solvent.index[i]],
-                                  trajectory.x_read[3,trajectory.solvent.index[i]])
+    trajectory.x_solvent[i] = T(trajectory.x_read[1,trajectory.solvent.index[i]],
+                                trajectory.x_read[2,trajectory.solvent.index[i]],
+                                trajectory.x_read[3,trajectory.solvent.index[i]])
   end
 
 end

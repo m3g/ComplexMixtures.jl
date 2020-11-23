@@ -11,7 +11,7 @@ function cutoffdcell!(cutoff :: Float64,
                       lc_solvent :: LinkedCells,
                       box :: Box,
                       i :: Int64, j :: Int64, k :: Int64,
-                      dc :: CutoffDistances) where T <: Vf3
+                      dc :: CutoffDistances) where T
 
   # Check if this box needs to be wrapped. If so, the distance calculation has to take
   # that in consideration

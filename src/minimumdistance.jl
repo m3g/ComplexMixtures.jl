@@ -8,7 +8,7 @@
 
 # If x is only a vector 
 
-function minimumdistance(x :: T, y :: Vector{T}) where T <: Vf3
+function minimumdistance(x :: T, y :: Vector{T}) where T
   jatom = 0
   dmin = +Inf
   ny = length(y)
@@ -24,7 +24,7 @@ end
 
 # If both are vectors of vectors
 
-function minimumdistance(x :: Vector{T}, y :: Vector{T}) where T <: Vf3
+function minimumdistance(x :: Vector{T}, y :: Vector{T}) where T
   iatom = 0
   jatom = 0
   dmin = +Inf
@@ -47,7 +47,7 @@ end
 # computation of the volume shell by Monte-Caro integration
 
 function minimumdistance(x :: Vector{T}, y :: Vector{T},
-                         jrefatom :: Int64) where T <: Vf3
+                         jrefatom :: Int) where T
   iatom = 0
   jatom = 0
   drefatom = +Inf
@@ -79,7 +79,7 @@ end
 #
 
 function minimumdistance(x :: Vector{T}, y :: Vector{T},
-                         sides :: T) where T <: Vf3
+                         sides :: T) where T
   iatom = 0
   jatom = 0
   dmin = +Inf
@@ -102,7 +102,7 @@ end
 # computation of the volume shell by Monte-Caro integration
 
 function minimumdistance(x :: Vector{T}, y :: Vector{T},
-                         jrefatom :: Int64, sides :: T) where T <: Vf3
+                         jrefatom :: Int, sides :: T) where T
   iatom = 0
   jatom = 0
   drefatom = +Inf

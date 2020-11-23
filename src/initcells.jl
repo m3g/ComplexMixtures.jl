@@ -5,7 +5,7 @@
 # Modifies the data in the lc structure
 #
                   
-function initcells!(x :: Vector{T}, box :: Box, lc :: LinkedCells) where T <: Vf3
+function initcells!(x :: AbstractVector{T}, box :: Box, lc :: LinkedCells) where T
 
   # Count the number of boxes and checks if there is a problem with dimensions
   nboxes = box.nc[1]*box.nc[2]*box.nc[3] 

@@ -13,7 +13,7 @@ function cutoffdistances!(cutoff :: Float64,
                           x_solvent :: Vector{T},
                           lc_solvent :: LinkedCells,
                           box :: Box, 
-                          dc :: CutoffDistances) where T <: Vf3
+                          dc :: CutoffDistances) where T
 
   # Reset the dc structure 
   reset!(dc)

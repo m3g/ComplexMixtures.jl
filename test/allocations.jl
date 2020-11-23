@@ -4,7 +4,7 @@ const CM = ComplexMixtures
 
 @testset "Allocations" begin
 
-  if Sys.islinux() && VERSION == v"1.5.2" 
+  if Sys.islinux() && VERSION == v"1.5.3" 
 
     dir="./data/NAMD"
     atoms = readPDB("$dir/structure.pdb")  
@@ -23,7 +23,7 @@ const CM = ComplexMixtures
 
     traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
     t_trajectory = @allocated CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
-    @test abs(t_trajectory - 660240) < 124
+    @test abs(t_trajectory - 660240) == 240
 
     samples = CM.Samples(md=(traj.solvent.nmols-1)/2,random=options.n_random_samples)
     t_samples = @allocated CM.Samples(md=(traj.solvent.nmols-1)/2,random=options.n_random_samples)

@@ -9,7 +9,7 @@
   shell :: Vector{Float64} 
 end
 
-Volume(nbins :: Int64) = Volume( 0., 0., 0.,  zeros(Float64,nbins) )
+Volume(nbins :: Int) = Volume( 0., 0., 0.,  zeros(Float64,nbins) )
 
 function reset!( v :: Volume ) 
   v.total = 0.

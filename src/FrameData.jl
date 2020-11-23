@@ -2,7 +2,7 @@
 # Structure to contain data needed to compute the mddf for a single frame
 #
 
-mutable struct FrameData{T<:Trajectory,V<:Vf3}
+mutable struct FrameData{T<:Trajectory,V}
 
   trajectory :: T
   volume_frame :: Volume

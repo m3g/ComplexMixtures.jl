@@ -12,10 +12,6 @@ module ComplexMixtures
   using StaticArrays
   import Random
 
-  # Type of vector containing performance-critical coordinates 
-  const Vf3 = SVector{3,Float64}
-  const Vi3 = SVector{3,Int64}
-
   # Input and Output data structures
   include("./FileOperations.jl")
   include("./OutputFiles.jl")

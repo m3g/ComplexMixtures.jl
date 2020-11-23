@@ -3,10 +3,7 @@
 # of calculation to compute final results
 #
 
-struct Samples
-  md :: Real
-  random :: Real
+@with_kw struct Samples
+  md
+  random
 end
-
-Samples(;md :: Real = 0, random :: Real = 0) = Samples(md,random)
-
