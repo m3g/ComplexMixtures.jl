@@ -6,7 +6,7 @@ using ComplexMixtures
 push!(LOAD_PATH,"../src/")
 makedocs(
     modules=[ComplexMixtures],
-    sitename="ComplexMixtures",
+    sitename="ComplexMixtures.jl",
     pages = [
         "Introduction" => "index.md",
         "Installation" => "installation.md",
