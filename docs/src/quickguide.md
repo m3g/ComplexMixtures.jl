@@ -2,6 +2,67 @@
 # Quick Guide
 
 Of course, follow the [installation](@ref Installation) instructions first. 
+A complete working example is shown below, and in the section that follows each 
+command is described in detail.
+
+## Complete example
+
+Here we show the input file required for the study of the solvation of a protein
+by the `TMAO` solvent, which is a molecule 4 atoms. The protein is assumed to be
+at infinite dilution in the simulation. The trajectory of the simulation is in `DCD`
+format in this example, which is the default output of `NAMD` and `CHARMM` simulation
+packages.
+
+```julia
+# Load packages
+using PDBTools
+using ComplexMixtures 
+using Plots
+
+# Load PDB file of the system
+atoms = readPDB("./system.pdb")
+
+# Select the protein and the TMAO molecules
+protein = select(atoms,"protein")
+tmao = select(atoms,"resname TMAO")
+
+# Setup solute and solvent structures
+solute = ComplexMixtures.Selection(protein,nmols=1)
+solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
+
+# Setup the Trajectory structure
+trajectory = ComplexMixtures.Trajectory("./trajectory.dcd",solute,solvent)
+
+# Run the calculation and get results
+results = ComplexMixtures.mddf(trajectory)
+
+# Save the reults to recover them later if required
+ComplexMixtures.save(results,"./results.json")
+
+# Plot the some of the most important results 
+plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
+savefig("./mddf.pdf")
+plot(results.d,results.kb,xlabel="d",ylabel="KB") # plot the KB 
+savefig("./kb.pdf")
+
+```
+Given that this code is saved into a file named `example.jl`, 
+it can be run within the Julia REPL with:
+```julia
+julia> include("example.jl")
+
+```
+or directly with:
+```
+% julia -t 5 example.jl
+
+```
+where `-t 5` is optional and defines how many processors will be used
+in the calculation (use, for maximal performance, the number of physical
+cores of your computer, *plus one*).  
+
+## Detailed description of the example
+
 Start `julia` and load the ComplexMixtures package, using:
 
 ```julia
@@ -17,7 +78,7 @@ using PDBTools
 The fastest way to understand how to use this package is through an
 example.  
 
-Let us consider a system consisting of three components: a protein,
+Let us consider a system of three components: a protein,
 water, a cossolvent: TMAO (trimetylamine-N-oxyde), which is a common
 osmolyte known to stabilize protein structures. A picture of this system
 is shown below, with the protein in blue, water, and TMAO molecules. The
@@ -29,8 +90,7 @@ and the figure was produced with
 <img src="../figures/proteinTMAO.png" width=60%>
 ```
 
-
-We want to study the interactions of the protein with TMAO, for example.
+We want to study the interactions of the protein with TMAO in this example.
 The computation of the MDDF is performed by defining the solute and
 solvent selections, and running the calculation on the trajectory.
 
@@ -159,59 +219,6 @@ be analyzed in other software (or plotted with alternative tools), with
 ```julia
 ComplexMixtures.write(results,"./results.dat")
 ```
-
-### Summary
-
-The complete running example, therefore, is:
-
-```julia
-# Load packages
-using PDBTools
-using ComplexMixtures 
-using Plots
-
-# Load PDB file of the system
-atoms = readPDB("./system.pdb")
-
-# Select the protein and the TMAO molecules
-protein = select(atoms,"protein")
-tmao = select(atoms,"resname TMAO")
-
-# Setup solute and solvent structures
-solute = ComplexMixtures.Selection(protein,nmols=1)
-solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
-
-# Setup the Trajectory structure
-trajectory = ComplexMixtures.Trajectory("./trajectory.dcd",solute,solvent)
-
-# Run the calculation and get results
-results = ComplexMixtures.mddf(trajectory)
-
-# Save the reults to recover them later if required
-ComplexMixtures.save(results,"./results.json")
-
-# Plot the some of the most important results 
-plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
-savefig("./mddf.pdf")
-plot(results.d,results.kb,xlabel="d",ylabel="KB") # plot the KB 
-savefig("./kb.pdf")
-
-```
-Given that this code is saved into a file named `example.jl`, 
-it can be run within the Julia REPL with:
-```julia
-julia> include("example.jl")
-
-```
-or directly with:
-```
-% julia -t 4 example.jl
-
-```
-where `-t 4` is optional and defines how many processors will be used
-in the calculation.
-
-
 
 
 
