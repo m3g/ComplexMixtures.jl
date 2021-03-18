@@ -21,7 +21,7 @@ makedocs(
         "Parallel execution" => "parallel.md",
         "Options" => "options.md",
         "Tools" => "tools.md",
-        "Examples" => "examples.md",
+#        "Examples" => "examples.md",
         "References" => "references.md"
     ]
 )
