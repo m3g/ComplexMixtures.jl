@@ -5,7 +5,7 @@
 If this package was useful to you, please cite the following papers:
 
 * L. Martínez, **ComplexMixtures.jl: ComplexMixtures.jl: Understanding the solvation  
-  of molecules of complex structure from molecular simulations** To be published, 2021.
+  of molecules of complex structure** To be published, 2021.
 
 * L. Martínez, S. Shimizu, **Molecular interpretation of preferential
   interactions in protein solvation: a solvent-shell perspective by
