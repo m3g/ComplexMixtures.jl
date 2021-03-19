@@ -26,7 +26,7 @@ makedocs(
     ]
 )
 deploydocs(
-    repo = "github.com/m3g/ComplexMixtures.git",
+    repo = "github.com/m3g/ComplexMixtures.jl.git",
     target = "build",
     branch = "gh-pages",
     versions = ["stable" => "v^", "v#.#" ],
