@@ -4,7 +4,7 @@ const CM = ComplexMixtures
 
 @testset "Allocations" begin
 
-  if Sys.islinux() && VERSION == v"1.5.3" 
+  if Sys.islinux() && (VERSION == v"1.5.3" || VERSION == v"1.5.4")
 
     dir="./data/NAMD"
     atoms = readPDB("$dir/structure.pdb")  
@@ -15,11 +15,11 @@ const CM = ComplexMixtures
 
     protein = CM.Selection(select(atoms,"protein"),nmols=1)
     t_selection1 = @allocated CM.Selection(select(atoms,"protein"),nmols=1)
-    @test t_selection1 == 3064544
+    @test t_selection1 == 3062256
 
     tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
     t_selection2 = @allocated CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
-    @test t_selection2 == 7080880
+    @test t_selection2 == 7080048
 
     traj = CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
     t_trajectory = @allocated CM.Trajectory("$dir/trajectory.dcd",protein,tmao) 
