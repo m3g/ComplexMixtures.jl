@@ -16,14 +16,19 @@ julia> ] add ComplexMixtures
 
 ```
 
-The [PDBTools](http://m3g.iqm.unicamp.br/PDBTools) 
-package will is one dependency that will be installed by default, and 
-that will be used many times throughout the user guide. 
+To follow all the examples provided in this manual, the 
+[PDBTools](http://m3g.iqm.unicamp.br/PDBTools) 
+and [Plots](http://docs.juliaplots.org/latest/) have to be installed as well:
+```julia
+julia> ] add PDBTools, Plots
+
+```
 
 If you are first-time `julia` user, load these packages for the first
 time after installation. Loading the `Plots` package, in particular, may
 take quite a while when done for the first time, because it is compiled
-at this point. To load the packages, use:
+at this point (this was greatly improved in Julia versions greater than 1.6, which
+are highly recommended). To load the packages, use:
 
 ```
 using ComplexMixtures, PDBTools, Plots
