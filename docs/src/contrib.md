@@ -12,9 +12,12 @@ of a protein and water, we would have defined the solute and solvent
 using:
 
 ```julia
+using PDBTools, ComplexMixtures
 atoms = PDBTools.readPDB("system.pdb")
-solute = PDBTools.select(atoms,"protein",nmols=1)
-solvent = PDBTools.select(atoms,"water",natomspermol=3)
+protein = PDBTools.select(atoms,"protein",nmols=1)
+water = PDBTools.select(atoms,"water",natomspermol=3)
+solute = ComplexMixtures.Selection(protein,nmols=1)
+solvent = ComplexMixtures.Selection(water,natomspermol=3)
 ```
 
 The MDDF calculation is executed with:
