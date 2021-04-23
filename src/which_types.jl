@@ -18,7 +18,7 @@ if the distribution function was computed for all molecules. Thus, the necessity
 to identify the types of atoms involved in a selection.   
 
 """
-function which_types(s::Selection, indexes::Vector{Int})
+function which_types(s::Selection, indexes::Vector{Int}; warning=true)
   selected_types = Vector{Int}(undef,0)
   ntypes = 0
   for i in indexes
@@ -31,7 +31,7 @@ function which_types(s::Selection, indexes::Vector{Int})
         push!(selected_types,it)
         ntypes += 1
         if ntypes == s.natomspermol 
-          println(" Warning: All possible types of atoms of this selection were selected.")
+          warning && println("WARNING: All possible types of atoms ($ntypes) of this selection were selected.")
           return selected_types
         end
       end

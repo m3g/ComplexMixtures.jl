@@ -38,22 +38,28 @@ end
 #
 # If a list of atoms of PDBTools.Atom is provided
 #
-function contrib(s::Selection, atom_contributions::Array{Float64}, atoms::Vector{PDBTools.Atom}; warning=true)
+function contrib(s::Selection, 
+                 atom_contributions::Array{Float64}, 
+                 atoms::Vector{PDBTools.Atom}; 
+                 warning=true)
   (warning && s.nmols > 1) && warning_nmols_types() 
   indexes = [ atom.index for atom in atoms ]
   # Check which types of atoms belong to this selection
-  selected_types = which_types(s, indexes)
+  selected_types = which_types(s, indexes, warning=warning)
   return contrib(s, atom_contributions, selected_types)
 end
 
 #
 # If a residue of type PDBTools.Residue is provided
 #
-function contrib(s::Selection, atom_contributions::Array{Float64}, residue::Residue)
+function contrib(s::Selection, 
+                 atom_contributions::Array{Float64}, 
+                 residue::Residue;
+                 warning=true)
   (warning && s.nmols > 1) && warning_nmols_types() 
   indexes = collect(residue.range)
   # Check which types of atoms belong to this selection
-  selected_types = which_types(s, indexes)
+  selected_types = which_types(s, indexes, warning=warning)
   return contrib(s, atom_contributions, selected_types)
 end
 
