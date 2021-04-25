@@ -7,7 +7,7 @@
 # Function to return the selection from a input file (topology, coordinates, etc), 
 # by calling VMD in the background.
 
-function VMDselect( inputfile :: String, selection :: String; vmd="vmd" )
+function VMDselect(inputfile::String, selection::String; vmd="vmd" )
 
   if ! isfile(inputfile)
     error("Could not find file: $inputfile")
@@ -28,7 +28,7 @@ function VMDselect( inputfile :: String, selection :: String; vmd="vmd" )
   vmd_output = Base.read(`$vmd -dispdev text -e ./VMDINPUT_TMP.VMD`, String)
 
   # Read indexes
-  local index_list :: String 
+  local index_list::String 
   readnext = false
   for line in split(vmd_output,"\n")
     if readnext
@@ -44,13 +44,13 @@ function VMDselect( inputfile :: String, selection :: String; vmd="vmd" )
   end
   index_split = split(index_list)
   nsel = length(index_split)
-  selection_indexes = Vector{Int64}(undef,nsel) 
+  selection_indexes = Vector{Int}(undef,nsel) 
   for i in 1:nsel
-    selection_indexes[i] = parse(Int64,index_split[i]) + 1
+    selection_indexes[i] = parse(Int,index_split[i]) + 1
   end
 
   # Read atom names
-  local name_list :: String 
+  local name_list::String 
   readnext = false
   for line in split(vmd_output,"\n")
     if readnext

@@ -4,21 +4,21 @@
 
 mutable struct FrameData{T<:Trajectory,V}
 
-  trajectory :: T
-  volume_frame :: Volume
-  rdf_count_random_frame :: Vector{Float64}
-  md_count_random_frame :: Vector{Float64}
+  trajectory::T
+  volume_frame::Volume
+  rdf_count_random_frame::Vector{Float64}
+  md_count_random_frame::Vector{Float64}
   
-  dc :: CutoffDistances
-  dmin_mol :: Vector{DminMol}
-  dref_mol :: Vector{Float64}
-  x_solvent_random :: Vector{V}
+  dc::CutoffDistances
+  dmin_mol::Vector{DminMol}
+  dref_mol::Vector{Float64}
+  x_solvent_random::Vector{V}
 
-  lc_solvent :: LinkedCells
+  lc_solvent::LinkedCells
 
 end
 
-function FrameData(trajectory :: Trajectory, R :: Result ) 
+function FrameData(trajectory::Trajectory, R::Result ) 
   return FrameData(trajectory,                                       # trajectory
                    Volume(R.nbins),                                  # volume_frame
                    zeros(R.nbins),                                   # rdf_count_random_frame

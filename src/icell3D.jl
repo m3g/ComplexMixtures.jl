@@ -2,10 +2,10 @@
 # Returns the i,j,k coordinates of the cell from the coordinates of an atom and box properties
 #
 
-function icell3D(x :: AbstractVector, box :: Box)
-  i = trunc(Int64,(x[1]+box.sides[1]/2)/box.l[1])+1
-  j = trunc(Int64,(x[2]+box.sides[2]/2)/box.l[2])+1
-  k = trunc(Int64,(x[3]+box.sides[3]/2)/box.l[3])+1
+function icell3D(x::AbstractVector, box::Box)
+  i = trunc(Int,(x[1]+box.sides[1]/2)/box.l[1])+1
+  j = trunc(Int,(x[2]+box.sides[2]/2)/box.l[2])+1
+  k = trunc(Int,(x[3]+box.sides[3]/2)/box.l[3])+1
   return i, j, k
 end
 
@@ -16,7 +16,7 @@ end
 
 # if the number of cells in each dimension is different
 
-function icell3D(n :: AbstractVector{Int}, i1D)
+function icell3D(n::AbstractVector{Int}, i1D)
   jk = i1D%(n[2]*n[3])
   if jk == 0
     jk = n[2]*n[3]
@@ -28,7 +28,7 @@ end
 
 # If the number of cells in each dimension is the same
 
-function icell3D(n :: Int, i1D :: Int)
+function icell3D(n::Int, i1D::Int)
   n2 = n^2
   jk = i1D%n2
   if jk == 0
@@ -44,7 +44,7 @@ end
 
 # If the two dimensions are different
 
-function icell2D(n :: AbstractVector{Int}, i1D :: Int)
+function icell2D(n::AbstractVector{Int}, i1D::Int)
   j = i1D%n[2]
   if j == 0
     j = n[2]
@@ -55,7 +55,7 @@ end
 
 # If the two dimensions are the same
 
-function icell2D(n :: Int, i1D :: Int)
+function icell2D(n::Int, i1D::Int)
   j = i1D%n
   if j == 0
     j = n

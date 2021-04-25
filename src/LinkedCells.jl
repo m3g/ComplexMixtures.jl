@@ -7,11 +7,11 @@
 #
 
 struct LinkedCells
-  firstatom :: Vector{Int64}
-  nextatom :: Vector{Int64}
+  firstatom::Vector{Int}
+  nextatom::Vector{Int}
 end
 
-LinkedCells(n) = LinkedCells( zeros(Int64,n), # firstatom (actual required size is nc1*nc2*nc*3
-                              zeros(Int64,n), # nextatom
+LinkedCells(n) = LinkedCells(zeros(Int,n), # firstatom (actual required size is nc1*nc2*nc*3
+                             zeros(Int,n), # nextatom
                             )
 

@@ -11,28 +11,28 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
   #
   # Mandatory data for things to work
   #
-  filename :: String
-  stream :: IOStream
-  nframes :: Int64 
+  filename::String
+  stream::IOStream
+  nframes::Int64 
 
   # This vector must be filled up with the size vectors of the periodic cell
-  sides :: Vector{T}
+  sides::Vector{T}
 
   # Solute and solvent data
-  solute :: Selection
-  solvent :: Selection
+  solute::Selection
+  solvent::Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-  x_solute :: Vector{T}  # solute.natoms vectors of length 3
-  x_solvent :: Vector{T} # solvent.natoms vectors of length 3
+  x_solute::Vector{T}  # solute.natoms vectors of length 3
+  x_solvent::Vector{T} # solvent.natoms vectors of length 3
 
   #
   # Additional data required for input/output functions
   #
-  natoms :: Int64
+  natoms::Int64
 
   # Auxiliary vectors to contain all coordinates of a frame on reading 
-  x_read :: Array{Float64,2} 
+  x_read::Array{Float64,2} 
 
 end
 
@@ -44,8 +44,8 @@ end
 # will be able to read the first frame of the trajectory
 #
 
-function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection; 
-                  T :: Type = SVector{3,Float64})
+function PDBTraj(pdbfile::String, solute::Selection, solvent::Selection; 
+                 T::Type = SVector{3,Float64})
 
   stream = open(pdbfile,"r")
   
@@ -86,19 +86,19 @@ function PDBTraj( pdbfile :: String, solute :: Selection, solvent :: Selection;
   # Open again the stream, so that nextrame can read the first frame
   stream = open(pdbfile,"r")
 
-  return PDBTraj( pdbfile, # trajectory file name 
-                  stream,
-                  nframes, 
-                  sides, # array containing box sides
-                  solute, solvent,
-                  zeros(T,solute.natoms),    
-                  zeros(T,solvent.natoms),  
-                  natoms, # Total number of atoms
-                  Array{Float64}(undef,3,natoms) # Auxiliary array for reading
+  return PDBTraj(pdbfile, # trajectory file name 
+                 stream,
+                 nframes, 
+                 sides, # array containing box sides
+                 solute, solvent,
+                 zeros(T,solute.natoms),    
+                 zeros(T,solvent.natoms),  
+                 natoms, # Total number of atoms
+                 Array{Float64}(undef,3,natoms) # Auxiliary array for reading
                 )
 end
 
-function Base.show( io :: IO, trajectory :: PDBTraj )
+function Base.show(io::IO, trajectory::PDBTraj)
   println(" Trajectory in PDB format with: ")
   println("    $(trajectory.nframes) frames.")
   println("    $(trajectory.natoms) atoms.")
@@ -113,7 +113,7 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!( trajectory :: PDBTraj{T} ) where T 
+function nextframe!(trajectory::PDBTraj{T}) where T 
 
   iatom = 0
   record = readline(trajectory.stream)
@@ -146,7 +146,7 @@ end
 # Function that returns the sides of the periodic box given the data structure. In this
 # case, returns the 3-element vector corresponding to the box sides of the given frame
 
-function getsides(trajectory :: PDBTraj, iframe)
+function getsides(trajectory::PDBTraj, iframe)
   # Sides is expected to be an array that contains the sides for each frame, and we return the
   # vector containing the sides of the current fraem
   return trajectory.sides[iframe] 
@@ -155,12 +155,12 @@ end
 #
 # Function that closes the IO Stream of the trajectory
 #
-closetraj( trajectory :: PDBTraj ) = close( trajectory.stream )
+closetraj(trajectory::PDBTraj) = close(trajectory.stream)
 
 #
 # Function that returns the trajectory in position to read the first frame
 #
-firstframe( trajectory :: PDBTraj ) = seekstart( trajectory.stream )
+firstframe(trajectory::PDBTraj) = seekstart(trajectory.stream)
 
 
 

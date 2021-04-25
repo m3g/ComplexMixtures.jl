@@ -9,34 +9,34 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
   #
   # Mandatory data for things to work
   #
-  filename :: String
-  stream :: FortranFile # special type of stream required for reading DCD files
-  nframes :: Int64 
+  filename::String
+  stream::FortranFile # special type of stream required for reading DCD files
+  nframes::Int64 
 
   # This vector must be filled up with the size of the periodic cell, if it
   # is not defined in the DCD file. 
-  sides :: Vector{T}
+  sides::Vector{T}
 
   # Data structures of the solute and solvent 
-  solute :: Selection
-  solvent :: Selection
+  solute::Selection
+  solvent::Selection
 
   # Coordinates of the solute and solvent atoms in a frame (3,natoms) for each array:
-  x_solute :: Vector{T}
-  x_solvent :: Vector{T}
+  x_solute::Vector{T}
+  x_solvent::Vector{T}
 
   #
   # Additional properties that might be required for implementing IO (not necessary for every
   # input/output format)
   #
-  sides_in_dcd :: Bool # if the DCD contains, or not, periodic cell information for each frame
-  lastatom :: Int64 # The last atom to be read from each line
+  sides_in_dcd::Bool # if the DCD contains, or not, periodic cell information for each frame
+  lastatom::Int64 # The last atom to be read from each line
 
   # Auxiliary vectors to read the coordinates without having the allocate/deallocate every time
-  sides_read :: Vector{Float64}
-  x_read :: Vector{Float32}
-  y_read :: Vector{Float32}
-  z_read :: Vector{Float32}
+  sides_read::Vector{Float64}
+  x_read::Vector{Float32}
+  y_read::Vector{Float32}
+  z_read::Vector{Float32}
 
 end
 
@@ -44,8 +44,8 @@ end
 # appropriate lengths and, importantly, with the i/o stream OPENED, ready to read the first
 # trajectory frame using the "nextframe" function.
 
-function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection; 
-                  T :: Type = SVector{3,Float64})
+function NamdDCD(filename::String, solute::Selection, solvent::Selection; 
+                  T::Type = SVector{3,Float64})
 
   stream = FortranFile(filename)
 
@@ -79,21 +79,21 @@ function NamdDCD( filename :: String, solute :: Selection, solvent :: Selection;
     sides = zeros(T,nframes) 
   end
 
-  return NamdDCD( filename, stream, nframes, 
-                  sides, # sides vector (if in dcd) or array to be filled up later
-                  solute, solvent,
-                  zeros(T,solute.natoms), # solute atom coordinates
-                  zeros(T,solvent.natoms), # solvent atom coordinates
-                  sides_in_dcd, lastatom,
-                  Vector{Float64}(undef,6), # auxiliary vector to read sides
-                  Vector{Float32}(undef,lastatom), # auxiliary x
-                  Vector{Float32}(undef,lastatom), # auxiliary y
-                  Vector{Float32}(undef,lastatom)  # auxiliary z
+  return NamdDCD(filename, stream, nframes, 
+                 sides, # sides vector (if in dcd) or array to be filled up later
+                 solute, solvent,
+                 zeros(T,solute.natoms), # solute atom coordinates
+                 zeros(T,solvent.natoms), # solvent atom coordinates
+                 sides_in_dcd, lastatom,
+                 Vector{Float64}(undef,6), # auxiliary vector to read sides
+                 Vector{Float32}(undef,lastatom), # auxiliary x
+                 Vector{Float32}(undef,lastatom), # auxiliary y
+                 Vector{Float32}(undef,lastatom)  # auxiliary z
                 )
 
 end
 
-function Base.show( io :: IO, traj :: NamdDCD )
+function Base.show(io::IO, traj::NamdDCD )
   println(" Trajectory in NamdDCD format containing: ")
   println("     $(traj.nframes) frames ") 
   println("     Sides in DCD: $(traj.sides_in_dcd) ") 
@@ -108,7 +108,7 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!(trajectory :: NamdDCD{T}) where T
+function nextframe!(trajectory::NamdDCD{T}) where T
 
   # Read the sides of the box from the DCD file, otherwise they must be set manually before
   if trajectory.sides_in_dcd
@@ -142,7 +142,7 @@ end
 # Function that closes the IO Stream of the trajectory
 #
 
-function closetraj( trajectory :: NamdDCD )
+function closetraj(trajectory::NamdDCD)
   FortranFiles.close(trajectory.stream)
 end
 
@@ -151,7 +151,7 @@ end
 # given the way that the box side information is stored in the Trajectory structure
 #
 
-function getsides(trajectory :: NamdDCD, iframe)
+function getsides(trajectory::NamdDCD, iframe)
   # In this (most common) case, sides is a vector and must only be returned
   if trajectory.sides_in_dcd
     return trajectory.sides[1]
@@ -166,7 +166,7 @@ end
 # Leave DCD file in position to read the first frame
 #
 
-function firstframe(stream :: FortranFile)
+function firstframe(stream::FortranFile)
     # rewind
     rewind(stream)
     # skip header
@@ -174,7 +174,7 @@ function firstframe(stream :: FortranFile)
     read(stream)
     read(stream)
 end
-firstframe( trajectory :: NamdDCD ) = firstframe( trajectory.stream )
+firstframe(trajectory::NamdDCD) = firstframe(trajectory.stream)
 
 #
 # Auxiliary functions
@@ -185,7 +185,7 @@ firstframe( trajectory :: NamdDCD ) = firstframe( trajectory.stream )
 # get the actual number of frames, it is better to read it
 #
 
-function getnframes(stream :: FortranFile, sides_in_dcd :: Bool )
+function getnframes(stream::FortranFile, sides_in_dcd::Bool)
   firstframe(stream)
   nframes = 0
   while true

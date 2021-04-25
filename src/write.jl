@@ -16,16 +16,16 @@ end
 # If the solute and solvent selections are provides, pass on the atom
 # names
 
-write(R :: Result, filename :: String,
-      solute :: Selection,
-      solvent :: Selection) =
+write(R::Result, filename::String,
+      solute::Selection,
+      solvent::Selection) =
   write(R,filename,solute_names=solute.names,solvent_names=solvent.names)
 
 # Optional passing of atom names
 
-function write(R :: Result, filename :: String; 
-               solute_names :: Vector{String} = ["nothing"], 
-               solvent_names :: Vector{String} = ["nothing"])
+function write(R::Result, filename::String; 
+               solute_names::Vector{String} = ["nothing"], 
+               solvent_names::Vector{String} = ["nothing"])
 
   # Names of output files containing atomic contibutions
   atom_contrib_solvent = FileOperations.remove_extension(filename)*
@@ -64,7 +64,7 @@ function write(R :: Result, filename :: String;
   if R.options.usecutoff
     ibulk = setbin(R.options.dbulk,R.options.binstep)
   else
-    ibulk = round(Int64,R.nbins-1/R.options.binstep)
+    ibulk = round(Int,R.nbins-1/R.options.binstep)
   end
   bulkerror = Statistics.mean( R.mddf[ibulk:R.nbins] )
   sdbulkerror = Statistics.std( R.mddf[ibulk:R.nbins] )

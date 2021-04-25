@@ -7,7 +7,7 @@
 # 
 # Returns both the g(r) and the kb(r)
 #
-function gr(r :: Vector{Float64}, count :: Vector{Float64}, density :: Float64, binstep :: Float64)
+function gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binstep::Float64)
   nbins = length(r)
   gr = zeros(nbins)
   kb = zeros(nbins)
@@ -25,5 +25,5 @@ end
 
 # If a Result structure is provided without further details, use the rdf count
 # and teh bulk solvent density
-gr(R :: Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
+gr(R::Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
 

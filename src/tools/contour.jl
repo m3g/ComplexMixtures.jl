@@ -1,7 +1,7 @@
 
 using PDBTools 
 
-function residue_contribution(R :: Result, pdb :: String; protein :: String = "protein") 
+function residue_contribution(R::Result, pdb::String; protein::String = "protein") 
 
   protein_atoms = PDBTools.readPDB(atoms,protein)
   seq = PDBTools.getseq(protein_atoms)[1]

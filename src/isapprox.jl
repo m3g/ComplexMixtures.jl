@@ -6,7 +6,7 @@
 const CMTypes = Union{Result,Density,Volume,SolSummary,Options} 
 
 import Base.isapprox
-function isapprox( r1 :: T, r2 :: T; debug = false ) where T <: CMTypes
+function isapprox(r1::T, r2::T; debug=false) where T <: CMTypes
   check = true
   diff_list = Symbol[]
   for field in fieldnames(T) 

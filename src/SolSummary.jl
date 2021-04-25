@@ -3,9 +3,9 @@
 #
 
 struct SolSummary
-  natoms :: Int64
-  nmols :: Int64
-  natomspermol :: Int64
+  natoms::Int
+  nmols::Int
+  natomspermol::Int
 end
-SolSummary(s :: Selection) = SolSummary(s.natoms,s.nmols,s.natomspermol)
+SolSummary(s::Selection) = SolSummary(s.natoms,s.nmols,s.natomspermol)
 

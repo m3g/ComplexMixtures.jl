@@ -7,7 +7,7 @@
 #                 theta is a counterclockwise rotation around z axis.
 # 
 
-function eulermat( beta, gamma, theta, deg :: String )
+function eulermat(beta, gamma, theta, deg::String)
 
    if deg != "degree" 
      error("ERROR: to use radians just omit the last parameter")
@@ -21,7 +21,7 @@ function eulermat( beta, gamma, theta, deg :: String )
 
 end
 
-function eulermat(beta :: T, gamma :: T, theta ::T) where T
+function eulermat(beta::T, gamma::T, theta::T) where T
   c1 = cos(beta) 
   s1 = sin(beta) 
   c2 = cos(gamma) 

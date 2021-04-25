@@ -5,15 +5,15 @@
 # Modifies the data of dc
 #
 
-function cutoffdcell_self!(cutoff :: Float64, 
-                           iat :: Int64, xat :: T,
-                           x_solvent :: Vector{T},
-                           lc_solvent :: LinkedCells,
-                           box :: Box,
-                           i :: Int64, j :: Int64, k :: Int64,
-                           dc :: CutoffDistances,
-                           solvent :: Selection,
-                           imol :: Int64) where T
+function cutoffdcell_self!(cutoff::Float64, 
+                           iat::Int, xat::T,
+                           x_solvent::Vector{T},
+                           lc_solvent::LinkedCells,
+                           box::Box,
+                           i::Int, j::Int, k::Int,
+                           dc::CutoffDistances,
+                           solvent::Selection,
+                           imol::Int) where T
 
   # Check if this box needs to be wrapped. If so, the distance calculation has to take
   # that in consideration

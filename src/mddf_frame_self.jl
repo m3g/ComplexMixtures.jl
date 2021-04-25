@@ -2,7 +2,7 @@
 # Computes the MDDF for a single frame, modifies the data in the R (Result) structure
 #
 
-function mddf_frame_self!(iframe :: Int, framedata :: FrameData, options :: Options, RNG, R :: Result)
+function mddf_frame_self!(iframe::Int, framedata::FrameData, options::Options, RNG, R::Result)
 
   # Simplify code by assigning some shortened names
   trajectory = framedata.trajectory

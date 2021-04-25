@@ -8,7 +8,7 @@
 #
 # If a list of indexes of atoms of the simulation is provided 
 #
-function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vector{Int64})
+function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vector{Int})
   nbins = size(atom_contributions,1)
   c = zeros(nbins)
   for it in indexes
@@ -24,7 +24,7 @@ end
 # If a list of atom names is provided
 #
 function contrib(s::Selection, atom_contributions::Array{Float64}, names::Vector{String})
-  indexes = Vector{Int64}(undef,0)
+  indexes = Vector{Int}(undef,0)
   for name in names
     index = findfirst( x -> x == name, s.names )
     if index == nothing

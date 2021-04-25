@@ -5,32 +5,32 @@
 struct CutoffDistances
 
   # To store all distances smaller than the cutoff
-  nd :: Vector{Int64} # Number of small distances (vector size = 1), just to be mutable
-  d :: Vector{Float64} # All distances smaller than the cutoff
-  iat :: Vector{Int64} # atom of the solute
-  jat :: Vector{Int64} # atom of the solvent
-  imol :: Vector{Int64} # molecule of the solute
-  jmol :: Vector{Int64} # molecule of the solvent
+  nd::Vector{Int} # Number of small distances (vector size = 1), just to be mutable
+  d::Vector{Float64} # All distances smaller than the cutoff
+  iat::Vector{Int} # atom of the solute
+  jat::Vector{Int} # atom of the solvent
+  imol::Vector{Int} # molecule of the solute
+  jmol::Vector{Int} # molecule of the solvent
 
   # Size of the arrays
-  maxdim :: Vector{Int64}
+  maxdim::Vector{Int}
 
 end
 
 # Generator
 
-CutoffDistances( natoms :: Int64) =
-  CutoffDistances(zeros(Int64,1), # nd
+CutoffDistances(natoms::Int) =
+  CutoffDistances(zeros(Int,1), # nd
                   zeros(Float64,natoms), # d
-                  zeros(Int64,natoms), # iat
-                  zeros(Int64,natoms), # jat
-                  zeros(Int64,natoms), # imol
-                  zeros(Int64,natoms), # jmol
+                  zeros(Int,natoms), # iat
+                  zeros(Int,natoms), # jat
+                  zeros(Int,natoms), # imol
+                  zeros(Int,natoms), # jmol
                   [ natoms ]) # maxdim
 
 # Function that zeroes all the values in this structure
 
-function reset!( c :: CutoffDistances )
+function reset!(c::CutoffDistances)
   c.nd[1] = 0
   @. c.d = 0.
   @. c.iat = 0
@@ -40,7 +40,7 @@ function reset!( c :: CutoffDistances )
   return nothing
 end
 
-function reset!( c :: Vector{CutoffDistances} )
+function reset!(c::Vector{CutoffDistances})
   for i in 1:size(c,1)
     reset!(c[i])
   end

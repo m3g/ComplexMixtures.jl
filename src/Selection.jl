@@ -4,28 +4,28 @@
 
 struct Selection
 
-  natoms :: Int # Total number of atoms
-  nmols :: Int # Number of molecules
-  natomspermol :: Int # Number of atoms per molecule
+  natoms::Int # Total number of atoms
+  nmols::Int # Number of molecules
+  natomspermol::Int # Number of atoms per molecule
 
-  index :: Vector{Int} # Index of each atom in the full vector of coordinates
-  imol :: Vector{Int} # index of the molecule to which each atom belongs
+  index::Vector{Int} # Index of each atom in the full vector of coordinates
+  imol::Vector{Int} # index of the molecule to which each atom belongs
 
-  names :: Vector{String} # Types of the atoms, to be used in the atom-contributions
+  names::Vector{String} # Types of the atoms, to be used in the atom-contributions
 
 end
 
 # Initialize providing the file name, and calling by default PDBTools.select
 
-function Selection( file :: String, selection :: String; 
-                    nmols :: Int = 0, natomspermol :: Int = 0 )
+function Selection(file::String, selection::String; 
+                   nmols::Int = 0, natomspermol::Int = 0 )
   sel = PDBTools.readPDB(file,selection)
   return Selection( sel, nmols = nmols, natomspermol = natomspermol )
 end
 
 # If the input is a vector of PDBTools.Atom types, load the index and types
 
-function Selection( atoms :: Vector{PDBTools.Atom}; nmols :: Int = 0, natomspermol :: Int = 0)
+function Selection(atoms::Vector{PDBTools.Atom}; nmols::Int = 0, natomspermol::Int = 0)
   indexes = [ at.index for at in atoms ]
   names = [ at.name for at in atoms ]
   return Selection( indexes, names, nmols=nmols, natomspermol=natomspermol )
@@ -33,15 +33,15 @@ end
 
 # If no names are provided, just repeat the indexes
 
-function Selection( indexes :: Vector{Int}; nmols :: Int = 0, natomspermol :: Int = 0)
+function Selection(indexes::Vector{Int}; nmols::Int = 0, natomspermol::Int = 0)
   names = [ "$(index[i])" for i in 1:length(index) ]
   return Selection( indexes, names, nmols=nmols, natomspermol=natomspermol )
 end
 
 # Function to initialize the structures
 
-function Selection( indexes :: Vector{Int}, names :: Vector{String}; 
-                    nmols :: Int = 0, natomspermol :: Int = 0) 
+function Selection(indexes::Vector{Int}, names::Vector{String}; 
+                   nmols::Int = 0, natomspermol::Int = 0) 
 
   if nmols == 0 && natomspermol == 0
     error("Set nmols or natomspermol when defining a selection.")
@@ -84,8 +84,7 @@ function Selection( indexes :: Vector{Int}, names :: Vector{String};
 
 end
           
-import Base.show
-function Base.show( io :: IO, s :: Selection )
+function Base.show(io::IO, s::Selection)
   if s.nmols == 1
     mol = "molecule"
   else

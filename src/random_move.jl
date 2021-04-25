@@ -7,10 +7,10 @@
 # molecules
 #
 
-function random_move!(x_ref :: AbstractVector{T}, 
-                      irefatom :: Int,
-                      sides :: T,
-                      x_new :: AbstractVector{T}, RNG) where T
+function random_move!(x_ref::AbstractVector{T}, 
+                      irefatom::Int,
+                      sides::T,
+                      x_new::AbstractVector{T}, RNG) where T
 
   # To avoid boundary problems, the center of coordinates are generated in a 
   # much larger region, and wrapped aftwerwards

@@ -3,7 +3,7 @@
 # as in R1 = R1 + R2
 #
 
-function sum!( R1 :: Result, R2 :: Result )
+function sum!(R1::Result, R2::Result)
 
   @. R1.md_count += R2.md_count
   @. R1.md_count_random += R2.md_count_random
@@ -20,14 +20,14 @@ function sum!( R1 :: Result, R2 :: Result )
   return nothing
 end
 
-function sum!( D1 :: Density, D2 :: Density )
+function sum!(D1::Density, D2::Density)
   D1.solute += D2.solute
   D1.solvent += D2.solvent
   D1.solvent_bulk += D2.solvent_bulk
   return nothing
 end
 
-function sum!( V1 :: Volume, V2 :: Volume )
+function sum!(V1::Volume, V2::Volume)
   V1.total += V2.total
   V1.bulk += V2.bulk
   V1.domain += V2.domain

@@ -4,8 +4,8 @@
 # Computes the MDDF using linked cells, in parallel
 #
 
-function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options, 
-                                   samples :: Samples, RNG, mddf_compute!)  
+function mddf_linkedcells_parallel(trajectory::Trajectory, options::Options, 
+                                   samples::Samples, RNG, mddf_compute!)  
 
   # Simplify code by assigning some shortened names
   solute = trajectory.solute
@@ -28,7 +28,7 @@ function mddf_linkedcells_parallel(trajectory :: Trajectory, options :: Options,
   R = [ Result(trajectory,options,irefatom=R0.irefatom) for i in 1:nspawn ]
 
   # Safe passing of frame counter to the threads
-  tframe = zeros(Int64,nspawn)
+  tframe = zeros(Int,nspawn)
 
   # Create data structures required for multithreading
   framedata = Vector{FrameData}(undef,nspawn)

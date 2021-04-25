@@ -4,15 +4,15 @@
 #
 
 @with_kw_noshow mutable struct Overview
-  R :: Result
-  domain_molar_volume :: Float64 = 0.
-  density :: Density = Density()
-  solvent_molar_volume :: Float64 = 0.
-  solvent_molar_volume_bulk :: Float64 = 0.
-  solute_molar_volume :: Float64 = 0.
+  R::Result
+  domain_molar_volume::Float64 = 0.
+  density::Density = Density()
+  solvent_molar_volume::Float64 = 0.
+  solvent_molar_volume_bulk::Float64 = 0.
+  solute_molar_volume::Float64 = 0.
 end
 
-function Base.show( io :: IO, ov :: Overview )
+function Base.show(io::IO, ov::Overview)
   println()
   println(bars)
   println()
@@ -43,7 +43,7 @@ function Base.show( io :: IO, ov :: Overview )
     println("   $(ov.R.files[i]) - w = $(ov.R.weights[i])")
   end
   println()
-  ifar = trunc(Int64,ov.R.nbins - 1.0/ov.R.options.binstep)
+  ifar = trunc(Int,ov.R.nbins - 1.0/ov.R.options.binstep)
   long_range_mean = mean(ov.R.mddf[ifar:ov.R.nbins])
   long_range_std = std(ov.R.mddf[ifar:ov.R.nbins])
   println(" Long range MDDF mean (expected 1.0): ", long_range_mean, " +/- ", long_range_std)
@@ -54,7 +54,7 @@ function Base.show( io :: IO, ov :: Overview )
   println(bars)
 end
 
-function overview(R :: Result)
+function overview(R::Result)
 
   ov = Overview(R = R)
 

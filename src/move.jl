@@ -4,7 +4,7 @@
 # modifyies the vector x
 #
 
-function move!(x :: AbstractVector{T}, newcm :: AbstractVector, 
+function move!(x::AbstractVector{T}, newcm::AbstractVector, 
                beta, gamma, theta) where T
   
   # Compute center of coordinates of x

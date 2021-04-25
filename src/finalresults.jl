@@ -7,7 +7,7 @@
 # This function modified the values contained in the R data structure
 #
 
-function finalresults!(R :: Result, options :: Options, trajectory :: Trajectory, samples :: Samples)
+function finalresults!(R::Result, options::Options, trajectory::Trajectory, samples::Samples)
   
   # Setup the distance vector
   for i in 1:R.nbins

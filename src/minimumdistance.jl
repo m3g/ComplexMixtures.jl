@@ -8,7 +8,7 @@
 
 # If x is only a vector 
 
-function minimumdistance(x :: T, y :: Vector{T}) where T
+function minimumdistance(x::T, y::Vector{T}) where T
   jatom = 0
   dmin = +Inf
   ny = length(y)
@@ -24,7 +24,7 @@ end
 
 # If both are vectors of vectors
 
-function minimumdistance(x :: Vector{T}, y :: Vector{T}) where T
+function minimumdistance(x::Vector{T}, y::Vector{T}) where T
   iatom = 0
   jatom = 0
   dmin = +Inf
@@ -46,8 +46,8 @@ end
 # Function that returns the distance of a reference atom as well, to be used for 
 # computation of the volume shell by Monte-Caro integration
 
-function minimumdistance(x :: Vector{T}, y :: Vector{T},
-                         jrefatom :: Int) where T
+function minimumdistance(x::Vector{T}, y::Vector{T},
+                         jrefatom::Int) where T
   iatom = 0
   jatom = 0
   drefatom = +Inf
@@ -78,8 +78,8 @@ end
 # With periodic boundary conditions
 #
 
-function minimumdistance(x :: Vector{T}, y :: Vector{T},
-                         sides :: T) where T
+function minimumdistance(x::Vector{T}, y::Vector{T},
+                         sides::T) where T
   iatom = 0
   jatom = 0
   dmin = +Inf
@@ -101,8 +101,8 @@ end
 # Function that returns the distance of a reference atom as well, to be used for 
 # computation of the volume shell by Monte-Caro integration
 
-function minimumdistance(x :: Vector{T}, y :: Vector{T},
-                         jrefatom :: Int, sides :: T) where T
+function minimumdistance(x::Vector{T}, y::Vector{T},
+                         jrefatom::Int, sides::T) where T
   iatom = 0
   jatom = 0
   drefatom = +Inf

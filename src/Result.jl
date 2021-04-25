@@ -4,23 +4,23 @@
 
 macro ResultFields_Start()
   ex = quote
-    nbins :: Int64 
-    dbulk :: Float64
-    cutoff :: Float64
-    d :: Vector{Float64} = zeros(nbins)
+    nbins::Int 
+    dbulk::Float64
+    cutoff::Float64
+    d::Vector{Float64} = zeros(nbins)
 
     # Data to compute the MDDF distribution and corresponding KB integral
-    md_count :: Vector{Float64} = zeros(nbins)
-    md_count_random :: Vector{Float64} = zeros(nbins)
-    sum_md_count :: Vector{Float64} = zeros(nbins)
-    sum_md_count_random :: Vector{Float64} = zeros(nbins)
-    mddf :: Vector{Float64} = zeros(nbins)
-    kb :: Vector{Float64} = zeros(nbins)
+    md_count::Vector{Float64} = zeros(nbins)
+    md_count_random::Vector{Float64} = zeros(nbins)
+    sum_md_count::Vector{Float64} = zeros(nbins)
+    sum_md_count_random::Vector{Float64} = zeros(nbins)
+    mddf::Vector{Float64} = zeros(nbins)
+    kb::Vector{Float64} = zeros(nbins)
 
     # Properties of the solute and solvent selections
-    autocorrelation :: Bool
-    solvent :: SolSummary
-    solute :: SolSummary
+    autocorrelation::Bool
+    solvent::SolSummary
+    solute::SolSummary
    end
    esc(ex)
 end
@@ -28,8 +28,8 @@ end
 macro ResultFields_AtomsMatrix()
   ex = quote
     # Atomic contributions to the MDDFs
-    solute_atom :: Array{Float64,2} = zeros(nbins,solute.natomspermol)
-    solvent_atom :: Array{Float64,2} = zeros(nbins,solvent.natomspermol)
+    solute_atom::Array{Float64,2} = zeros(nbins,solute.natomspermol)
+    solvent_atom::Array{Float64,2} = zeros(nbins,solvent.natomspermol)
   end
   esc(ex)
 end
@@ -37,8 +37,8 @@ end
 macro ResultFields_AtomsVector()
   ex = quote
     # Atomic contributions to the MDDFs
-    solute_atom :: Array{Float64} = zeros(nbins,solute.natomspermol)
-    solvent_atom :: Array{Float64} = zeros(nbins,solvent.natomspermol)
+    solute_atom::Array{Float64} = zeros(nbins,solute.natomspermol)
+    solvent_atom::Array{Float64} = zeros(nbins,solvent.natomspermol)
   end
   esc(ex)
 end
@@ -46,26 +46,26 @@ end
 macro ResultFields_End()
   ex = quote
     # Data to compute a RDF and the KB integral from this count
-    rdf_count :: Vector{Float64} = zeros(nbins)
-    rdf_count_random :: Vector{Float64} = zeros(nbins)
-    sum_rdf_count :: Vector{Float64} = zeros(nbins)
-    sum_rdf_count_random :: Vector{Float64} = zeros(nbins)
-    rdf :: Vector{Float64} = zeros(nbins)
-    kb_rdf :: Vector{Float64} = zeros(nbins)
+    rdf_count::Vector{Float64} = zeros(nbins)
+    rdf_count_random::Vector{Float64} = zeros(nbins)
+    sum_rdf_count::Vector{Float64} = zeros(nbins)
+    sum_rdf_count_random::Vector{Float64} = zeros(nbins)
+    rdf::Vector{Float64} = zeros(nbins)
+    kb_rdf::Vector{Float64} = zeros(nbins)
 
     # Overall densities and volumes
-    density :: Density = Density()
-    volume :: Volume = Volume(nbins)
+    density::Density = Density()
+    volume::Volume = Volume(nbins)
 
     # Options of the calculation
-    options :: Options
-    irefatom :: Int64
-    lastframe_read :: Int64
-    nframes_read :: Int64
+    options::Options
+    irefatom::Int
+    lastframe_read::Int
+    nframes_read::Int
 
     # File name(s) of the trajectories in this results 
-    files :: Vector{String}
-    weights :: Vector{Float64} 
+    files::Vector{String}
+    weights::Vector{Float64} 
   end
   esc(ex)
 end
@@ -89,7 +89,7 @@ end
 # input parameters for consistency
 #
 
-function Result( trajectory :: Trajectory, options :: Options; irefatom = -1 ) 
+function Result(trajectory::Trajectory, options::Options; irefatom = -1) 
 
   # Check for simple input errors
   if options.stride < 1
@@ -147,7 +147,7 @@ function Result( trajectory :: Trajectory, options :: Options; irefatom = -1 )
   end
  
   # Actual number of frames that are read considering lastframe and stride
-  nframes_read = round(Int64,(lastframe_read - options.firstframe + 1)/options.stride)
+  nframes_read = round(Int,(lastframe_read - options.firstframe + 1)/options.stride)
   if nframes_read == 0
     error("Number of frames to read is zero. Check input parameters.")
   end
@@ -172,5 +172,5 @@ end
 # What to show at the REPL
 #
 
-Base.show( io :: IO, R :: Result ) = Base.show(overview(R))
+Base.show(io::IO, R::Result ) = Base.show(overview(R))
 

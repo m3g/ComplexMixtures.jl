@@ -11,26 +11,26 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
   #
   # Mandatory data for things to work
   #
-  filename :: String
-  format :: AbstractString
-  stream :: Vector{Chemfiles.Trajectory} # mutable such that we can close it and open it again
-  nframes :: Int64 
+  filename::String
+  format::AbstractString
+  stream::Vector{Chemfiles.Trajectory} # mutable such that we can close it and open it again
+  nframes::Int64 
 
   # Vector wthat will be fed with the sizes of the periodic box 
-  sides :: Vector{T}
+  sides::Vector{T}
 
   # Solute and solvent data
-  solute :: Selection
-  solvent :: Selection
+  solute::Selection
+  solvent::Selection
 
   # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-  x_solute :: Vector{T}  # solute.natoms vectors of length 3
-  x_solvent :: Vector{T} # solvent.natoms vectors of lenght 3
+  x_solute::Vector{T}  # solute.natoms vectors of length 3
+  x_solvent::Vector{T} # solvent.natoms vectors of lenght 3
 
   #
   # Additional data required for input/output functions
   #
-  natoms :: Int64
+  natoms::Int64
 
 end
 
@@ -42,8 +42,8 @@ end
 # will be able to read the first frame of the trajectory
 #
 
-function ChemFile( filename :: String, solute :: Selection, solvent :: Selection; 
-                   format="" , T :: Type = SVector{3,Float64} )
+function ChemFile(filename::String, solute::Selection, solvent::Selection; 
+                  format="" , T::Type = SVector{3,Float64})
 
   stream = Vector{Chemfiles.Trajectory}(undef,1)
   stream[1] = Chemfiles.Trajectory(filename,'r',format)
@@ -73,7 +73,7 @@ function ChemFile( filename :: String, solute :: Selection, solvent :: Selection
                  )
 end
 
-function Base.show( io :: IO, trajectory :: ChemFile )
+function Base.show(io::IO, trajectory::ChemFile)
   println(" ")
   println(" Trajectory read by Chemfiles with: ")
   println("    $(trajectory.nframes) frames.")
@@ -90,7 +90,7 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!( trajectory :: ChemFile{T} ) where T 
+function nextframe!(trajectory::ChemFile{T} ) where T 
 
   frame = Chemfiles.read(trajectory.stream[1])
   positions = Chemfiles.positions(frame)
@@ -116,17 +116,17 @@ end
 # case, returns the 3-element vector corresponding to the box sides of the given frame,
 # it expected that the "nextframe" function fed this information already to the
 # trajectory.sides vector in the current frame
-getsides(trajectory :: ChemFile, iframe) = trajectory.sides[1]
+getsides(trajectory::ChemFile, iframe) = trajectory.sides[1]
 
 #
 # Function that closes the IO Stream of the trajectory
 #
-closetraj( trajectory :: ChemFile ) = Chemfiles.close( trajectory.stream[1] )
+closetraj(trajectory::ChemFile) = Chemfiles.close(trajectory.stream[1])
 
 #
 # Function that returns the trajectory in position to read the first frame
 #
-function firstframe( trajectory :: ChemFile )  
+function firstframe(trajectory::ChemFile)  
   Chemfiles.close(trajectory.stream[1])
   trajectory.stream[1] = Chemfiles.Trajectory(trajectory.filename,'r',trajectory.format)
 end

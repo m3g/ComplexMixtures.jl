@@ -11,10 +11,10 @@
 # returns: n_dmin_in_bulk: number of molecules with all the atoms in the bulk
 #          n_dref_in_bulk: number of molecules with the reference atom in the bulk
 
-function updatecounters!(R :: Result, 
-                         solute :: Selection, solvent :: Selection,
-                         dc :: CutoffDistances, 
-                         dmin_mol :: Vector{DminMol}, dref_mol :: Vector{Float64})
+function updatecounters!(R::Result, 
+                         solute::Selection, solvent::Selection,
+                         dc::CutoffDistances, 
+                         dmin_mol::Vector{DminMol}, dref_mol::Vector{Float64})
 
 
   for i in 1:solvent.nmols
@@ -77,11 +77,11 @@ end
 # If the rdf_count_random_frame is provided, update the
 # counters associated to the random distribution
 #
-function updatecounters!(R :: Result,
-                         rdf_count_random_frame :: Vector{Float64},
-                         md_count_random_frame :: Vector{Float64},
-                         solvent :: Selection, dc :: CutoffDistances,
-                         dmin_mol :: Vector{DminMol}, dref_mol :: Vector{Float64})
+function updatecounters!(R::Result,
+                         rdf_count_random_frame::Vector{Float64},
+                         md_count_random_frame::Vector{Float64},
+                         solvent::Selection, dc::CutoffDistances,
+                         dmin_mol::Vector{DminMol}, dref_mol::Vector{Float64})
 
   for i in 1:solvent.nmols
     dmin_mol[i].d = +Inf

@@ -12,7 +12,7 @@ StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
 # Function to write the result data structure to a json file
 #
 
-function save( R :: Result, filename :: String)
+function save(R::Result, filename::String)
   f = open(filename,"w")
   JSON3.write(f,R)
   close(f)

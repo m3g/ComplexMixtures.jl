@@ -8,13 +8,13 @@
 # Returns nd, the number of distances smaller than the cutoff, and modifies dc
 #
 
-function cutoffdistances_self!(cutoff :: Float64,
-                               x_solute :: AbstractVector{T},
-                               x_solvent :: Vector{T},
-                               lc_solvent :: LinkedCells,
-                               box :: Box, 
-                               dc :: CutoffDistances, 
-                               solvent :: Selection, imol :: Int64) where T
+function cutoffdistances_self!(cutoff::Float64,
+                               x_solute::AbstractVector{T},
+                               x_solvent::Vector{T},
+                               lc_solvent::LinkedCells,
+                               box::Box, 
+                               dc::CutoffDistances, 
+                               solvent::Selection, imol::Int) where T
 
   # Reset the dc structure 
   reset!(dc)

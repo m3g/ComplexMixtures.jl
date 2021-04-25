@@ -3,10 +3,10 @@
 #
 
 const bars = "-------------------------------------------------------------------------------"
-function title(R :: Result, 
-               solute :: Selection,
-               solvent :: Selection,
-               nspawn :: Int)
+function title(R::Result, 
+               solute::Selection,
+               solvent::Selection,
+               nspawn::Int)
 
   println(bars)
   println("Starting MDDF calculation in parallel:")
@@ -17,9 +17,9 @@ function title(R :: Result,
 
 end
 
-function title(R :: Result, 
-               solute :: Selection,
-               solvent :: Selection)
+function title(R::Result, 
+               solute::Selection,
+               solvent::Selection)
 
   println(bars)
   println("Starting MDDF calculation:")

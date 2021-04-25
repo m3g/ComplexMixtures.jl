@@ -27,9 +27,9 @@ function init_random(options)
   return RNG
 end
 
-random(RNG :: StableRNGs.LehmerRNG ) = rand(RNG)
-random(RNG :: StableRNGs.LehmerRNG, arg) = rand(RNG,arg)
+random(RNG::StableRNGs.LehmerRNG) = rand(RNG)
+random(RNG::StableRNGs.LehmerRNG, arg) = rand(RNG,arg)
 
-random(RNG :: Array{T}) where T = rand(RNG[Threads.threadid()])
-random(RNG :: Array{T}, arg) where T = rand(RNG[Threads.threadid()],arg)    
+random(RNG::Array{T}) where T = rand(RNG[Threads.threadid()])
+random(RNG::Array{T}, arg) where T = rand(RNG[Threads.threadid()],arg)    
 

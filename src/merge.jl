@@ -5,7 +5,7 @@
 # of the set provided weighted by the number of frames read in each Result set.
 #
 
-function merge( r :: Vector{Result} )
+function merge(r::Vector{Result})
 
   nr = length(r)
   nframes_read = r[1].nframes_read

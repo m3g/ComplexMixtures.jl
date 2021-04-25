@@ -1,7 +1,7 @@
 # Given the indexes of a cell, return the periodic cell which correspondst to
 # it, if the cell is outside the main box
 
-function wrap_cell(nc :: AbstractVector, i :: Int, j :: Int, k :: Int)
+function wrap_cell(nc::AbstractVector, i::Int, j::Int, k::Int)
 
   if i < 1
     i = nc[1] + i

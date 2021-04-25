@@ -4,6 +4,6 @@
 #
 
 @with_kw struct Samples
-  md
-  random
+  md::Float64
+  random::Int
 end

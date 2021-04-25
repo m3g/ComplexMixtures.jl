@@ -1,7 +1,7 @@
 #
 # Computes the center of coordinates of a vector coor
 #
-function centerofcoordinates(coor :: AbstractVector{T}) where T
+function centerofcoordinates(coor::AbstractVector{T}) where T
   cm = zeros(T)
   n = length(coor)
   for i in 1:n

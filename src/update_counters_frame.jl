@@ -2,12 +2,12 @@
 # Update the data with the data accumulated in a frame
 #
 
-function update_counters_frame!(R :: Result, 
-                                rdf_count_random_frame :: Vector{Float64}, 
-                                md_count_random_frame :: Vector{Float64},
-                                volume_frame :: Volume, 
-                                solute :: Selection, solvent :: Selection,
-                                n_solvent_in_bulk :: Float64)
+function update_counters_frame!(R::Result, 
+                                rdf_count_random_frame::Vector{Float64}, 
+                                md_count_random_frame::Vector{Float64},
+                                volume_frame::Volume, 
+                                solute::Selection, solvent::Selection,
+                                n_solvent_in_bulk::Float64)
 
   # Volume of each bin shell and of the solute domain
   @. volume_frame.shell = 
