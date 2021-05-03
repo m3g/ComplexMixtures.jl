@@ -64,6 +64,29 @@ julia> overview.solute_molar_volume
 
 ```
 
+## Computing a 2D density map around a macromolecule 
+
+One nice way to visualize the accumulation or depletion of a solvent around a macromolecule (a protein, for example), is to obtain a 2D map of the density as a function of the distance from its surface. For example, in the figure below the density of a solute (here, Glycerol), in the neighborhood of a protein is shown:
+
+```@raw html
+<center>
+<img src="../figures/density.png" width=80%>
+</center>
+```
+
+Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF. Using `PDBTools`, this can be done with, for example: 
+
+```julia
+residues = collect(eachresidue(protein))
+residue_contributions = zeros(length(R.d),length(residues))
+for (i,residue) in pairs(residues)
+  c = ComplexMixtures.contrib(solute,R.solute_atom,residue) 
+  residue_contributions[i,:] .= c
+end
+```
+
+The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. [A complete running example is provided here](https://github.com/m3g/ComplexMixturesExamples/tree/main/Density2D), producing the figure above.    
+
 ## Computing radial distribution functions
 
 The distributions returned by the `mddf` function (meaning `mddf` and
