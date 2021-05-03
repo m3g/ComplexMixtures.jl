@@ -1,7 +1,7 @@
 """
 
 ```
-grid3D(solute,solute_atoms,mddf_result,output_file; dmin=1.0, ddax=7.0, step=0.5)
+grid3D(solute,solute_atoms,mddf_result,output_file; dmin=1.5, ddax=5.0, step=0.5)
 ```
 
 This function builds the grid of the 3D density function and fills an array of
@@ -45,11 +45,11 @@ visualized are provided in the user guide of `ComplexMixtures`.
 
 """
 grid3D(;solute=nothing, solute_atoms=nothing, mddf_result=nothing, output_file=nothing,
-        dmin=1.0, dmax=7.0, step=0.5) =
+        dmin=1.5, dmax=5.0, step=0.5) =
   grid3D(solute, solute_atoms, mddf_result, output_file, dmin=dmin, dmax=dmax, step=step)
 
 function grid3D(solute,solute_atoms,mddf_result,output_file;
-                dmin=1.0, dmax=7.0, step=0.5)
+                dmin=1.5, dmax=5.0, step=0.5)
 
   if nothing in (solute, solute_atoms, mddf_result)
     error("grid3D requires `solute`, `solute_atoms` and `mddf_result` definitions.")
