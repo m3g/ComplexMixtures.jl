@@ -22,6 +22,7 @@ makedocs(
         "Options" => "options.md",
         "Tools" => "tools.md",
 #        "Examples" => "examples.md",
+        "Help entries" => "help.md",
         "References" => "references.md"
     ]
 )

@@ -1,12 +1,13 @@
-#     
-# mddf_choose
-#
-# Select serial of parallel version depending on the number of available
-# threads and type of calculation
-#  
+"""     
 
-# With default input options
+```
+mddf_choose
+```
 
+Selects serial of parallel version depending on the number of available
+threads and type of calculation.
+
+"""
 mddf_choose(trajectory::Trajectory) = mddf_choose(trajectory,Options())
 
 # Choose among serial or parallel version, and self and non-self versions

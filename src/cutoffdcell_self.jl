@@ -1,10 +1,23 @@
-#
-# Function that computes all distance of a point "xat" to the atoms of the solvent found in
-# the linked cell corresponding to indexes i, j, and k
-#
-# Modifies the data of dc
-#
+"""
 
+```
+cutoffdcell_self!(cutoff::Float64, 
+                  iat::Int, xat::T,
+                  x_solvent::Vector{T},
+                  lc_solvent::LinkedCells,
+                  box::Box,
+                  i::Int, j::Int, k::Int,
+                  dc::CutoffDistances,
+                  solvent::Selection,
+                  imol::Int) where T
+```
+
+Function that computes all distance of a point `xat` to the atoms of the solvent found in
+the linked cell corresponding to indexes i, j, and k.
+
+Modifies the data of `dc`
+
+"""
 function cutoffdcell_self!(cutoff::Float64, 
                            iat::Int, xat::T,
                            x_solvent::Vector{T},

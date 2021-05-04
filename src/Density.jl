@@ -1,7 +1,8 @@
-#
-# Structure to contain the density values obtained from the calculation
-#
+"""
 
+Structure to contain the density values obtained from the calculation.
+
+"""
 @with_kw mutable struct Density
   solute::Float64 = 0.
   solvent::Float64 = 0.

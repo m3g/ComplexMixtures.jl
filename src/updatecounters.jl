@@ -1,16 +1,15 @@
-#
-# Function that updates the counters in R and returns n_dmin_in_bulk given
-# the output of cutoffdistances
-#
-#
+"""
 
-#
-# If the solute and solvent selections are provided, 
-# update md_count, rdf_count and the atom-specific counters
-#
-# returns: n_dmin_in_bulk: number of molecules with all the atoms in the bulk
-#          n_dref_in_bulk: number of molecules with the reference atom in the bulk
+Function that updates the counters in `R` and returns `n_dmin_in_bulk` given
+the output of `cutoffdistances`.
 
+If the solute and solvent selections are provided, 
+update md_count, rdf_count and the atom-specific counters
+
+returns: `n_dmin_in_bulk`: number of molecules with all the atoms in the bulk
+         `n_dref_in_bulk`: number of molecules with the reference atom in the bulk
+
+"""
 function updatecounters!(R::Result, 
                          solute::Selection, solvent::Selection,
                          dc::CutoffDistances, 

@@ -1,13 +1,18 @@
-#
-# Extract the contribution of a given atom type selection from the 
-# solute or solvent atomic contributions to the MDDF 
-#
-# s here is the solute or solvent selection
-# atom_contributions is the R.solute_atom or R.solvent_atom arrays of the Result structure
+"""
 
-#
-# If a list of indexes of atoms of the simulation is provided 
-#
+```
+contrib(s::Selection, atom_contributions::Array{Float64}, selection)
+```
+
+Extract the contribution of a given atom type selection from the 
+solute or solvent atomic contributions to the MDDF.
+
+`s` here is the solute or solvent selection (type `ComplexMixtures.Selection`)
+`atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure,
+and the last argument is the selection of atoms from the solute to be considered, given as a list 
+of indexes, list of atom names, vector of `PDBTools.Atom`s, or a `PDBTools.Residue`. 
+
+"""
 function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vector{Int})
   nbins = size(atom_contributions,1)
   c = zeros(nbins)

@@ -1,7 +1,13 @@
-#
-# Function that returns if a distance is in the bulk region or not, according
-# to the options
-#
+"""
+
+```
+inbulk(d, R::Result)
+```
+
+Function that returns if a distance is in the bulk region or not, according
+to the options
+
+"""
 function inbulk(d, R::Result)
   if R.options.usecutoff
     if d >= R.dbulk && d < R.cutoff 

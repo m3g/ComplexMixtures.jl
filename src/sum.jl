@@ -1,8 +1,12 @@
-#
-# Sum the counts of two Results structures, adding the result to the first structure
-# as in R1 = R1 + R2
-#
+"""
+```
+sum!(R1::Result, R2::Result)
+```
 
+Sum the counts of two Results structures, adding the result to the first structure
+as in R1 = R1 + R2.
+
+"""
 function sum!(R1::Result, R2::Result)
 
   @. R1.md_count += R2.md_count

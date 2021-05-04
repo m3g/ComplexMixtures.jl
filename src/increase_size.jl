@@ -1,6 +1,8 @@
-#
-# Increases size of arrays in dc structure if needed
-#
+"""
+
+Increases size of arrays in dc structure if needed
+
+"""
 function increase_size!(dc::CutoffDistances, maxdim::Int)
   dc.maxdim[1] = maxdim
   resize!(dc.d,dc.maxdim[1])

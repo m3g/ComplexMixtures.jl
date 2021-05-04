@@ -1,6 +1,13 @@
-# Computes the radius that corresponds to a spherical shell of
-# a given volume
+"""
 
+```
+sphereradiusfromshellvolume(volume,step)
+```
+
+Computes the radius that corresponds to a spherical shell of
+a given volume.
+
+"""
 function sphereradiusfromshellvolume(volume,step)
 
   fourthirdsofpi = 4*pi/3

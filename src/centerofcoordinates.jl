@@ -1,6 +1,12 @@
-#
-# Computes the center of coordinates of a vector coor
-#
+"""
+
+```
+centerofcoordinates(coor::AbstractVector{T}) where T
+```
+
+Computes the center of coordinates of a vector.
+
+"""
 function centerofcoordinates(coor::AbstractVector{T}) where T
   cm = zeros(T)
   n = length(coor)

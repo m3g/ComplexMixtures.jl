@@ -1,13 +1,21 @@
-#
-# cutoffdistances: This routine that returns a list of the distances 
-#                  between atoms that are smaller than a specified cutoff,
-#                  for a given set of coordinates.
-#
-# L. Martinez, Sep 23, 2014. (to Julia on June, 2020)
-#
-# Returns nd, the number of distances smaller than the cutoff, and modifies dc
-#
+"""
 
+```
+cutoffdistances!(cutoff::Float64,
+                 x_solute::AbstractVector{T},
+                 x_solvent::Vector{T},
+                 lc_solvent::LinkedCells,
+                 box::Box, 
+                 dc::CutoffDistances) where T
+```
+
+This routine that returns a list of the distances 
+between atoms that are smaller than a specified cutoff,
+for a given set of coordinates.
+
+Returns `nd`, the number of distances smaller than the cutoff, and modifies `dc`.
+
+"""
 function cutoffdistances!(cutoff::Float64,
                           x_solute::AbstractVector{T},
                           x_solvent::Vector{T},

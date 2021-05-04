@@ -1,12 +1,16 @@
-#
-# Functions that wrap the coordinates 
-# 
-# It modifies the coordinates of the input vector
-#
+"""
 
-#
-# Wrap to a given center of coordinates
-#
+Functions that wrap the coordinates 
+
+They modify the coordinates of the input vector.
+
+```
+function wrap!(x::AbstractVector{T}, sides::T, center::T) where T <: AbstractVector
+```
+
+Wrap to a given center of coordinates
+
+"""
 function wrap!(x::AbstractVector{T}, 
                sides::T, 
                center::T) where T <: AbstractVector
@@ -31,9 +35,15 @@ end
   x
 end
 
-#
-# Wrap to origin
-#
+"""
+
+```
+wrap!(x::AbstractVector{T}, sides::T) where T <: AbstractVector
+```
+
+Wrap to origin.
+
+"""
 function wrap!(x::AbstractVector{T}, sides::T) where T <: AbstractVector
   for i in eachindex(x)
     x[i] = wrapone(x[i],sides)

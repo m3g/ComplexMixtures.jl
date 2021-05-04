@@ -1,7 +1,8 @@
-#
-# Structures to contain the volume values obtained from calculations
-#
+"""
 
+Structures to contain the volume values obtained from calculations.
+
+"""
 @with_kw mutable struct Volume
   total::Float64 
   bulk::Float64 

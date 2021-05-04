@@ -1,6 +1,8 @@
 """
 
-`which_types(s::Selection, indexes::Vector{Int})`
+```
+which_types(s::Selection, indexes::Vector{Int})
+```
 
 Function that returns the list of the indexes of the types of the atoms in a
 selection. For example, if a selection corresponds to a solvent of water molecules:

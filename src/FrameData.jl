@@ -1,7 +1,8 @@
-#
-# Structure to contain data needed to compute the mddf for a single frame
-#
+"""
 
+Structure to contain data needed to compute the mddf for a single frame
+
+"""
 mutable struct FrameData{T<:Trajectory,V}
 
   trajectory::T

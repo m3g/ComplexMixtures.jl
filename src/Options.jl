@@ -1,7 +1,8 @@
-#
-# Structure that contains the detailed input options
-#
+"""
 
+Structure that contains the detailed input options.
+
+"""
 @with_kw struct Options
 
   firstframe::Int = 1

@@ -34,14 +34,20 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
 
 end
 
-#
-# Function open will set up the IO stream of the trajectory, fill up the 
-# number of frames field and additional parameters if required 
-#
-# The IO stream must be returned in a position such that the "nextframe!" function
-# will be able to read the first frame of the trajectory
-#
+"""
 
+```
+ChemFile(filename::String, solute::Selection, solvent::Selection;format="" , T::Type = SVector{3,Float64})
+```
+
+Function open will set up the IO stream of the trajectory, fill up the 
+number of frames field and additional parameters if required 
+
+The IO stream must be returned in a position such that the "nextframe!" function
+will be able to read the first frame of the trajectory
+
+
+"""
 function ChemFile(filename::String, solute::Selection, solvent::Selection; 
                   format="" , T::Type = SVector{3,Float64})
 

@@ -1,7 +1,8 @@
-#
-# Update the data with the data accumulated in a frame
-#
+"""
 
+Update the data with the data accumulated in a frame
+
+"""
 function update_counters_frame!(R::Result, 
                                 rdf_count_random_frame::Vector{Float64}, 
                                 md_count_random_frame::Vector{Float64},

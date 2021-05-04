@@ -1,8 +1,9 @@
-#
-# function that outputs the volumes and densities in the most
-# natural units
-#
+"""
 
+Function that outputs the volumes and densities in the most natural units.
+
+
+"""
 @with_kw_noshow mutable struct Overview
   R::Result
   domain_molar_volume::Float64 = 0.

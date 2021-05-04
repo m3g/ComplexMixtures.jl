@@ -1,6 +1,8 @@
-#
-# Structure that contains some data required to compute the linked cells
-#
+"""
+
+Structure that contains some data required to compute the linked cells.
+
+"""
 struct Box{FloatVector,IntVector}
   sides::FloatVector
   nc::IntVector

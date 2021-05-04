@@ -1,9 +1,12 @@
-#     
-# mddf_linkedcells
-#
-# Computes the MDDF using linked cells, in parallel
-#
+"""     
 
+```
+mddf_linkedcells_parallel(trajectory::Trajectory, options::Options,samples::Samples, RNG, mddf_compute!)  
+```
+
+Computes the MDDF using linked cells, in parallel.
+
+"""
 function mddf_linkedcells_parallel(trajectory::Trajectory, options::Options, 
                                    samples::Samples, RNG, mddf_compute!)  
 

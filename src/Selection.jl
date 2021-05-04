@@ -1,7 +1,8 @@
-#
-# Structure that contains the information about the solute and solvent molecules
-#
+"""
 
+Structure that contains the information about the solute and solvent molecules.
+
+"""
 struct Selection
 
   natoms::Int # Total number of atoms

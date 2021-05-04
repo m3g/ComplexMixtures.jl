@@ -1,12 +1,17 @@
-#
-# Computes the radial distribution function from the count data and
-# the density.
-#
-# This is exactly a conventional g(r) 
-# if a single atom was chosen as the solute and solvent selections.
-# 
-# Returns both the g(r) and the kb(r)
-#
+"""
+```
+gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binstep::Float64)
+```
+
+Computes the radial distribution function from the count data and
+the density.
+
+This is exactly a conventional g(r) 
+if a single atom was chosen as the solute and solvent selections.
+
+Returns both the g(r) and the kb(r)
+
+"""
 function gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binstep::Float64)
   nbins = length(r)
   gr = zeros(nbins)
@@ -23,7 +28,15 @@ function gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binste
   return gr, kb
 end
 
-# If a Result structure is provided without further details, use the rdf count
-# and teh bulk solvent density
+
+"""
+
+```
+gr(R::Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
+```
+
+If a Result structure is provided without further details, use the rdf count
+and the bulk solvent density.
+"""
 gr(R::Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
 

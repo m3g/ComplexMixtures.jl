@@ -1,7 +1,9 @@
-#
-# Structures to contain the results of the MDDF calculation
-#
+"""
 
+Structures to contain the details of a solute or solvent to
+store in the results of the MDDF calculation.
+
+"""
 struct SolSummary
   natoms::Int
   nmols::Int

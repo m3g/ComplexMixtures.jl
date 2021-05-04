@@ -1,7 +1,9 @@
-#
-# Structure to contain the names of the output files
-#
+"""
 
+Structure to contain the names of the output files.
+
+
+"""
 @with_kw mutable struct OutputFiles
 
   output::String

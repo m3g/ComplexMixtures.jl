@@ -40,10 +40,17 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
 
 end
 
-# This function initializes the structure above, returning the data and the vectors with
-# appropriate lengths and, importantly, with the i/o stream OPENED, ready to read the first
-# trajectory frame using the "nextframe" function.
+"""
 
+```
+NamdDCD(filename::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
+```
+
+This function initializes the structure above, returning the data and the vectors with
+appropriate lengths and, importantly, with the i/o stream OPENED, ready to read the first
+trajectory frame using the "nextframe" function.
+
+"""
 function NamdDCD(filename::String, solute::Selection, solvent::Selection; 
                   T::Type = SVector{3,Float64})
 

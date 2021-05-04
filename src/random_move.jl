@@ -1,12 +1,19 @@
-#
-# Function that generates a new random position for a molecule
-#
-# the new position is returned in x, a previously allocated array
-#
-# x_solvent_random might be a view of the array that contains all the solvent
-# molecules
-#
+"""
 
+```
+random_move!(x_ref::AbstractVector{T}, 
+             irefatom::Int,
+             sides::T,
+             x_new::AbstractVector{T}, RNG) where T
+```
+
+Function that generates a new random position for a molecule.
+
+The new position is returned in `x`, a previously allocated array.
+
+`x_solvent_random` might be a view of the array that contains all the solvent molecules.
+
+"""
 function random_move!(x_ref::AbstractVector{T}, 
                       irefatom::Int,
                       sides::T,

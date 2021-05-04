@@ -1,7 +1,9 @@
-#
-# Structures to contain the results of the MDDF calculation
-#
+"""
 
+Structures to contain the results of the MDDF calculation.
+
+
+"""
 macro ResultFields_Start()
   ex = quote
     nbins::Int 

@@ -1,12 +1,23 @@
-#
-# Functions to compute Euclidean distances
-#
+"""
+```
+distance(x,y)
+```
 
+Functions to compute Euclidean distances between 2 3-dimensional vectors.
+
+"""
 @inline distance(x,y) = sqrt((y[1]-x[1])^2 + (y[2]-x[2])^2 + (y[3]-x[3])^2)
 
-#
-# With periodic conditions 
-#
+"""
+
+```
+distance(x,y,sides)
+```
+
+Functions to compute Euclidean distances between two 3-dimensional vectors,
+with periodic boundary conditions given by `sides`. 
+
+"""
 @inline function distance(x, y, sides)
   d = 0.
   for i in 1:3

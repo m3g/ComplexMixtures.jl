@@ -1,12 +1,18 @@
-#
-# Function that computes the final results of all the data computed by averaging
-# according to the sampling of each type of data, and converts to common units
-#
-# Computes also the final distribution functions and KB integrals
-#
-# This function modified the values contained in the R data structure
-#
+"""
 
+```
+finalresults!(R::Result, options::Options, trajectory::Trajectory, samples::Samples)
+```
+
+Function that computes the final results of all the data computed by averaging
+according to the sampling of each type of data, and converts to common units.
+
+Computes also the final distribution functions and KB integrals
+
+This function modified the values contained in the R data structure
+
+
+"""
 function finalresults!(R::Result, options::Options, trajectory::Trajectory, samples::Samples)
   
   # Setup the distance vector

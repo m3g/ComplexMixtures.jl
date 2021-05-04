@@ -1,12 +1,18 @@
-# 
-# Select atoms using vmd selection syntax, with vmd in background
-#
-# Returns the list of index (one-based) and atom names
-#
+""" 
 
-# Function to return the selection from a input file (topology, coordinates, etc), 
-# by calling VMD in the background.
+```
+VMDselect(inputfile::String, selection::String; vmd="vmd" )
+```
 
+Select atoms using vmd selection syntax, with vmd in background
+
+Returns the list of index (one-based) and atom names
+
+
+Function to return the selection from a input file (topology, coordinates, etc), 
+by calling VMD in the background.
+
+"""
 function VMDselect(inputfile::String, selection::String; vmd="vmd" )
 
   if ! isfile(inputfile)

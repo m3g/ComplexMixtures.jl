@@ -1,8 +1,12 @@
-#
-# Print some information about the run
-#
 
 const bars = "-------------------------------------------------------------------------------"
+
+"""
+
+Print some information about the run.
+
+
+"""
 function title(R::Result, 
                solute::Selection,
                solvent::Selection,

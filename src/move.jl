@@ -1,9 +1,14 @@
-#
-# function move: Translates and rotates a molecule according
-# to the desired input center of coordinates and Euler rotations
-# modifyies the vector x
-#
+"""
 
+```
+move!(x::AbstractVector{T}, newcm::AbstractVector,beta, gamma, theta) where T
+```
+
+Translates and rotates a molecule according
+to the desired input center of coordinates and Euler rotations
+modifyies the vector x.
+
+"""
 function move!(x::AbstractVector{T}, newcm::AbstractVector, 
                beta, gamma, theta) where T
   

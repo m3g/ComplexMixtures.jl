@@ -1,7 +1,13 @@
-#
-# Computes the MDDF for a single frame, modifies the data in the R (Result) structure
-#
+"""
 
+```
+mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R::Result)
+```
+
+Computes the MDDF for a single frame, modifies the data in the `R` (type `Result`) structure.
+
+
+"""
 function mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R::Result)
 
   # Simplify code by assigning some shortened names

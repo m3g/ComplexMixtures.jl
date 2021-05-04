@@ -1,7 +1,13 @@
-#
-# Returns the i,j,k coordinates of the cell from the coordinates of an atom and box properties
-#
+"""
 
+```
+icell3D
+```
+
+Returns the i,j,k coordinates of the cell from the coordinates of an atom and box properties
+
+
+"""
 function icell3D(x::AbstractVector, box::Box)
   i = trunc(Int,(x[1]+box.sides[1]/2)/box.l[1])+1
   j = trunc(Int,(x[2]+box.sides[2]/2)/box.l[2])+1

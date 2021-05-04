@@ -1,6 +1,12 @@
-#
-# Print test xyz file
-#
+"""
+
+```
+writexyz(x::Vector{T}, file::String) where T <: AbstractVector
+```
+
+Print test xyz file.
+
+"""
 function writexyz(x::Vector{T}, file::String) where T <: AbstractVector
   f = open(file,"w")
   nx = length(x)

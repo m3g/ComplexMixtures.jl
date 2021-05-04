@@ -5,6 +5,7 @@ version = "0.4.16"
 
 [deps]
 Chemfiles = "46823bd8-5fb3-5f92-9aa0-96921f3dd015"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FortranFiles = "c58ffaec-ab22-586d-bfc5-781a99fd0b10"
 Future = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"

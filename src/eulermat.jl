@@ -1,12 +1,21 @@
-#
-# function eulermat: This routine was added because it defines 
-#                    the rotation in the "human" way, an is thus used
-#                    to set the position of the fixed molecules. 
-#     That means: beta is a counterclockwise rotation around x axis.
-#                 gamma is a counterclockwise rotation around y axis.
-#                 theta is a counterclockwise rotation around z axis.
-# 
+"""
 
+```
+eulermat(beta, gamma, theta, deg::String)
+```
+
+This routine was added because it defines 
+the rotation in the "human" way, an is thus used
+to set the position of the fixed molecules. `deg` can only be `"degree"`, in which
+case the angles with be considered in degrees. If no `deg` argument
+is provided, radians are used.
+
+That means: `beta` is a counterclockwise rotation around `x` axis.
+            `gamma` is a counterclockwise rotation around `y` axis.
+            `theta` is a counterclockwise rotation around `z` axis.
+
+
+"""
 function eulermat(beta, gamma, theta, deg::String)
 
    if deg != "degree" 

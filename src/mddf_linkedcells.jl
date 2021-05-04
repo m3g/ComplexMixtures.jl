@@ -1,9 +1,13 @@
-#     
-# mddf_linkedcells
-#
-# Computes the MDDF using linked cells, serial version
-#  
+"""    
 
+```
+mddf_linkedcells(trajectory::Trajectory, options::Options,samples::Samples, RNG, mddf_compute!)  
+```
+
+Computes the MDDF using linked cells, serial version.
+ 
+
+"""
 function mddf_linkedcells(trajectory::Trajectory, options::Options, 
                           samples::Samples, RNG, mddf_compute!)  
 

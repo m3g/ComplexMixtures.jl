@@ -7,7 +7,11 @@
 #
 
 # If x is only a vector 
+"""
 
+Returns the the minimum distance between the points considered.
+
+"""
 function minimumdistance(x::T, y::Vector{T}) where T
   jatom = 0
   dmin = +Inf

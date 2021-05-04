@@ -1,7 +1,9 @@
-#
-# Structure to contain a list of all the distances smaller than
-# the cutoff
-#
+"""
+
+Structure to contain a list of all the distances smaller than
+the cutoff.
+
+"""
 struct CutoffDistances
 
   # To store all distances smaller than the cutoff
@@ -18,7 +20,6 @@ struct CutoffDistances
 end
 
 # Generator
-
 CutoffDistances(natoms::Int) =
   CutoffDistances(zeros(Int,1), # nd
                   zeros(Float64,natoms), # d
@@ -29,7 +30,6 @@ CutoffDistances(natoms::Int) =
                   [ natoms ]) # maxdim
 
 # Function that zeroes all the values in this structure
-
 function reset!(c::CutoffDistances)
   c.nd[1] = 0
   @. c.d = 0.

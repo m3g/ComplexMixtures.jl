@@ -1,7 +1,3 @@
-#
-# Function to write the final results to output files as simple tables
-# that are human-readable and easy to analyze with other software
-#
 
 using Statistics
 
@@ -13,16 +9,36 @@ function format(x)
   end
 end
 
-# If the solute and solvent selections are provides, pass on the atom
-# names
+"""
 
+```
+write(R::Result, filename::String, solute::Selection, solvent::Selection)
+```
+
+Function to write the final results to output files as simple tables
+that are human-readable and easy to analyze with other software
+
+If the solute and solvent selections are provides, pass on the atom
+names.
+
+"""
 write(R::Result, filename::String,
       solute::Selection,
       solvent::Selection) =
   write(R,filename,solute_names=solute.names,solvent_names=solvent.names)
 
-# Optional passing of atom names
 
+"""
+
+```
+write(R::Result, filename::String; 
+      solute_names::Vector{String} = ["nothing"], 
+      solvent_names::Vector{String} = ["nothing"])
+```
+
+Optional passing of atom names.
+
+"""
 function write(R::Result, filename::String; 
                solute_names::Vector{String} = ["nothing"], 
                solvent_names::Vector{String} = ["nothing"])

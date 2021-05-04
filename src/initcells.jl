@@ -1,10 +1,15 @@
-#
-# Function that initializes the linked cells by computing to each cell each atom
-# belongs and filling up the firstatom and nexatom arrays.
-#
-# Modifies the data in the lc structure
-#
+"""
+
+```
+initcells!(x::AbstractVector{T}, box::Box, lc::LinkedCells) where T
+```
+
+Function that initializes the linked cells by computing to each cell each atom
+belongs and filling up the firstatom and nexatom arrays.
+
+Modifies the data in the lc structure
                   
+"""
 function initcells!(x::AbstractVector{T}, box::Box, lc::LinkedCells) where T
 
   # Count the number of boxes and checks if there is a problem with dimensions

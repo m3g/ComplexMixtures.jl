@@ -21,7 +21,6 @@ All parameters can be provides as keyword parameters.
 ### Example
 
 ```julia-repl
-
 julia> using ComplexMixtures, PDBTools
 
 julia> pdb = readPDB("./system.pdb");
