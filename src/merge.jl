@@ -1,7 +1,7 @@
 """
 
 ```
-merge(r::Vector{Result})
+merge(r::Vector{ComplexMixutures.Result})
 ```
 
 This function merges the results of MDDF calculations obtained by running the same
@@ -10,7 +10,7 @@ a Result structure of the same type, with all the functions and counters represe
 of the set provided weighted by the number of frames read in each Result set.
 
 """
-function merge(r::Vector{Result})
+function Base.merge(r::Vector{Result})
 
   nr = length(r)
   nframes_read = r[1].nframes_read

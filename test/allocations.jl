@@ -4,7 +4,7 @@ const CM = ComplexMixtures
 
 @testset "Allocations" begin
 
-  if Sys.islinux() && (VERSION == v"1.5.3" || VERSION == v"1.5.4")
+  if Sys.islinux() && (VERSION == v"1.6.0" || VERSION == v"1.6.1")
 
     dir="./data/NAMD"
     atoms = readPDB("$dir/structure.pdb")  

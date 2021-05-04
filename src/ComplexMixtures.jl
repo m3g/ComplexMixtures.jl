@@ -1,114 +1,118 @@
 module ComplexMixtures
 
-  using Printf
-  using Parameters
-  using ProgressMeter
-  using Statistics
-  using FortranFiles
-  using PDBTools
-  using StructTypes
-  using JSON3
-  using ThreadPools
-  using StaticArrays
-  import Random
+using Printf
+using Parameters
+using ProgressMeter
+using Statistics
+using FortranFiles
+using PDBTools
+using StructTypes
+using JSON3
+using ThreadPools
+using StaticArrays
+import Random
 
-  # Input and Output data structures
-  include("./FileOperations.jl")
-  include("./OutputFiles.jl")
-  include("./Density.jl")
-  include("./Volume.jl")
-  include("./Options.jl")
-  include("./Units.jl")
+export Selection, Trajectory, mddf, save, load, write, Options
+export contrib, merge 
+export overview, gr, grid3D
 
-  # Function to rigid-body move molecules
-  include("./random.jl")
-  include("./centerofcoordinates.jl")
-  include("./eulermat.jl")
-  include("./random_move.jl")
-  include("./move.jl")
-  include("./center_to_origin.jl")
-  include("./writexyz.jl")
+# Input and Output data structures
+include("./FileOperations.jl")
+include("./OutputFiles.jl")
+include("./Density.jl")
+include("./Volume.jl")
+include("./Options.jl")
+include("./Units.jl")
 
-  # Structures and functions to deal with the solute and solvent selections
-  include("./Selection.jl")
-  include("./itype.jl")
+# Function to rigid-body move molecules
+include("./random.jl")
+include("./centerofcoordinates.jl")
+include("./eulermat.jl")
+include("./random_move.jl")
+include("./move.jl")
+include("./center_to_origin.jl")
+include("./writexyz.jl")
 
-  # Select solute and solvent using VMD
-  include("./VMDselect.jl")
+# Structures and functions to deal with the solute and solvent selections
+include("./Selection.jl")
+include("./itype.jl")
 
-  # Structures and functions to read different types of trajectories
-  include("./Trajectory.jl")
-  include("./trajectory_formats/ChemFiles.jl")
-  include("./trajectory_formats/NamdDCD.jl")
-  include("./trajectory_formats/PDBTraj.jl")
+# Select solute and solvent using VMD
+include("./VMDselect.jl")
 
-  # Structures used to store results
-  include("./isautocorrelation.jl")
-  include("./SolSummary.jl")
-  include("./Result.jl")
-  include("./Samples.jl")
+# Structures and functions to read different types of trajectories
+include("./Trajectory.jl")
+include("./trajectory_formats/ChemFiles.jl")
+include("./trajectory_formats/NamdDCD.jl")
+include("./trajectory_formats/PDBTraj.jl")
 
-  # Function to print some data about the run
-  include("./title.jl")
+# Structures used to store results
+include("./isautocorrelation.jl")
+include("./SolSummary.jl")
+include("./Result.jl")
+include("./Samples.jl")
 
-  # Structure used for periodic boundary conditions
-  include("./wrap.jl")
-  include("./Box.jl")
+# Function to print some data about the run
+include("./title.jl")
 
-  # Functions to compute distances
-  include("./distance.jl")
-  include("./minimumdistance.jl")
+# Structure used for periodic boundary conditions
+include("./wrap.jl")
+include("./Box.jl")
 
-  # Functions to construct histograms
-  include("./sphericalshellvolume.jl")
-  include("./shellradius.jl")
-  include("./sphereradiusfromshellvolume.jl")
-  include("./setbin.jl")
-  include("./viewmol.jl")
-  include("./inbulk.jl")
+# Functions to compute distances
+include("./distance.jl")
+include("./minimumdistance.jl")
 
-  # Structures to report results
-  include("./finalresults.jl")
-  include("./merge.jl")
-  include("./save.jl")
-  include("./load.jl")
-  include("./write.jl")
-  include("./which_types.jl")
-  include("./contrib.jl")
+# Functions to construct histograms
+include("./sphericalshellvolume.jl")
+include("./shellradius.jl")
+include("./sphereradiusfromshellvolume.jl")
+include("./setbin.jl")
+include("./viewmol.jl")
+include("./inbulk.jl")
 
-  # Tools
-  include("./tools/gr.jl")
-  include("./tools/overview.jl")
-  include("./tools/grid3D.jl")
-  include("./isapprox.jl")
+# Structures to report results
+include("./finalresults.jl")
+include("./merge.jl")
+include("./save.jl")
+include("./load.jl")
+include("./write.jl")
+include("./which_types.jl")
+include("./contrib.jl")
 
-  # Structures and functions for the linked cell method
-  include("./LinkedCells.jl")
-  include("./DminMol.jl")
-  include("./CutoffDistances_Struct.jl")
-  include("./partialsort_cutoff.jl")
-  include("./updatecounters.jl")
-  include("./update_counters_frame.jl")
-  include("./icell1D.jl")
-  include("./wrap_cell.jl")
-  include("./icell3D.jl")
-  include("./initcells.jl")
-  include("./increase_size.jl")
-  include("./cutoffdcell.jl")
-  include("./cutoffdistances.jl")
-  include("./mddf_linkedcells.jl")
-  include("./cutoffdcell_self.jl")
-  include("./cutoffdistances_self.jl")
+# Tools
+include("./tools/gr.jl")
+include("./tools/overview.jl")
+include("./tools/grid3D.jl")
+include("./isapprox.jl")
 
-  # for the linked-cell-parallel version
-  include("./FrameData.jl")
-  include("./sum.jl")
-  include("./mddf_frame.jl")
-  include("./mddf_frame_self.jl")
-  include("./mddf_linkedcells_parallel.jl")
+# Structures and functions for the linked cell method
+include("./LinkedCells.jl")
+include("./DminMol.jl")
+include("./CutoffDistances_Struct.jl")
+include("./partialsort_cutoff.jl")
+include("./updatecounters.jl")
+include("./update_counters_frame.jl")
+include("./icell1D.jl")
+include("./wrap_cell.jl")
+include("./icell3D.jl")
+include("./initcells.jl")
+include("./increase_size.jl")
+include("./cutoffdcell.jl")
+include("./cutoffdistances.jl")
+include("./mddf_linkedcells.jl")
+include("./cutoffdcell_self.jl")
+include("./cutoffdistances_self.jl")
 
-  # Parser to the default mddf method
-  include("./mddf_choose.jl")
+# for the linked-cell-parallel version
+include("./FrameData.jl")
+include("./sum.jl")
+include("./mddf_frame.jl")
+include("./mddf_frame_self.jl")
+include("./mddf_linkedcells_parallel.jl")
+
+# Parser to the default mddf method
+include("./mddf_choose.jl")
 
 end
 

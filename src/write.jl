@@ -9,10 +9,11 @@ function format(x)
   end
 end
 
+import Base.write
 """
 
 ```
-write(R::Result, filename::String, solute::Selection, solvent::Selection)
+write(R::ComplexMixtures.Result, filename::String, solute::Selection, solvent::Selection)
 ```
 
 Function to write the final results to output files as simple tables
@@ -31,7 +32,7 @@ write(R::Result, filename::String,
 """
 
 ```
-write(R::Result, filename::String; 
+write(R::ComplexMixtures.Result, filename::String; 
       solute_names::Vector{String} = ["nothing"], 
       solvent_names::Vector{String} = ["nothing"])
 ```
