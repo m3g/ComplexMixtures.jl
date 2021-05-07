@@ -30,4 +30,21 @@ compute Kirkwood-Buff integrals to connect the accumulation or depletion
 of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
+```@raw html
+<center>
+<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
+<br>
+<b>Density map of a solvent around protein residues (see the Full Example section).</b> 
+</center>
+```
+
+### References
+
+* L. Martínez, **ComplexMixtures.jl: Understanding the solvation  
+  of molecules of complex structure** To be published, 2021.
+
+* L. Martínez, S. Shimizu, **Molecular interpretation of preferential
+  interactions in protein solvation: a solvent-shell perspective by
+  means of minimum-distance distribution functions.** *J. Chem. Theor.
+  Comp.* 13, 6358–6372, 2017. [[Full Text]](http://pubs.acs.org/doi/abs/10.1021/acs.jctc.7b00599)
 

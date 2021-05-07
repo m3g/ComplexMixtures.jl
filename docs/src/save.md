@@ -6,18 +6,18 @@ obtained with ComplexMixtures:
 ## Save data to recover it later 
 
 ```julia
-ComplexMixtures.save(results,"results.json")
+save(results,"results.json")
 ```
-where `results` is the output data structure of the `ComplexMixtures.mddf()`
+where `results` is the output data structure of the `mddf()`
 calculation, and `results.json` is the output file to be created. The
 file is written in `JSON` format, thus is not naturally human-readable.
 
 ## Load saved data
 
 ```julia
-results = ComplexMixtures.load("results.json")
+results = load("results.json")
 ```
-The `ComplexMixtures.load` function reads the output of the `save` function above,
+The `load` function reads the output of the `save` function above,
 and restores the results data structure.
 
 ## Write data in a human-readable format
@@ -27,7 +27,7 @@ you can read them with another analysis program, plotting graphic, or
 just want to inspect the data visually, use:
 
 ```julia
-ComplexMixtures.write(results,"results.dat")
+write(results,"results.dat")
 ```
 Three files will be created by this function:
 

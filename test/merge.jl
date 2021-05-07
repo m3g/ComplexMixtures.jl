@@ -6,21 +6,21 @@ const CM = ComplexMixtures
 
   dir="./data/NAMD"
   atoms = readPDB("$dir/structure.pdb")  
-  tmao = CM.Selection(select(atoms,"resname TMAO"),natomspermol=14)
-  water = CM.Selection(select(atoms,"water"),natomspermol=3)
+  tmao = Selection(select(atoms,"resname TMAO"),natomspermol=14)
+  water = Selection(select(atoms,"water"),natomspermol=3)
   
-  # CM.save(R,"$dir/merged.json")
-  R_save = CM.load("$dir/merged.json")
+  # save(R,"$dir/merged.json")
+  R_save = load("$dir/merged.json")
 
-  options = CM.Options(firstframe=1,lastframe=2,seed=321,StableRNG=true,nthreads=1,silent=true)
-  traj = CM.Trajectory("$dir/trajectory.dcd",tmao,water) 
-  R1 = CM.mddf(traj,options)
+  options = Options(firstframe=1,lastframe=2,seed=321,StableRNG=true,nthreads=1,silent=true)
+  traj = Trajectory("$dir/trajectory.dcd",tmao,water) 
+  R1 = mddf(traj,options)
 
-  options = CM.Options(firstframe=3,lastframe=6,seed=321,StableRNG=true,nthreads=1,silent=true)
-  traj = CM.Trajectory("$dir/trajectory.dcd",tmao,water) 
-  R2 = CM.mddf(traj,options)
+  options = Options(firstframe=3,lastframe=6,seed=321,StableRNG=true,nthreads=1,silent=true)
+  traj = Trajectory("$dir/trajectory.dcd",tmao,water) 
+  R2 = mddf(traj,options)
 
-  R = CM.merge([R1,R2])
+  R = merge([R1,R2])
   @test isapprox(R,R_save,debug=true) 
 
 end

@@ -38,11 +38,25 @@ If no errors were shown in any of these steps, the packages are ready to
 be used following the instructions and examples.
 
 !!! tip
-    The functions of the package are called, for example, using `ComplexMixtures.mddf(...)`.
+    By loading the package with 
+    ```julia
+    using ComplexMixtures
+
+    ```
+    the most common functions of the package become readily available by their direct name, 
+    for example `mddf(...)`.
+
+    If you don't want to bring the functions into the scope of your script, use
+    ```julia
+    import ComplexMixtures
+
+    ```
+    Then, the functions of the package are called, for example, using `ComplexMixtures.mddf(...)`.
     To avoid having to write `ComplexMixtures` all the time, define an
     accronym. For example:
     ```julia
-    using ComplexMixtures ; const CM = ComplexMixtures
+    import ComplexMixtures 
+    const CM = ComplexMixtures
     CM.mddf(...)
 
     ```

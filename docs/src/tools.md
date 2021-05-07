@@ -22,7 +22,7 @@ Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hyd
 residues = collect(eachresidue(protein))
 residue_contributions = zeros(length(R.d),length(residues))
 for (i,residue) in pairs(residues)
-  c = ComplexMixtures.contrib(solute,R.solute_atom,residue) 
+  c = contrib(solute,R.solute_atom,residue) 
   residue_contributions[i,:] .= c
 end
 ```
@@ -58,17 +58,17 @@ using ComplexMixtures, PDBTools
 pdb = readPDB("../Data/system.pdb")
 
 # Load results of a ComplexMixtures run
-R = CM.load("../Data/results_glyc50.json")  
+R = load("../Data/results_glyc50.json")  
 
 # Inform which is the solute
 protein = select(pdb,"protein")
-solute = CM.Selection(protein,nmols=1)
+solute = Selection(protein,nmols=1)
 
 # Compute the 3D density grid and output it to the PDB file
-grid = CM.grid3D(solute=solute,
-                 solute_atoms=protein,
-                 mddf_result=R,
-                 output_file="grid.pdb")
+grid = grid3D(solute=solute,
+              solute_atoms=protein,
+              mddf_result=R,
+              output_file="grid.pdb")
 
 ```
 
@@ -89,7 +89,7 @@ function returns the radial distribution function and the KB integral
 computed from the results, using this volume estimate: 
 
 ```julia
-g, kb = ComplexMixtures.gr(R)
+g, kb = gr(R)
 
 ```
 
@@ -98,7 +98,7 @@ structure will be used to compute the radial distribution function. The
 function can be called with explicit control of all input parameters: 
 
 ```julia
-g, kb = ComplexMixtures.gr(r,count,density,binstep)
+g, kb = gr(r,count,density,binstep)
 
 ```
 where:
@@ -114,8 +114,8 @@ where:
 Example:
 ```julia
 ...
-R = ComplexMixtures.mddf(trajectory,options)
-g, kb = ComplexMixtures.gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
+R = mddf(trajectory,options)
+g, kb = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
 
 ```
 
@@ -127,7 +127,7 @@ using the `overview` function. Examples:
 
 ```julia
 ...
-julia> results = ComplexMixtures.mddf(trajectory)
+julia> results = mddf(trajectory)
 
 julia> results
 
@@ -174,7 +174,7 @@ different from the solvent density in the simulation).
 To retrieve the data of the overview strcture use, for example:
 
 ```julia
-julia> overview = ComplexMixtures.overview(results);
+julia> overview = overview(results);
 
 julia> overview.solute_molar_volume
 657.5051512801567

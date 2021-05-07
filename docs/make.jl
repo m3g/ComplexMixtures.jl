@@ -11,6 +11,7 @@ makedocs(
         "Introduction" => "index.md",
         "Installation" => "installation.md",
         "Quick Guide" => "quickguide.md",
+        "Full Example" => "examples.md",
         "Set solute and solvent" => "selection.md",
         "Loading the trajectory" => "trajectory.md",
         "Computing the MDDF" => "mddf.md",
@@ -20,7 +21,7 @@ makedocs(
         "Multiple trajectories" => "multiple.md",
         "Parallel execution" => "parallel.md",
         "Options" => "options.md",
-        "Tools and Examples" => "tools.md",
+        "Tools" => "tools.md",
         "Help entries" => "help.md",
         "References" => "references.md"
     ]

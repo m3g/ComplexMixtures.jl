@@ -8,7 +8,7 @@ molecule formed by the first 5 atoms of the system, it would be defined
 as:     
 ```julia
 indexes = [ 1, 2, 3, 4, 5 ]
-solute = ComplexMixtures.Selection(indexes,nmols=1)
+solute = Selection(indexes,nmols=1)
 ```
 
 !!! note
@@ -24,7 +24,7 @@ case the syntax is:
 ```julia
 indexes = [ 1, 2, 3, 4, 5 ]
 names = [ "H1", "H2", "H3", "H4", "C" ]
-solute = ComplexMixtures.Selection(indexes,names,nmols=1)
+solute = Selection(indexes,names,nmols=1)
 ```
 
 !!! warning
@@ -45,24 +45,24 @@ be defined as, for example,
 using PDBTools
 atoms = PDBTools.readPDB("system.pdb")
 protein = PDBTools.select(atoms,"protein")
-solute = ComplexMixtures.Selection(protein,nmols=1)
+solute = Selection(protein,nmols=1)
 ```
 If the solvent is, for instance, water, the indexes of the water
 molecules can be obtained with:
 ```julia
 water = PDBTools.select(atoms,"water")
-solvent = ComplexMixtures.Selection(water,natomspermol=3)
+solvent = Selection(water,natomspermol=3)
 ```
 or, alternatively, a more compact syntax can be used, for example:
 ```julia
 water = PDBTools.select("system.pdb","resname TIP3P")
-solvent = ComplexMixtures.Selection(water,natomspermol=3)
+solvent = Selection(water,natomspermol=3)
 ```
 
 or even providing just the names of the input file and selection, which
 will run PDBTools in background:
 ```julia
-solvent = ComplexMixtures.Selection("sytem.pdb","water",water,natomspermol=3)
+solvent = Selection("sytem.pdb","water",water,natomspermol=3)
 ```
 ## Using VMD
 
@@ -74,8 +74,8 @@ using its capabilities.
 
 For example, the solute can be defined with: 
 ```julia
-indexes, names = ComplexMixtures.VMDselect("./system.gro","protein",vmd="/usr/bin/vmd")
-solute = ComplexMixtures.Selection(indexes,names,nmols=1)
+indexes, names = VMDselect("./system.gro","protein",vmd="/usr/bin/vmd")
+solute = Selection(indexes,names,nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and

@@ -38,8 +38,8 @@ julia -t 4 example.jl
     running. One way to aleviate this problem is to force garbage collection,
     using
     ```julia
-    options = ComplexMixtures.Options(GC=true,GC_threshold=0.5)
-    R = ComplexMixtures.mddf(trajectory,options)
+    options = Options(GC=true,GC_threshold=0.5)
+    R = mddf(trajectory,options)
 
     ```     
     The `GC_threshold=0.5` indicates that if the free memory is smaller than 50%

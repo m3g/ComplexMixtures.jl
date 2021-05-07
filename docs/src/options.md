@@ -5,8 +5,8 @@ to obtain the MDDF. These options can be defined by the user and passed to the
 `mddf` function, using, for example: 
 
 ```julia
-options = ComplexMixtures.Options(lastframe=1000)
-results = ComplexMixtures.mddf(trajectory,options)
+options = Options(lastframe=1000)
+results = mddf(trajectory,options)
 ```
 
 ### Most common options that the user might want to control are:

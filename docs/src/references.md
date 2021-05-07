@@ -4,7 +4,7 @@
 
 If this package was useful to you, please cite the following papers:
 
-* L. Martínez, **ComplexMixtures.jl: ComplexMixtures.jl: Understanding the solvation  
+* L. Martínez, **ComplexMixtures.jl: Understanding the solvation  
   of molecules of complex structure** To be published, 2021.
 
 * L. Martínez, S. Shimizu, **Molecular interpretation of preferential

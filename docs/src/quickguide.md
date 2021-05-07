@@ -27,17 +27,17 @@ protein = select(atoms,"protein")
 tmao = select(atoms,"resname TMAO")
 
 # Setup solute and solvent structures
-solute = ComplexMixtures.Selection(protein,nmols=1)
-solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
+solute = Selection(protein,nmols=1)
+solvent = Selection(tmao,natomspermol=14)
 
 # Setup the Trajectory structure
-trajectory = ComplexMixtures.Trajectory("./trajectory.dcd",solute,solvent)
+trajectory = Trajectory("./trajectory.dcd",solute,solvent)
 
 # Run the calculation and get results
-results = ComplexMixtures.mddf(trajectory)
+results = mddf(trajectory)
 
 # Save the reults to recover them later if required
-ComplexMixtures.save(results,"./results.json")
+save(results,"./results.json")
 
 # Plot the some of the most important results 
 plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
@@ -87,7 +87,9 @@ and the figure was produced with
 [VMD](https://www.ks.uiuc.edu/Research/vmd/).
 
 ```@raw html
+<center>
 <img src="../figures/proteinTMAO.png" width=60%>
+</center>
 ```
 
 We want to study the interactions of the protein with TMAO in this example.
@@ -107,10 +109,10 @@ Then, let us select the protein atoms (here we are using the `PDBTools.select` f
 protein = select(atoms,"protein")
 
 ```
-And, finally, let us use the `ComplexMixtures.Selection` function to setup the
+And, finally, let us use the `Selection` function to setup the
 structure required by the MDDF calculation:
 ```julia
-solute = ComplexMixtures.Selection(protein,nmols=1)
+solute = Selection(protein,nmols=1)
 
 ```
 
@@ -128,7 +130,7 @@ solute = ComplexMixtures.Selection(protein,nmols=1)
 Equivalently, the solvent is set up with:
 ```julia
 tmao = select(atoms,"resname TMAO")
-solvent = ComplexMixtures.Selection(tmao,natomspermol=14)
+solvent = Selection(tmao,natomspermol=14)
 
 ```
 
@@ -143,7 +145,7 @@ The `solute` and `solvent` data structures are then fed into the
 `Trajectory` data structure, together with the trajectory file name,
 with:
 ```julia
-trajectory = ComplexMixtures.Trajectory("trajectory.dcd",solute,solvent)
+trajectory = Trajectory("trajectory.dcd",solute,solvent)
 ```
 In the case, the trajectory is of NAMD "dcd" format. All formats
 supported by [Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) 
@@ -154,7 +156,7 @@ are automatically recognized.
 If default options are used (as the bin size of the histograms, read all
 frames without skipping any), just run the `mddf` with:
 ```julia
-results = ComplexMixtures.mddf(trajectory)
+results = mddf(trajectory)
 
 ```
 Some optional parameters for the computation are available in the
@@ -179,8 +181,9 @@ results in the expected plot of the MDDF of TMAO as a function of the
 distance to the protein:
 
 ```@raw html
+<center>
 <img src="../figures/mddf.png" width="60%">
-
+</center>
 ```
 
 The Kirkwood-Buff integral corresponding to that distribution is
@@ -190,13 +193,13 @@ with
 ```julia
 plot(results.d,results.kb,xlabel="d / \AA",ylabel="MDDF") 
 
-
 ```
 to obtain:
 
 ```@raw html
+<center>
 <img src="../figures/kb.png" width="60%">
-
+</center>
 ```
 
 See the [Atomic and group contributions](@ref contrib) section for a
@@ -208,16 +211,16 @@ solvent, each type of residue of the protein, etc.
 
 The results can be saved into a file (with JSON format) with:
 ```julia
-ComplexMixtures.save(results,"./results.json")
+save(results,"./results.json")
 ```
 And these results can be loaded aftwerwards with:
 ```julia
-ComplexMixtures.load("./results.json")
+load("./results.json")
 ```
 Alternatively, a human-readable set of output files can be obtained to
 be analyzed in other software (or plotted with alternative tools), with
 ```julia
-ComplexMixtures.write(results,"./results.dat")
+write(results,"./results.dat")
 ```
 
 

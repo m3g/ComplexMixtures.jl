@@ -15,6 +15,7 @@ import Random
 export Selection, Trajectory, mddf, save, load, write, Options
 export contrib, merge 
 export overview, gr, grid3D
+export VMDSelect
 
 # Input and Output data structures
 include("./FileOperations.jl")
@@ -111,8 +112,8 @@ include("./mddf_frame.jl")
 include("./mddf_frame_self.jl")
 include("./mddf_linkedcells_parallel.jl")
 
-# Parser to the default mddf method
-include("./mddf_choose.jl")
+# Main function
+include("./mddf.jl")
 
 end
 

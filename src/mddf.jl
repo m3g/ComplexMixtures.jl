@@ -1,14 +1,34 @@
 """     
 
 ```
-mddf_choose
+mddf(trajectory::Trajectory, options::Options)
 ```
 
-Selects serial of parallel version depending on the number of available
-threads and type of calculation.
+Function that computes the minimum-distance distribution function, atomic contributions, and 
+KB integrals, given the `Trajectory` structure of the simulation and, optionally, parameters
+given as a second argument of the `Options` type. This is the main function of the `ComplexMixtures` 
+package. 
+
+### Examples
+
+```julia-repl
+julia> trajectory = ComplexMixtures.Trajectory("./trajectory.dcd",solute,solvent);
+
+julia> results = ComplexMixtures.mddf(trajectory);
+
+```
+
+or
+
+```julia-repl
+julia> options = Options(lastframe=1000);
+
+julia> results = ComplexMixtures.mddf(trajectory,options);
+
+```
 
 """
-mddf_choose(trajectory::Trajectory) = mddf_choose(trajectory,Options())
+mddf(trajectory::Trajectory) = mddf(trajectory,Options())
 
 # Choose among serial or parallel version, and self and non-self versions
 
@@ -22,7 +42,7 @@ mddf_choose(trajectory::Trajectory) = mddf_choose(trajectory,Options())
 # it by (n-1)/2, so that we have a count proportional to n as well, leading
 # to the correct weight relative to the random sample. 
 
-function mddf_choose(trajectory::Trajectory, options::Options)
+function mddf(trajectory::Trajectory, options::Options)
 
   # Set random number generator
   RNG = init_random(options) 
@@ -52,8 +72,5 @@ function mddf_choose(trajectory::Trajectory, options::Options)
     end
   end
 end
-
-const mddf = mddf_choose
-
 
 
