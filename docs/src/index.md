@@ -10,9 +10,9 @@ polymers in general. Smaller molecules like lipids, carbohydrates, etc,
 are also complex enough such that representing the structure of the
 solution of those molecules with distribution functions is not trivial.
 
-Minimum-Distance Distribution Functions (MDDFs) are very general and
+Minimum-Distance Distribution Functions (MDDFs) are a very general and
 practical way to represent solute-solvent interactions for molecules
-with arbitrarily complex sizes and geometries. In summary, instead of
+with arbitrarily complex sizes and geometries. Briefly, instead of
 computing the density distribution function of a particular atom or the
 center-of-mass of the molecules, one computes the distribution function
 of the minimum-distance between any solute and solvent atoms. This
@@ -34,7 +34,7 @@ structural stability, solubility, and others.
 <center>
 <img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
 <br>
-<b>Density map of a solvent around protein residues (see the Full Example section).</b> 
+<b>Density map of a solvent in the vicinity of each protein residue (see the Full Example section).</b> 
 </center>
 ```
 
