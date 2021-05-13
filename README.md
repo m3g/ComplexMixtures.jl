@@ -44,13 +44,7 @@ compute Kirkwood-Buff integrals to connect the accumulation or depletion
 of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
-<table style="border:0px solid white" width=100%><tr><td align=center>
-<img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
-</td>
-</tr><td align=center><b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
-</td></tr></table>
-
-<table style="border:0px solid white" width=100%><tr><td align=center>
+<table style="border:0px solid white" width=100%><tr><td align=center width=100%>
 <img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
 </td>
 </tr><td align=center><b>
