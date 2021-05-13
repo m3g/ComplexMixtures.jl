@@ -1,12 +1,10 @@
-<style>
-table, th, td {
-  border: 2px solid black;
-}
+(setq markdown-xhtml-header-content
+"<style>
+    .tablelines table, .tablelines td, .tablelines th {
+    border: 1px solid black; padding:10px;
+    }
+</style>")
 
-th, td {
-  padding: 10px;
-}
-</style>
 
 # ComplexMixtures
 
