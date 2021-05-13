@@ -28,7 +28,8 @@ provides a size and shape-independent distribution which is very natural
 to interpret in terms of molecular interactions.   
 
 <table style="border:0px solid white"><tr><td align=center>
-<img width=65% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png"></td>
+<img width=65% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png">
+</td>
 </tr><td align=center><b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
 </td></tr></table>
 
@@ -43,11 +44,13 @@ compute Kirkwood-Buff integrals to connect the accumulation or depletion
 of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
-<center>
+<table style="border:0px solid white"><tr><td align=center>
 <img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
-<br>
-<b>Density map of a solvent in the vicinity of each protein residue..</b> 
-</center>
+</td>
+</tr><td align=center><b>
+Density map of a solvent in the vicinity of each protein residue.
+</b> 
+</td></tr></table>
 
 ### References
 
