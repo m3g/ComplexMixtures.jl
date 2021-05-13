@@ -62,6 +62,11 @@ Density map of a solvent in the vicinity of each protein residue.
   means of minimum-distance distribution functions.** *J. Chem. Theor.
   Comp.* 13, 6358–6372, 2017. [[Full Text]](http://pubs.acs.org/doi/abs/10.1021/acs.jctc.7b00599)
 
+## Additional resources
+
+Please go to [http://m3g.iqm.unicamp.br](http://m3g.iqm.unicamp.br) to find additional resources
+publictions associated with this project. 
+
 
 
 
