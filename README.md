@@ -28,9 +28,11 @@ provides a size and shape-independent distribution which is very natural
 to interpret in terms of molecular interactions.   
 
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png">
-<br>
+<table><tr><td width=60%>
+<img width=60% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png">
+</td><td width=40%>
 <b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
+</td>
 </center>
 
 Additionally, the MDDFs can be decomposed into contributions of each
