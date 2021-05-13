@@ -27,13 +27,11 @@ of the minimum-distance between any solute and solvent atoms. This
 provides a size and shape-independent distribution which is very natural
 to interpret in terms of molecular interactions.   
 
-<center>
 <table border=0><tr><td width=60%>
 <img src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png">
 </td><td width=40%>
 <b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
 </td>
-</center>
 
 Additionally, the MDDFs can be decomposed into contributions of each
 type of atom (or groups of atoms) of the solute and solvent molecules,
