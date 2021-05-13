@@ -65,7 +65,7 @@ Density map of a solvent in the vicinity of each protein residue.
 ## Additional resources
 
 Please go to [http://m3g.iqm.unicamp.br](http://m3g.iqm.unicamp.br) to find additional resources
-publictions associated with this project. 
+publications associated with this project. 
 
 
 
