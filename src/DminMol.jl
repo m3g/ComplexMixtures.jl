@@ -1,6 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Auxiliary structure used to update counters.
+
+$(TYPEDFIELDS)
 
 """
 mutable struct DminMol

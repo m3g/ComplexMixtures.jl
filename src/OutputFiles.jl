@@ -1,7 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Structure to contain the names of the output files.
 
+$(TYPEDFIELDS)
 
 """
 @with_kw mutable struct OutputFiles

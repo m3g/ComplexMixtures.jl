@@ -1,6 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Structure to contain the density values obtained from the calculation.
+
+$(TYPEDFIELDS)
 
 """
 @with_kw mutable struct Density

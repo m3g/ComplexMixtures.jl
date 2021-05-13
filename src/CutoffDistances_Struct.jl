@@ -1,7 +1,11 @@
 """
 
+$(TYPEDEF)
+
 Structure to contain a list of all the distances smaller than
 the cutoff.
+
+$(TYPEDFIELDS)
 
 """
 struct CutoffDistances

@@ -1,6 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Structure that contains the information about the solute and solvent molecules.
+
+$(TYPEDFIELDS)
 
 """
 struct Selection

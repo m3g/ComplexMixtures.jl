@@ -1,7 +1,10 @@
 """
 
-Function that outputs the volumes and densities in the most natural units.
+$(TYPEDEF)
 
+Structure that is used to dispatch the show of a overview.
+
+$(TYPEDFIELDS)
 
 """
 @with_kw_noshow mutable struct Overview
@@ -55,6 +58,15 @@ function Base.show(io::IO, ov::Overview)
   println(bars)
 end
 
+"""
+
+```
+overview(R::Result)
+```
+
+Function that outputs the volumes and densities in the most natural units.
+
+"""
 function overview(R::Result)
 
   ov = Overview(R = R)

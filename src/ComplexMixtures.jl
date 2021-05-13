@@ -10,6 +10,7 @@ using StructTypes
 using JSON3
 using ThreadPools
 using StaticArrays
+using DocStringExtensions
 import Random
 
 export Selection, Trajectory, mddf, save, load, write, Options, Result

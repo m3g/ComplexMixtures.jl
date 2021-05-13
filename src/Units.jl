@@ -1,6 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Unit conversions.
+
+$(TYPEDFIELDS)
 
 """
 @with_kw struct Units

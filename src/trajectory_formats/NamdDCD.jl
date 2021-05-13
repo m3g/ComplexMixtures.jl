@@ -4,6 +4,15 @@
 
 import FortranFiles
 
+"""
+
+$(TYPEDEF)
+
+Structure to contain the data of a trajectory in NAMD/DCD format.
+
+$(TYPEDFIELDS)
+
+"""
 struct NamdDCD{T<:AbstractVector} <: Trajectory
 
   #

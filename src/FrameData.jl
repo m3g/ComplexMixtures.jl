@@ -1,6 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Structure to contain data needed to compute the mddf for a single frame
+
+$(TYPEDFIELDS)
 
 """
 mutable struct FrameData{T<:Trajectory,V}

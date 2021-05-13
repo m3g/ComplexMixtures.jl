@@ -6,6 +6,15 @@
 
 import Chemfiles
 
+"""
+
+$(TYPEDEF)
+
+Structure to contain a trajectory as read by Chemfiles.jl
+
+$(TYPEDFIELDS)
+
+"""
 struct ChemFile{T<:AbstractVector} <: Trajectory
 
   #

@@ -1,6 +1,10 @@
 """
 
-Structures to contain the volume values obtained from calculations.
+$(TYPEDEF)
+
+Structures to contain the volumes obtained from calculations.
+
+$(TYPEDFIELDS)
 
 """
 @with_kw mutable struct Volume

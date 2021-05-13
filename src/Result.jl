@@ -1,9 +1,3 @@
-"""
-
-Structures to contain the results of the MDDF calculation.
-
-
-"""
 macro ResultFields_Start()
   ex = quote
     nbins::Int 
@@ -72,6 +66,16 @@ macro ResultFields_End()
   esc(ex)
 end
 
+"""
+
+$(TYPEDEF)
+
+Structure to contain the results of the MDDF calculation.
+
+$(TYPEDFIELDS)
+
+
+"""
 @with_kw_noshow struct Result
   @ResultFields_Start()
   @ResultFields_AtomsMatrix()

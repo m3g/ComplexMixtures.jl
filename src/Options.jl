@@ -1,6 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Structure that contains the detailed input options.
+
+$(TYPEDFIELDS)
 
 """
 @with_kw struct Options

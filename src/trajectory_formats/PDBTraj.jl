@@ -1,10 +1,16 @@
-#
-# Structure to contain PDB trajectories. Frames separated by "END", and with periodic cell sizes
-# in the "CRYST1" field.
-#
-# These structure and functions can be used as a template to implement the reading of other 
-# trajectory formats
-#
+"""
+
+$(TYPEDEF)
+
+Structure to contain PDB trajectories. Frames must be separated by "END", and with periodic cell sizes
+in the "CRYST1" field.
+
+This structure and functions can be used as a template to implement the reading of other 
+trajectory formats. 
+
+$(TYPEDFIELDS)
+
+"""
 struct PDBTraj{T<:AbstractVector} <: Trajectory
 
   #

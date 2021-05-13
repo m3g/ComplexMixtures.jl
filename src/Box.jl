@@ -1,6 +1,10 @@
 """
 
+$(TYPEDEF)
+
 Structure that contains some data required to compute the linked cells.
+
+$(TYPEDFIELDS)
 
 """
 struct Box{FloatVector,IntVector}
