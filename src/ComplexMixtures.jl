@@ -12,7 +12,7 @@ using ThreadPools
 using StaticArrays
 import Random
 
-export Selection, Trajectory, mddf, save, load, write, Options
+export Selection, Trajectory, mddf, save, load, write, Options, Result
 export contrib, merge 
 export overview, gr, grid3D
 export VMDSelect

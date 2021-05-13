@@ -25,9 +25,8 @@ function eulermat(beta, gamma, theta, deg::String)
    beta = beta*π/180
    gamma = gamma*π/180
    theta = theta*π/180
-   A = eulermat( beta, gamma, theta )
-   return A
 
+   return eulermat( beta, gamma, theta )
 end
 
 function eulermat(beta::T, gamma::T, theta::T) where T
@@ -37,15 +36,8 @@ function eulermat(beta::T, gamma::T, theta::T) where T
   s2 = sin(gamma) 
   c3 = cos(theta) 
   s3 = sin(theta)
-  A = SMatrix{3,3,T,9}( c2*c3,
-                        c1*s3 + c3*s1*s2,
-                        s1*s3 - c1*c3*s2,
-                        -c2*s3,
-                        c1*c3 - s1*s2*s3,
-                        c1*s2*s3 + c3*s1,
-                        s2,
-                        -c2*s1,
-                        c1*c2 )
-  return A
+  @SMatrix [   c2*c3                -c2*s3                s2
+              (c1*s3 + c3*s1*s2)    (c1*c3 - s1*s2*s3)   -c2*s1
+              (s1*s3 - c1*c3*s2)    (c1*s2*s3 + c3*s1)    c1*c2  ]
 end
 
