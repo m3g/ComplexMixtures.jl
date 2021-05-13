@@ -27,7 +27,7 @@ of the minimum-distance between any solute and solvent atoms. This
 provides a size and shape-independent distribution which is very natural
 to interpret in terms of molecular interactions.   
 
-<table align="center" style="border:white" width=100%><tr><td align=center>
+<table align="center" style="border:white"><tr><td align=center>
 <img width=65% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png">
 </td>
 </tr><td align=center><b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
@@ -44,7 +44,7 @@ compute Kirkwood-Buff integrals to connect the accumulation or depletion
 of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
-<table align="center" style="border:white" width=100%><tr><td align=center width=100%>
+<table align="center" style="border:white"><tr><td align=center>
 <img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
 </td>
 </tr><td align=center><b>
