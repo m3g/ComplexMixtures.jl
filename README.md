@@ -29,7 +29,7 @@ to interpret in terms of molecular interactions.
 
 <table border=0><tr><td width=60% border=0>
 <img src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png"></td>
-<td width=40% valign=top border=0><b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
+<td width=40% valign=bottom border=0><b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
 </td></tr></table>
 
 Additionally, the MDDFs can be decomposed into contributions of each
