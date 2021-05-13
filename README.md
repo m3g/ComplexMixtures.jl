@@ -45,7 +45,7 @@ of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
 <table align="center"><tr><td align=center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
+<img width=80% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
 </td>
 </tr><td align=center><b>
 Density map of a solvent in the vicinity of each protein residue.
