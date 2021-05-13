@@ -15,9 +15,8 @@ Returns the the minimum distance between the points considered.
 function minimumdistance(x::T, y::Vector{T}) where T
   jatom = 0
   dmin = +Inf
-  ny = length(y)
-  for j in 1:ny
-    d = distance(x,y[j])
+  for (j,yj) in pairs(y)
+    d = distance(x,yj)
     if d < dmin
       jatom = j 
       dmin = d
@@ -32,11 +31,9 @@ function minimumdistance(x::Vector{T}, y::Vector{T}) where T
   iatom = 0
   jatom = 0
   dmin = +Inf
-  nx = length(x)
-  ny = length(y)
-  for i in 1:nx
-     for j in 1:ny
-       d = distance(x[i],y[j])
+  for (i,xi) in pairs(x)
+     for (j,yj) in pairs(y)
+       d = distance(xi,yj)
        if d < dmin
          iatom = i 
          jatom = j 
@@ -56,11 +53,9 @@ function minimumdistance(x::Vector{T}, y::Vector{T},
   jatom = 0
   drefatom = +Inf
   dmin = +Inf
-  nx = length(x)
-  ny = length(y)
-  for i in 1:nx
-     for j in 1:ny
-       d = distance(x[i],y[j])
+  for (i,xi) in pairs(x)
+     for (j,yj) in pairs(y)
+       d = distance(xi,yj)
        # Minimum distance of any solvent atom to the solute
        if d < dmin
          iatom = i
@@ -87,11 +82,9 @@ function minimumdistance(x::Vector{T}, y::Vector{T},
   iatom = 0
   jatom = 0
   dmin = +Inf
-  nx = length(x)
-  ny = length(y)
-  for i in 1:nx
-     for j in 1:ny
-       d = distance(x[i],y[j],sides)
+  for (i,xi) in pairs(x)
+     for (j,yj) in pairs(y)
+       d = distance(xi,yj,sides)
        if d < dmin
          iatom = i
          jatom = j
@@ -111,11 +104,9 @@ function minimumdistance(x::Vector{T}, y::Vector{T},
   jatom = 0
   drefatom = +Inf
   dmin = +Inf
-  nx = length(x)
-  ny = length(y)
-  for i in 1:nx
-     for j in 1:ny
-       d = distance(x[i],y[j],sides)
+  for (i,xi) in pairs(x)
+     for (j,yj) in pairs(y)
+       d = distance(xi,yj,sides)
        # Minimum distance of any solvent atom to the solute
        if d < dmin
          iatom = i
