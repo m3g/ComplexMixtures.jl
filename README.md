@@ -55,7 +55,7 @@ Density map of a solvent in the vicinity of each protein residue.
 ### References
 
 * L. Martínez, **ComplexMixtures.jl: Understanding the solute-solvent interactions
-  of molecules of complex molecular shapes.** To be published, 2021.
+  of molecules of complex shapes.** To be published, 2021.
 
 * L. Martínez, S. Shimizu, **Molecular interpretation of preferential
   interactions in protein solvation: a solvent-shell perspective by
