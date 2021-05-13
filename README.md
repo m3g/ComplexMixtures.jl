@@ -1,11 +1,3 @@
-(setq markdown-xhtml-header-content
-"<style>
-    .tablelines table, .tablelines td, .tablelines th {
-    border: 1px solid black; padding:10px;
-    }
-</style>")
-
-
 # ComplexMixtures
 
 A package to study the structure of solutions formed by solutes and solvents of complex molecular shapes.
