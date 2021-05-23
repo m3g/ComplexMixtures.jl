@@ -168,10 +168,10 @@ code. Here, `solute` refers to the protein.
 
 ```julia
 charged_residues = PDBTools.select(atoms,"charged")
-charged_contrib = contrib(solute,R.solute_atoms,charged_residues)
+charged_contrib = contrib(solute,R.solute_atom,charged_residues)
 
 neutral_residues = PDBTools.select(atoms,"neutral")
-neutral_contrib = contrib(solute,R.solute_atoms,neutral_residues)
+neutral_contrib = contrib(solute,R.solute_atom,neutral_residues)
 
 ```
 The `charged` and `neutral` outputs are vectors containing the
