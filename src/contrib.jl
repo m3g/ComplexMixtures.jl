@@ -69,7 +69,7 @@ function contrib(s::Selection,
 end
 
 function warning_nmols_types()
-  println("WARNING: there is more than one molecule in this solute. "*
+  println("WARNING: there is more than one molecule in this selection. "*
           "Contributions are summed over all atoms of the same type.")
 end
 
