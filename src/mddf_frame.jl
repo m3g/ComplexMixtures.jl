@@ -60,7 +60,13 @@ function mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R
 
   # Check if the cutoff is not too large considering the periodic cell size
   if R.cutoff > sides[1]/2. || R.cutoff > sides[2]/2. || R.cutoff > sides[3]/2.
-    error("in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe")
+    error("""
+    in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe
+             max(cutoff,dbulk) = $(R.cutoff)
+             sides read from file = $(sides)
+             If sides are zero it is likely that the PBC information is not available 
+             in the trajectory file.
+    """)
   end
 
   local n_dmin_in_bulk 
