@@ -14,11 +14,16 @@ abstract type Trajectory end
 
 function Trajectory(filename::String,
                     solute::Selection, solvent::Selection;
-                    format::String = "")
-  if format == "dcd" || FileOperations.file_extension(filename) == "dcd"
-    NamdDCD(filename,solute,solvent)
-  elseif format == "PDBTraj"
-    PDBTraj(filename,solute,solvent)
+                    format::String = "",
+                    chemfiles=false)
+  if !chemfiles 
+    if format == "dcd" || FileOperations.file_extension(filename) == "dcd"
+      NamdDCD(filename,solute,solvent)
+    elseif format == "PDBTraj"
+      PDBTraj(filename,solute,solvent)
+    else
+      ChemFile(filename,solute,solvent,format=format)
+    end
   else
     ChemFile(filename,solute,solvent,format=format)
   end
@@ -29,7 +34,8 @@ end
 
 function Trajectory(filename::String,
                     solvent::Selection;
-                    format::String = "")
-  Trajectory(filename,solvent,solvent,format=format)
+                    format::String = "",
+                    chemfiles=false)
+  Trajectory(filename,solvent,solvent,format=format,chemfiles=chemfiles)
 end
 
