@@ -61,7 +61,7 @@ function ChemFile(filename::String, solute::Selection, solvent::Selection;
                   format="" , T::Type = SVector{3,Float64})
 
   stream = Vector{Chemfiles.Trajectory}(undef,1)
-  stream[1] = Chemfiles.Trajectory(filename,'r',format)
+  stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename,'r',format), devnull)
   
   # Get the number of frames (the output of Chemfiles comes in UInt64 format, which is converted
   # to Int using (UInt % Int)
@@ -74,7 +74,7 @@ function ChemFile(filename::String, solute::Selection, solvent::Selection;
   Chemfiles.close(stream[1])
 
   # Reopen the stream, so that nextrame can read the first frame
-  stream[1] = Chemfiles.Trajectory(filename,'r',format)
+  stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename,'r',format), devnull)
 
   return ChemFile( filename, # trajectory file name 
                    format, # trajectory format, is provided by the user
@@ -143,6 +143,8 @@ closetraj(trajectory::ChemFile) = Chemfiles.close(trajectory.stream[1])
 #
 function firstframe(trajectory::ChemFile)  
   Chemfiles.close(trajectory.stream[1])
-  trajectory.stream[1] = Chemfiles.Trajectory(trajectory.filename,'r',trajectory.format)
+  trajectory.stream[1] = redirect_stdout(
+    () -> Chemfiles.Trajectory(trajectory.filename,'r',trajectory.format), devnull
+  )
 end
 
