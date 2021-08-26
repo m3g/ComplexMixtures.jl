@@ -1,7 +1,7 @@
 # Installation
 
 First you need to install the Julia language in your platform, from: 
-[http://julialang.org](http://julialang.org). Julia version 1.5 or greater is required.
+[http://julialang.org](http://julialang.org). Julia version 1.6 or greater is required.
 
 Next, run julia, and within the julia REPL interface, install the ComplexMixtures package using
 ```julia
