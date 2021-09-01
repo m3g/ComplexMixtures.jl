@@ -81,6 +81,15 @@ Run the calculation and get results:
 results = mddf(trajectory)
 ```
 
+!!! note
+    To change the options of the calculation, set the `Options` structure accordingly and pass it as a parameter to `mddf`. For example:
+    ```julia
+    options = Options(cutoff=10.)
+    mddf(trajectory,options)
+    ```
+    The complete set of options available is described [here](@ref options).
+
+
 Save the reults to recover them later if required
 ```julia
 save(results,"./glyc50.json")
