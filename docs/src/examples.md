@@ -4,7 +4,7 @@ The following examples consider a system composed a protein solvated by a mixtur
 
 ```@raw html
 <center>
-<img width=50% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Data/system.png">
+<img width=50% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Data/system.png">
 </center>
 ```
 
@@ -24,11 +24,11 @@ julia> ] add ComplexMixtures, PDBTools, Plots, LaTeXStrings, Formatting
 git clone https://github.com/m3g/ComplexMixturesExamples
 ```
 
-The files associated to the following examples are distributed at [this page](https://github.com/m3g/ComplexMixturesExamples). 
+The files associated to the following examples are distributed at [this page](https://github.com/m3g/ComplexMixturesExamples/Protein_in_Glycerol). 
 
 ## Data
 
-The [Data](https://github.com/m3g/ComplexMixturesExamples/tree/main/Data) directory contains the a pdb file of the system (`system.pdb`) and a sample from the trajectory (`glyc50.dcd`), with a few frames. It also contains the result of running the `mddf` calculation on the complete trajectory, `results_glyc50.json`. This last file was produced by `ComplexMixtures`, as indicated in the following examples. 
+The [Data](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol/Data) directory contains the a pdb file of the system (`system.pdb`) and a sample from the trajectory (`glyc50.dcd`), with a few frames. It also contains the result of running the `mddf` calculation on the complete trajectory, `results_glyc50.json`. This last file was produced by `ComplexMixtures`, as indicated in the following examples. 
 
 The sample trajectory is provided so that the first example can be run, yet do not expect that the results are the same, as the sampling is much lower in this case. The complete trajectory can be retrieved from [this link](https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing) (3GB file). 
 
@@ -41,7 +41,7 @@ This example illustrates the regular usage of `ComplexMixtures`, to compute the 
 ### How to run this example
 
 ```bash
-cd ComplexMixturesExamples/MDDF
+cd ComplexMixturesExamples/Protein_in_Glycerol/MDDF
 julia mddf.jl
 ```
 
@@ -136,7 +136,7 @@ This will produce the following plot:
 
 ```@raw html
 <center>
-<img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf.png">
+<img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/MDDF/mddf.png">
 </center>
 ```
 
@@ -169,7 +169,7 @@ This will produce the following figure:
 
 ```@raw html
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/MDDF/mddf_atom_contrib.png">
+<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/MDDF/mddf_atom_contrib.png">
 </center>
 ```
 
@@ -184,14 +184,14 @@ The MDDF can be decomposed in the contributions of each atom of the solute or of
 
 ```@raw html
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
+<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
 </center>
 ```
 
 ### How to run this example:
 
 ```bash
-cd ComplexMixturesExamples/Density2D
+cd ComplexMixturesExamples/Protein_in_Glycerol/Density2D
 julia density2D.jl
 ```
 
@@ -304,7 +304,7 @@ Therefore, by filtering the 3D density map at each distance one can visualize ov
 
 ```@raw html
 <center>
-<img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density3D/density3D_final.png">
+<img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density3D/density3D_final.png">
 </center>
 ```
 
@@ -325,7 +325,7 @@ A short tutorial video showing how to open the intput and output PDB files in VM
 ### How to run this example:
 
 ```bash
-cd ComplexMixturesExamples/Density3D
+cd ComplexMixturesExamples/Protein_in_Glycerol/Density3D
 julia density3D.jl
 ```
 

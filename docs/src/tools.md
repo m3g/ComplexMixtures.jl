@@ -27,7 +27,7 @@ for (i,residue) in pairs(residues)
 end
 ```
 
-The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. [A complete running example is provided here](https://github.com/m3g/ComplexMixturesExamples/tree/main/Density2D), producing the figure above.    
+The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. [A complete running example is provided here](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol/Density2D), producing the figure above.    
 
 ## Computing a 3D density map around a macromolecule 
 
@@ -35,7 +35,7 @@ Three-dimensional representations of the distribution functions can also be obta
 
 For example, the distribution function of a hydrogen-bonding liquid solvating a protein will display a characteristic peak at about 1.8Å. The MDDF at that distance can be decomposed into the contributions of all atoms of the protein which were found to form hydrogen bonds to the solvent. A 3D representation of these contributions can be obtained by computing, around a static protein (solute) structure, which are the regions in space which are closer to each atom of the protein. The position in space is then marked with the atom of the protein to which that region "belongs" and with the contribution of that atom to the MDDF at each distance within that region. A special function to compute this 3D distribution is provided here: `grid3D`. 
 
-This is better illustrated by a graphical representation. In the figure below we see a 3D representation of the MDDF of Glycerol around a protein, computed from a simulation of this protein in a mixture of water and Glycerol. A complete set of files and a script to reproduce this example [is available here](https://github.com/m3g/ComplexMixturesExamples/tree/main/Density3D). 
+This is better illustrated by a graphical representation. In the figure below we see a 3D representation of the MDDF of Glycerol around a protein, computed from a simulation of this protein in a mixture of water and Glycerol. A complete set of files and a script to reproduce this example [is available here](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol/Density3D). 
 
 ```@raw html
 <center>

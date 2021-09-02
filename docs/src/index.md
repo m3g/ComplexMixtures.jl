@@ -32,7 +32,7 @@ structural stability, solubility, and others.
 
 ```@raw html
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Density2D/density2D.png">
+<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
 <br>
 <b>Density map of a solvent in the vicinity of each protein residue (see the Full Example section).</b> 
 </center>
