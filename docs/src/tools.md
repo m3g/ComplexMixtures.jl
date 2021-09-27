@@ -150,7 +150,7 @@ julia> results
  Simulation Concentration: 1.5209006318095133 mol L⁻¹
  Estimated solute partial molar volume: 657.5051512801567 cm³ mol⁻¹
 
- Using with dbulk = 20.0Å: 
+ Using dbulk = 20.0Å: 
  Molar volume of the solute domain: 30292.570006549242 cm³ mol⁻¹
 
  Auto-correlation: true
