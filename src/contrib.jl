@@ -31,11 +31,11 @@ end
 function contrib(s::Selection, atom_contributions::Array{Float64}, names::Vector{String})
   indexes = Vector{Int}(undef,0)
   for name in names
-    index = findfirst( x -> x == name, s.names )
-    if index == nothing
+    index = findall(isequal(name), s.names)
+    if length(index) > 0
       error(" Atom in input list is not part of solvent (or solute).")
     end
-    push!(indexes,index)
+    append!(indexes,index)
   end
   return contrib(s, atom_contributions, indexes)
 end
