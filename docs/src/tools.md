@@ -1,4 +1,4 @@
-# [Tools and Exammples](@id Tools)
+# [Tools and Examples](@id Tools)
 
 A set of examples of analyses that can be performed with `ComplexMixtures` is given 
 in [this site](https://github.com/m3g/ComplexMixturesExamples). A brief the description
@@ -43,7 +43,7 @@ This is better illustrated by a graphical representation. In the figure below we
 </center>
 ```
 
-In the figure on the left, the points in space around the protein are selected with the following properties: distance from the protein smaller than 2.0Å and relative contribution to the MDDF at the corresponding distance of at least 10% of the maximum contribution. Thus, we are selecting the regions of the protein corresponding to the most stable hydrogen-bonding interactions. The color of the points is the contribution to the MDDF, from blue to red. Thus, the most redish-points corresponds to the regions where the most stable hydrogen bonds were formed. We have marked two regions here, on opposite sides of the protein, with arrows.
+In the figure on the left, the points in space around the protein are selected with the following properties: distance from the protein smaller than 2.0Å and relative contribution to the MDDF at the corresponding distance of at least 10% of the maximum contribution. Thus, we are selecting the regions of the protein corresponding to the most stable hydrogen-bonding interactions. The color of the points is the contribution to the MDDF, from blue to red. Thus, the most reddish-points corresponds to the regions where the most stable hydrogen bonds were formed. We have marked two regions here, on opposite sides of the protein, with arrows.
 
 Clicking on those points we obtain which are the atoms of the protein contributing to the MDDF at that region. In particular, the arrow on the right points to the strongest red region, which corresponds to an Aspartic acid. These residues are shown explicitly under the density (represented as a transparent surface) on the figure in the center.   
 
@@ -171,7 +171,7 @@ not the case if the molecules are different or if the solute is at
 infinite dilution (in which case the bulk solvent density might be
 different from the solvent density in the simulation). 
 
-To retrieve the data of the overview strcture use, for example:
+To retrieve the data of the overview structure use, for example:
 
 ```julia
 julia> overview = overview(results);

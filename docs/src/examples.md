@@ -1,6 +1,9 @@
 # [Example](@id examples)
 
-The following examples consider a system composed a protein solvated by a mixture of water and glycerol, built with [Packmol](http://m3g.iqm.unicamp.br/packmol). The simulations were perfomed with [NAMD](https://www.ks.uiuc.edu/Research/namd/) with periodic boundary conditions and a NPT ensemble at room temperature and pressure. Molecular pictures were produced with [VMD](https://www.ks.uiuc.edu/Research/vmd/) and plots were produced with [Julia](https://julialang.org)'s [Plots](http://docs.juliaplots.org/latest/) library.
+!!! note
+   At [this repository](https://github.com/m3g/ComplexMixturesExamples) various examples are available illustrating the execution and possibilities of the package. Here we discuss one of these examples in detail.
+
+The following examples consider a system composed a protein solvated by a mixture of water and glycerol, built with [Packmol](http://m3g.iqm.unicamp.br/packmol). The simulations were performed with [NAMD](https://www.ks.uiuc.edu/Research/namd/) with periodic boundary conditions and a NPT ensemble at room temperature and pressure. Molecular pictures were produced with [VMD](https://www.ks.uiuc.edu/Research/vmd/) and plots were produced with [Julia](https://julialang.org)'s [Plots](http://docs.juliaplots.org/latest/) library.
 
 ```@raw html
 <center>
@@ -115,8 +118,10 @@ using Plots, Plots.PlotMeasures, LaTeXStrings
 
 Some default options that make the plots prettier:
 ```julia
-default(fontfamily="Computer Modern",
-        linewidth=2, framestyle=:box, label=nothing, grid=false)
+default(
+    fontfamily="Computer Modern",
+    linewidth=2, framestyle=:box, label=nothing, grid=false
+)
 ```
 
 First, we will plot the MDDF and the corresponding Kirkwood-Buff integral, which are available in the `results.mddf` and `results.kb` fields of the `results` data set. The distances are available in the `results.d` vector. We also plot here an horizontal line and save the figure as a `pdf` file.  
@@ -212,8 +217,10 @@ using ComplexMixtures, PDBTools
 ### Some default options so the plot looks nice
 ```julia
 plot_font = "Computer Modern"
-default(fontfamily=plot_font,
-        linewidth=2, framestyle=:box, label=nothing)
+default(
+    fontfamily=plot_font,
+    linewidth=2, framestyle=:box, label=nothing
+)
 ```
 
 ### Read the PDB file (using PDBTools)
@@ -266,7 +273,7 @@ idmin = findfirst( d -> d > 1.5, R.d)
 idmax = findfirst( d -> d > 3.5, R.d)
 ```
 
-To obtain pretty labels for the residues in the x-axis, we retrive the one-letter residue names and concatenate them with the residue number converted to strings:
+To obtain pretty labels for the residues in the x-axis, we retrieve the one-letter residue names and concatenate them with the residue number converted to strings:
 
 ```julia
 labels = PDBTools.oneletter.(resname.(residues)).*format.(resnum.(residues))
@@ -308,13 +315,13 @@ Therefore, by filtering the 3D density map at each distance one can visualize ov
 </center>
 ```
 
-In the figure on the left, the points in space around the protein are selected with the following properties: distance from the protein smaller than 2.0Å and relative contribution to the MDDF at the corresponding distance of at least 10% of the maximum contribution. Thus, we are selecting the regions of the protein corresponding to the most stable hydrogen-bonding interactions. The color of the points is the contribution to the MDDF, from blue to red. Thus, the most redish-points corresponds to the regions where the most stable hydrogen bonds were formed. We have marked two regions here, on opposite sides of the protein, with arrows.
+In the figure on the left, the points in space around the protein are selected with the following properties: distance from the protein smaller than 2.0Å and relative contribution to the MDDF at the corresponding distance of at least 10% of the maximum contribution. Thus, we are selecting the regions of the protein corresponding to the most stable hydrogen-bonding interactions. The color of the points is the contribution to the MDDF, from blue to red. Thus, the most reddish-points corresponds to the regions where the most stable hydrogen bonds were formed. We have marked two regions here, on opposite sides of the protein, with arrows.
 
 Clicking on those points we obtain which are the atoms of the protein contributing to the MDDF at that region. In particular, the arrow on the right points to the strongest red region, which corresponds to an Aspartic acid. These residues are shown explicitly under the density (represented as a transparent surface) on the figure in the center.
 
 The figure on the right displays, overlapped with the hydrogen-bonding residues, the most important contributions to the second peak of the distribution, corresponding to distances from the protein between 2.0 and 3.5Å. Notably, the regions involved are different from the ones forming hydrogen bonds, indicating that non-specific interactions with the protein (and not a second solvation shell) are responsible for the second peak. 
 
-A short tutorial video showing how to open the intput and output PDB files in VMD and produce images of the density is available here: 
+A short tutorial video showing how to open the input and output PDB files in VMD and produce images of the density is available here: 
 
 ```@raw html
 <center>

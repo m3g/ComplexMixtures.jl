@@ -68,7 +68,7 @@ solvent = Selection("sytem.pdb","water",water,natomspermol=3)
 
 [VMD](https://www.ks.uiuc.edu/Research/vmd/) is a very popular and
 powerful package for visualization of simulations. It contains a very
-versatile library to read toppologies and trajectory files, and a
+versatile library to read topologies and trajectory files, and a
 powerful selection syntax. We provide here a wrapper to VMD which allows
 using its capabilities.  
 

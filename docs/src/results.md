@@ -15,7 +15,7 @@ To know how to save and load saved data, read the [next](@ref save) section.
 
 ## The Result data structure: main data
 
-The most important data to be read from `resutls` are the distances,
+The most important data to be read from `results` are the distances,
 minimum-distance distribution function, and KB integrals. These data is
 stored in the following vectors:
 
@@ -108,7 +108,7 @@ plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol")
 
 !!! warning
     If the coordinates are not in Å, the calculation will 
-    proceed normaly, but the units of the KB integrals, which has units
+    proceed normally, but the units of the KB integrals, which has units
     of volume per mol, should be
     converted to conform the length unit provided. 
 

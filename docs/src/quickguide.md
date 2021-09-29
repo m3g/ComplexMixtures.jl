@@ -120,9 +120,8 @@ solute = Selection(protein,nmols=1)
     It is necessary to indicate how many molecules (in this case,
     `nmols=1`, so that ComplexMixtures knows that the solute is to be considered
     as single structure. In this case there is no ambiguity, but if
-    the solute was a miscele, for example, this option would let 
-    ComplexMixtures know that one wants to consider the miscele as a single 
-    structure.
+    the solute was a micelle, for example, this option would let 
+    ComplexMixtures know that one wants to consider the micelle as a single structure.
 
 
 ### Define TMAO the solvent to be considered
@@ -213,7 +212,7 @@ The results can be saved into a file (with JSON format) with:
 ```julia
 save(results,"./results.json")
 ```
-And these results can be loaded aftwerwards with:
+And these results can be loaded afterwards with:
 ```julia
 load("./results.json")
 ```

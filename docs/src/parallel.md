@@ -35,7 +35,7 @@ julia -t 4 example.jl
 !!! warning
     If the calculations get `Killed` by no apparent reason, that is probably
     because you are running out of memory because of the many parallel computations
-    running. One way to aleviate this problem is to force garbage collection,
+    running. One way to alleviate this problem is to force garbage collection,
     using
     ```julia
     options = Options(GC=true,GC_threshold=0.5)
