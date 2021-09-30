@@ -6,6 +6,10 @@ A package to study the structure of solutions formed by solutes and solvents of 
 
 The documentation is available at: [https://m3g.github.io/ComplexMixtures.jl/stable](https://m3g.github.io/ComplexMixtures.jl/stable)
 
+### Examples
+
+A series of examples of applications of tis package can be found here: https://github.com/m3g/ComplexMixturesExamples
+
 ## Overview
 
 *ComplexMixtures* is a package to study the solute and solvent interactions of
