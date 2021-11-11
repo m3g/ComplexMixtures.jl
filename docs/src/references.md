@@ -4,8 +4,7 @@
 
 If this package was useful to you, please cite the following papers:
 
-* L. Martínez, **ComplexMixtures.jl: Understanding the solvation  
-  of molecules of complex structure** To be published, 2021.
+* L. Martínez, **ComplexMixtures.jl: Investigating the structure of solutions of complex-shaped molecules from a solvent-shell perspective.** *J. Mol. Liquids. 2021.* [[Full Text]](https://doi.org/10.1016/j.molliq.2021.117945)
 
 * L. Martínez, S. Shimizu, **Molecular interpretation of preferential
   interactions in protein solvation: a solvent-shell perspective by
