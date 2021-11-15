@@ -44,8 +44,10 @@ plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
 savefig("./mddf.pdf")
 plot(results.d,results.kb,xlabel="d",ylabel="KB") # plot the KB 
 savefig("./kb.pdf")
-
 ```
+
+## Running the example
+
 Given that this code is saved into a file named `example.jl`, 
 it can be run within the Julia REPL with:
 ```julia
@@ -60,6 +62,18 @@ or directly with:
 where `-t 5` is optional and defines how many processors will be used
 in the calculation (use, for maximal performance, the number of physical
 cores of your computer, *plus one*).  
+
+!!! note
+    Julia compiles the code the first time it is run in each section. Thus, running script from the command line with, for example, `julia -t 5 example.jl` may appear slow, particularly if you are modifying the script interactively. Ideally, *do not restart Julia*, just repeatedly include your script in the same Julia section. The second time the script is loaded will be much faster. For example:
+    ```julia-repl
+    julia> @time include("./example.jl") 
+    # ... some output
+    27.554095 seconds (72.13 M allocations: 4.623 GiB, 4.37% gc time, 11.96% compilation time)
+    julia> @time include("./example.jl")
+    # ... some output
+    0.703780 seconds (3.24 M allocations: 897.260 MiB, 12.22% gc time)
+    ```
+    The first time the script was called it took ~30s, which included compilation of the code and loading of the packages. The second time the script was included it took 0.7s. Thus, for interactive modification of the script, don't restart Julia.
 
 ## Detailed description of the example
 

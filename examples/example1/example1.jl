@@ -2,7 +2,7 @@
 # Protein - TMAO (compare new and old implementations)
 #
 
-include("../../src/ComplexMixtures.jl")
+using ComplexMixtures
 using PDBTools
 using Plots
 using DelimitedFiles
