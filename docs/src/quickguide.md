@@ -52,12 +52,10 @@ Given that this code is saved into a file named `example.jl`,
 it can be run within the Julia REPL with:
 ```julia
 julia> include("example.jl")
-
 ```
 or directly with:
 ```
 % julia -t 5 example.jl
-
 ```
 where `-t 5` is optional and defines how many processors will be used
 in the calculation (use, for maximal performance, the number of physical
@@ -116,18 +114,15 @@ To define the protein as the solute, we will use the PDBTools package,
 which provides a handy selection syntax. First, read the PDB file using 
 ```julia
 atoms = readPDB("./system.pdb")
-
 ```
 Then, let us select the protein atoms (here we are using the `PDBTools.select` function):
 ```julia
 protein = select(atoms,"protein")
-
 ```
 And, finally, let us use the `Selection` function to setup the
 structure required by the MDDF calculation:
 ```julia
 solute = Selection(protein,nmols=1)
-
 ```
 
 !!! note
@@ -205,7 +200,6 @@ with
 
 ```julia
 plot(results.d,results.kb,xlabel="d / \AA",ylabel="MDDF") 
-
 ```
 to obtain:
 
