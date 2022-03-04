@@ -43,77 +43,118 @@ visualized are provided in the user guide of `ComplexMixtures`.
 
 
 """
-grid3D(;solute=nothing, solute_atoms=nothing, mddf_result=nothing, output_file=nothing,
-        dmin=1.5, dmax=5.0, step=0.5) =
-  grid3D(solute, solute_atoms, mddf_result, output_file, dmin=dmin, dmax=dmax, step=step)
+grid3D(;
+    solute = nothing,
+    solute_atoms = nothing,
+    mddf_result = nothing,
+    output_file = nothing,
+    dmin = 1.5,
+    dmax = 5.0,
+    step = 0.5,
+) = grid3D(
+    solute,
+    solute_atoms,
+    mddf_result,
+    output_file,
+    dmin = dmin,
+    dmax = dmax,
+    step = step,
+)
 
-function grid3D(solute,solute_atoms,mddf_result,output_file;
-                dmin=1.5, dmax=5.0, step=0.5)
+function grid3D(
+    solute,
+    solute_atoms,
+    mddf_result,
+    output_file;
+    dmin = 1.5,
+    dmax = 5.0,
+    step = 0.5,
+)
 
-  if nothing in (solute, solute_atoms, mddf_result)
-    error("grid3D requires `solute`, `solute_atoms` and `mddf_result` definitions.")
-  end
-  
-  # Simple function to interpolate data
-  interpolate(x₁,x₂,y₁,y₂,xₙ) = y₁ + (y₂-y₁)/(x₂-x₁)*(xₙ-x₁) 
+    if nothing in (solute, solute_atoms, mddf_result)
+        error("grid3D requires `solute`, `solute_atoms` and `mddf_result` definitions.")
+    end
 
-  # Maximum and minimum coordinates of the solute
-  lims = maxmin(solute_atoms)
-  n = @. ceil(Int,(lims.xlength + 2*dmax)/step + 1)
+    # Simple function to interpolate data
+    interpolate(x₁, x₂, y₁, y₂, xₙ) = y₁ + (y₂ - y₁) / (x₂ - x₁) * (xₙ - x₁)
 
-  # Building the grid with the nearest solute atom information
-  igrid = 0 
-  grid = PDBTools.Atom[]
-  for ix in 1:n[1]; x = lims.xmin[1]-dmax + step*(ix-1)
-  for iy in 1:n[2]; y = lims.xmin[2]-dmax + step*(iy-1)
-  for iz in 1:n[3]; z = lims.xmin[3]-dmax + step*(iz-1)
-    rgrid = -1
-    iat, r = PDBTools.closest(x,y,z,solute_atoms)
-    if (dmin < r < dmax)  
-      if rgrid < 0 || r < rgrid
-        at = solute_atoms[iat]
-        # Get contribution of this atom to the MDDF
-        c = ComplexMixtures.contrib(solute,mddf_result.solute_atom,[at.index])
-        # Interpolate c at the current distance
-        iright = findfirst(d -> d > r, mddf_result.d)
-        ileft = iright - 1
-        cᵣ = interpolate(mddf_result.d[ileft],mddf_result.d[iright],c[ileft],c[iright],r)
-        if cᵣ > 0
-          gridpoint = Atom(index=at.index,index_pdb=at.index_pdb,
-                           name=at.name,chain=at.chain,
-                           resname=at.resname,resnum=at.resnum,
-                           x=x,y=y,z=z,
-                           occup=r, beta=cᵣ,
-                           model=at.model,segname=at.segname,)
-          if rgrid < 0
-            igrid += 1
-            push!(grid,gridpoint)
-          elseif r < rgrid
-            grid[igrid] = gridpoint
-          end
-          rgrid = r
-        end # cᵣ>0
-      end # rgrid
-    end # dmin/dmax
-  end #iz
-  end #iy
-  end #ix
+    # Maximum and minimum coordinates of the solute
+    lims = maxmin(solute_atoms)
+    n = @. ceil(Int, (lims.xlength + 2 * dmax) / step + 1)
 
-  # Now will scale the density to be between 0 and 99.9 in the temperature
-  # factor column, such that visualization is good enough
-  bmin, bmax = +Inf, -Inf
-  for gridpoint in grid
-    bmin = min(bmin,gridpoint.beta)
-    bmax = max(bmax,gridpoint.beta)
-  end
-  for gridpoint in grid
-    gridpoint.beta = (gridpoint.beta - bmin)/(bmax-bmin)
-  end
+    # Building the grid with the nearest solute atom information
+    igrid = 0
+    grid = PDBTools.Atom[]
+    for ix = 1:n[1]
+        x = lims.xmin[1] - dmax + step * (ix - 1)
+        for iy = 1:n[2]
+            y = lims.xmin[2] - dmax + step * (iy - 1)
+            for iz = 1:n[3]
+                z = lims.xmin[3] - dmax + step * (iz - 1)
+                rgrid = -1
+                iat, r = PDBTools.closest(x, y, z, solute_atoms)
+                if (dmin < r < dmax)
+                    if rgrid < 0 || r < rgrid
+                        at = solute_atoms[iat]
+                        # Get contribution of this atom to the MDDF
+                        c = ComplexMixtures.contrib(
+                            solute,
+                            mddf_result.solute_atom,
+                            [at.index],
+                        )
+                        # Interpolate c at the current distance
+                        iright = findfirst(d -> d > r, mddf_result.d)
+                        ileft = iright - 1
+                        cᵣ = interpolate(
+                            mddf_result.d[ileft],
+                            mddf_result.d[iright],
+                            c[ileft],
+                            c[iright],
+                            r,
+                        )
+                        if cᵣ > 0
+                            gridpoint = Atom(
+                                index = at.index,
+                                index_pdb = at.index_pdb,
+                                name = at.name,
+                                chain = at.chain,
+                                resname = at.resname,
+                                resnum = at.resnum,
+                                x = x,
+                                y = y,
+                                z = z,
+                                occup = r,
+                                beta = cᵣ,
+                                model = at.model,
+                                segname = at.segname,
+                            )
+                            if rgrid < 0
+                                igrid += 1
+                                push!(grid, gridpoint)
+                            elseif r < rgrid
+                                grid[igrid] = gridpoint
+                            end
+                            rgrid = r
+                        end # cᵣ>0
+                    end # rgrid
+                end # dmin/dmax
+            end #iz
+        end #iy
+    end #ix
 
-  if output_file != nothing 
-    writePDB(grid,output_file)
-  end
-  return grid
+    # Now will scale the density to be between 0 and 99.9 in the temperature
+    # factor column, such that visualization is good enough
+    bmin, bmax = +Inf, -Inf
+    for gridpoint in grid
+        bmin = min(bmin, gridpoint.beta)
+        bmax = max(bmax, gridpoint.beta)
+    end
+    for gridpoint in grid
+        gridpoint.beta = (gridpoint.beta - bmin) / (bmax - bmin)
+    end
+
+    if output_file != nothing
+        writePDB(grid, output_file)
+    end
+    return grid
 end
-
-

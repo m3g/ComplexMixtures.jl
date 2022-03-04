@@ -8,16 +8,16 @@ $(TYPEDFIELDS)
 
 """
 @with_kw mutable struct Density
-  solute::Float64 = 0.
-  solvent::Float64 = 0.
-  solvent_bulk::Float64 = 0.
+    solute::Float64 = 0.0
+    solvent::Float64 = 0.0
+    solvent_bulk::Float64 = 0.0
 end
 
 function reset!(d::Density)
-  d.solute = 0.
-  d.solvent = 0.
-  d.solvent_bulk = 0.
-  return nothing
+    d.solute = 0.0
+    d.solvent = 0.0
+    d.solvent_bulk = 0.0
+    return nothing
 end
 
 #function Base.show(io::IO, d::Density ) 
@@ -25,5 +25,3 @@ end
 #  println(" Mean solvent density: $(d.solvent) ")
 #  println(" Mean solvent bulk density: $(d.solvent_bulk) ")
 #end
-
-

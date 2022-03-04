@@ -9,14 +9,14 @@ to the options
 
 """
 function inbulk(d, R::Result)
-  if R.options.usecutoff
-    if d >= R.dbulk && d < R.cutoff 
-      return true
+    if R.options.usecutoff
+        if d >= R.dbulk && d < R.cutoff
+            return true
+        end
+    else
+        if d >= R.dbulk
+            return true
+        end
     end
-  else
-    if d >= R.dbulk
-      return true
-    end
-  end
-  return false
+    return false
 end

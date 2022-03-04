@@ -17,29 +17,29 @@ $(TYPEDFIELDS)
 """
 struct ChemFile{T<:AbstractVector} <: Trajectory
 
-  #
-  # Mandatory data for things to work
-  #
-  filename::String
-  format::AbstractString
-  stream::Vector{Chemfiles.Trajectory} # mutable such that we can close it and open it again
-  nframes::Int64 
+    #
+    # Mandatory data for things to work
+    #
+    filename::String
+    format::AbstractString
+    stream::Vector{Chemfiles.Trajectory} # mutable such that we can close it and open it again
+    nframes::Int64
 
-  # Vector wthat will be fed with the sizes of the periodic box 
-  sides::Vector{T}
+    # Vector wthat will be fed with the sizes of the periodic box 
+    sides::Vector{T}
 
-  # Solute and solvent data
-  solute::Selection
-  solvent::Selection
+    # Solute and solvent data
+    solute::Selection
+    solvent::Selection
 
-  # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-  x_solute::Vector{T}  # solute.natoms vectors of length 3
-  x_solvent::Vector{T} # solvent.natoms vectors of lenght 3
+    # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
+    x_solute::Vector{T}  # solute.natoms vectors of length 3
+    x_solvent::Vector{T} # solvent.natoms vectors of lenght 3
 
-  #
-  # Additional data required for input/output functions
-  #
-  natoms::Int64
+    #
+    # Additional data required for input/output functions
+    #
+    natoms::Int64
 
 end
 
@@ -57,43 +57,50 @@ will be able to read the first frame of the trajectory
 
 
 """
-function ChemFile(filename::String, solute::Selection, solvent::Selection; 
-                  format="" , T::Type = SVector{3,Float64})
+function ChemFile(
+    filename::String,
+    solute::Selection,
+    solvent::Selection;
+    format = "",
+    T::Type = SVector{3,Float64},
+)
 
-  stream = Vector{Chemfiles.Trajectory}(undef,1)
-  stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename,'r',format), devnull)
-  
-  # Get the number of frames (the output of Chemfiles comes in UInt64 format, which is converted
-  # to Int using (UInt % Int)
-  nframes = Chemfiles.length(stream[1]) % Int
-  
-  # Read the first frame to get the number of atoms
-  frame = Chemfiles.read(stream[1])
-  natoms = Chemfiles.size(frame) % Int
-  sides = Chemfiles.lengths(Chemfiles.UnitCell(frame)) # read the sides of the first frame
-  Chemfiles.close(stream[1])
+    stream = Vector{Chemfiles.Trajectory}(undef, 1)
+    stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
 
-  # Reopen the stream, so that nextrame can read the first frame
-  stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename,'r',format), devnull)
+    # Get the number of frames (the output of Chemfiles comes in UInt64 format, which is converted
+    # to Int using (UInt % Int)
+    nframes = Chemfiles.length(stream[1]) % Int
 
-  return ChemFile( filename, # trajectory file name 
-                   format, # trajectory format, is provided by the user
-                   stream,
-                   nframes, 
-                   [ T(sides) ], # array containing box sides
-                   solute, solvent,
-                   zeros(T,solute.natoms),    
-                   zeros(T,solvent.natoms),  
-                   natoms, # Total number of atoms
-                 )
+    # Read the first frame to get the number of atoms
+    frame = Chemfiles.read(stream[1])
+    natoms = Chemfiles.size(frame) % Int
+    sides = Chemfiles.lengths(Chemfiles.UnitCell(frame)) # read the sides of the first frame
+    Chemfiles.close(stream[1])
+
+    # Reopen the stream, so that nextrame can read the first frame
+    stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
+
+    return ChemFile(
+        filename, # trajectory file name 
+        format, # trajectory format, is provided by the user
+        stream,
+        nframes,
+        [T(sides)], # array containing box sides
+        solute,
+        solvent,
+        zeros(T, solute.natoms),
+        zeros(T, solvent.natoms),
+        natoms, # Total number of atoms
+    )
 end
 
 function Base.show(io::IO, trajectory::ChemFile)
-  println(" ")
-  println(" Trajectory read by Chemfiles with: ")
-  println("    $(trajectory.nframes) frames.")
-  println("    $(trajectory.natoms) atoms.")
-  println("    PBC sides in current frame: $(trajectory.sides[1])")
+    println(" ")
+    println(" Trajectory read by Chemfiles with: ")
+    println("    $(trajectory.nframes) frames.")
+    println("    $(trajectory.natoms) atoms.")
+    println("    PBC sides in current frame: $(trajectory.sides[1])")
 end
 
 #
@@ -105,25 +112,29 @@ end
 # them everytime a new frame is read
 #
 
-function nextframe!(trajectory::ChemFile{T} ) where T 
+function nextframe!(trajectory::ChemFile{T}) where {T}
 
-  frame = Chemfiles.read(trajectory.stream[1])
-  positions = Chemfiles.positions(frame)
-  sides = Chemfiles.lengths(Chemfiles.UnitCell(frame))
-  trajectory.sides[1] = T(sides)
+    frame = Chemfiles.read(trajectory.stream[1])
+    positions = Chemfiles.positions(frame)
+    sides = Chemfiles.lengths(Chemfiles.UnitCell(frame))
+    trajectory.sides[1] = T(sides)
 
-  # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
-  # but the code in general is more clear aftwerwards by doing this)
-  for i in 1:trajectory.solute.natoms
-    trajectory.x_solute[i] = T(positions[1,trajectory.solute.index[i]],
-                               positions[2,trajectory.solute.index[i]],
-                               positions[3,trajectory.solute.index[i]])
-  end
-  for i in 1:trajectory.solvent.natoms
-    trajectory.x_solvent[i] = T(positions[1,trajectory.solvent.index[i]],
-                                positions[2,trajectory.solvent.index[i]],
-                                positions[3,trajectory.solvent.index[i]])
-  end
+    # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
+    # but the code in general is more clear aftwerwards by doing this)
+    for i = 1:trajectory.solute.natoms
+        trajectory.x_solute[i] = T(
+            positions[1, trajectory.solute.index[i]],
+            positions[2, trajectory.solute.index[i]],
+            positions[3, trajectory.solute.index[i]],
+        )
+    end
+    for i = 1:trajectory.solvent.natoms
+        trajectory.x_solvent[i] = T(
+            positions[1, trajectory.solvent.index[i]],
+            positions[2, trajectory.solvent.index[i]],
+            positions[3, trajectory.solvent.index[i]],
+        )
+    end
 
 end
 
@@ -141,10 +152,10 @@ closetraj(trajectory::ChemFile) = Chemfiles.close(trajectory.stream[1])
 #
 # Function that returns the trajectory in position to read the first frame
 #
-function firstframe(trajectory::ChemFile)  
-  Chemfiles.close(trajectory.stream[1])
-  trajectory.stream[1] = redirect_stdout(
-    () -> Chemfiles.Trajectory(trajectory.filename,'r',trajectory.format), devnull
-  )
+function firstframe(trajectory::ChemFile)
+    Chemfiles.close(trajectory.stream[1])
+    trajectory.stream[1] = redirect_stdout(
+        () -> Chemfiles.Trajectory(trajectory.filename, 'r', trajectory.format),
+        devnull,
+    )
 end
-

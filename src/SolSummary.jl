@@ -9,9 +9,8 @@ $(TYPEDFIELDS)
 
 """
 struct SolSummary
-  natoms::Int
-  nmols::Int
-  natomspermol::Int
+    natoms::Int
+    nmols::Int
+    natomspermol::Int
 end
-SolSummary(s::Selection) = SolSummary(s.natoms,s.nmols,s.natomspermol)
-
+SolSummary(s::Selection) = SolSummary(s.natoms, s.nmols, s.natomspermol)

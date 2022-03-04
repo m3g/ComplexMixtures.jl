@@ -14,7 +14,7 @@ using DocStringExtensions
 import Random
 
 export Selection, Trajectory, mddf, save, load, write, Options, Result
-export contrib, merge 
+export contrib, merge
 export overview, gr, grid3D
 export VMDSelect
 
@@ -117,7 +117,3 @@ include("./mddf_linkedcells_parallel.jl")
 include("./mddf.jl")
 
 end
-
-
-
-

@@ -9,6 +9,6 @@ $(TYPEDFIELDS)
 
 """
 @with_kw struct Samples
-  md::Float64
-  random::Int
+    md::Float64
+    random::Int
 end

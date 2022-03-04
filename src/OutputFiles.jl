@@ -9,9 +9,8 @@ $(TYPEDFIELDS)
 """
 @with_kw mutable struct OutputFiles
 
-  output::String
-  solute_atoms::String
-  solvent_atoms::String
+    output::String
+    solute_atoms::String
+    solvent_atoms::String
 
 end
-
