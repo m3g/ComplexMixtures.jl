@@ -43,3 +43,4 @@ examples/teste*.xyz
 *example*.dat
 *example*.json
 *example*.pdf
+.vscode/settings.json
