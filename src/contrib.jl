@@ -16,13 +16,25 @@ of indexes, list of atom names, vector of `PDBTools.Atom`s, or a `PDBTools.Resid
 function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vector{Int})
     nbins = size(atom_contributions, 1)
     c = zeros(nbins)
-    for it in indexes
-        if it > s.natomspermol
-            error(
-                "The index list contains atoms with indexes greater than the number of atoms of the molecule.",
-            )
+    # If the selection is a single molecule, the indexes are anything
+    if s.nmols == 1
+        for it in indexes
+            ind = findfirst(isequal(it),s.index)
+            if isnothing(ind)
+                error("Index $it of input list not found in selection indexes list.")
+            end
+            c += atom_contributions[:, ind]
         end
-        c += atom_contributions[:, it]
+    # If more than one molecule, the index must correspond to an atom within one molecule
+    else
+        for it in indexes
+            if it > s.natomspermol
+                error(
+                    "The index list contains atoms with indexes greater than the number of atoms of the molecule.",
+                )
+            end
+            c += atom_contributions[:, it]
+        end
     end
     return c
 end
