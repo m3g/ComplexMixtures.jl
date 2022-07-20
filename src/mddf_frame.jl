@@ -33,31 +33,6 @@ function mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R
     # get pbc sides in this frame
     sides = getsides(trajectory, iframe)
 
-    volume_frame.total = sides[1] * sides[2] * sides[3]
-    R.volume.total = R.volume.total + volume_frame.total
-
-    R.density.solute = R.density.solute + (solute.nmols / volume_frame.total)
-    R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
-
-    # Add the box side information to the box structure, in this frame
-    box = Box(options.lcell, sides, R.cutoff)
-
-    # Will wrap everthing relative to the reference atom of the first molecule
-    # and move everything such that that center is in the origin. This is important
-    # to simplify the computation of cell indexes, as the minimum coordinates are 
-    # automatically -side/2 at each direction. The reason for wrapping to the solute
-    # center and not to the origin is that if the solute is a protein, for example,
-    # the protein gets centered, and hardly ever it will be necessary to wrap the 
-    # coordinates afterwards, accelerating the computation. 
-    solute_center = x_solute[R.irefatom]
-    wrap!(x_solute, sides, solute_center)
-    center_to_origin!(x_solute, solute_center)
-    wrap!(x_solvent, sides, solute_center)
-    center_to_origin!(x_solvent, solute_center)
-
-    # Initialize linked cells
-    initcells!(x_solvent, box, lc_solvent)
-
     # Check if the cutoff is not too large considering the periodic cell size
     if R.cutoff > sides[1] / 2.0 || R.cutoff > sides[2] / 2.0 || R.cutoff > sides[3] / 2.0
         error("""
@@ -68,6 +43,36 @@ function mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R
                  in the trajectory file.
         """)
     end
+
+    volume_frame.total = sides[1] * sides[2] * sides[3]
+    R.volume.total = R.volume.total + volume_frame.total
+
+    R.density.solute = R.density.solute + (solute.nmols / volume_frame.total)
+    R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
+
+    # Add the box side information to the box structure, in this frame
+    box = Box(sides, R.cutoff, lcell = options.lcell)
+
+    # Compute cell list
+    cl = CellList(x_solute, x_xsolvent, box)
+    aux_cl = CellListMap.AuxThreaded(cl)
+
+    list = init_list(x_solvent, voltar: indexes of solvent molecules)
+    list_threaded = [ copy(list) for _ in 1:nbatches(cl) ]
+
+    list_refatom = init_list(x_solvent, voltar: indexes of the reference atoms)
+    list_threaded_refatom = [ copy(list_refatom) for _ in 1:nbatches(cl) ]
+
+    cl = UpdateCellList!(x_solvent, x_solute, box, cl, aux_cl)
+
+    # Compute minimum distances of the molecules to the solute
+    minimum_distances!(solvent_index, list, box, cl, list_threaded = list_threaded)
+
+    # Compute the distances within the cutoff, of the reference atoms, to the solute
+    minimum_distances!(reference_index, list_refatom, box, cl, list_threaded_refatom = list_threaded)
+
+    # Fraction of solvent molecules in bulk
+    n_solvent_in_bulk = count(mol -> !mol.within_cutoff, list) / solute.nmols
 
     local n_dmin_in_bulk
     n_solvent_in_bulk = 0.0

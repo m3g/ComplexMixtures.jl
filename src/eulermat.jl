@@ -4,6 +4,8 @@
 eulermat(beta, gamma, theta, deg::String)
 ```
 
+$(INTERNAL)
+
 This routine was added because it defines 
 the rotation in the "human" way, an is thus used
 to set the position of the fixed molecules. `deg` can only be `"degree"`, in which
@@ -29,16 +31,14 @@ function eulermat(beta, gamma, theta, deg::String)
     return eulermat(beta, gamma, theta)
 end
 
-function eulermat(beta::T, gamma::T, theta::T) where {T}
+function eulermat(beta, gamma, theta)
     c1 = cos(beta)
     s1 = sin(beta)
     c2 = cos(gamma)
     s2 = sin(gamma)
     c3 = cos(theta)
     s3 = sin(theta)
-    @SMatrix [
-        c2*c3 -c2*s3 s2
-        (c1*s3+c3*s1*s2) (c1*c3-s1*s2*s3) -c2*s1
-        (s1*s3-c1*c3*s2) (c1*s2*s3+c3*s1) c1*c2
-    ]
+    @SMatrix [    c2*c3           -c2*s3         s2
+              (c1*s3+c3*s1*s2) (c1*c3-s1*s2*s3) -c2*s1
+              (s1*s3-c1*c3*s2) (c1*s2*s3+c3*s1)  c1*c2 ]
 end

@@ -8,15 +8,19 @@ using FortranFiles
 using PDBTools
 using StructTypes
 using JSON3
-using ThreadPools
 using StaticArrays
 using DocStringExtensions
+using CellListMap
+
 import Random
 
 export Selection, Trajectory, mddf, save, load, write, Options, Result
 export contrib, merge
 export overview, gr, grid3D
 export VMDSelect
+
+# Message for internal doc strings
+const INTERNAL = "Internal sructure or function, interface may change."
 
 # Input and Output data structures
 include("./FileOperations.jl")
