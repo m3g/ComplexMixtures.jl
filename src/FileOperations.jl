@@ -23,6 +23,7 @@ empty_char(c::Char) = in(c,(Char(9),Char(32)))
 #
 # Function that checks if a line is a comment line or if it is empty
 #
-commentary(s::String) = s[findfirst(c -> !(empty_char(c)), s)] == '#'
-
+function commentary(s::String) 
+    i = findfirst(c -> !(empty_char(c)), s) 
+    return isnothing(i) || s[i] == '#'
 end
