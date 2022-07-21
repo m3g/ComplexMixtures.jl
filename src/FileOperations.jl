@@ -27,3 +27,5 @@ function commentary(s::String)
     i = findfirst(c -> !(empty_char(c)), s) 
     return isnothing(i) || s[i] == '#'
 end
+
+end # module
