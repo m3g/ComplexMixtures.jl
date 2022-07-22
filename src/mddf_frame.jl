@@ -8,7 +8,7 @@ Computes the MDDF for a single frame, modifies the data in the `R` (type `Result
 
 
 """
-function mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R::Result)
+function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, RNG, R::Result)
 
     # Simplify code by assigning some shortened names
     trajectory = framedata.trajectory
@@ -34,7 +34,7 @@ function mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R
     sides = getsides(trajectory, iframe)
 
     # Check if the cutoff is not too large considering the periodic cell size
-    if R.cutoff > sides[1] / 2.0 || R.cutoff > sides[2] / 2.0 || R.cutoff > sides[3] / 2.0
+    if R.cutoff > sides[1] / 2 || R.cutoff > sides[2] / 2 || R.cutoff > sides[3] / 2
         error("""
         in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe
                  max(cutoff,dbulk) = $(R.cutoff)
@@ -57,11 +57,9 @@ function mddf_frame!(iframe::Int, framedata::FrameData, options::Options, RNG, R
     cl = CellList(x_solute, x_xsolvent, box)
     aux_cl = CellListMap.AuxThreaded(cl)
 
-    list = init_list(x_solvent, voltar: indexes of solvent molecules)
+    # Initialize the minimum distance list
+    list = zeros(MinimumDistance{Float64}, solute.nmols)
     list_threaded = [ copy(list) for _ in 1:nbatches(cl) ]
-
-    list_refatom = init_list(x_solvent, voltar: indexes of the reference atoms)
-    list_threaded_refatom = [ copy(list_refatom) for _ in 1:nbatches(cl) ]
 
     cl = UpdateCellList!(x_solvent, x_solute, box, cl, aux_cl)
 
