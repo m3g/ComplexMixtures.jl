@@ -99,12 +99,7 @@ function mddf_compute(
     nextframe!(trajectory)
     sides = getsides(trajectory, 1)
 
-    # Initialize buffers for cell list computations
-    box, cl, aux_cl = init_cell_lists(comp_type, sides, options, trajectory) 
-
-    # Initialize the minimum distance list
-    list = zeros(MinimumDistance{Float64}, solute.nmols)
-    list_threaded = [ copy(list) for _ in 1:nbatches(cl) ]
+    system = init_cell_lists(comp_type, sides, options, trajectory) 
 
     # Computing all minimum-distances
     if !options.silent
@@ -134,11 +129,16 @@ function mddf_compute(
     return R
 end
 
-function init_cell_lists(comp_type::Val{:self}, sides, options, trajectory)
-    box = Box(sides, options.cutoff, lcell = options.lcell)
-    cl = CellList(trajectory.xsolute, box)
-    aux_cl = CellListMap.AuxThreaded(cl)
-    return box, cl, aux_cl
+function init_cell_lists(comp_type::Val{:self}, unitcell, options, trajectory)
+    system = CellListMap.PeriodicSystem(
+       positions=trajectory.xsolute, 
+       cutoff=options.cutoff,
+       lcell=options.lcell,
+       unitcell=unitcell,
+       output=zeros(MinimumDistance{Float64}, trajectory.solute.nmols),
+       output_name=:list
+    )
+    return system
 end
 
 function init_cell_lists(comp_type::Val{:cross}, sides, options, trajectory)
