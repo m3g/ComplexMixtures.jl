@@ -52,6 +52,16 @@ function update_md(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T}
     return md
 end
 
+#
+# Methods to allow multi-threading in CellListMap
+#
+import CellListMap.PeriodicSystems: copy_output, reset_output!, reducer
+copy_output(md::MinimumDistance{T}) where {T} = 
+    MinimumDistance{T}(md.within_cutoff, md.i, md.j, md.d, md.ref_atom_within_cutoff, md.d_ref_atom)
+reset_output!(md1::MinimumDistance{T}) where {T} = 
+    MinimumDistance{T}(false, 0, 0, typemax(T), false, typemax(T))
+reducer(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T} = update_md(md1, md2)
+
 """
 
 ```
@@ -73,14 +83,7 @@ mol_index(i, n_atoms_per_molecule) = (i - 1) ÷ n_atoms_per_molecule + 1
 $(INTERNAL)
 
 """
-function update_list!(
-    i,
-    j,
-    d2,
-    iref_atom::Int,
-    mol_index_i::F,
-    list::Vector{MinimumDistance{T}},
-) where {F<:Function, T}
+function update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{MinimumDistance{T}},) where {F<:Function, T}
     d = sqrt(d2)
     imol = mol_index_i(i)
     found_ref = i%iref_atom == 0
