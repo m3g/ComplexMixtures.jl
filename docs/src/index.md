@@ -47,4 +47,4 @@ structural stability, solubility, and others.
   means of minimum-distance distribution functions.** *J. Chem. Theor.
   Comp.* 13, 6358–6372, 2017. [[Full Text]](http://pubs.acs.org/doi/abs/10.1021/acs.jctc.7b00599)
 
-* Presentation about ComplexMixtures.jl and protein-solvent interactions: https://youtu.be/umSRjsITzyA
+* Presentation about ComplexMixtures.jl and protein-solvent interactions: [https://youtu.be/umSRjsITzyA](https://youtu.be/umSRjsITzyA)
