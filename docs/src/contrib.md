@@ -14,8 +14,8 @@ using:
 ```julia
 using PDBTools, ComplexMixtures
 atoms = readPDB("system.pdb")
-protein = select(atoms,"protein",nmols=1)
-water = select(atoms,"water",natomspermol=3)
+protein = select(atoms,"protein")
+water = select(atoms,"water")
 solute = Selection(protein,nmols=1)
 solvent = Selection(water,natomspermol=3)
 ```
