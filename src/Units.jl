@@ -15,4 +15,4 @@ $(TYPEDFIELDS)
     Angs3toLpermol = mole / Angs3toL
     SitesperAngs3tomolperL = Angs3toL / mole
 end
-units = Units()
+const units = Units()
