@@ -95,15 +95,5 @@ function Selection(
 end
 
 function Base.show(io::IO, s::Selection)
-    if s.nmols == 1
-        mol = "molecule"
-    else
-        mol = "molecules"
-    end
-    if s.natoms == 1
-        at = "atom"
-    else
-        at = "atoms"
-    end
-    println(" Selection of $(s.natoms) $at belonging to $(s.nmols) $mol. ")
+    println(io, " Selection of $(atoms_str(s.natoms)) belonging to $(mol_str(s.nmols)). ")
 end
