@@ -64,6 +64,11 @@ will run PDBTools in background:
 ```julia
 solvent = Selection("sytem.pdb","water",water,natomspermol=3)
 ```
+
+!!! warning
+    The selection syntax of `PDBTools` is somewhat limited. Verify if the
+    selections correspond to the the desired sets of atoms every time.
+
 ## Using VMD
 
 [VMD](https://www.ks.uiuc.edu/Research/vmd/) is a very popular and

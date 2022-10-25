@@ -42,6 +42,10 @@ function mddf_linkedcells(
         mddf_compute!(iframe, framedata, options, RNG, R)
 
         options.silent || next!(progress)
+        if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+             GC.gc() # why we need this anyway??? There should not be so much garbage.
+        end
+         
     end # frames
     closetraj(trajectory)
 
