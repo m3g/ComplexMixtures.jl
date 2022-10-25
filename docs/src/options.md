@@ -72,7 +72,7 @@ the cell length is `cutoff/lcell`). Default: 2.
 `sleep`: Real, the time between checks between multiple spawns of
 calculations in parallel. Default 0.1 s. 
 
-`GC`: Bool, force garbage collection in parallel runs, to avoid memory
+`GC`: Bool, force garbage collection, to avoid memory
 overflow. Default: `true`. That this might be required is probably a result of
 something that can vastly improved in memory management. This may slow down
 parallel runs significantly if the GC runs too often.
