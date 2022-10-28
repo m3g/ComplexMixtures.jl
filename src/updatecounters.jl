@@ -1,4 +1,44 @@
 """
+    setbin(d,step)
+
+$(INTERNAL)
+
+Function that sets to which histogram bin a data point pertains simple, but important to keep consistency over all calls.
+
+"""
+setbin(d, step) = trunc(Int, d / step) + 1
+
+"""
+
+$(INTERNAL)
+
+Given the index of the atom in the vector of coordinates of the solute or the solvent,
+returns the type of the atom, that is, the index of this atom within the molecule
+(goes from 1 to natomspermol)
+
+"""
+function itype(iatom::Int, natomspermol::Int)
+    itype = iatom % natomspermol
+    return ifelse(itype == 0, natomspermol, itype)
+end
+
+# Calling using the structures of Solute and Solvent, to clear up the code above
+itype(iatom::Int, s::Selection) = itype(iatom, s.natomspermol)
+
+"""
+    inbulk(d, R::Result)
+
+$(INTERNAL)
+
+Function that returns if a distance is in the bulk region or not, according to the options.
+
+"""
+inbulk(d, R::Result) = R.options.usecutoff ? (d >= R.dbulk && d < R.cutoff) : (d >= R.dbulk)
+
+"""
+    updatecounters!
+
+$(INTERNAL)
 
 Function that updates the counters in `R` and returns `n_dmin_in_bulk` given
 the output of `cutoffdistances`.
@@ -18,7 +58,6 @@ function updatecounters!(
     dmin_mol::Vector{DminMol},
     dref_mol::Vector{Float64},
 )
-
 
     for i = 1:solvent.nmols
         dmin_mol[i].d = +Inf
@@ -77,8 +116,7 @@ function updatecounters!(
 end
 
 #
-# If the rdf_count_random_frame is provided, update the
-# counters associated to the random distribution
+# If the rdf_count_random_frame is provided, update the counters associated to the random distribution
 #
 function updatecounters!(
     R::Result,
@@ -127,5 +165,5 @@ function updatecounters!(
         i = i + 1
     end
 
-    nothing
+    return nothing
 end

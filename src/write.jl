@@ -1,20 +1,12 @@
-
 using Statistics
 
-function format(x)
-    if abs(x) < 999
-        return @sprintf("%12.7f", x)
-    else
-        return @sprintf("%12.5e", x)
-    end
-end
+# Format numbers depending on their size
+format(x) = abs(x) < 999 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 
 import Base.write
-"""
 
-```
-write(R::ComplexMixtures.Result, filename::String, solute::Selection, solvent::Selection)
-```
+"""
+    write(R::ComplexMixtures.Result, filename::String, solute::Selection, solvent::Selection)
 
 Function to write the final results to output files as simple tables
 that are human-readable and easy to analyze with other software
@@ -28,12 +20,9 @@ write(R::Result, filename::String, solute::Selection, solvent::Selection) =
 
 
 """
-
-```
-write(R::ComplexMixtures.Result, filename::String; 
-      solute_names::Vector{String} = ["nothing"], 
-      solvent_names::Vector{String} = ["nothing"])
-```
+    write(R::ComplexMixtures.Result, filename::String; 
+          solute_names::Vector{String} = ["nothing"], 
+          solvent_names::Vector{String} = ["nothing"])
 
 Optional passing of atom names.
 
@@ -159,7 +148,7 @@ function write(
     )
 
     for i = 1:R.nbins
-        line = "  " * format(R.d[i])                                 #  1-DISTANCE
+        line = "  " * format(R.d[i])                                   #  1-DISTANCE
         line = line * "  " * format(R.mddf[i])                         #  2-GMD
         line = line * "  " * format(R.kb[i])                           #  3-KB INT
         line = line * "  " * format(R.md_count[i])                     #  4-MD COUNT

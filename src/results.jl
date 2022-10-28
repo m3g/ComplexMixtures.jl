@@ -286,4 +286,46 @@ $(TYPEDFIELDS)
     random::Int
 end
 
+#
+# Functions to compute volumes of shells
+#
+"""
+  sphericalshellvolume(i,step)
+
+$(INTERNAL)
+
+Computes the volume of the spherical shell defined within [(i-1)*step,i*step].
+
+"""
+function sphericalshellvolume(i, step)
+    rmin = (i - 1) * step
+    return (4 * pi / 3) * ((rmin + step)^3 - rmin^3)
+end
+
+"""
+  shellradius(i,step)
+
+Compute the point in which the radius comprises half of the volume of the shell.
+
+"""
+function shellradius(i, step)
+    rmin = (i - 1) * step
+    return (0.5 * ((rmin + step)^3 + rmin^3))^(1 / 3)
+end
+
+
+"""
+  sphereradiusfromshellvolume(volume,step)
+
+Computes the radius that corresponds to a spherical shell of a given volume.
+
+"""
+function sphereradiusfromshellvolume(volume, step)
+    fourthirdsofpi = 4 * pi / 3
+    if 3 * step * volume - pi * step^4 <= 0.0
+        return 0.0
+    end
+    rmin = (sqrt(3 * pi) * sqrt(3 * step * volume - pi * step^4) - 3 * pi * step^2) / (6 * pi * step)
+    return (0.5 * (volume / fourthirdsofpi + 2 * rmin^3))^(1 / 3)
+end
 

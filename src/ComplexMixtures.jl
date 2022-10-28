@@ -37,7 +37,6 @@ include("./random.jl")
 # Structures and functions to deal with the solute and solvent selections
 include("./VMDselect.jl")
 include("./Selection.jl")
-include("./itype.jl")
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
@@ -49,12 +48,7 @@ include("./trajectory_formats/PDBTraj.jl")
 include("./minimum_distances.jl")
 
 # Functions to construct histograms
-include("./sphericalshellvolume.jl")
-include("./shellradius.jl")
-include("./sphereradiusfromshellvolume.jl")
-include("./setbin.jl")
 include("./viewmol.jl")
-include("./inbulk.jl")
 
 # Structures to report results
 include("./finalresults.jl")
