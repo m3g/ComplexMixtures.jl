@@ -23,28 +23,21 @@ export VMDSelect
 const INTERNAL = "Internal sructure or function, interface may change."
 
 # Input and Output data structures
-include("./FileOperations.jl")
-include("./OutputFiles.jl")
-include("./Density.jl")
-include("./Volume.jl")
+include("./io.jl")
+
+# Options
 include("./Options.jl")
-include("./Units.jl")
+
+# Structures and functions to store and report results
+include("./results.jl")
 
 # Function to rigid-body move molecules
 include("./random.jl")
-include("./centerofcoordinates.jl")
-include("./eulermat.jl")
-include("./random_move.jl")
-include("./move.jl")
-include("./center_to_origin.jl")
-include("./writexyz.jl")
 
 # Structures and functions to deal with the solute and solvent selections
+include("./VMDselect.jl")
 include("./Selection.jl")
 include("./itype.jl")
-
-# Select solute and solvent using VMD
-include("./VMDselect.jl")
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
@@ -52,22 +45,8 @@ include("./trajectory_formats/ChemFiles.jl")
 include("./trajectory_formats/NamdDCD.jl")
 include("./trajectory_formats/PDBTraj.jl")
 
-# Structures used to store results
-include("./isautocorrelation.jl")
-include("./SolSummary.jl")
-include("./Result.jl")
-include("./Samples.jl")
-
-# Function to print some data about the run
-include("./title.jl")
-
-# Structure used for periodic boundary conditions
-include("./wrap.jl")
-include("./Box.jl")
-
 # Functions to compute distances
-include("./distance.jl")
-include("./minimumdistance.jl")
+include("./minimum_distances.jl")
 
 # Functions to construct histograms
 include("./sphericalshellvolume.jl")
@@ -93,22 +72,9 @@ include("./tools/grid3D.jl")
 include("./isapprox.jl")
 
 # Structures and functions for the linked cell method
-include("./LinkedCells.jl")
-include("./DminMol.jl")
-include("./CutoffDistances_Struct.jl")
 include("./partialsort_cutoff.jl")
 include("./updatecounters.jl")
 include("./update_counters_frame.jl")
-include("./icell1D.jl")
-include("./wrap_cell.jl")
-include("./icell3D.jl")
-include("./initcells.jl")
-include("./increase_size.jl")
-include("./cutoffdcell.jl")
-include("./cutoffdistances.jl")
-include("./mddf_linkedcells.jl")
-include("./cutoffdcell_self.jl")
-include("./cutoffdistances_self.jl")
 
 # for the linked-cell-parallel version
 include("./FrameData.jl")

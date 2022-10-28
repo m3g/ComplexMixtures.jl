@@ -1,3 +1,87 @@
+"""
+
+$(TYPEDEF)
+
+Structure to contain the density values obtained from the calculation.
+
+$(TYPEDFIELDS)
+
+"""
+@with_kw mutable struct Density
+    solute::Float64 = 0.0
+    solvent::Float64 = 0.0
+    solvent_bulk::Float64 = 0.0
+end
+
+function reset!(d::Density)
+    d.solute = 0.0
+    d.solvent = 0.0
+    d.solvent_bulk = 0.0
+    return nothing
+end
+
+#function Base.show(io::IO, d::Density ) 
+#  println(" Mean solute density: $(d.solute) ")
+#  println(" Mean solvent density: $(d.solvent) ")
+#  println(" Mean solvent bulk density: $(d.solvent_bulk) ")
+#end
+
+
+"""
+
+$(TYPEDEF)
+
+Structures to contain the volumes obtained from calculations.
+
+$(TYPEDFIELDS)
+
+"""
+@with_kw mutable struct Volume
+    total::Float64
+    bulk::Float64
+    domain::Float64
+    shell::Vector{Float64}
+end
+
+Volume(nbins::Int) = Volume(0.0, 0.0, 0.0, zeros(Float64, nbins))
+
+function reset!(v::Volume)
+    v.total = 0.0
+    v.bulk = 0.0
+    v.domain = 0.0
+    @. v.shell = 0.0
+    return nothing
+end
+
+#function Base.show(io::IO, v::Volume) 
+#  n = length(v.shell)
+#  println(" Mean total box volume: $(v.total) ")
+#  println(" Mean bulk volume: $(v.bulk) ")
+#  println(" Mean solute domain volume: $(v.domain) ")
+#  println(" Volumes of first, medium, and last solvation shells: $(v.shell[1]), $(v.shell[round(Int,n/2)]), $(v.shell[n])")
+#end
+
+
+"""
+
+$(TYPEDEF)
+
+Structures to contain the details of a solute or solvent to
+store in the results of the MDDF calculation.
+
+$(TYPEDFIELDS)
+
+"""
+struct SolSummary
+    natoms::Int
+    nmols::Int
+    natomspermol::Int
+end
+SolSummary(s::Selection) = SolSummary(s.natoms, s.nmols, s.natomspermol)
+
+#
+# obs: voltar e deixar só a mutable struct
+#
 macro ResultFields_Start()
     ex = quote
         nbins::Int
@@ -24,8 +108,8 @@ end
 macro ResultFields_AtomsMatrix()
     ex = quote
         # Atomic contributions to the MDDFs
-        solute_atom::Array{Float64,2} = zeros(nbins, solute.natomspermol)
-        solvent_atom::Array{Float64,2} = zeros(nbins, solvent.natomspermol)
+        solute_atom::Matrix{Float64} = zeros(nbins, solute.natomspermol)
+        solvent_atom::Matrix{Float64} = zeros(nbins, solvent.natomspermol)
     end
     esc(ex)
 end
@@ -174,7 +258,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         irefatom = irefatom,
         lastframe_read = lastframe_read,
         nframes_read = nframes_read,
-        autocorrelation = isautocorrelation(trajectory),
+        autocorrelation = isequal(trajectory.solute.index,trajectory.solvent.index),
         solute = SolSummary(trajectory.solute),
         solvent = SolSummary(trajectory.solvent),
         files = [trajectory.filename],
@@ -186,5 +270,20 @@ end
 #
 # What to show at the REPL
 #
+Base.show(io::IO, R::Result) = Base.show(io, overview(R))
 
-Base.show(io::IO, R::Result) = Base.show(overview(R))
+"""
+
+$(TYPEDEF)
+
+Simple structure to contain the number of samples of each type of calculation to compute final results
+
+$(TYPEDFIELDS)
+
+"""
+@with_kw struct Samples
+    md::Float64
+    random::Int
+end
+
+
