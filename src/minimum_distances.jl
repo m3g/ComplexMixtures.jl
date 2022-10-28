@@ -39,7 +39,6 @@ $(INTERNAL)
 Function that returns the updated minimum distance structure after comparing two structures
 associated with the same molecule.
 
-
 """
 function update_md(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T}
     found_ref = md1.ref_atom_within_cutoff || md2.ref_atom_within_cutoff
@@ -63,10 +62,7 @@ reset_output!(md1::MinimumDistance{T}) where {T} =
 reducer(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T} = update_md(md1, md2)
 
 """
-
-```
-mol_index(i_atom,n_atoms_per_molecule) = (i_atom-1) ÷ n_atoms_per_molecule + 1
-```
+    mol_index(i_atom, n_atoms_per_molecule) = (i_atom-1) ÷ n_atoms_per_molecule + 1
 
 $(INTERNAL)
 
@@ -79,11 +75,14 @@ molecules have the same number of atoms.
 mol_index(i, n_atoms_per_molecule) = (i - 1) ÷ n_atoms_per_molecule + 1
 
 """
+    update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
 
 $(INTERNAL)
 
+Function that updates a list of minimum distances given the indexes of the atoms involved for one pair within cutoff.
+
 """
-function update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{MinimumDistance{T}},) where {F<:Function, T}
+function update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
     d = sqrt(d2)
     imol = mol_index_i(i)
     found_ref = i%iref_atom == 0
@@ -93,10 +92,7 @@ function update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{Min
 end
 
 """
-
-```
-minimum_distances!
-```
+    minimum_distances!
 
 Function that computes the list of distances of solvent molecules to a solute molecule. 
 It updates the lists of minimum distances. 
@@ -187,9 +183,9 @@ Update the final `list` of minimum-distances given the threaded list `list_threa
 
 """
 function reduce_list!(list, list_threaded)
-    @. list = list_threaded[1]
-    for it in 2:length(list_threaded)
-        @. list = update_md(list, list_threaded[it])
+    reset!(list)
+    for it in eachindex(list_threaded)
+        @. list = update_md(list,list_threaded[it])
     end
     return list
 end
