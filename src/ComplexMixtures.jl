@@ -63,7 +63,6 @@ include("./update_counters_frame.jl")
 
 # for the linked-cell-parallel version
 include("./FrameData.jl")
-include("./sum.jl")
 include("./mddf_frame.jl")
 include("./mddf_frame_self.jl")
 include("./mddf_linkedcells_parallel.jl")

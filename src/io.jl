@@ -69,10 +69,7 @@ const units = Units()
 #
 # Decoration and title
 #
-"""
-
 const bars = "-------------------------------------------------------------------------------"
-
 atoms_str(n) = "$n $(n == 1 ? "atom" : "atoms")"
 mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
 
@@ -101,12 +98,10 @@ function title(R::Result, solute::Selection, solvent::Selection)
 
 end
 
-```
-writexyz(x::Vector{T}, file::String) where T <: AbstractVector
-```
+"""
+    writexyz(x::Vector{T}, file::String) where T <: AbstractVector
 
 Print test xyz file.
-
 """
 function writexyz(x::Vector{T}, file::String) where {T<:AbstractVector}
     f = open(file, "w")

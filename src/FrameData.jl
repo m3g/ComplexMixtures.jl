@@ -8,19 +8,15 @@ $(TYPEDFIELDS)
 
 """
 mutable struct FrameData{T<:Trajectory,V}
-
     trajectory::T
     volume_frame::Volume
     rdf_count_random_frame::Vector{Float64}
     md_count_random_frame::Vector{Float64}
-
     dc::CutoffDistances
     dmin_mol::Vector{DminMol}
     dref_mol::Vector{Float64}
     x_solvent_random::Vector{V}
-
     lc_solvent::LinkedCells
-
 end
 
 function FrameData(trajectory::Trajectory, R::Result)
@@ -33,6 +29,6 @@ function FrameData(trajectory::Trajectory, R::Result)
         [DminMol(+Inf, i, 0, 0) for i = 1:trajectory.solvent.nmols], # dmin_mol
         zeros(trajectory.solvent.nmols),                             # dref_mol
         similar(trajectory.x_solvent),                               # x_solvent_random
-        LinkedCells(trajectory.solvent.natoms),
-    )                      # lc_solvent
+        LinkedCells(trajectory.solvent.natoms),           # lc_solvent
+    )                      
 end
