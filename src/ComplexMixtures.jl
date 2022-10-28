@@ -50,15 +50,6 @@ include("./minimum_distances.jl")
 # Functions to construct histograms
 include("./viewmol.jl")
 
-# Structures to report results
-include("./finalresults.jl")
-include("./merge.jl")
-include("./save.jl")
-include("./load.jl")
-include("./write.jl")
-include("./which_types.jl")
-include("./contrib.jl")
-
 # Tools
 include("./tools/gr.jl")
 include("./tools/overview.jl")
