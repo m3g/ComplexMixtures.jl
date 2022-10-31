@@ -3,7 +3,6 @@
 # be available through this interface, including the NamdDCD which are provided independently
 # as an example. 
 #
-
 import Chemfiles
 
 """
@@ -33,8 +32,8 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     solvent::Selection
 
     # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-    x_solute::Vector{T}  # solute.natoms vectors of length 3
-    x_solvent::Vector{T} # solvent.natoms vectors of lenght 3
+    x_solute::Vector{T}  # solute.natoms vectors of length 3 (preferentially static vectors)
+    x_solvent::Vector{T} # solvent.natoms vectors of lenght 3 (preferentially static vectors)
 
     #
     # Additional data required for input/output functions
@@ -44,10 +43,7 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
 end
 
 """
-
-```
-ChemFile(filename::String, solute::Selection, solvent::Selection;format="" , T::Type = SVector{3,Float64})
-```
+    ChemFile(filename::String, solute::Selection, solvent::Selection;format="" , T::Type = SVector{3,Float64})
 
 Function open will set up the IO stream of the trajectory, fill up the 
 number of frames field and additional parameters if required 
@@ -55,14 +51,13 @@ number of frames field and additional parameters if required
 The IO stream must be returned in a position such that the "nextframe!" function
 will be able to read the first frame of the trajectory
 
-
 """
 function ChemFile(
     filename::String,
     solute::Selection,
     solvent::Selection;
-    format = "",
-    T::Type = SVector{3,Float64},
+    format="",
+    T::Type=SVector{3,Float64}
 )
 
     stream = Vector{Chemfiles.Trajectory}(undef, 1)
@@ -96,11 +91,12 @@ function ChemFile(
 end
 
 function Base.show(io::IO, trajectory::ChemFile)
-    println(" ")
-    println(" Trajectory read by Chemfiles with: ")
-    println("    $(trajectory.nframes) frames.")
-    println("    $(trajectory.natoms) atoms.")
-    println("    PBC sides in current frame: $(trajectory.sides[1])")
+    print("""
+          Trajectory read by Chemfiles with:
+             $(trajectory.nframes) frames.
+             $(trajectory.natoms) atoms.
+             PBC sides in current frame: $(trajectory.sides[1])
+          """)
 end
 
 #
@@ -111,7 +107,6 @@ end
 # Having these vectors inside the trajectory structure avoids having to allocate
 # them everytime a new frame is read
 #
-
 function nextframe!(trajectory::ChemFile{T}) where {T}
 
     frame = Chemfiles.read(trajectory.stream[1])
@@ -154,8 +149,5 @@ closetraj(trajectory::ChemFile) = Chemfiles.close(trajectory.stream[1])
 #
 function firstframe(trajectory::ChemFile)
     Chemfiles.close(trajectory.stream[1])
-    trajectory.stream[1] = redirect_stdout(
-        () -> Chemfiles.Trajectory(trajectory.filename, 'r', trajectory.format),
-        devnull,
-    )
+    trajectory.stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(trajectory.filename, 'r', trajectory.format), devnull)
 end
