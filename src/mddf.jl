@@ -1,8 +1,5 @@
 """     
-
-```
-mddf(trajectory::Trajectory, options::Options)
-```
+    mddf(trajectory::Trajectory, options::Options)
 
 Function that computes the minimum-distance distribution function, atomic contributions, and 
 KB integrals, given the `Trajectory` structure of the simulation and, optionally, parameters
@@ -28,18 +25,25 @@ julia> results = mddf(trajectory,options);
 """
 mddf(trajectory::Trajectory) = mddf(trajectory, Options())
 
-# Choose self and cross versions
+# Structures to dispatch on Self or Cross computations
+struct Self end
+struct Cross end
 
-# In both the self and non-self cases, the number of random samples is 
-# n_random_samples*solvent.nmols. However, in the non-self distribution
-# the sampling of solvent distances is proportional to the number of solute
-# molecules, thus the md count has to be averaged by the solute.nmols. In the
-# case of the self-distribution, we compute n(n-1)/2 distances, and we will
-# divide this by n random samples, which is the sampling of the random
-# distribution. Therefore, we must weight the self-distance count by dividing
-# it by (n-1)/2, so that we have a count proportional to n as well, leading
-# to the correct weight relative to the random sample. 
+#=
 
+Choose self and cross versions
+
+In both the self and (cross) non-self cases, the number of random samples is 
+n_random_samples*solvent.nmols. However, in the non-self distribution
+the sampling of solvent distances is proportional to the number of solute
+molecules, thus the md count has to be averaged by solute.nmols. In the
+case of the self-distribution, we compute n(n-1)/2 distances, and we will
+divide this by n random samples, which is the sampling of the random
+distribution. Therefore, we must weight the self-distance count by dividing
+it by (n-1)/2, so that we have a count proportional to n as well, leading
+to the correct weight relative to the random sample. 
+
+=#
 function mddf(trajectory::Trajectory, options::Options)
     # Set random number generator
     RNG = init_random(options)
@@ -50,41 +54,41 @@ function mddf(trajectory::Trajectory, options::Options)
     end
     # If the solute and the solvent are the same
     if trajectory.solute.index == trajectory.solvent.index
-        samples = Samples(
-            md = (trajectory.solvent.nmols - 1) / 2,
-            random = options.n_random_samples,
-        )
-        comp_type = :self
+        samples = Samples(md = (trajectory.solvent.nmols - 1) / 2, random = options.n_random_samples)
+        comp_type = Self()
     # If solute and solvent are different subsets of the simulation
     else
         samples = Samples(md = trajectory.solute.nmols, random = options.n_random_samples)
-        comp_type = :cross
+        comp_type = Cross()
     end
-    R = mddf_compute(Val(comp_type), trajectory, options, samples, RNG)
+    R = mddf_compute(comp_type, trajectory, options, samples, RNG)
     return R
 end
 
 """    
-
-```
-mddf_compute
-```
+    mddf_compute(
+        comp_type::T, 
+        trajectory::Trajectory,
+        options::Options,
+        samples::Samples,
+        RNG,
+    ) where T <: Union{Self,Cross}
 
 $(INTERNAL)
 
 # Extended help
 
-Computes the MDDF for all frames. If `comp_type == Val{:self}`, use the self-correlation
-functions, if `comp_type == Val{:cross}` use cross-correlation functions.
+Computes the MDDF for all frames. If `comp_type == Self()`, use the self-correlation
+functions, if `comp_type == Cross()` use cross-correlation functions.
 
 """
 function mddf_compute(
-    comp_type::Union{Val{:self},Val{:cross}}, 
+    comp_type::T, 
     trajectory::Trajectory,
     options::Options,
     samples::Samples,
     RNG,
-) 
+) where {T<:Union{Self,Cross}}
 
     # Initializing the structure that carries all results
     R = Result(trajectory, options)
@@ -95,16 +99,11 @@ function mddf_compute(
     # Print some information about this run
     options.silent || title(R, trajectory.solute, trajectory.solvent)
      
-    # Get first frame data, to allocate cell list buffers
-    nextframe!(trajectory)
-    sides = getsides(trajectory, 1)
-
-    system = init_cell_lists(comp_type, sides, options, trajectory) 
+    # Initialize system for computing distances with CellListMap
+    system = setup_PeriodicSystem(comp_type, trajectory, options)
 
     # Computing all minimum-distances
-    if !options.silent
-        progress = Progress(R.nframes_read, 1)
-    end
+    options.silent || progress = Progress(R.nframes_read, 1)
     for iframe = 1:R.lastframe_read
 
         # reading coordinates of next frame
@@ -115,7 +114,7 @@ function mddf_compute(
         if iframe % options.stride != 0
             continue
         end
-        mddf_frame!(comp_type, R, iframe, framedata, options, RNG, box, cl, aux_cl, list, list_threaded)
+        mddf_frame!(comp_type, R, iframe, framedata, options, RNG, system)
 
         options.silent || next!(progress)
     end # frames
@@ -129,39 +128,15 @@ function mddf_compute(
     return R
 end
 
-function init_cell_lists(comp_type::Val{:self}, unitcell, options, trajectory)
-    system = CellListMap.PeriodicSystem(
-       positions=trajectory.xsolute, 
-       cutoff=options.cutoff,
-       lcell=options.lcell,
-       unitcell=unitcell,
-       output=zeros(MinimumDistance{Float64}, trajectory.solute.nmols),
-       output_name=:list
-    )
-    return system
-end
-
-function init_cell_lists(comp_type::Val{:cross}, sides, options, trajectory)
-    box = Box(sides, options.cutoff, lcell = options.lcell)
-    cl = CellList(trajectory.xsolute, trajectory.xsolvent, box)
-    aux_cl = CellListMap.AuxThreaded(cl)
-    return box, cl, aux_cl
-end
-
-
 """
-
-```
-mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, RNG, R::Result)
-```
+    mddf_frame_cross!(::Cross, iframe::Int, framedata::FrameData, options::Options, RNG, R::Result, system::PeriodicSystem)
 
 $(INTERNAL)
 
 Computes the MDDF for a single frame, modifies the data in the `R` (type `Result`) structure.
 
-
 """
-function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, RNG, R::Result)
+function mddf_frame!(::Cross, iframe::Int, framedata::FrameData, options::Options, RNG, R::Result, system::PeriodicSystem)
 
     # Simplify code by assigning some shortened names
     trajectory = framedata.trajectory
@@ -183,9 +158,6 @@ function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, 
     @. rdf_count_random_frame = 0.0
     @. md_count_random_frame = 0.0
 
-    # get pbc sides in this frame
-    sides = getsides(trajectory, iframe)
-
     # Check if the cutoff is not too large considering the periodic cell size
     if R.cutoff > sides[1] / 2 || R.cutoff > sides[2] / 2 || R.cutoff > sides[3] / 2
         error("""
@@ -203,17 +175,8 @@ function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, 
     R.density.solute = R.density.solute + (solute.nmols / volume_frame.total)
     R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
 
-    # Add the box side information to the box structure, in this frame
-    box = Box(sides, R.cutoff, lcell = options.lcell)
-
-    # Compute cell list
-    cl = UpdateCellList!(x_solute, x_xsolvent, box, cl, aux)
-
     # Compute minimum distances of the molecules to the solute
-    minimum_distances!(solvent_index, list, box, cl, list_threaded = list_threaded)
-
-    # Compute the distances within the cutoff, of the reference atoms, to the solute
-    minimum_distances!(reference_index, list_refatom, box, cl, list_threaded_refatom = list_threaded)
+    minimum_distances!(system)
 
     # Fraction of solvent molecules in bulk
     n_solvent_in_bulk = count(mol -> !mol.within_cutoff, list) / solute.nmols
@@ -235,8 +198,7 @@ function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, 
         # within updatecounters there are loops over solvent molecules, in such a way that
         # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
         # at this point with acceptable memory requirements
-        n_dmin_in_bulk, n_dref_in_bulk =
-            updatecounters!(R, solute, solvent, dc, dmin_mol, dref_mol)
+        n_dmin_in_bulk, n_dref_in_bulk = updatecounters!(R, solute, solvent, dc, dmin_mol, dref_mol)
         n_solvent_in_bulk += n_dref_in_bulk
     end
     n_solvent_in_bulk = n_solvent_in_bulk / solute.nmols
@@ -249,7 +211,7 @@ function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, 
 
         # generate random solvent box, and store it in x_solvent_random
         for j = 1:solvent.nmols
-            # Choose randomly one molecule from the bulk, if there are actually bulk molecules
+            # Choose randomly one molecule from the bulk, if there are actual bulk molecules
             if n_dmin_in_bulk != 0
                 jmol = dmin_mol[random(RNG, bulk_range)].jmol
             else
@@ -263,12 +225,6 @@ function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, 
             random_move!(x_ref, R.irefatom, sides, x_rnd, RNG)
         end
 
-        # wrap random solvent coordinates to box, with the center at the origin
-        wrap!(x_solvent_random, sides)
-
-        # Initialize linked cells
-        initcells!(x_solvent_random, box, lc_solvent)
-
         # Choose randomly one solute molecule to be the solute in this sample
         i_rand_mol = random(RNG, 1:solute.nmols)
         x_this_solute = viewmol(i_rand_mol, x_solute, solute)
@@ -279,30 +235,14 @@ function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, 
         cutoffdistances!(R.cutoff, x_this_solute, x_solvent_random, lc_solvent, box, dc)
 
         # Update the counters of the random distribution
-        updatecounters!(
-            R,
-            rdf_count_random_frame,
-            md_count_random_frame,
-            solvent,
-            dc,
-            dmin_mol,
-            dref_mol,
-        )
+        updatecounters!(R, rdf_count_random_frame, md_count_random_frame, solvent, dc, dmin_mol, dref_mol)
 
     end # random solvent sampling
 
     # Update counters with the data of this frame
-    update_counters_frame!(
-        R,
-        rdf_count_random_frame,
-        md_count_random_frame,
-        volume_frame,
-        solute,
-        solvent,
-        n_solvent_in_bulk,
-    )
+    update_counters_frame!(R, rdf_count_random_frame, md_count_random_frame, volume_frame, solute, solvent, n_solvent_in_bulk)
 
-    nothing
+    return nothing
 end
 
 

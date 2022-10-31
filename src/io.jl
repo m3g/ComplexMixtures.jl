@@ -2,14 +2,14 @@
 module FileOperations
 
 #
-# Function that determines the basename of a file, removing the path and the extension
-#
-clearname(filename::String) = remove_extension(basename(filename))
-
-#
 # Function that removes the extension of a file name
 #
 remove_extension(file::String) = file[1:findlast(==('.'), file)-1]
+
+#
+# Function that determines the basename of a file, removing the path and the extension
+#
+clearname(filename::String) = remove_extension(basename(filename))
 
 #
 # Function that return only the extension of the file
@@ -74,34 +74,41 @@ atoms_str(n) = "$n $(n == 1 ? "atom" : "atoms")"
 mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
 
 """
+    title(R::Result, solute::Selection, solvent::Selection)
+    title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
+
+$(INTERNAL)
 
 Print some information about the run.
 
-
 """
-function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
-    println(bars)
-    println("Starting MDDF calculation in parallel:")
-    println("  $(R.nframes_read) frames will be considered")
-    println("  Number of calculation threads: ", nspawn)
-    println("  Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).")
-    println("  Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).")
-
-end
-
 function title(R::Result, solute::Selection, solvent::Selection)
-    println(bars)
-    println("Starting MDDF calculation:")
-    println("  $(R.nframes_read) frames will be considered")
-    println("  Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).")
-    println("  Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))")
-
+    print("""
+          $(bars)
+          Starting MDDF calculation:
+          $(R.nframes_read) frames will be considered.
+          Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
+          Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
+          """)
+end
+function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
+    print(""" 
+          $(bars)
+          Starting MDDF calculation in parallel:
+          $(R.nframes_read) frames will be considered.
+          Number of calculation threads: $(nspawn)
+          Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
+          Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
+          """)
 end
 
 """
     writexyz(x::Vector{T}, file::String) where T <: AbstractVector
 
+$(INTERNAL)
+
 Print test xyz file.
+
 """
 function writexyz(x::Vector{T}, file::String) where {T<:AbstractVector}
     f = open(file, "w")
@@ -112,5 +119,5 @@ function writexyz(x::Vector{T}, file::String) where {T<:AbstractVector}
         println(f, "H $(x[i][1]) $(x[i][2]) $(x[i][3])")
     end
     close(f)
-    nothing
+    return nothing
 end

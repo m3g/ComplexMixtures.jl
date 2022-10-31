@@ -133,28 +133,12 @@ function mddf_frame_cross!(iframe::Int, framedata::FrameData, options::Options, 
         cutoffdistances!(R.cutoff, x_this_solute, x_solvent_random, lc_solvent, box, dc)
 
         # Update the counters of the random distribution
-        updatecounters!(
-            R,
-            rdf_count_random_frame,
-            md_count_random_frame,
-            solvent,
-            dc,
-            dmin_mol,
-            dref_mol,
-        )
+        updatecounters!(R, rdf_count_random_frame, md_count_random_frame, solvent, dc, dmin_mol, dref_mol)
 
     end # random solvent sampling
 
     # Update counters with the data of this frame
-    update_counters_frame!(
-        R,
-        rdf_count_random_frame,
-        md_count_random_frame,
-        volume_frame,
-        solute,
-        solvent,
-        n_solvent_in_bulk,
-    )
+    update_counters_frame!(R, rdf_count_random_frame, md_count_random_frame, volume_frame, solute, solvent, n_solvent_in_bulk)
 
-    nothing
+    return nothing
 end

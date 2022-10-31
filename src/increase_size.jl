@@ -15,7 +15,7 @@ function increase_size!(dc::CutoffDistances, maxdim::Int)
     @. dc.jat[dc.nd[1]+1:dc.maxdim[1]] = 0
     @. dc.imol[dc.nd[1]+1:dc.maxdim[1]] = 0
     @. dc.jmol[dc.nd[1]+1:dc.maxdim[1]] = 0
-    nothing
+    return nothing
 end
 
 # Increase size by 50% of current size
@@ -23,5 +23,5 @@ end
 function increase_size!(dc::CutoffDistances)
     maxdim = round(Int, 1.5 * dc.maxdim[1])
     increase_size!(dc, maxdim)
-    nothing
+    return nothing
 end

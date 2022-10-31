@@ -1,3 +1,32 @@
+function setup_PeriodicSystem(::Self, trajectory::Trajectory, options::Options)
+    nextframe!(trajectory)
+    unit_cell = get_unit_cell(trajectory, 1)
+    system = CellListMap.PeriodicSystem(
+        xpositions = trajectory.x_solute,
+        unit_cell = unit_cell,
+        cutoff = options.cutoff,
+        output = fill(zero(MinimumDistances()), length(xpositions)),
+        output_name = :list,
+        lcell=options.lcell,
+    )
+    return system
+end
+
+function setup_PeriodicSystem(::Cross, trajectory::Trajectory, options::Options)
+    nextframe!(trajectory)
+    unit_cell = get_unit_cell(trajectory, 1)
+    system = CellListMap.PeriodicSystem(
+        xpositions = trajectory.x_solute,
+        ypositions = trajectory.x_solvent,
+        unit_cell = unit_cell,
+        cutoff = options.cutoff,
+        output = fill(zero(MinimumDistances()), length(xpositions)),
+        output_name = :list,
+        lcell=options.lcell,
+    )
+    return system
+end
+
 """
 
 $(TYPEDEF)
@@ -92,7 +121,7 @@ function update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{Min
 end
 
 """
-    minimum_distances!
+    minimum_distances!(system::CellListMap.PeriodicSystem)
 
 Function that computes the list of distances of solvent molecules to a solute molecule. 
 It updates the lists of minimum distances. 
@@ -172,10 +201,7 @@ end
 # Functions used to reduce the lists in parallel calculations
 #
 """
-
-```
-reduce_list!(list, list_threaded)
-```
+    reduce_list!(list, list_threaded)
 
 $(INTERNAL)
 
