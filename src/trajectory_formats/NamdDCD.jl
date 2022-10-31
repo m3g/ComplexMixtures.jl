@@ -1,7 +1,6 @@
 #
 # Structure to contain DCD trajectories produces with Namd. 
 #
-
 import FortranFiles
 
 """
@@ -50,10 +49,7 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
 end
 
 """
-
-```
-NamdDCD(filename::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
-```
+    NamdDCD(filename::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
 
 This function initializes the structure above, returning the data and the vectors with
 appropriate lengths and, importantly, with the i/o stream OPENED, ready to read the first
@@ -71,8 +67,7 @@ function NamdDCD(
 
     # Read header
     IntVec = Vector{Int32}(undef, 17)
-    hdr, read_nframes, IntVec[1:8], ts, IntVec[9:17] =
-        read(stream, FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
+    hdr, read_nframes, IntVec[1:8], ts, IntVec[9:17] = read(stream, FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
     dummyi, title = read(stream, Int32, FString{80})
     read_natoms = read(stream, Int32)
 
@@ -120,9 +115,11 @@ function NamdDCD(
 end
 
 function Base.show(io::IO, traj::NamdDCD)
-    println(" Trajectory in NamdDCD format containing: ")
-    println("     $(traj.nframes) frames ")
-    println("     Sides in DCD: $(traj.sides_in_dcd) ")
+    print(""" 
+          Trajectory in NamdDCD format containing:
+          $(traj.nframes) frames.
+          Sides in DCD: $(traj.sides_in_dcd).
+          """)
 end
 
 #
@@ -133,7 +130,6 @@ end
 # Having these vectors inside the trajectory structure avoids having to allocate
 # them everytime a new frame is read
 #
-
 function nextframe!(trajectory::NamdDCD{T}) where {T}
 
     # Read the sides of the box from the DCD file, otherwise they must be set manually before
@@ -164,16 +160,13 @@ function nextframe!(trajectory::NamdDCD{T}) where {T}
         )
     end
 
-    nothing
+    return nothing
 end
 
 #
 # Function that closes the IO Stream of the trajectory
 #
-
-function closetraj(trajectory::NamdDCD)
-    FortranFiles.close(trajectory.stream)
-end
+closetraj(trajectory::NamdDCD) = FortranFiles.close(trajectory.stream)
 
 #
 # Function that returns a vector of dimension 3 with the sides of the periodic box 
@@ -194,7 +187,6 @@ end
 #
 # Leave DCD file in position to read the first frame
 #
-
 function firstframe(stream::FortranFile)
     # rewind
     rewind(stream)
