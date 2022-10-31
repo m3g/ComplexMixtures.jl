@@ -42,10 +42,7 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
 end
 
 """
-
-```
-PDBTraj(pdbfile::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
-```
+    PDBTraj(pdbfile::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
 
 Function open will set up the IO stream of the trajectory, fill up the 
 number of frames field and additional parameters if required 
@@ -82,7 +79,6 @@ function PDBTraj(
     # independently within the "nextframe!" function, and saved as a sides(3) vector.  
     # The function "getsides", below, must be adapted accordingly to return the correct
     # sides of the periodic box in each frame.
-
     sides = zeros(T, nframes)
     stream = open(pdbfile, "r")
     iframe = 0
@@ -114,9 +110,11 @@ function PDBTraj(
 end
 
 function Base.show(io::IO, trajectory::PDBTraj)
-    println(" Trajectory in PDB format with: ")
-    println("    $(trajectory.nframes) frames.")
-    println("    $(trajectory.natoms) atoms.")
+    print(io,""" 
+          Trajectory in PDB format with:
+              $(trajectory.nframes) frames.
+              $(trajectory.natoms) atoms.
+          """)
 end
 
 #
@@ -127,7 +125,6 @@ end
 # Having these vectors inside the trajectory structure avoids having to allocate
 # them everytime a new frame is read
 #
-
 function nextframe!(trajectory::PDBTraj{T}) where {T}
 
     iatom = 0
@@ -164,7 +161,6 @@ end
 
 # Function that returns the sides of the periodic box given the data structure. In this
 # case, returns the 3-element vector corresponding to the box sides of the given frame
-
 function getsides(trajectory::PDBTraj, iframe)
     # Sides is expected to be an array that contains the sides for each frame, and we return the
     # vector containing the sides of the current fraem

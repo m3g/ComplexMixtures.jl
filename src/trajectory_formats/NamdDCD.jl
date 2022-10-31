@@ -115,10 +115,10 @@ function NamdDCD(
 end
 
 function Base.show(io::IO, traj::NamdDCD)
-    print(""" 
+    print(io,""" 
           Trajectory in NamdDCD format containing:
-          $(traj.nframes) frames.
-          Sides in DCD: $(traj.sides_in_dcd).
+              $(traj.nframes) frames.
+              Sides in DCD: $(traj.sides_in_dcd).
           """)
 end
 

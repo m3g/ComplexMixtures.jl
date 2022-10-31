@@ -91,11 +91,11 @@ function ChemFile(
 end
 
 function Base.show(io::IO, trajectory::ChemFile)
-    print("""
+    print(io,"""
           Trajectory read by Chemfiles with:
-             $(trajectory.nframes) frames.
-             $(trajectory.natoms) atoms.
-             PBC sides in current frame: $(trajectory.sides[1])
+              $(trajectory.nframes) frames.
+              $(trajectory.natoms) atoms.
+              PBC sides in current frame: $(trajectory.sides[1])
           """)
 end
 
