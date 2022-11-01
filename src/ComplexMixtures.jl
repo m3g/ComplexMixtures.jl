@@ -25,6 +25,9 @@ export VMDselect
 # Message for internal doc strings
 const INTERNAL = "Internal sructure or function, interface may change."
 
+# Module for testing
+include("./Testing.jl")
+
 # Input and Output data structures
 include("./io.jl")
 
