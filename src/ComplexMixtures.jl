@@ -10,14 +10,17 @@ using StructTypes
 using JSON3
 using StaticArrays
 using DocStringExtensions
-using CellListMap
+using TestItems
+
+import CellListMap
+using CellListMap.PeriodicSystems
 
 import Random
 
 export Selection, Trajectory, mddf, save, load, write, Options, Result
 export contrib, merge
 export overview, gr, grid3D
-export VMDSelect
+export VMDselect
 
 # Message for internal doc strings
 const INTERNAL = "Internal sructure or function, interface may change."
@@ -25,18 +28,20 @@ const INTERNAL = "Internal sructure or function, interface may change."
 # Input and Output data structures
 include("./io.jl")
 
+
 # Options
 include("./Options.jl")
 
+# Structures and functions to deal with the solute and solvent selections
+include("./VMDselect.jl")
+include("./Selection.jl")
+
+#= 
 # Structures and functions to store and report results
 include("./results.jl")
 
 # Function to rigid-body move molecules
 include("./random.jl")
-
-# Structures and functions to deal with the solute and solvent selections
-include("./VMDselect.jl")
-include("./Selection.jl")
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
@@ -69,5 +74,7 @@ include("./mddf_linkedcells_parallel.jl")
 
 # Main function
 include("./mddf.jl")
+
+=#
 
 end

@@ -9,6 +9,7 @@ Function that sets to which histogram bin a data point pertains simple, but impo
 setbin(d, step) = trunc(Int, d / step) + 1
 
 """
+    itype(iatom::Int, natomspermol::Int)
 
 $(INTERNAL)
 
@@ -50,42 +51,19 @@ returns: `n_dmin_in_bulk`: number of molecules with all the atoms in the bulk
          `n_dref_in_bulk`: number of molecules with the reference atom in the bulk
 
 """
-function updatecounters!(
-    R::Result,
-    solute::Selection,
-    solvent::Selection,
-    dc::CutoffDistances,
-    dmin_mol::Vector{DminMol},
-    dref_mol::Vector{Float64},
-)
+function updatecounters!(R::Result, solute::Selection, solvent::Selection, system)
 
-    for i = 1:solvent.nmols
-        dmin_mol[i].d = +Inf
-        dref_mol[i] = +Inf
-    end
-    for i = 1:dc.nd[1]
-        jmol = solvent.imol[dc.jat[i]]
-        if dc.d[i] < dmin_mol[jmol].d
-            dmin_mol[jmol].d = dc.d[i]
-            dmin_mol[jmol].iat = dc.iat[i]
-            dmin_mol[jmol].jat = dc.jat[i]
-        end
-        if itype(dc.jat[i], solvent) == R.irefatom
-            if dc.d[i] < dref_mol[jmol]
-                dref_mol[jmol] = dc.d[i]
-            end
-        end
-    end
-
+    # list of minimum distances
+    list = system.list
 
     # Update the reference atom counter
     n_dref_in_bulk = 0
     for i = 1:solvent.nmols
-        if dref_mol[i] < R.cutoff
-            ibin = setbin(dref_mol[i], R.options.binstep)
+        if list[i].ref_atom_within_cutoff
+            ibin = setbin(list[i].d_ref_atom, R.options.binstep)
             R.rdf_count[ibin] += 1
         end
-        n_dref_in_bulk += inbulk(dref_mol[i], R)
+        n_dref_in_bulk += inbulk(list[i].d_ref_atom, R)
     end
 
     # Sort the vectors such that the elements with distances 
@@ -123,31 +101,14 @@ function updatecounters!(
     rdf_count_random_frame::Vector{Float64},
     md_count_random_frame::Vector{Float64},
     solvent::Selection,
-    dc::CutoffDistances,
-    dmin_mol::Vector{DminMol},
-    dref_mol::Vector{Float64},
+    system
 )
 
-    for i = 1:solvent.nmols
-        dmin_mol[i].d = +Inf
-        dref_mol[i] = +Inf
-    end
-    for i = 1:dc.nd[1]
-        jmol = solvent.imol[dc.jat[i]]
-        if dc.d[i] < dmin_mol[jmol].d
-            dmin_mol[jmol].d = dc.d[i]
-        end
-        if itype(dc.jat[i], solvent) == R.irefatom
-            if dc.d[i] < dref_mol[jmol]
-                dref_mol[jmol] = dc.d[i]
-            end
-        end
-    end
-
+    list = system.list
     # Update the reference atom counter
     for i = 1:solvent.nmols
-        if dref_mol[i] < R.cutoff
-            ibin = setbin(dref_mol[i], R.options.binstep)
+        if list[i].ref_atom_within_cutoff 
+            ibin = setbin(list[i].dref_mol, R.options.binstep)
             rdf_count_random_frame[ibin] += 1
         end
     end
@@ -160,7 +121,7 @@ function updatecounters!(
     # Add distances to the counters
     i = 1
     while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
-        ibin = setbin(dmin_mol[i].d, R.options.binstep)
+        ibin = setbin(list[i].dmin_mol, R.options.binstep)
         md_count_random_frame[ibin] += 1
         i = i + 1
     end

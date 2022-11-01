@@ -73,33 +73,12 @@ const bars = "------------------------------------------------------------------
 atoms_str(n) = "$n $(n == 1 ? "atom" : "atoms")"
 mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
 
-"""
-    title(R::Result, solute::Selection, solvent::Selection)
-    title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
-
-$(INTERNAL)
-
-Print some information about the run.
-
-"""
-function title(R::Result, solute::Selection, solvent::Selection)
-    print("""
-          $(bars)
-          Starting MDDF calculation:
-          $(R.nframes_read) frames will be considered.
-          Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-          Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
-          """)
-end
-function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
-    print(""" 
-          $(bars)
-          Starting MDDF calculation in parallel:
-          $(R.nframes_read) frames will be considered.
-          Number of calculation threads: $(nspawn)
-          Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-          Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
-          """)
+@testitem "str numbers" begin
+    import ComplexMixtures as CM
+    @test CM.atoms_str(1) == "1 atom" 
+    @test CM.atoms_str(2) == "2 atoms" 
+    @test CM.mol_str(1) == "1 molecule" 
+    @test CM.mol_str(2) == "2 molecules" 
 end
 
 """

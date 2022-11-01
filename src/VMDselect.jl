@@ -1,13 +1,9 @@
 """ 
-
-```
-VMDselect(inputfile::String, selection::String; vmd="vmd" )
-```
+    VMDselect(inputfile::String, selection::String; vmd="vmd" )
 
 Select atoms using vmd selection syntax, with vmd in background
 
 Returns the list of index (one-based) and atom names
-
 
 Function to return the selection from a input file (topology, coordinates, etc), 
 by calling VMD in the background.
@@ -81,3 +77,13 @@ function VMDselect(inputfile::String, selection::String; vmd = "vmd")
     return selection_indexes, selection_names
 
 end
+
+@testitem "VMDSelect" begin
+    using ComplexMixtures
+    pdbfile = "$(@__DIR__)/../test/data/NAMD/structure.pdb"
+    if !isnothing(Sys.which("vmd"))
+        @test VMDselect(pdbfile, "protein and residue 1") == 
+            ([13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]) 
+    end
+end
+

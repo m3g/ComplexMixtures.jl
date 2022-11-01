@@ -80,6 +80,14 @@ function update_md(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T}
     return md
 end
 
+@testitem "update_md" begin
+    import ComplexMixtures as CM
+    md1 = cm.MinimumDistance(true, 1, 2, 1.0, true, 1.0)
+    md2 = cm.MinimumDistance(true, 1, 2, 0.5, true, 0.5)
+    @test CM.update_md(md1,md2) = MinimumDistance(true, 1, 2, 0.5, true, 0.5)
+
+end
+
 #
 # Methods to allow multi-threading in CellListMap
 #
