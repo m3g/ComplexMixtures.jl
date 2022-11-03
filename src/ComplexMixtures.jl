@@ -42,6 +42,9 @@ include("./Selection.jl")
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
 
+# Some functions to deal with rigid body calculations
+include("./rigid_body.jl")
+
 # Structures and functions to store and report results
 include("./results.jl")
 
