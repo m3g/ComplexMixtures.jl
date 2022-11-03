@@ -10,6 +10,10 @@ See memory issue (https://github.com/chemfiles/Chemfiles.jl/issues/44)
 """
 abstract type Trajectory end
 
+include("./trajectory_formats/ChemFiles.jl")
+include("./trajectory_formats/NamdDCD.jl")
+include("./trajectory_formats/PDBTraj.jl")
+
 function Trajectory(filename::String, solute::Selection, solvent::Selection; format::String = "", chemfiles = false)
     if !chemfiles && (format == "dcd" || FileOperations.file_extension(filename) == "dcd")
         trajectory = NamdDCD(filename, solute, solvent)

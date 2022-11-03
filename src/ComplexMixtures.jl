@@ -41,14 +41,11 @@ include("./Selection.jl")
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
-include("./trajectory_formats/ChemFiles.jl")
-include("./trajectory_formats/NamdDCD.jl")
-include("./trajectory_formats/PDBTraj.jl")
 
-#= 
 # Structures and functions to store and report results
 include("./results.jl")
 
+#= 
 # Function to rigid-body move molecules
 include("./random.jl")
 
