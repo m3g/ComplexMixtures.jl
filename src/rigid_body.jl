@@ -34,24 +34,6 @@ random(RNG::Array{T}) where {T} = rand(RNG[Threads.threadid()])
 random(RNG::Array{T}, arg) where {T} = rand(RNG[Threads.threadid()], arg)
 
 """
-  centerofcoordinates(coor::AbstractVector{T}) where T
-
-$(INTERNAL)
-
-Computes the center of coordinates of a vector.
-
-"""
-function centerofcoordinates(coor::AbstractVector{T}) where {T}
-    cm = zeros(T)
-    for i in eachindex(coor)
-        cm .= cm .+ coor[i]
-    end
-    cm = cm / n
-    return cm
-end
-
-
-"""
   eulermat(beta, gamma, theta, deg::String)
 
 $(INTERNAL)
@@ -68,15 +50,12 @@ That means: `beta` is a counterclockwise rotation around `x` axis.
 
 """
 function eulermat(beta, gamma, theta, deg::String)
-
     if deg != "degree"
         error("ERROR: to use radians just omit the last parameter")
     end
-
     beta = beta * π / 180
     gamma = gamma * π / 180
     theta = theta * π / 180
-
     return eulermat(beta, gamma, theta)
 end
 
@@ -92,29 +71,33 @@ function eulermat(beta, gamma, theta)
               (s1*s3-c1*c3*s2) (c1*s2*s3+c3*s1)  c1*c2 ]
 end
 
+@testitem "eulermat" begin
+    using ComplexMixtures
+    @test ComplexMixtures.eulermat(0.0, 0.0, 0.0) ≈ [1 0 0 ; 0 1 0 ; 0 0 1]
+    @test ComplexMixtures.eulermat(π, 0.0, 0.0) ≈ [1 0 0 ; 0 -1 0 ; 0 0 -1]
+    @test ComplexMixtures.eulermat(0.0, π, 0.0) ≈ [-1 0 0 ; 0 1 0 ; 0 0 -1]
+    @test ComplexMixtures.eulermat(0.0, 0.0, π) ≈ [-1 0 0 ; 0 -1 0 ; 0 0 1]
+end
+
+# This uses the CellListMap.UnitCell wrapper to dispatch on the type of unit cell matrix,
+# either OrthorhombicCell, TriclinicCell, or NonPeriodicCell. Care must be taken
+# here since, in principle, this type is not part of the interface of CellListMap.
+import CellListMap.UnitCell
+
 """
   random_move!(x_ref::AbstractVector{T}, 
                irefatom::Int,
                sides::T,
-               x_new::AbstractVector{T}, RNG) where T
+               x_new::AbstractVector{T}, RNG) where {T<:SVector}
 
 $(INTERNAL)
 
 Function that generates a new random position for a molecule.
 
-The new position is returned in `x`, a previously allocated array.
-
-`x_solvent_random` might be a view of the array that contains all the solvent molecules.
+The new position is returned in `x_new`, a previously allocated array.
 
 """
-function random_move!(
-    x_ref::AbstractVector{T},
-    irefatom::Int,
-    sides::T,
-    x_new::AbstractVector{T},
-    RNG,
-) where {T}
-
+function random_move!(x_ref::AbstractVector{T}, irefatom::Int, unit_cell_matrix, x_new::AbstractVector{T}, RNG) where {T<:SVector}
     # To avoid boundary problems, the center of coordinates are generated in a 
     # much larger region, and wrapped aftwerwards
     scale = 100.0
@@ -123,16 +106,18 @@ function random_move!(
     newcm = T(scale * (-sides[i] / 2 + random(RNG, Float64) * sides[i]) for i in 1:3)
 
     # Generate random rotation angles 
-    beta = (2 * π) * random(RNG, Float64)
-    gamma = (2 * π) * random(RNG, Float64)
-    theta = (2 * π) * random(RNG, Float64)
+    beta = 2π * random(RNG, Float64)
+    gamma = 2π * random(RNG, Float64)
+    theta = 2π * random(RNG, Float64)
 
     # Copy the coordinates of the molecule chosen to the random-coordinates vector
     @. x_new = x_ref
 
     # Take care that this molecule is not split by periodic boundary conditions, by
     # wrapping its coordinates around its reference atom
-    wrap!(x_new, sides, x_ref[irefatom])
+    # Voltar: aqui deve ser usada a função wrap do CellListMap, e para cima temos que sempre
+    # usar a unit_cell_matrix em vez dos sides
+    wrap!(x_new, unit_cell_matrix, x_ref[irefatom])
 
     # Move molecule to new position
     move!(x_new, newcm, beta, gamma, theta)
@@ -148,8 +133,8 @@ $(INTERNAL)
 Translates and rotates a molecule according to the desired input center of coordinates and Euler rotations modifyies the vector x.
 
 """
-function move!(x::AbstractVector, newcm::AbstractVector, beta, gamma, theta)
-    cm = centerofcoordinates(x)
+function move!(x::AbstractVector{T}, newcm::AbstractVector{T}, beta, gamma, theta) where {T<:SVector}
+    cm = mean(x)
     A = eulermat(beta, gamma, theta)
     for i in eachindex(x)
         x[i] = A * (x[i] - cm) + newcm

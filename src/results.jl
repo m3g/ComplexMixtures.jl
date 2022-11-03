@@ -21,6 +21,16 @@ function reset!(d::Density)
 end
 
 """
+    setbin(d,step)
+
+$(INTERNAL)
+
+Function that sets to which histogram bin a data point pertains simple, but important to keep consistency over all calls.
+
+"""
+setbin(d, step) = trunc(Int, d / step) + 1
+
+"""
 
 $(TYPEDEF)
 
@@ -35,7 +45,6 @@ $(TYPEDFIELDS)
     domain::Float64
     shell::Vector{Float64}
 end
-
 Volume(nbins::Int) = Volume(0.0, 0.0, 0.0, zeros(Float64, nbins))
 
 function reset!(v::Volume)
@@ -50,8 +59,7 @@ end
 
 $(TYPEDEF)
 
-Structures to contain the details of a solute or solvent to
-store in the results of the MDDF calculation.
+Structures to contain the details of a solute or solvent to store in the results of the MDDF calculation.
 
 $(TYPEDFIELDS)
 
@@ -171,8 +179,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         if options.irefatom == -1
             nextframe!(trajectory)
             xfirst = trajectory.x_solvent[1:trajectory.solvent.natomspermol]
-            cm = centerofcoordinates(xfirst)
-            dmin, one, irefatom = minimumdistance(cm, xfirst)
+            irefatom = findmin(v -> norm(v - mean(xfirst)), xfirst)[2]
             firstframe(trajectory)
         else
             irefatom = options.irefatom
@@ -472,6 +479,21 @@ function Base.merge(r::Vector{Result})
 
     return R
 end
+
+@testitem "Result" begin
+    using ComplexMixtures
+    using ComplexMixtures.Testing
+    using PDBTools
+    atoms = readPDB(Testing.pdbfile)
+    protein = Selection(select(atoms, "protein"), nmols=1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    options = Options()
+    R = Result(traj, options)
+    @test 
+
+end
+
 
 #
 # Functions to save the results to a file
