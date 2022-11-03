@@ -20,13 +20,6 @@ function reset!(d::Density)
     return nothing
 end
 
-#function Base.show(io::IO, d::Density ) 
-#  println(" Mean solute density: $(d.solute) ")
-#  println(" Mean solvent density: $(d.solvent) ")
-#  println(" Mean solvent bulk density: $(d.solvent_bulk) ")
-#end
-
-
 """
 
 $(TYPEDEF)
@@ -53,15 +46,6 @@ function reset!(v::Volume)
     return nothing
 end
 
-#function Base.show(io::IO, v::Volume) 
-#  n = length(v.shell)
-#  println(" Mean total box volume: $(v.total) ")
-#  println(" Mean bulk volume: $(v.bulk) ")
-#  println(" Mean solute domain volume: $(v.domain) ")
-#  println(" Volumes of first, medium, and last solvation shells: $(v.shell[1]), $(v.shell[round(Int,n/2)]), $(v.shell[n])")
-#end
-
-
 """
 
 $(TYPEDEF)
@@ -79,77 +63,6 @@ struct SolSummary
 end
 SolSummary(s::Selection) = SolSummary(s.natoms, s.nmols, s.natomspermol)
 
-#
-# obs: voltar e deixar só a mutable struct
-#
-macro ResultFields_Start()
-    ex = quote
-        nbins::Int
-        dbulk::Float64
-        cutoff::Float64
-        d::Vector{Float64} = zeros(nbins)
-
-        # Data to compute the MDDF distribution and corresponding KB integral
-        md_count::Vector{Float64} = zeros(nbins)
-        md_count_random::Vector{Float64} = zeros(nbins)
-        sum_md_count::Vector{Float64} = zeros(nbins)
-        sum_md_count_random::Vector{Float64} = zeros(nbins)
-        mddf::Vector{Float64} = zeros(nbins)
-        kb::Vector{Float64} = zeros(nbins)
-
-        # Properties of the solute and solvent selections
-        autocorrelation::Bool
-        solvent::SolSummary
-        solute::SolSummary
-    end
-    esc(ex)
-end
-
-macro ResultFields_AtomsMatrix()
-    ex = quote
-        # Atomic contributions to the MDDFs
-        solute_atom::Matrix{Float64} = zeros(nbins, solute.natomspermol)
-        solvent_atom::Matrix{Float64} = zeros(nbins, solvent.natomspermol)
-    end
-    esc(ex)
-end
-
-macro ResultFields_AtomsVector()
-    ex = quote
-        # Atomic contributions to the MDDFs
-        solute_atom::Array{Float64} = zeros(nbins, solute.natomspermol)
-        solvent_atom::Array{Float64} = zeros(nbins, solvent.natomspermol)
-    end
-    esc(ex)
-end
-
-macro ResultFields_End()
-    ex = quote
-        # Data to compute a RDF and the KB integral from this count
-        rdf_count::Vector{Float64} = zeros(nbins)
-        rdf_count_random::Vector{Float64} = zeros(nbins)
-        sum_rdf_count::Vector{Float64} = zeros(nbins)
-        sum_rdf_count_random::Vector{Float64} = zeros(nbins)
-        rdf::Vector{Float64} = zeros(nbins)
-        kb_rdf::Vector{Float64} = zeros(nbins)
-
-        # Overall densities and volumes
-        density::Density = Density()
-        volume::Volume = Volume(nbins)
-
-        # Options of the calculation
-        options::Options
-        irefatom::Int
-        lastframe_read::Int
-        nframes_read::Int
-
-        # File name(s) of the trajectories in this results 
-        files::Vector{String}
-        weights::Vector{Float64}
-    end
-    esc(ex)
-end
-
 """
 
 $(TYPEDEF)
@@ -158,27 +71,58 @@ Structure to contain the results of the MDDF calculation.
 
 $(TYPEDFIELDS)
 
-
 """
-@with_kw_noshow struct Result
-    @ResultFields_Start()
-    @ResultFields_AtomsMatrix()
-    @ResultFields_End()
-end
+@with_kw_noshow mutable struct Result
+    # Histogram properties
+    nbins::Int
+    dbulk::Float64
+    cutoff::Float64
+    d::Vector{Float64} = zeros(nbins)
 
-# The mutable version is used for reading saved data, because some vectors
-# need to be reshaped
-@with_kw_noshow mutable struct MutableResult
-    @ResultFields_Start()
-    @ResultFields_AtomsVector()
-    @ResultFields_End()
+    # Data to compute the MDDF distribution and corresponding KB integral
+    md_count::Vector{Float64} = zeros(nbins)
+    md_count_random::Vector{Float64} = zeros(nbins)
+    sum_md_count::Vector{Float64} = zeros(nbins)
+    sum_md_count_random::Vector{Float64} = zeros(nbins)
+    mddf::Vector{Float64} = zeros(nbins)
+    kb::Vector{Float64} = zeros(nbins)
+
+    # Properties of the solute and solvent selections
+    autocorrelation::Bool
+    solvent::SolSummary
+    solute::SolSummary
+
+    # Atomic contributions to the MDDFs
+    solute_atom::Matrix{Float64} = zeros(nbins, solute.natomspermol)
+    solvent_atom::Matrix{Float64} = zeros(nbins, solvent.natomspermol)
+
+    # Data to compute a RDF and the KB integral from this count
+    rdf_count::Vector{Float64} = zeros(nbins)
+    rdf_count_random::Vector{Float64} = zeros(nbins)
+    sum_rdf_count::Vector{Float64} = zeros(nbins)
+    sum_rdf_count_random::Vector{Float64} = zeros(nbins)
+    rdf::Vector{Float64} = zeros(nbins)
+    kb_rdf::Vector{Float64} = zeros(nbins)
+
+    # Overall densities and volumes
+    density::Density = Density()
+    volume::Volume = Volume(nbins)
+
+    # Options of the calculation
+    options::Options
+    irefatom::Int
+    lastframe_read::Int
+    nframes_read::Int
+
+    # File name(s) of the trajectories in this results 
+    files::Vector{String}
+    weights::Vector{Float64}
 end
 
 #
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-
 function Result(trajectory::Trajectory, options::Options; irefatom = -1)
 
     # Check for simple input errors
@@ -533,7 +477,6 @@ end
 # Functions to save the results to a file
 #
 StructTypes.StructType(::Type{SolSummary}) = StructTypes.Struct()
-StructTypes.StructType(::Type{MutableResult}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Result}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
@@ -560,21 +503,17 @@ Function to load the json saved results file into the `Result` data structure.
 """
 function load(filename::String)
     f = open(filename, "r")
-    R = JSON3.read(f, MutableResult)
-    # Need to reshape the solute and solvent atom contributions, because
-    # the data is read in a single column
-    solute_atom = reshape(R.solute_atom, R.nbins, :)
-    solvent_atom = reshape(R.solvent_atom, R.nbins, :)
-    R.solute_atom = solute_atom
-    R.solvent_atom = solvent_atom
-    return Result([getfield(R, field) for field in fieldnames(Result)]...)
+    R = JSON3.read(f, Result)
+    # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
+    R.solute_atom = reshape(R.solute_atom, R.nbins, :)
+    R.solvent_atom = reshape(R.solvent_atom, R.nbins, :)
+    return R
 end
 
 # Format numbers depending on their size
 format(x) = abs(x) < 999 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 
 import Base.write
-
 """
     write(R::ComplexMixtures.Result, filename::String, solute::Selection, solvent::Selection)
 
