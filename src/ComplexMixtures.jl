@@ -13,7 +13,7 @@ using DocStringExtensions
 using TestItems
 
 import CellListMap
-using CellListMap.PeriodicSystems
+using .CellListMap.PeriodicSystems
 
 import Random
 
