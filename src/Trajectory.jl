@@ -10,6 +10,7 @@ See memory issue (https://github.com/chemfiles/Chemfiles.jl/issues/44)
 """
 abstract type Trajectory end
 
+# Include specific predefined trajectory types
 include("./trajectory_formats/ChemFiles.jl")
 include("./trajectory_formats/NamdDCD.jl")
 include("./trajectory_formats/PDBTraj.jl")
