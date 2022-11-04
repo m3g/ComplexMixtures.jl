@@ -175,7 +175,7 @@ function random_move!(x_ref::AbstractVector{T}, irefatom::Int, box::CellListMap.
     scale = 100.0
 
     # Generate random coordiantes for the center of mass
-    newcm = T(scale * (-sides[i] / 2 + random(RNG, Float64) * sides[i]) for i in 1:3)
+    newcm = T(scale * (-box.unit_cell_max[i] / 2 + random(RNG, Float64) * box.unit_cell_max[i]) for i in 1:3)
 
     # Generate random rotation angles 
     beta = 2π * random(RNG, Float64)
@@ -192,7 +192,48 @@ function random_move!(x_ref::AbstractVector{T}, irefatom::Int, box::CellListMap.
     # Move molecule to new position
     move!(x_new, newcm, beta, gamma, theta)
 
-    return nothing
+    return x_new
+end
+
+@testitem "rando_mmove!" begin
+    using ComplexMixtures
+    using StaticArrays
+    import CellListMap
+    using LinearAlgebra: norm
+
+    function check_internal_distances(x,y)
+        for i in firstindex(x):lastindex(x)-1
+            for j in i+1:lastindex(x)
+                x_ij = norm(x[i] - x[j])
+                y_ij = norm(y[i] - y[j])
+                if !isapprox(x_ij, y_ij)
+                    return false, x_ij, y_ij
+                end
+            end
+        end
+        return true
+    end
+
+    RNG = ComplexMixtures.init_random(Options())
+
+    # Orthorhombic cell
+    box = CellListMap.Box(SVector(10.0, 10.0, 10.0), 0.1)
+    x = [ -1.0 .+ 2*rand(SVector{3,Float64}) for _ in 1:5 ]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    x = [ -9.0 .+ 2*rand(SVector{3,Float64}) for _ in 1:5 ]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    x = [ 4.0 .+ 2*rand(SVector{3,Float64}) for _ in 1:5 ]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+
+    # Triclinic cell
+    box = CellListMap.Box(@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], 1.0)
+    x = [ -1.0 .+ 2*rand(SVector{3,Float64}) for _ in 1:5 ]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    x = [ -9.0 .+ 2*rand(SVector{3,Float64}) for _ in 1:5 ]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    x = [ 4.0 .+ 2*rand(SVector{3,Float64}) for _ in 1:5 ]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+
 end
 
 
