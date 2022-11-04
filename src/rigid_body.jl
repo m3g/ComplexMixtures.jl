@@ -136,19 +136,24 @@ $(INTERNAL)
 Translates and rotates a molecule according to the desired input center of coordinates and Euler rotations modifyies the vector x.
 
 """
-function move!(x::AbstractVector{T}, newcm::AbstractVector{T}, beta, gamma, theta) where {T<:SVector}
+function move!(x::AbstractVector{T}, newcm::T, beta, gamma, theta) where {T<:SVector}
     cm = mean(x)
     A = eulermat(beta, gamma, theta)
     for i in eachindex(x)
         x[i] = A * (x[i] - cm) + newcm
     end
-    return nothing
+    return x
 end
 
 @testitem "move!" begin
     using ComplexMixtures
     using StaticArrays
-
+    x = [ SVector(1.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0)]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, 0.0, 0.0) ≈ SVector{3, Float64}[[0.5, 0.0, 0.0], [-0.5, 0.0, 0.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(1.0, 1.0, 1.0), 0.0, 0.0, 0.0) ≈ SVector{3, Float64}[[1.5, 1.0, 1.0], [0.5, 1.0, 1.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), π, 0.0, 0.0) ≈ SVector{3, Float64}[[0.5, 0.0, 0.0], [-0.5, 0.0, 0.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, π, 0.0) ≈ SVector{3, Float64}[[-0.5, 0.0, 0.0], [0.5, 0.0, 0.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, 0.0, π) ≈ SVector{3, Float64}[[-0.5, 0.0, 0.0], [0.5, 0.0, 0.0]]
 end
 
 """
