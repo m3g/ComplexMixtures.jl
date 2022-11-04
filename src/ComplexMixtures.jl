@@ -48,8 +48,6 @@ include("./rigid_body.jl")
 include("./results.jl")
 
 #= 
-# Function to rigid-body move molecules
-include("./random.jl")
 
 # Functions to compute distances
 include("./minimum_distances.jl")
