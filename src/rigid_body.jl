@@ -79,50 +79,53 @@ end
     @test ComplexMixtures.eulermat(0.0, 0.0, π) ≈ [-1 0 0 ; 0 -1 0 ; 0 0 1]
 end
 
-# This uses the CellListMap.UnitCell wrapper to dispatch on the type of unit cell matrix,
-# either OrthorhombicCell, TriclinicCell, or NonPeriodicCell. Care must be taken
-# here since, in principle, this type is not part of the interface of CellListMap.
-import CellListMap.UnitCell
-
 """
-  random_move!(x_ref::AbstractVector{T}, 
-               irefatom::Int,
-               sides::T,
-               x_new::AbstractVector{T}, RNG) where {T<:SVector}
+  center_to_origin!(x::AbstractVector{T}, center::T) where {T<:AbstractVector}
 
 $(INTERNAL)
 
-Function that generates a new random position for a molecule.
-
-The new position is returned in `x_new`, a previously allocated array.
+Translates atoms of vectory in x array such that center is in the origin. (`x` is a vector of vectors).
 
 """
-function random_move!(x_ref::AbstractVector{T}, irefatom::Int, unit_cell_matrix, x_new::AbstractVector{T}, RNG) where {T<:SVector}
-    # To avoid boundary problems, the center of coordinates are generated in a 
-    # much larger region, and wrapped aftwerwards
-    scale = 100.0
+function center_to_origin!(x::AbstractVector{T}, center::T) where {T<:SVector}
+    for i in eachindex(x)
+        x[i] = x[i] - center
+    end
+    return x
+end
 
-    # Generate random coordiantes for the center of mass
-    newcm = T(scale * (-sides[i] / 2 + random(RNG, Float64) * sides[i]) for i in 1:3)
+"""
+    wrap!(x::AbstractVector{T}, vref, box::CellListMap.Box) where T<:SVector
 
-    # Generate random rotation angles 
-    beta = 2π * random(RNG, Float64)
-    gamma = 2π * random(RNG, Float64)
-    theta = 2π * random(RNG, Float64)
+$(INTERNAL)
 
-    # Copy the coordinates of the molecule chosen to the random-coordinates vector
-    @. x_new = x_ref
+Wrap the coordinates of a molecule such that its atoms are not spread in different images
+of the periodic box. This is needed to generate correct random rotations for the molecule.
 
-    # Take care that this molecule is not split by periodic boundary conditions, by
-    # wrapping its coordinates around its reference atom
-    # Voltar: aqui deve ser usada a função wrap do CellListMap, e para cima temos que sempre
-    # usar a unit_cell_matrix em vez dos sides
-    wrap!(x_new, unit_cell_matrix, x_ref[irefatom])
+"""
+function wrap!(x::AbstractVector{T}, vref, box::CellListMap.Box) where T<:SVector
+    for i in eachindex(x)
+        x[i] = CellListMap.wrap_relative_to(x[i], vref, box)
+    end
+    return x
+end
 
-    # Move molecule to new position
-    move!(x_new, newcm, beta, gamma, theta)
-
-    return nothing
+@testitem "wrap!" begin
+    using ComplexMixtures
+    using StaticArrays
+    import CellListMap
+    # Orthorhombic box
+    box = CellListMap.Box(SVector(10.0, 10.0, 10.0), 1.0)
+    x = [ SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
+    @test ComplexMixtures.wrap!(x, x[1], box) ≈ SVector{3, Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]] 
+    x = [ SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
+    @test ComplexMixtures.wrap!(x, x[2], box) ≈ SVector{3, Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
+    # Triclinic box
+    box = CellListMap.Box(@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], 1.0)
+    x = [ SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
+    @test ComplexMixtures.wrap!(x, x[1], box) ≈ SVector{3, Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]] 
+    x = [ SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
+    @test ComplexMixtures.wrap!(x, x[2], box) ≈ SVector{3, Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
 end
 
 """
@@ -142,17 +145,48 @@ function move!(x::AbstractVector{T}, newcm::AbstractVector{T}, beta, gamma, thet
     return nothing
 end
 
+@testitem "move!" begin
+    using ComplexMixtures
+    using StaticArrays
+
+end
 
 """
-  center_to_origin!(x::AbstractVector{T}, center::T) where {T<:AbstractVector}
+  random_move!(x_ref::AbstractVector{T}, 
+               irefatom::Int,
+               sides::T,
+               x_new::AbstractVector{T}, RNG) where {T<:SVector}
 
-Translates atoms of vectory in x array such that center is in the origin. (`x` is a vector of vectors).
+$(INTERNAL)
+
+Function that generates a new random position for a molecule.
+
+The new position is returned in `x_new`, a previously allocated array.
 
 """
-function center_to_origin!(x::AbstractVector{T}, center::T) where {T<:AbstractVector}
-    for i in eachindex(x)
-        x[i] = x[i] - center
-    end
+function random_move!(x_ref::AbstractVector{T}, irefatom::Int, box::CellListMap.Box, x_new::AbstractVector{T}, RNG) where {T<:SVector}
+    # To avoid boundary problems, the center of coordinates are generated in a 
+    # much larger region, and wrapped aftwerwards
+    scale = 100.0
+
+    # Generate random coordiantes for the center of mass
+    newcm = T(scale * (-sides[i] / 2 + random(RNG, Float64) * sides[i]) for i in 1:3)
+
+    # Generate random rotation angles 
+    beta = 2π * random(RNG, Float64)
+    gamma = 2π * random(RNG, Float64)
+    theta = 2π * random(RNG, Float64)
+
+    # Copy the coordinates of the molecule chosen to the random-coordinates vector
+    @. x_new = x_ref
+
+    # Take care that this molecule is not split by periodic boundary conditions, by
+    # wrapping its coordinates around its reference atom
+    wrap!(x_new, x_ref[irefatom], box)
+
+    # Move molecule to new position
+    move!(x_new, newcm, beta, gamma, theta)
+
     return nothing
 end
 
