@@ -557,6 +557,11 @@ function load(filename::String)
     return R
 end
 
+@testitem "Result - load" begin
+
+end
+
+
 # Format numbers depending on their size
 format(x) = abs(x) < 999 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 
