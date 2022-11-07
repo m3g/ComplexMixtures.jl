@@ -39,3 +39,6 @@ StructTypes = "1"
 TestItems = "0.1"
 ThreadPools = "1, 2"
 julia = "1.6"
+
+[target]
+tests = ["LinearAlgebra", "PDBTools", "StaticArrays", "CellListMap"]
