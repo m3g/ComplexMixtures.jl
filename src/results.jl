@@ -471,7 +471,7 @@ function Base.merge(r::Vector{Result})
 
         for j = 1:length(r[ir].files)
             ifile += 1
-            R.files[ifile] = r[ir].files[j]
+            R.files[ifile] = normpath(r[ir].files[j])
             R.weights[ifile] = w * r[ir].weights[j]
         end
 
@@ -480,7 +480,7 @@ function Base.merge(r::Vector{Result})
     return R
 end
 
-@testitem "Result" begin
+@testitem "Result - empty" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
     using PDBTools
@@ -489,11 +489,36 @@ end
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     options = Options()
+    # At this point we can only test an empty Result struct
     R = Result(traj, options)
-
-
+    @test R.autocorrelation == false
+    @test R.cutoff == 10.0
+    @test length(R.d) == 500 
+    @test R.dbulk == 10.0
+    @test (R.density.solute, R.density.solvent, R.density.solvent_bulk) == (0.0, 0.0, 0.0)
+    @test R.files[1] == normpath("$(Testing.data_dir)/NAMD/trajectory.dcd")
+    @test R.irefatom == 1
+    @test length(R.kb) == 500 
+    @test length(R.kb_rdf) == 500
+    @test R.lastframe_read == 20
+    @test length(R.md_count) == 500
+    @test length(R.md_count_random) == 500
+    @test length(R.mddf) == 500
+    @test R.nbins == 500
+    @test R.nframes_read == 20
+    @test R.options == Options()
+    @test length(R.rdf_count) == 500
+    @test length(R.rdf_count_random) == 500
+    @test R.solute == ComplexMixtures.SolSummary(1463, 1, 1463)
+    @test R.solvent == ComplexMixtures.SolSummary(2534, 181, 14)
+    @test size(R.solute_atom) == (500,1463)
+    @test size(R.solvent_atom) == (500, 14) 
+    @test length(R.sum_md_count) == 500
+    @test length(R.sum_md_count_random) == 500
+    @test length(R.sum_rdf_count_random) == 500
+    @test (R.volume.total, R.volume.bulk, R.volume.domain, length(R.volume.shell)) == (0.0, 0.0, 0.0, 500)
+    @test R.weights[1] == 1.0
 end
-
 
 #
 # Functions to save the results to a file
@@ -642,8 +667,7 @@ function write(
             sdbulkerror
         )
     )
-    println(output, 
-    """
+    println(output,"""
     # COLUMNS CORRESPOND TO:
     #       1  Minimum distance to solute (dmin)
     #       2  GMD distribution (md count normalized by md count of random-solute distribution
@@ -738,15 +762,14 @@ function write(
     close(output)
 
     # Write final messages with names of output files and their content
-
-    println()
-    println(" OUTPUT FILES: ")
-    println()
-    println(" Wrote solvent atomic GMD contributions to file: ", atom_contrib_solvent)
-    println(" Wrote solute atomic GMD contributions to file: ", atom_contrib_solute)
-    println()
-    println(" Wrote main output file: ", filename)
-    println()
+    println("""
+    OUTPUT FILES:
+    
+    Wrote solvent atomic GMD contributions to file: $atom_contrib_solvent
+    Wrote solute atomic GMD contributions to file: $atom_contrib_solute
+    
+    Wrote main output file: $filename
+    """)
 
     return nothing
 end
@@ -1011,7 +1034,7 @@ function Base.show(io::IO, ov::Overview)
     long_range_std = std(ov.R.mddf[ifar:ov.R.nbins])
     long_range_mean_rdf = mean(ov.R.rdf[ifar:ov.R.nbins])
     long_range_std_rdf = std(ov.R.rdf[ifar:ov.R.nbins])
-    println(io, """
+    print(io, """
 
      Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
      Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
