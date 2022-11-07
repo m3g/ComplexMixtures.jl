@@ -4,6 +4,7 @@ using Printf
 using Parameters
 using ProgressMeter
 using Statistics
+using LinearAlgebra: norm
 using FortranFiles
 using PDBTools
 using StructTypes
