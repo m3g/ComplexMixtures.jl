@@ -1009,16 +1009,14 @@ function Base.show(io::IO, ov::Overview)
     ifar = trunc(Int, ov.R.nbins - 1.0 / ov.R.options.binstep)
     long_range_mean = mean(ov.R.mddf[ifar:ov.R.nbins])
     long_range_std = std(ov.R.mddf[ifar:ov.R.nbins])
+    long_range_mean_rdf = mean(ov.R.rdf[ifar:ov.R.nbins])
+    long_range_std_rdf = std(ov.R.rdf[ifar:ov.R.nbins])
     println(io, """
 
-         Long range MDDF mean (expected 1.0): $long_range_mean +/- $long_range_std
-    """)
-    long_range_mean = mean(ov.R.rdf[ifar:ov.R.nbins])
-    long_range_std = std(ov.R.rdf[ifar:ov.R.nbins])
-    println(io, """
-        Long range RDF mean (expected 1.0): $long_range_mean +/- $long_range_std
+     Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
+     Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
 
-        $bars
+     $bars
     """)
 end
 
