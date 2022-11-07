@@ -195,12 +195,11 @@ function random_move!(x_ref::AbstractVector{T}, irefatom::Int, box::CellListMap.
     return x_new
 end
 
-@testitem "rando_mmove!" begin
+@testitem "random_move!" begin
     using ComplexMixtures
     using StaticArrays
-    import CellListMap
     using LinearAlgebra: norm
-
+    import CellListMap
     function check_internal_distances(x, y)
         for i in firstindex(x):lastindex(x)-1
             for j in i+1:lastindex(x)
