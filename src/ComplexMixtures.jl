@@ -48,13 +48,17 @@ include("./rigid_body.jl")
 # Structures and functions to store and report results
 include("./results.jl")
 
+# Functions to construct histograms
+include("./viewmol.jl")
+
+# Main function
+include("./FrameData.jl")
+include("./mddf.jl")
+
 #= 
 
 # Functions to compute distances
 include("./minimum_distances.jl")
-
-# Functions to construct histograms
-include("./viewmol.jl")
 
 # Tools
 include("./tools/gr.jl")
@@ -65,16 +69,6 @@ include("./isapprox.jl")
 include("./partialsort_cutoff.jl")
 include("./updatecounters.jl")
 include("./update_counters_frame.jl")
-
-# for the linked-cell-parallel version
-include("./FrameData.jl")
-include("./mddf_frame.jl")
-include("./mddf_frame_self.jl")
-include("./mddf_linkedcells_parallel.jl")
-
-# Main function
-include("./mddf.jl")
-
 =#
 
 end
