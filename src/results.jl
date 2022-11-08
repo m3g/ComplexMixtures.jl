@@ -592,7 +592,6 @@ end
     end
 end
 
-
 # Format numbers depending on their size
 format(x) = abs(x) < 999 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 
@@ -625,15 +624,16 @@ function write(
 )
 
     # Names of output files containing atomic contibutions
-    atom_contrib_solvent =
+    atom_contrib_solvent = normpath(
         FileOperations.remove_extension(filename) *
         "-ATOM_CONTRIB_SOLVENT." *
         FileOperations.file_extension(filename)
-    atom_contrib_solute =
+    )
+    atom_contrib_solute = normpath(
         FileOperations.remove_extension(filename) *
         "-ATOM_CONTRIB_SOLUTE." *
         FileOperations.file_extension(filename)
-
+    )
 
     #
     # GMD computed with minimum distance
@@ -643,159 +643,123 @@ function write(
     mole = 6.022140857e23
     convert = mole / 1.e24
 
-    output = open(filename, "w")
-    println(output, @sprintf("#"))
-    println(output, @sprintf("# Output of ComplexMixtures - MDDF"))
-    println(output, @sprintf("# Trajectory files and weights:"))
-    for i = 1:length(R.files)
-        println(output, "#  $(R.files[i]) - w = $(R.weights[i])")
-    end
-    println(output, @sprintf("#"))
-    println(
-        output,
-        @sprintf(
-            "# Density of solvent in simulation box (sites/A^3): %15.8f",
-            R.density.solvent
-        )
-    )
-    println(
-        output,
-        @sprintf(
-            "# Density of solvent in bulk (estimated) (sites/A^3): %15.8f",
-            R.density.solvent_bulk
-        )
-    )
-    println(
-        output,
-        @sprintf(
-            "# Molar volume of solvent in simulation (cc/mol): %15.8f",
-            convert / R.density.solvent
-        )
-    )
-    println(
-        output,
-        @sprintf(
-            "# Molar volume of solvent in bulk (estimated) (cc/mol): %15.8f",
-            convert / R.density.solvent_bulk
-        )
-    )
-    println(output, @sprintf("#"))
-    println(output, @sprintf("# Number of atoms solute: %i9", size(R.solute_atom, 2)))
-    println(
-        output,
-        @sprintf("# Number of atoms of the solvent: %i9", size(R.solvent_atom, 2))
-    )
-    println(output, @sprintf("#"))
-
-    if R.options.usecutoff
-        ibulk = setbin(R.options.dbulk, R.options.binstep)
-    else
-        ibulk = round(Int, R.nbins - 1 / R.options.binstep)
-    end
-    bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
-    sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
-    println(output, "#")
-    println(
-        output,
-        @sprintf(
-            "# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f",
-            bulkerror,
-            sdbulkerror
-        )
-    )
-    println(output,"""
-        # COLUMNS CORRESPOND TO:
-        #       1  Minimum distance to solute (dmin)
-        #       2  GMD distribution (md count normalized by md count of random-solute distribution
-        #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
-        #       4  Minimum distance site count for each dmin.
-        #       5  Minimum distance site count for each dmin for random solute distribution.
-        #       6  Cumulative number of molecules within dmin in the simulation.
-        #       7  Cumulative number of molecules within dmin for random solute distribution.
-        #       8  Volume of the shell of distance dmin and width binstep.
-        #
-        #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL
-    """)
-
-    for i = 1:R.nbins
-        line = "  " * format(R.d[i])                                   #  1-DISTANCE
-        line = line * "  " * format(R.mddf[i])                         #  2-GMD
-        line = line * "  " * format(R.kb[i])                           #  3-KB INT
-        line = line * "  " * format(R.md_count[i])                     #  4-MD COUNT
-        line = line * "  " * format(R.md_count_random[i])              #  5-COUNT RAND
-        line = line * "  " * format(R.sum_md_count[i])                 #  6-SUM MD
-        line = line * "  " * format(R.sum_md_count_random[i])          #  7-SUM RAND
-        line = line * "  " * format(R.volume.shell[i])                 #  8-SHELL VOL
-        println(output, line)
-    end
-    close(output)
+    open(filename, "w") do output
+        println(output, @sprintf("#"))
+        println(output, @sprintf("# Output of ComplexMixtures - MDDF"))
+        println(output, @sprintf("# Trajectory files and weights:"))
+        for i = 1:length(R.files)
+            println(output, "#  $(R.files[i]) - w = $(R.weights[i])")
+        end
+        println(output, @sprintf("#"))
+        println(output, @sprintf("# Density of solvent in simulation box (sites/A^3): %15.8f", R.density.solvent))
+        println(output, @sprintf("# Density of solvent in bulk (estimated) (sites/A^3): %15.8f", R.density.solvent_bulk))
+        println(output, @sprintf("# Molar volume of solvent in simulation (cc/mol): %15.8f", convert / R.density.solvent))
+        println(output, @sprintf("# Molar volume of solvent in bulk (estimated) (cc/mol): %15.8f", convert / R.density.solvent_bulk))
+        println(output, @sprintf("#"))
+        println(output, @sprintf("# Number of atoms solute: %i9", size(R.solute_atom, 2)))
+        println(output, @sprintf("# Number of atoms of the solvent: %i9", size(R.solvent_atom, 2)))
+        println(output, @sprintf("#"))
+        if R.options.usecutoff
+            ibulk = setbin(R.options.dbulk, R.options.binstep)
+        else
+            ibulk = round(Int, R.nbins - 1 / R.options.binstep)
+        end
+        bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
+        sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
+        println(output, "#")
+        println(output, @sprintf( "# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
+        println(output,"""
+            # COLUMNS CORRESPOND TO:
+            #       1  Minimum distance to solute (dmin)
+            #       2  GMD distribution (md count normalized by md count of random-solute distribution
+            #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
+            #       4  Minimum distance site count for each dmin.
+            #       5  Minimum distance site count for each dmin for random solute distribution.
+            #       6  Cumulative number of molecules within dmin in the simulation.
+            #       7  Cumulative number of molecules within dmin for random solute distribution.
+            #       8  Volume of the shell of distance dmin and width binstep.
+            #
+            #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL
+        """)
+        for i = 1:R.nbins
+            line = "  " * format(R.d[i])                                   #  1-DISTANCE
+            line = line * "  " * format(R.mddf[i])                         #  2-GMD
+            line = line * "  " * format(R.kb[i])                           #  3-KB INT
+            line = line * "  " * format(R.md_count[i])                     #  4-MD COUNT
+            line = line * "  " * format(R.md_count_random[i])              #  5-COUNT RAND
+            line = line * "  " * format(R.sum_md_count[i])                 #  6-SUM MD
+            line = line * "  " * format(R.sum_md_count_random[i])          #  7-SUM RAND
+            line = line * "  " * format(R.volume.shell[i])                 #  8-SHELL VOL
+            println(output, line)
+        end
+    end # file writting
 
     # Writting gmd per atom contributions for the solvent
 
-    output = open(atom_contrib_solvent, "w")
-    println(output,
-        """
-        # Solvent atomic contributions to total MDDF.
-        #
-        # Trajectory files: $(R.files)
-        #
-        # Atoms: 
-        """)
-    for i = 1:size(R.solvent_atom, 2)
-        if solvent_names[1] == "nothing"
-            println(output, @sprintf("# %9i", i))
-        else
-            println(output, @sprintf("# %9i %5s", i, solvent_names[i]))
+    open(atom_contrib_solvent, "w") do output
+        println(output,
+            """
+            # Solvent atomic contributions to total MDDF.
+            #
+            # Trajectory files: $(R.files)
+            #
+            # Atoms: 
+            """)
+        for i = 1:size(R.solvent_atom, 2)
+            if solvent_names[1] == "nothing"
+                println(output, @sprintf("# %9i", i))
+            else
+                println(output, @sprintf("# %9i %5s", i, solvent_names[i]))
+            end
         end
-    end
-    println(output, "#")
-    string = "#   DISTANCE     GMD TOTAL"
-    for i = 1:size(R.solvent_atom, 2)
-        string = string * @sprintf("  %12i", i)
-    end
-    println(output, string)
-    for i = 1:R.nbins
-        string = format(R.d[i])
-        string = string * "  " * format(R.mddf[i])
-        for j = 1:size(R.solvent_atom, 2)
-            string = string * "  " * format(R.solvent_atom[i, j])
+        println(output, "#")
+        string = "#   DISTANCE     GMD TOTAL"
+        for i = 1:size(R.solvent_atom, 2)
+            string = string * @sprintf("  %12i", i)
         end
         println(output, string)
-    end
-    close(output)
+        for i = 1:R.nbins
+            string = format(R.d[i])
+            string = string * "  " * format(R.mddf[i])
+            for j = 1:size(R.solvent_atom, 2)
+                string = string * "  " * format(R.solvent_atom[i, j])
+            end
+            println(output, string)
+        end
+    end # file writting
 
     # Writting gmd per atom contributions for the solute
-    output = open(atom_contrib_solute, "w")
-    println(output,
-        """
-        #
-        # Solute atomic contributions to total MDDF.
-        #
-        # Trajectory files: $(R.files)
-        #
-        # Atoms
-        """)
-    for i = 1:size(R.solute_atom, 2)
-        if solute_names[1] == "nothing"
-            println(output, @sprintf("# %9i", i))
-        else
-            println(output, @sprintf("# %9i %5s", i, solute_names[i]))
+    open(atom_contrib_solute, "w") do output
+        println(output,
+            """
+            #
+            # Solute atomic contributions to total MDDF.
+            #
+            # Trajectory files: $(R.files)
+            #
+            # Atoms
+            """)
+        for i = 1:size(R.solute_atom, 2)
+            if solute_names[1] == "nothing"
+                println(output, @sprintf("# %9i", i))
+            else
+                println(output, @sprintf("# %9i %5s", i, solute_names[i]))
+            end
         end
-    end
-    println(output, "#")
-    string = "#   DISTANCE      GMD TOTAL"
-    for i = 1:size(R.solute_atom, 2)
-        string = string * @sprintf("  %12i", i)
-    end
-    println(output, string)
-    for i = 1:R.nbins
-        string = format(R.d[i]) * "  " * format(R.mddf[i])
-        for j = 1:size(R.solute_atom, 2)
-            string = string * "  " * format(R.solute_atom[i, j])
+        println(output, "#")
+        string = "#   DISTANCE      GMD TOTAL"
+        for i = 1:size(R.solute_atom, 2)
+            string = string * @sprintf("  %12i", i)
         end
         println(output, string)
-    end
-    close(output)
+        for i = 1:R.nbins
+            string = format(R.d[i]) * "  " * format(R.mddf[i])
+            for j = 1:size(R.solute_atom, 2)
+                string = string * "  " * format(R.solute_atom[i, j])
+            end
+            println(output, string)
+        end
+    end # file writting
 
     # Write final messages with names of output files and their content
     println("""
@@ -834,7 +798,7 @@ function which_types(s::Selection, indexes::Vector{Int}; warning=true)
     ntypes = 0
     for i in indexes
         isel = findfirst(ind -> ind == i, s.index)
-        if isel == nothing
+        if isnothing(isel)
             error(" Atom in input list is not part of solvent (or solute).")
         else
             it = itype(isel, s.natomspermol)
@@ -875,17 +839,15 @@ function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vect
             if isnothing(ind)
                 error("Index $it of input list not found in selection indexes list.")
             end
-            c += atom_contributions[:, ind]
+            c += @view(atom_contributions[:, ind])
         end
         # If more than one molecule, the index must correspond to an atom within one molecule
     else
         for it in indexes
             if it > s.natomspermol
-                error(
-                    "The index list contains atoms with indexes greater than the number of atoms of the molecule.",
-                )
+                error("The index list contains atoms with indexes greater than the number of atoms of the molecule.")
             end
-            c += atom_contributions[:, it]
+            c += @view(atom_contributions[:, it])
         end
     end
     return c
@@ -939,10 +901,10 @@ function contrib(
 end
 
 function warning_nmols_types()
-    println(
-        "WARNING: there is more than one molecule in this selection. " *
-        "Contributions are summed over all atoms of the same type.",
-    )
+    println("""
+        WARNING: There is more than one molecule in this selection.
+                 Contributions are summed over all atoms of the same type.
+    """)
 end
 
 
@@ -966,14 +928,14 @@ function sum!(R1::Result, R2::Result)
     sum!(R1.density, R2.density)
     sum!(R1.volume, R2.volume)
 
-    return nothing
+    return R1
 end
 
 function sum!(D1::Density, D2::Density)
     D1.solute += D2.solute
     D1.solvent += D2.solvent
     D1.solvent_bulk += D2.solvent_bulk
-    return nothing
+    return D1
 end
 
 function sum!(V1::Volume, V2::Volume)
@@ -981,7 +943,7 @@ function sum!(V1::Volume, V2::Volume)
     V1.bulk += V2.bulk
     V1.domain += V2.domain
     @. V1.shell += V2.shell
-    return nothing
+    return V1
 end
 
 """
@@ -1000,7 +962,7 @@ function title(R::Result, solute::Selection, solvent::Selection)
           $(R.nframes_read) frames will be considered.
           Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
           Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
-          """)
+    """)
 end
 function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
     print(""" 
@@ -1010,7 +972,7 @@ function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
           Number of calculation threads: $(nspawn)
           Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
           Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
-          """)
+    """)
 end
 
 #
@@ -1038,31 +1000,30 @@ function Base.show(io::IO, ov::Overview)
     println(io,"""
         $bars
         
-         MDDF Overview:
+        MDDF Overview:
         
-         Solvent properties:
-         -------------------
+        Solvent properties:
+        -------------------
         
-         Simulation concentration: $(ov.density.solvent) mol L⁻¹
-         Molar volume: $(ov.solvent_molar_volume) cm³ mol⁻¹
+        Simulation concentration: $(ov.density.solvent) mol L⁻¹
+        Molar volume: $(ov.solvent_molar_volume) cm³ mol⁻¹
         
-         Concentration in bulk: $(ov.density.solvent_bulk) mol L⁻¹
-         Molar volume in bulk: $(ov.solvent_molar_volume_bulk) cm³ mol⁻¹
+        Concentration in bulk: $(ov.density.solvent_bulk) mol L⁻¹
+        Molar volume in bulk: $(ov.solvent_molar_volume_bulk) cm³ mol⁻¹
         
-         Solute properties:
-         ------------------
+        Solute properties:
+        ------------------
         
-         Simulation Concentration: $(ov.density.solute) mol L⁻¹
-         Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
+        Simulation Concentration: $(ov.density.solute) mol L⁻¹
+        Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
         
-         Using dbulk = $(ov.R.dbulk)Å:
-         Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
+        Using dbulk = $(ov.R.dbulk)Å:
+        Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
         
-         Auto-correlation: $(ov.R.autocorrelation)
+        Auto-correlation: $(ov.R.autocorrelation)
         
-         Trajectory files and weights:
-    """)
-
+        Trajectory files and weights:
+        """)
     for i = 1:length(ov.R.files)
         println(io, "   $(ov.R.files[i]) - w = $(ov.R.weights[i])")
     end
@@ -1072,11 +1033,11 @@ function Base.show(io::IO, ov::Overview)
     long_range_mean_rdf = mean(ov.R.rdf[ifar:ov.R.nbins])
     long_range_std_rdf = std(ov.R.rdf[ifar:ov.R.nbins])
     print(io,"""
-         Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
-         Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
 
-         $bars
-    """)
+        Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
+        Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
+
+        $bars""")
 end
 
 """
