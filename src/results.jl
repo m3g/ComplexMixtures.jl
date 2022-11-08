@@ -55,6 +55,17 @@ function reset!(v::Volume)
     return nothing
 end
 
+# Function to compare equality of Volume and Density structs
+import Base: ==
+function ==(x::T, y::T) where {T<:Union{Density,Volume}}
+    for field in fieldnames(T)
+        if getfield(x, field) != getfield(y, field)
+            return false
+        end
+    end
+    return true
+end
+
 """
 
 $(TYPEDEF)
@@ -79,8 +90,10 @@ Structure to contain the results of the MDDF calculation.
 
 $(TYPEDFIELDS)
 
+The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
+
 """
-@with_kw_noshow mutable struct Result
+@with_kw_noshow mutable struct Result{T<:Union{Matrix{Float64},Vector{Float64}}}
     # Histogram properties
     nbins::Int
     dbulk::Float64
@@ -101,8 +114,8 @@ $(TYPEDFIELDS)
     solute::SolSummary
 
     # Atomic contributions to the MDDFs
-    solute_atom::Matrix{Float64} = zeros(nbins, solute.natomspermol)
-    solvent_atom::Matrix{Float64} = zeros(nbins, solvent.natomspermol)
+    solute_atom::T = zeros(nbins, solute.natomspermol)
+    solvent_atom::T = zeros(nbins, solvent.natomspermol)
 
     # Data to compute a RDF and the KB integral from this count
     rdf_count::Vector{Float64} = zeros(nbins)
@@ -131,7 +144,7 @@ end
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-function Result(trajectory::Trajectory, options::Options; irefatom = -1)
+function Result(trajectory::Trajectory, options::Options; irefatom=-1)
 
     # Check for simple input errors
     if options.stride < 1
@@ -202,18 +215,18 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
     # Return data structure built up
 
     return Result(
-        options = options,
-        nbins = nbins,
-        dbulk = options.dbulk,
-        cutoff = cutoff,
-        irefatom = irefatom,
-        lastframe_read = lastframe_read,
-        nframes_read = nframes_read,
-        autocorrelation = isequal(trajectory.solute.index,trajectory.solvent.index),
-        solute = SolSummary(trajectory.solute),
-        solvent = SolSummary(trajectory.solvent),
-        files = [trajectory.filename],
-        weights = [1.0],
+        options=options,
+        nbins=nbins,
+        dbulk=options.dbulk,
+        cutoff=cutoff,
+        irefatom=irefatom,
+        lastframe_read=lastframe_read,
+        nframes_read=nframes_read,
+        autocorrelation=isequal(trajectory.solute.index, trajectory.solvent.index),
+        solute=SolSummary(trajectory.solute),
+        solvent=SolSummary(trajectory.solvent),
+        files=[trajectory.filename],
+        weights=[1.0],
     )
 
 end
@@ -221,7 +234,7 @@ end
 #
 # What to show at the REPL
 #
-Base.show(io::IO, R::Result) = Base.show(io, overview(R))
+Base.show(io::IO, R::Result) = show(io, overview(R))
 
 """
 
@@ -418,18 +431,18 @@ function Base.merge(r::Vector{Result})
 
     # Final resuls
     R = Result(
-        options = r[1].options,
-        nbins = r[1].nbins,
-        dbulk = r[1].dbulk,
-        cutoff = r[1].cutoff,
-        irefatom = r[1].irefatom,
-        lastframe_read = r[nr].lastframe_read,
-        nframes_read = nframes_read,
-        autocorrelation = r[1].autocorrelation,
-        solute = r[1].solute,
-        solvent = r[1].solvent,
-        files = files,
-        weights = weights,
+        options=r[1].options,
+        nbins=r[1].nbins,
+        dbulk=r[1].dbulk,
+        cutoff=r[1].cutoff,
+        irefatom=r[1].irefatom,
+        lastframe_read=r[nr].lastframe_read,
+        nframes_read=nframes_read,
+        autocorrelation=r[1].autocorrelation,
+        solute=r[1].solute,
+        solvent=r[1].solvent,
+        files=files,
+        weights=weights,
     )
 
     # Average results weighting the data considering the number of frames of each data set
@@ -493,12 +506,12 @@ end
     R = Result(traj, options)
     @test R.autocorrelation == false
     @test R.cutoff == 10.0
-    @test length(R.d) == 500 
+    @test length(R.d) == 500
     @test R.dbulk == 10.0
     @test (R.density.solute, R.density.solvent, R.density.solvent_bulk) == (0.0, 0.0, 0.0)
     @test R.files[1] == normpath("$(Testing.data_dir)/NAMD/trajectory.dcd")
     @test R.irefatom == 1
-    @test length(R.kb) == 500 
+    @test length(R.kb) == 500
     @test length(R.kb_rdf) == 500
     @test R.lastframe_read == 20
     @test length(R.md_count) == 500
@@ -511,8 +524,8 @@ end
     @test length(R.rdf_count_random) == 500
     @test R.solute == ComplexMixtures.SolSummary(1463, 1, 1463)
     @test R.solvent == ComplexMixtures.SolSummary(2534, 181, 14)
-    @test size(R.solute_atom) == (500,1463)
-    @test size(R.solvent_atom) == (500, 14) 
+    @test size(R.solute_atom) == (500, 1463)
+    @test size(R.solvent_atom) == (500, 14)
     @test length(R.sum_md_count) == 500
     @test length(R.sum_md_count_random) == 500
     @test length(R.sum_rdf_count_random) == 500
@@ -524,7 +537,8 @@ end
 # Functions to save the results to a file
 #
 StructTypes.StructType(::Type{SolSummary}) = StructTypes.Struct()
-StructTypes.StructType(::Type{Result}) = StructTypes.Struct()
+StructTypes.StructType(::Type{Result{Vector{Float64}}}) = StructTypes.Struct()
+StructTypes.StructType(::Type{Result{Matrix{Float64}}}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
@@ -536,9 +550,10 @@ Function to write the result data structure to a json file.
 
 """
 function save(R::Result, filename::String)
-    f = open(filename, "w")
-    JSON3.write(f, R)
-    close(f)
+    open(filename, "w") do f
+        JSON3.write(f, R)
+    end
+    return nothing
 end
 
 
@@ -550,15 +565,31 @@ Function to load the json saved results file into the `Result` data structure.
 """
 function load(filename::String)
     f = open(filename, "r")
-    R = JSON3.read(f, Result)
+    R = JSON3.read(f, Result{Vector{Float64}})
     # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
-    R.solute_atom = reshape(R.solute_atom, R.nbins, :)
-    R.solvent_atom = reshape(R.solvent_atom, R.nbins, :)
-    return R
+    solute_atom = reshape(R.solute_atom, R.nbins, :)
+    solvent_atom = reshape(R.solvent_atom, R.nbins, :)
+    r_names = fieldnames(Result)
+    # Return the Result{Matrix{Float64}} type with the appropriate fields 
+    return Result{Matrix{Float64}}(
+        ntuple(length(r_names)) do i
+            r_names[i] == :solute_atom ? solute_atom :
+            r_names[i] == :solvent_atom ? solvent_atom :
+            getfield(R, r_names[i])
+        end...
+    )
 end
 
-@testitem "Result - load" begin
-
+@testitem "Result - load/save" begin
+    using ComplexMixtures
+    using ComplexMixtures.Testing
+    r = load("$(Testing.data_dir)/NAMD/protein_tmao.json")
+    tmp = tempname()
+    save(r, tmp)
+    r2 = load(tmp)
+    for field in fieldnames(typeof(r))
+        @test getfield(r, field) == getfield(r2, field)
+    end
 end
 
 
@@ -575,7 +606,7 @@ If the solute and solvent selections are provides, pass on the atom names.
 
 """
 write(R::Result, filename::String, solute::Selection, solvent::Selection) =
-    write(R, filename, solute_names = solute.names, solvent_names = solvent.names)
+    write(R, filename, solute_names=solute.names, solvent_names=solvent.names)
 
 
 """
@@ -589,8 +620,8 @@ Optional passing of atom names.
 function write(
     R::Result,
     filename::String;
-    solute_names::Vector{String} = ["nothing"],
-    solvent_names::Vector{String} = ["nothing"],
+    solute_names::Vector{String}=["nothing"],
+    solvent_names::Vector{String}=["nothing"]
 )
 
     # Names of output files containing atomic contibutions
@@ -673,17 +704,17 @@ function write(
         )
     )
     println(output,"""
-    # COLUMNS CORRESPOND TO:
-    #       1  Minimum distance to solute (dmin)
-    #       2  GMD distribution (md count normalized by md count of random-solute distribution
-    #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
-    #       4  Minimum distance site count for each dmin.
-    #       5  Minimum distance site count for each dmin for random solute distribution.
-    #       6  Cumulative number of molecules within dmin in the simulation.
-    #       7  Cumulative number of molecules within dmin for random solute distribution.
-    #       8  Volume of the shell of distance dmin and width binstep.
-    #
-    #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL
+        # COLUMNS CORRESPOND TO:
+        #       1  Minimum distance to solute (dmin)
+        #       2  GMD distribution (md count normalized by md count of random-solute distribution
+        #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
+        #       4  Minimum distance site count for each dmin.
+        #       5  Minimum distance site count for each dmin for random solute distribution.
+        #       6  Cumulative number of molecules within dmin in the simulation.
+        #       7  Cumulative number of molecules within dmin for random solute distribution.
+        #       8  Volume of the shell of distance dmin and width binstep.
+        #
+        #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL
     """)
 
     for i = 1:R.nbins
@@ -703,13 +734,13 @@ function write(
 
     output = open(atom_contrib_solvent, "w")
     println(output,
-    """
-    # Solvent atomic contributions to total MDDF.
-    #
-    # Trajectory files: $(R.files)
-    #
-    # Atoms: 
-    """)
+        """
+        # Solvent atomic contributions to total MDDF.
+        #
+        # Trajectory files: $(R.files)
+        #
+        # Atoms: 
+        """)
     for i = 1:size(R.solvent_atom, 2)
         if solvent_names[1] == "nothing"
             println(output, @sprintf("# %9i", i))
@@ -735,15 +766,15 @@ function write(
 
     # Writting gmd per atom contributions for the solute
     output = open(atom_contrib_solute, "w")
-    println(output, 
-    """
-    #
-    # Solute atomic contributions to total MDDF.
-    #
-    # Trajectory files: $(R.files)
-    #
-    # Atoms
-    """)
+    println(output,
+        """
+        #
+        # Solute atomic contributions to total MDDF.
+        #
+        # Trajectory files: $(R.files)
+        #
+        # Atoms
+        """)
     for i = 1:size(R.solute_atom, 2)
         if solute_names[1] == "nothing"
             println(output, @sprintf("# %9i", i))
@@ -769,10 +800,10 @@ function write(
     # Write final messages with names of output files and their content
     println("""
     OUTPUT FILES:
-    
+
     Wrote solvent atomic GMD contributions to file: $atom_contrib_solvent
     Wrote solute atomic GMD contributions to file: $atom_contrib_solute
-    
+
     Wrote main output file: $filename
     """)
 
@@ -798,7 +829,7 @@ if the distribution function was computed for all molecules. Thus, the necessity
 to identify the types of atoms involved in a selection.   
 
 """
-function which_types(s::Selection, indexes::Vector{Int}; warning = true)
+function which_types(s::Selection, indexes::Vector{Int}; warning=true)
     selected_types = Vector{Int}(undef, 0)
     ntypes = 0
     for i in indexes
@@ -840,13 +871,13 @@ function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vect
     # If the selection is a single molecule, the indexes are anything
     if s.nmols == 1
         for it in indexes
-            ind = findfirst(isequal(it),s.index)
+            ind = findfirst(isequal(it), s.index)
             if isnothing(ind)
                 error("Index $it of input list not found in selection indexes list.")
             end
             c += atom_contributions[:, ind]
         end
-    # If more than one molecule, the index must correspond to an atom within one molecule
+        # If more than one molecule, the index must correspond to an atom within one molecule
     else
         for it in indexes
             if it > s.natomspermol
@@ -882,12 +913,12 @@ function contrib(
     s::Selection,
     atom_contributions::Array{Float64},
     atoms::Vector{PDBTools.Atom};
-    warning = true,
+    warning=true
 )
     (warning && s.nmols > 1) && warning_nmols_types()
     indexes = [atom.index for atom in atoms]
     # Check which types of atoms belong to this selection
-    selected_types = which_types(s, indexes, warning = warning)
+    selected_types = which_types(s, indexes, warning=warning)
     return contrib(s, atom_contributions, selected_types)
 end
 
@@ -898,12 +929,12 @@ function contrib(
     s::Selection,
     atom_contributions::Array{Float64},
     residue::Residue;
-    warning = true,
+    warning=true
 )
     (warning && s.nmols > 1) && warning_nmols_types()
     indexes = collect(residue.range)
     # Check which types of atoms belong to this selection
-    selected_types = which_types(s, indexes, warning = warning)
+    selected_types = which_types(s, indexes, warning=warning)
     return contrib(s, atom_contributions, selected_types)
 end
 
@@ -1004,33 +1035,34 @@ $(TYPEDFIELDS)
 end
 
 function Base.show(io::IO, ov::Overview)
-    println(io, """
-    $bars
-    
-     MDDF Overview:
-    
-     Solvent properties:
-     -------------------
-    
-     Simulation concentration: $(ov.density.solvent) mol L⁻¹
-     Molar volume: $(ov.solvent_molar_volume) cm³ mol⁻¹
-    
-     Concentration in bulk: $(ov.density.solvent_bulk) mol L⁻¹
-     Molar volume in bulk: $(ov.solvent_molar_volume_bulk) cm³ mol⁻¹
-    
-     Solute properties:
-     ------------------
-    
-     Simulation Concentration: $(ov.density.solute) mol L⁻¹
-     Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
-    
-     Using dbulk = $(ov.R.dbulk)Å:
-     Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
-    
-     Auto-correlation: $(ov.R.autocorrelation)
-
-     Trajectory files and weights:
+    println(io,"""
+        $bars
+        
+         MDDF Overview:
+        
+         Solvent properties:
+         -------------------
+        
+         Simulation concentration: $(ov.density.solvent) mol L⁻¹
+         Molar volume: $(ov.solvent_molar_volume) cm³ mol⁻¹
+        
+         Concentration in bulk: $(ov.density.solvent_bulk) mol L⁻¹
+         Molar volume in bulk: $(ov.solvent_molar_volume_bulk) cm³ mol⁻¹
+        
+         Solute properties:
+         ------------------
+        
+         Simulation Concentration: $(ov.density.solute) mol L⁻¹
+         Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
+        
+         Using dbulk = $(ov.R.dbulk)Å:
+         Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
+        
+         Auto-correlation: $(ov.R.autocorrelation)
+        
+         Trajectory files and weights:
     """)
+
     for i = 1:length(ov.R.files)
         println(io, "   $(ov.R.files[i]) - w = $(ov.R.weights[i])")
     end
@@ -1039,12 +1071,11 @@ function Base.show(io::IO, ov::Overview)
     long_range_std = std(ov.R.mddf[ifar:ov.R.nbins])
     long_range_mean_rdf = mean(ov.R.rdf[ifar:ov.R.nbins])
     long_range_std_rdf = std(ov.R.rdf[ifar:ov.R.nbins])
-    print(io, """
+    print(io,"""
+         Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
+         Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
 
-     Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
-     Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
-
-     $bars
+         $bars
     """)
 end
 
@@ -1055,7 +1086,7 @@ Function that outputs the volumes and densities in the most natural units.
 """
 function overview(R::Result)
 
-    ov = Overview(R = R)
+    ov = Overview(R=R)
 
     # Molar volume of the solute domain
     ov.domain_molar_volume = R.volume.domain * units.Angs3tocm3permol
