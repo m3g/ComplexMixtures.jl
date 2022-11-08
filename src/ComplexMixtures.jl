@@ -58,7 +58,6 @@ include("./viewmol.jl")
 
 # Tools
 include("./tools/gr.jl")
-include("./tools/overview.jl")
 include("./tools/grid3D.jl")
 include("./isapprox.jl")
 
