@@ -1,3 +1,29 @@
+#=
+Type of calculation: auto or cross-correlations - have different sampling schemes
+
+Choose self and cross versions
+
+In both the self and (cross) non-self cases, the number of random samples is 
+n_random_samples*solvent.nmols. However, in the non-self distribution
+the sampling of solvent distances is proportional to the number of solute
+molecules, thus the md count has to be averaged by solute.nmols. In the
+case of the self-distribution, we compute n(n-1)/2 distances, and we will
+divide this by n random samples, which is the sampling of the random
+distribution. Therefore, we must weight the self-distance count by dividing
+it by (n-1)/2, so that we have a count proportional to n as well, leading
+to the correct weight relative to the random sample. 
+=#
+function Samples(R::Result) 
+    if R.autocorrelation 
+        return (md = (R.solvent.nmols - 1) / 2, random = R.options.n_random_samples) 
+    else
+        return (md = R.solute.nmols, random = R.options.n_random_samples)
+    end
+end
+
+# autocorrelation can be obtained from the comparison of solute and solvent indexes
+isautocorrelation(solute_indexes, solvent_indexes) = solute_indexes == solvent_indexes ? true : false
+
 """
 
 $(TYPEDEF)
@@ -93,7 +119,7 @@ $(TYPEDFIELDS)
 The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
 
 """
-@with_kw_noshow mutable struct Result{T<:Union{Matrix{Float64},Vector{Float64}}}
+@with_kw_noshow mutable struct Result{T<:VecOrMat{Float64}}
     # Histogram properties
     nbins::Int
     dbulk::Float64
@@ -164,9 +190,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
     end
     if options.usecutoff
         if options.dbulk >= options.cutoff
-            error(
-                " in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). ",
-            )
+            error(" in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). ")
         end
         if (options.cutoff / options.binstep) % 1 > 1.e-5
             error("in MDDF options: cutoff must be a multiple of binstep.")
@@ -179,12 +203,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
     nbins = setbin(cutoff, options.binstep) - 1
 
     if options.irefatom > trajectory.solvent.natoms
-        error(
-            "in MDDF options: Reference atom index",
-            options.irefatom,
-            " is greater than number of " *
-            "                 atoms of the solvent molecule. ",
-        )
+        error("in MDDF options: Reference atom index", options.irefatom, " is greater than number of atoms of the solvent molecule. ")
     end
 
     # Set reference atom as the closest one to the center of coordinates of the molecule, as default
@@ -212,8 +231,6 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         error("Number of frames to read is zero. Check input parameters.")
     end
 
-    # Return data structure built up
-
     return Result(
         options=options,
         nbins=nbins,
@@ -222,7 +239,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         irefatom=irefatom,
         lastframe_read=lastframe_read,
         nframes_read=nframes_read,
-        autocorrelation=isequal(trajectory.solute.index, trajectory.solvent.index),
+        autocorrelation = isautocorrelation(trajectory.solute.index, trajectory.solvent.index),
         solute=SolSummary(trajectory.solute),
         solvent=SolSummary(trajectory.solvent),
         files=[trajectory.filename],
@@ -235,20 +252,6 @@ end
 # What to show at the REPL
 #
 Base.show(io::IO, R::Result) = show(io, overview(R))
-
-"""
-
-$(TYPEDEF)
-
-Simple structure to contain the number of samples of each type of calculation to compute final results
-
-$(TYPEDFIELDS)
-
-"""
-@with_kw struct Samples
-    md::Float64
-    random::Int
-end
 
 #
 # Functions to compute volumes of shells
@@ -295,22 +298,19 @@ end
 
 
 """
-    finalresults!(R::Result, options::Options, trajectory::Trajectory, samples::Samples)
+    finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
-Function that computes the final results of all the data computed by averaging
-according to the sampling of each type of data, and converts to common units.
+Function that computes the final results of all the data computed by averaging according to the sampling of each type of data, and converts to common units.
 
 Computes also the final distribution functions and KB integrals
 
 This function modified the values contained in the R data structure
 
 """
-function finalresults!(
-    R::Result,
-    options::Options,
-    trajectory::Trajectory,
-    samples::Samples,
-)
+function finalresults!(R::Result, options::Options, trajectory::Trajectory)
+
+    # Sampling scheme depending on the type of calculation
+    samples = Samples(R)
 
     # Setup the distance vector
     for i = 1:R.nbins
@@ -387,11 +387,11 @@ function finalresults!(
 
     end
 
-    return nothing
+    return R
 end
 
 """
-    merge(r::Vector{ComplexMixutures.Result})
+    merge(r::Vector{Result})
 
 This function merges the results of MDDF calculations obtained by running the same
 analysis on multiple trajectories, or multiple parts of the same trajectory. It returns
@@ -407,14 +407,10 @@ function Base.merge(r::Vector{Result})
     for ir = 2:nr
         nframes_read += r[ir].nframes_read
         if r[ir].nbins != r[1].nbins
-            println(
-                "ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.",
-            )
+            println("ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.")
         end
         if (r[ir].cutoff - r[1].cutoff) > 1.e-8
-            println(
-                "ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.",
-            )
+            println("ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.")
         end
     end
     if error
@@ -570,6 +566,8 @@ function load(filename::String)
     solute_atom = reshape(R.solute_atom, R.nbins, :)
     solvent_atom = reshape(R.solvent_atom, R.nbins, :)
     r_names = fieldnames(Result)
+    # Check type of calculation
+
     # Return the Result{Matrix{Float64}} type with the appropriate fields 
     return Result{Matrix{Float64}}(
         ntuple(length(r_names)) do i

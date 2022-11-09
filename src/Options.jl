@@ -13,8 +13,6 @@ $(TYPEDFIELDS)
     lastframe::Int = -1
     stride::Int = 1
 
-    periodic::Bool = true
-
     irefatom::Int = -1
     n_random_samples::Int = 10
 

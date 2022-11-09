@@ -52,7 +52,6 @@ include("./results.jl")
 include("./viewmol.jl")
 
 # Main function
-include("./FrameData.jl")
 include("./mddf.jl")
 
 #= 

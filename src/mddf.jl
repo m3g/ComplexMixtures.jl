@@ -25,25 +25,7 @@ julia> results = mddf(trajectory,options);
 """
 mddf(trajectory::Trajectory) = mddf(trajectory, Options())
 
-# Structures to dispatch on Self or Cross computations
-struct Self end
-struct Cross end
 
-#=
-
-Choose self and cross versions
-
-In both the self and (cross) non-self cases, the number of random samples is 
-n_random_samples*solvent.nmols. However, in the non-self distribution
-the sampling of solvent distances is proportional to the number of solute
-molecules, thus the md count has to be averaged by solute.nmols. In the
-case of the self-distribution, we compute n(n-1)/2 distances, and we will
-divide this by n random samples, which is the sampling of the random
-distribution. Therefore, we must weight the self-distance count by dividing
-it by (n-1)/2, so that we have a count proportional to n as well, leading
-to the correct weight relative to the random sample. 
-
-=#
 function mddf(trajectory::Trajectory, options::Options)
     # Set random number generator
     RNG = init_random(options)
@@ -88,8 +70,12 @@ function mddf_compute(comp_type,trajectory::Trajectory, options::Options, sample
     # Initializing the structure that carries the result per thread
     R = [Result(trajectory, options) for _ in 1:nchunks]
 
-    # Create data structures required for multithreading
-    framedata = [ FrameData(deepcopy(trajectory), R0) for _ in 1:nchunks ]
+    # Initialize periodic system for CellListMap
+    system = setup_PeriodicSystem(comp_type, trajectory, options)    
+
+    # Create data structures required for multithreading: needed to read coordinates in each
+    # frame independently, and compute the minimum-distance list 
+    system_chunk = [ deepcopy(system) for _ in 1:nchunks ]
 
     # Skip initial frames if desired
     iframe = 0 # Counter for all frames of the input file, that must be read serially
@@ -107,22 +93,24 @@ function mddf_compute(comp_type,trajectory::Trajectory, options::Options, sample
     read_lock = ReentrantLock()
     Threads.@threads for (frame_range, ichunk) in chunks(1:R0.nframes_read, nchunks)
         for _ in frame_range
+            # Read frame coordinates
             lock(read_lock) do 
                 iframe += 1
                 while (iframe+1)%options.stride != 0
                     nextframe!(trajectory)
                     iframe += 1
                 end
-                next!(progress)
-                @. framedata[ichunck].trajectory.x_solute = trajectory.x_solute
-                @. framedata[ichunck].trajectory.x_solvent = trajectory.x_solvent
-                @. framedata[ichunck].trajectory.sides = trajectory.sides
+                @. system_chunk[ichunk].x_positions .= trajectory.x_solute
+                @. system_chunk[ichunk].y_positions .= trajectory.x_solvent
+                update_unitcell!(system_chunk[ichunk], getsides(trajectory, iframe))
                 # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
                 if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
                     GC.gc() 
                 end
+                next!(progress)
             end # reading lock
-            R[ichunk] = mddf_frame!(comp_type, framedata[ichunk], options, RNG, R[ichunk])
+            # Compute distances in this frame and update results
+            mddf_frame!(comp_type, system_chunk[ichunk], options, RNG, R[ichunk])
         end
     end
     closetraj(trajectory)
