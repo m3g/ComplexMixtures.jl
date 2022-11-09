@@ -13,7 +13,7 @@ distribution. Therefore, we must weight the self-distance count by dividing
 it by (n-1)/2, so that we have a count proportional to n as well, leading
 to the correct weight relative to the random sample. 
 =#
-function Samples(R::Result) 
+function set_samples(R::Result) 
     if R.autocorrelation 
         return (md = (R.solvent.nmols - 1) / 2, random = R.options.n_random_samples) 
     else
@@ -310,7 +310,7 @@ This function modified the values contained in the R data structure
 function finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
     # Sampling scheme depending on the type of calculation
-    samples = Samples(R)
+    samples = set_samples(R)
 
     # Setup the distance vector
     for i = 1:R.nbins
@@ -549,7 +549,7 @@ function save(R::Result, filename::String)
     open(filename, "w") do f
         JSON3.write(f, R)
     end
-    return nothing
+    return "Results saved in JSON file: $filename"
 end
 
 
@@ -769,7 +769,7 @@ function write(
     Wrote main output file: $filename
     """)
 
-    return nothing
+    return "Results written to file: $filename"
 end
 
 """
