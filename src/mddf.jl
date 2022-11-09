@@ -81,9 +81,13 @@ function mddf(trajectory::Trajectory, options::Options)
                     GC.gc() 
                 end
                 next!(progress)
-            end # reading lock
+            end # release reading lock
             # Compute distances in this frame and update results
-            mddf_frame!(comp_type, system_chunk[ichunk], options, RNG, R[ichunk])
+            if R[ichunk].autocorrelation
+                mddf_frame_autocorrelation!(R[ichunk], system_chunk[ichunk], options, RNG)
+            else
+                mddf_frame_crosscorrelation!(R[ichunk], system_chunk[ichunk], options, RNG)
+            end
         end
     end
     closetraj(trajectory)
@@ -95,54 +99,26 @@ function mddf(trajectory::Trajectory, options::Options)
 
     # Setup the final data structure with final values averaged over the number of frames,
     # sampling, etc, and computes final distributions and integrals
-    R0 = finalresults!(R0, options, trajectory, samples)
+    R0 = finalresults!(R0, options, trajectory)
     options.silent || println(bars)
 
     return R0
 end
 
+cell_volume(box::Box) = error("Triclinic cells are not supported yet.")
+cell_volume(box::Box{OrthorhombicCell}) = prod(box.unit_cell.matrix[i,i] for i in 1:3)
+
 """
-    mddf_frame(::Cross, iframe::Int, framedata::FrameData, options::Options, RNG, R::Result, system::PeriodicSystem)
+    mddf_frame_autocorrelation!(R, system_chunk[ichunk], options, RNG)
 
 $(INTERNAL)
 
-Computes the MDDF for a single frame, modifies the data in the `R` (type `Result`) structure.
+Computes the MDDF for a single frame, for autocorrelation of molecules. Modifies the data in the `R` (type `Result`) structure.
 
 """
-function mddf_frame!(::Cross, iframe::Int, framedata::FrameData, options::Options, RNG, R::Result, system::PeriodicSystem)
+function mddf_frame_autocorrelation!(R::Result, system::PeriodicSystem, options::Options, RNG)
 
-    # Simplify code by assigning some shortened names
-    trajectory = framedata.trajectory
-    volume_frame = framedata.volume_frame
-    rdf_count_random_frame = framedata.rdf_count_random_frame
-    md_count_random_frame = framedata.md_count_random_frame
-    dc = framedata.dc
-    dmin_mol = framedata.dmin_mol
-    dref_mol = framedata.dref_mol
-    x_solvent_random = framedata.x_solvent_random
-    lc_solvent = framedata.lc_solvent
-    solute = trajectory.solute
-    solvent = trajectory.solvent
-    x_solute = trajectory.x_solute
-    x_solvent = trajectory.x_solvent
-
-    # Reset counters for this frame
-    reset!(volume_frame)
-    @. rdf_count_random_frame = 0.0
-    @. md_count_random_frame = 0.0
-
-    # Check if the cutoff is not too large considering the periodic cell size
-    if R.cutoff > sides[1] / 2 || R.cutoff > sides[2] / 2 || R.cutoff > sides[3] / 2
-        error("""
-        in MDDF: cutoff or dbulk > periodic_dimension/2 in frame: $iframe
-                 max(cutoff,dbulk) = $(R.cutoff)
-                 sides read from file = $(sides)
-                 If sides are zero it is likely that the PBC information is not available 
-                 in the trajectory file.
-        """)
-    end
-
-    volume_frame.total = sides[1] * sides[2] * sides[3]
+    volume_frame.total = cell_volume(system.unitcell)
     R.volume.total = R.volume.total + volume_frame.total
 
     R.density.solute = R.density.solute + (solute.nmols / volume_frame.total)
