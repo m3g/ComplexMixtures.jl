@@ -37,8 +37,8 @@ $(TYPEDFIELDS)
     seed::Int = 321
     StableRNG::Bool = false
 
-    # Manually chose on how many threads to run (-1 to use all threads)
-    nthreads::Int = -1
+    # Manually chose on how many threads to run (0 to use all threads)
+    nthreads::Int = 0
 
     # Do not show any output on the screen on execution of mddf routines
     silent::Bool = false

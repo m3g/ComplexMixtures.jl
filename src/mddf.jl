@@ -27,40 +27,13 @@ mddf(trajectory::Trajectory) = mddf(trajectory, Options())
 
 
 function mddf(trajectory::Trajectory, options::Options)
+
     # Set random number generator
     RNG = init_random(options)
-    if options.nthreads < 0
-        nthreads = Threads.nthreads()
-    else
-        nthreads = options.nthreads
-    end
-    # If the solute and the solvent are the same
-    if trajectory.solute.index == trajectory.solvent.index
-        samples = Samples(md = (trajectory.solvent.nmols - 1) / 2, random = options.n_random_samples)
-        comp_type = Self()
-    # If solute and solvent are different subsets of the simulation
-    else
-        samples = Samples(md = trajectory.solute.nmols, random = options.n_random_samples)
-        comp_type = Cross()
-    end
-    R = mddf_compute(comp_type,trajectory, options, samples, RNG)
-    return R
-end
-
-"""     
-    mddf_compute(trajectory::Trajectory, options::Options, samples::Samples, RNG)  
-
-$(INTERNAL)
-
-Computes the MDDFs. Returns the `Result` structure. This function is resposible for dispatching
-the computations of each frame to each thread.
-
-"""
-function mddf_compute(comp_type,trajectory::Trajectory, options::Options, samples::Samples, RNG)
 
     # Number of threads (chunks) to use
     nchunks = options.nthreads
-    if nchunks <= 0
+    if nchunks == 0
         nchunks = Threads.nthreads()
     end
 

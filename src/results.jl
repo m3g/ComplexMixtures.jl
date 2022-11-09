@@ -207,15 +207,13 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
     end
 
     # Set reference atom as the closest one to the center of coordinates of the molecule, as default
-    if irefatom == -1
-        if options.irefatom == -1
-            nextframe!(trajectory)
-            xfirst = trajectory.x_solvent[1:trajectory.solvent.natomspermol]
-            irefatom = findmin(v -> norm(v - mean(xfirst)), xfirst)[2]
-            firstframe(trajectory)
-        else
-            irefatom = options.irefatom
-        end
+    if options.irefatom == -1
+        nextframe!(trajectory)
+        first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
+        irefatom = findmin(v -> norm(v - mean(first_mol)), first_mol)[2]
+        firstframe(trajectory)
+    else
+        irefatom = options.irefatom
     end
 
     # Last frame to be considered
@@ -245,7 +243,6 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         files=[trajectory.filename],
         weights=[1.0],
     )
-
 end
 
 #
@@ -340,7 +337,6 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     # Computing the distribution functions and KB integrals, from the MDDF
     # and from the RDF
     #
-
     for ibin = 1:R.nbins
 
         # For the MDDF
