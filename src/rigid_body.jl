@@ -169,7 +169,7 @@ Function that generates a new random position for a molecule.
 The new position is returned in `x_new`, a previously allocated array.
 
 """
-function random_move!(x_ref::AbstractVector{T}, irefatom::Int, box::CellListMap.Box, x_new::AbstractVector{T}, RNG) where {T<:SVector}
+function random_move!(x::AbstractVector{T}, irefatom::Int, box::CellListMap.Box, RNG) where {T<:SVector}
     # To avoid boundary problems, the center of coordinates are generated in a 
     # much larger region, and wrapped aftwerwards
     scale = 100.0
@@ -182,17 +182,14 @@ function random_move!(x_ref::AbstractVector{T}, irefatom::Int, box::CellListMap.
     gamma = 2π * random(RNG, Float64)
     theta = 2π * random(RNG, Float64)
 
-    # Copy the coordinates of the molecule chosen to the random-coordinates vector
-    @. x_new = x_ref
-
     # Take care that this molecule is not split by periodic boundary conditions, by
     # wrapping its coordinates around its reference atom
-    wrap!(x_new, x_ref[irefatom], box)
+    wrap!(x, x[irefatom], box)
 
     # Move molecule to new position
-    move!(x_new, newcm, beta, gamma, theta)
+    move!(x, newcm, beta, gamma, theta)
 
-    return x_new
+    return x
 end
 
 @testitem "random_move!" begin
@@ -218,20 +215,20 @@ end
     # Orthorhombic cell
     box = CellListMap.Box(SVector(10.0, 10.0, 10.0), 0.1)
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
     x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
     x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
 
     # Triclinic cell
     box = CellListMap.Box(@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], 1.0)
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
     x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
     x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(x, 1, box, copy(x), RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
 
 end
 
