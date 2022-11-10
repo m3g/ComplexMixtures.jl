@@ -17,104 +17,88 @@ end
 itype(iatom::Int, s::Selection) = itype(iatom, s.natomspermol)
 
 """
-    inbulk(d, R::Result)
+    updatecounters!(R::Result, system::AbstractPeriodicSystem)
 
 $(INTERNAL)
 
-Function that returns if a distance is in the bulk region or not, according to the options.
+Function that updates the minimum-distance counters in `R`
 
 """
-inbulk(d, R::Result) = R.options.usecutoff ? (d >= R.dbulk && d < R.cutoff) : (d >= R.dbulk)
-
-"""
-    updatecounters!
-
-$(INTERNAL)
-
-Function that updates the counters in `R` and returns `n_dmin_in_bulk` given
-the output of `cutoffdistances`.
-
-If the solute and solvent selections are provided, 
-update md_count, rdf_count and the atom-specific counters
-
-returns: `n_dmin_in_bulk`: number of molecules with all the atoms in the bulk
-         `n_dref_in_bulk`: number of molecules with the reference atom in the bulk
-
-"""
-function updatecounters!(R::Result, solute::Selection, solvent::Selection, system)
-
-    # list of minimum distances
-    list = system.list
-
-    # Update the reference atom counter
-    n_dref_in_bulk = 0
-    for i = 1:solvent.nmols
-        if list[i].ref_atom_within_cutoff
-            ibin = setbin(list[i].d_ref_atom, R.options.binstep)
-            R.rdf_count[ibin] += 1
+function updatecounters!(R::Result, system::AbstractPeriodicSystem; random::Bool=false)
+    if !random
+        for md in system.list
+            !md.within_cutoff && continue
+            ibin = setbin(md.dmin_mol, R.options.binstep)
+            R.md_count[ibin] += 1
+            R.solute_atom[ibin, itype(dmin_mol[i].iat, R.solute)] += 1
+            R.solvent_atom[ibin, itype(dmin_mol[i].jat, R.solvent)] += 1
+            if md.ref_atom_within_cutoff
+                ibin = setbin(list[i].dref_mol, R.options.binstep)
+                R.rdf_count[ibin] += 1
+            end
         end
-        n_dref_in_bulk += inbulk(list[i].d_ref_atom, R)
-    end
-
-    # Sort the vectors such that the elements with distances 
-    # smaller than the cutoff are at the begining, this is used to random 
-    # sample the bulk molecules afterwards
-    partialsort_cutoff!(dmin_mol, R.cutoff, by = x -> x.d)
-
-    # Add distances to the counters
-    n_solvent_in_domain = 0
-    i = 1
-    while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
-        ibin = setbin(dmin_mol[i].d, R.options.binstep)
-        R.md_count[ibin] += 1
-        R.solute_atom[ibin, itype(dmin_mol[i].iat, solute)] += 1
-        R.solvent_atom[ibin, itype(dmin_mol[i].jat, solvent)] += 1
-        if !inbulk(dmin_mol[i].d, R)
-            n_solvent_in_domain += 1
-        end
-        i = i + 1
-    end
-    if R.options.usecutoff
-        n_dmin_in_bulk = (i - 1) - n_solvent_in_domain
     else
-        n_dmin_in_bulk = solvent.nmols - (i - 1)
+        for md in system.list
+            !md.within_cutoff && continue
+            ibin = setbin(md.dmin_mol, R.options.binstep)
+            R.md_count_random[ibin] += 1
+            if md.ref_atom_within_cutoff
+                ibin = setbin(list[i].dref_mol, R.options.binstep)
+                R.rdf_count_random[ibin] += 1
+            end
+        end
     end
-
-    return n_dmin_in_bulk, n_dref_in_bulk
+    return R
 end
 
-#
-# If the rdf_count_random_frame is provided, update the counters associated to the random distribution
-#
-function updatecounters!(
+"""
+    update_counters_frame!
+
+$(INTERNAL)
+
+Update some data accumulated for a frame.
+"""
+function update_counters_frame!(
     R::Result,
     rdf_count_random_frame::Vector{Float64},
     md_count_random_frame::Vector{Float64},
+    volume_frame::Volume,
+    solute::Selection,
     solvent::Selection,
-    system
+    n_solvent_in_bulk::Float64,
 )
 
-    list = system.list
-    # Update the reference atom counter
-    for i = 1:solvent.nmols
-        if list[i].ref_atom_within_cutoff 
-            ibin = setbin(list[i].dref_mol, R.options.binstep)
-            rdf_count_random_frame[ibin] += 1
+    # Volume of each bin shell and of the solute domain
+    @. volume_frame.shell =
+        volume_frame.total *
+        (rdf_count_random_frame / (R.options.n_random_samples * solvent.nmols))
+    volume_frame.domain = sum(volume_frame.shell)
+
+    # Volume and density of the bulk region in this frame
+    if !R.options.usecutoff
+        volume_frame.bulk = volume_frame.total - volume_frame.domain
+    else
+        ibulk = setbin(R.dbulk + 0.5 * R.options.binstep, R.options.binstep)
+        for i = ibulk:R.nbins
+            volume_frame.bulk = volume_frame.bulk + volume_frame.shell[i]
         end
     end
 
-    # Sort the vectors such that the elements with distances 
-    # smaller than the cutoff are at the begining, this is used to random 
-    # sample the bulk molecules afterwards
-    partialsort_cutoff!(dmin_mol, R.cutoff, by = x -> x.d)
+    bulk_density_at_frame = n_solvent_in_bulk / volume_frame.bulk
 
-    # Add distances to the counters
-    i = 1
-    while i <= solvent.nmols && dmin_mol[i].d < R.cutoff
-        ibin = setbin(list[i].dmin_mol, R.options.binstep)
-        md_count_random_frame[ibin] += 1
-        i = i + 1
-    end
+    # The number of "random" molecules generated must be that to fill the complete
+    # volume with the density of the bulk. Now that we know the density of the bulk
+    # and the volume of the frame, we can adjust that random count
+    fillup_factor = bulk_density_at_frame * volume_frame.total / solvent.nmols
+    @. R.rdf_count_random = R.rdf_count_random + rdf_count_random_frame * fillup_factor
+    @. R.md_count_random = R.md_count_random + md_count_random_frame * fillup_factor
 
-    return nothing
+    # Update final counters, which have to be normalized by the number of frames 
+    # at the end 
+    @. R.volume.shell = R.volume.shell + volume_frame.shell
+    R.volume.bulk = R.volume.bulk + volume_frame.bulk
+    R.volume.domain = R.volume.domain + volume_frame.domain
+    R.density.solvent_bulk = R.density.solvent_bulk + bulk_density_at_frame
+
+    return R  
 end
