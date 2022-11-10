@@ -355,8 +355,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             R.sum_md_count_random[ibin] = R.md_count_random[ibin]
         else
             R.sum_md_count[ibin] = R.sum_md_count[ibin-1] + R.md_count[ibin]
-            R.sum_md_count_random[ibin] =
-                R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
+            R.sum_md_count_random[ibin] = R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
         end
         R.kb[ibin] =
             units.Angs3tocm3permol *
@@ -364,7 +363,6 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             (R.sum_md_count[ibin] - R.sum_md_count_random[ibin])
 
         # For the RDF
-
         if R.rdf_count_random[ibin] > 0.0
             R.rdf[ibin] = R.rdf_count[ibin] / R.rdf_count_random[ibin]
         end
