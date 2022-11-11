@@ -99,7 +99,7 @@ function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{M
 end
 
 """
-    minimum_distances!(system::CellListMap.PeriodicSystem)
+    minimum_distances!(system::CellListMap.PeriodicSystem, R::Result)
 
 Function that computes the list of distances of solvent molecules to a solute molecule. 
 It updates the lists of minimum distances. 
@@ -109,9 +109,9 @@ $(INTERNAL)
 # Extended help
 
 """
-function minimum_distances!(system::AbstractPeriodicSystem, options)
-    jref_atom = options.irefatom
-    jnatomspermol = options.solvent.natomspermol
+function minimum_distances!(system::AbstractPeriodicSystem, R::Result)
+    jref_atom = R.options.irefatom
+    jnatomspermol = R.solvent.natomspermol
     map_pairwise!(
         (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, list),
         system

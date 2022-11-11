@@ -169,15 +169,15 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         system.ypositions .= buff.solvent_read
     end
 
-    volume_frame.total = cell_volume(system)
-    R.volume.total = R.volume.total + volume_frame.total
+    volume_frame = cell_volume(system)
+    R.volume.total = R.volume.total + volume_frame
 
-    R.density.solute = R.density.solute + (solute.nmols / volume_frame.total)
-    R.density.solvent = R.density.solvent + (solvent.nmols / volume_frame.total)
+    R.density.solute = R.density.solute + (R.solute.nmols / volume_frame)
+    R.density.solvent = R.density.solvent + (R.solvent.nmols / volume_frame)
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
-    for _ in 1:options.n_random_samples
-        buff.ref_solutes = rand(1:solute.nmols)
+    for i in 1:options.n_random_samples
+        buff.ref_solutes[i] = rand(1:R.solute.nmols)
     end
 
     # Counters for the number of atom in the bulk solution
@@ -185,12 +185,12 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     av_solvent_atoms_in_bulk_random = 0.0
 
     # Compute the MDDFs for each solute molecule
-    for isolute = 1:solute.nmols
+    for isolute = 1:R.solute.nmols
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
-        system.xpositions .= viewmol(isolute, buff.solute_read, trajectory.solute)
+        system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
-        minimum_distances!(system, options)
+        minimum_distances!(system, R)
     
         # Add the number of solvent atoms in bulk 
         if !options.usecutoff
@@ -235,7 +235,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
             end
 
             # Compute minimum distances in this random configurations
-            minimum_distances!(system, options)
+            minimum_distances!(system, R)
 
             # Count the number of random molecules in the bulk solution
             if !options.usecutoff
