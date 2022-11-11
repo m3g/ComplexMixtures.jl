@@ -4,7 +4,7 @@ using Printf
 using Parameters
 using ProgressMeter
 using Statistics
-using LinearAlgebra: norm
+using LinearAlgebra: norm, isdiag
 using FortranFiles
 using PDBTools
 using StructTypes
@@ -51,13 +51,14 @@ include("./results.jl")
 # Functions to construct histograms
 include("./viewmol.jl")
 
+# Functions to compute distances
+include("./minimum_distances.jl")
+
 # Main function
 include("./mddf.jl")
 
 #= 
 
-# Functions to compute distances
-include("./minimum_distances.jl")
 
 # Tools
 include("./tools/gr.jl")

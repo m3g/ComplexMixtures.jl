@@ -11,7 +11,7 @@ wether an aucorrelation function is being computed, or not.
 """
 function setup_PeriodicSystem(autocorrelation::Bool, trajectory::Trajectory, options::Options)
     nextframe!(trajectory)
-    unit_cell = get_sides(trajectory, 1)
+    unit_cell = setunitcell(trajectory) # returns vector or matrix depending on the data
     firstframe!(trajectory)
     # For autocorrelations, the length of the solvent array contains one less molecule
     ylength = length(trajectory.x_solvent) - R.autocorrelation*trajectory.solvent.n_atoms_per_molecule
