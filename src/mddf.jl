@@ -121,11 +121,13 @@ function mddf(trajectory::Trajectory, options::Options=Options())
 
     # Setup the final data structure with final values averaged over the number of frames,
     # sampling, etc, and computes final distributions and integrals
-    R = finalresults!(R, options, trajectory)
+    finalresults!(R, options, trajectory)
     options.silent || println(bars)
 
     return R
 end
+
+import .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 
 # Compute cell volume from unitcell matrix
 function cell_volume(system::AbstractPeriodicSystem)  
