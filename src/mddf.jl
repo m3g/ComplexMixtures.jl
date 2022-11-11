@@ -241,11 +241,11 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         end # ideal gas distribution
 
-        # Swap the coordinates of the reference molecule to the next one
-        if R.autocorrelation && isolute < solute.nmols
+        # Next, we place in position `isolute` the coordiantes of the `isolute` molecule,
+        # replacing the `isolute+1` molecule that is there since initialization
+        if R.autocorrelation 
             ir = mol_range(isolute, R.solute.n_atoms_per_molecule)
-            jr = mol_range(isolute+1, R.solute.n_atoms_per_molecule)
-            system.ypositions[mol_range(ir)] .= coors.y[mol_range(jr)]
+            system.ypositions[ir] .= buff.solute_read[ir] 
         end
 
     end # loop over solute molecules
@@ -276,6 +276,20 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     end
 
     return R
+end
+
+@testitem "mddf" begin
+    using ComplexMixtures
+    using PDBTools
+    using ComplexMixtures.Testing
+
+    atoms = readPDB(Testing.pdbfile)
+    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
+    protein = Selection(select(atoms, "protein"), nmols=1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    R = mddf(traj, options)
+
 end
 
 
