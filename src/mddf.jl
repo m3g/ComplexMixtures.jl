@@ -274,11 +274,11 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     end # loop over solute molecules
 
     # Normalize counters of solvent atoms in bulk by the number of samples
-    av_solvent_atoms_in_bulk /= solute.nmols
+    av_solvent_atoms_in_bulk /= R.solute.nmols
     av_solvent_atoms_in_bulk_random /= options.n_random_samples
 
     # Sum up to the density of the solvent in bulk (will be normalized by the summed volume later)
-    R.densities.solvent.bulk += av_solvent_atoms_in_bulk
+    R.density.solvent_bulk += av_solvent_atoms_in_bulk
 
     if R.autocorrelation
         # The normalization below is tricky. The number that comes out from updatecounters is the
@@ -293,9 +293,9 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         # bulk, for each molecule, is the total number of other molecules, (n-1), minus the
         # number of molecules in the domain, that is (n-1)-nd/n=(n-1)-2(n-1)+2r/n, which
         # finally simplifies to 2r/n-(n-1), which is the equation below. 
-        n_solvent_in_bulk = 2 * n_solvent_in_bulk / solvent.nmols - (solvent.nmols - 1)
+        n_solvent_in_bulk = 2 * n_solvent_in_bulk / R.solvent.nmols - (R.solvent.nmols - 1)
     else
-        n_solvent_in_bulk = n_solvent_in_bulk / solute.nmols
+        n_solvent_in_bulk = n_solvent_in_bulk / R.solute.nmols
     end
 
     return R
