@@ -127,6 +127,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     return R
 end
 
+# Import type to simplify dispatch signatures
 import .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 
 # Compute cell volume from unitcell matrix
