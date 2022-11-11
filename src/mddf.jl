@@ -62,12 +62,9 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     # Initializing the structure that carries the result per thread
     R_chunk = [Result(trajectory, options) for _ in 1:nchunks]
 
-    # Initialize periodic system for CellListMap
-    system = setup_PeriodicSystem(R.autocorrelation, trajectory, options)    
-
     # Create data structures required for multithreading: needed to read coordinates in each
     # frame independently, and compute the minimum-distance list 
-    systems_chunk = [setup_PeriodicSystem(comp_type, trajectory, options) for _ in 1:nchunks]
+    system = [setup_PeriodicSystem(R.autocorrelation, trajectory, options) for _ in 1:nchunks]
     buff = [Buffer(trajectory, R) for _ in 1:nchunks]
 
     # Skip initial frames if desired
@@ -100,7 +97,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
                 # minimum distances
                 @. buff[ichunk].solute_read = trajectory.x_solute
                 @. buff[ichunk].solvent_read = trajectory.x_solvent
-                update_unitcell!(system_chunk[ichunk], getsides(trajectory, iframe))
+                update_unitcell!(system[ichunk], getsides(trajectory, iframe))
                 # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
                 if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
                     GC.gc() 
@@ -109,7 +106,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
             # Compute distances in this frame and update results
-            mddf_frame!(R_chunk[ichunk], system_chunk[ichunk], buff[ichunk], options, RNG)
+            mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
         end # frame range for this chunk
     end
     closetraj(trajectory)
@@ -140,7 +137,7 @@ function cell_volume(system::AbstractPeriodicSystem)
 end
 
 """
-    mddf_frame!(R, system_chunk, coor_read, options, RNG)
+    mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
 
 $(INTERNAL)
 
