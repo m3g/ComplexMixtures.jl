@@ -147,7 +147,7 @@ closetraj(trajectory::ChemFile) = Chemfiles.close(trajectory.stream[1])
 #
 # Function that returns the trajectory in position to read the first frame
 #
-function firstframe(trajectory::ChemFile)
+function firstframe!(trajectory::ChemFile)
     Chemfiles.close(trajectory.stream[1])
     trajectory.stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(trajectory.filename, 'r', trajectory.format), devnull)
 end

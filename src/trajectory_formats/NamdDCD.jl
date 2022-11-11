@@ -81,7 +81,7 @@ function NamdDCD(
     end
 
     # rewind and let it ready to read first frame in the first call to nextframe
-    firstframe(stream)
+    firstframe!(stream)
 
     nframes = getnframes(stream, sides_in_dcd)
     lastatom = max(maximum(solute.index), maximum(solvent.index))
@@ -187,7 +187,7 @@ end
 #
 # Leave DCD file in position to read the first frame
 #
-function firstframe(stream::FortranFile)
+function firstframe!(stream::FortranFile)
     # rewind
     rewind(stream)
     # skip header
@@ -195,7 +195,7 @@ function firstframe(stream::FortranFile)
     read(stream)
     read(stream)
 end
-firstframe(trajectory::NamdDCD) = firstframe(trajectory.stream)
+firstframe!(trajectory::NamdDCD) = firstframe!(trajectory.stream)
 
 #
 # Auxiliary functions
@@ -207,7 +207,7 @@ firstframe(trajectory::NamdDCD) = firstframe(trajectory.stream)
 #
 
 function getnframes(stream::FortranFile, sides_in_dcd::Bool)
-    firstframe(stream)
+    firstframe!(stream)
     nframes = 0
     while true
         try
@@ -219,7 +219,7 @@ function getnframes(stream::FortranFile, sides_in_dcd::Bool)
             read(stream, Float32)
             nframes = nframes + 1
         catch
-            firstframe(stream)
+            firstframe!(stream)
             return nframes
         end
     end

@@ -175,4 +175,4 @@ closetraj(trajectory::PDBTraj) = close(trajectory.stream)
 #
 # Function that returns the trajectory in position to read the first frame
 #
-firstframe(trajectory::PDBTraj) = seekstart(trajectory.stream)
+firstframe!(trajectory::PDBTraj) = seekstart(trajectory.stream)

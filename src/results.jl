@@ -185,7 +185,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         nextframe!(trajectory)
         first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
         irefatom = findmin(v -> norm(v - mean(first_mol)), first_mol)[2]
-        firstframe(trajectory)
+        firstframe!(trajectory)
     else
         irefatom = options.irefatom
     end
