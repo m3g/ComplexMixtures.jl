@@ -15,6 +15,7 @@ using TestItems
 
 import CellListMap
 using .CellListMap.PeriodicSystems
+import .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 
 import Random
 
