@@ -1,29 +1,3 @@
-#=
-Type of calculation: auto or cross-correlations - have different sampling schemes
-
-Choose self and cross versions
-
-In both the self and (cross) non-self cases, the number of random samples is 
-n_random_samples*solvent.nmols. However, in the non-self distribution
-the sampling of solvent distances is proportional to the number of solute
-molecules, thus the md count has to be averaged by solute.nmols. In the
-case of the self-distribution, we compute n(n-1)/2 distances, and we will
-divide this by n random samples, which is the sampling of the random
-distribution. Therefore, we must weight the self-distance count by dividing
-it by (n-1)/2, so that we have a count proportional to n as well, leading
-to the correct weight relative to the random sample. 
-=#
-function set_samples(R::Result) 
-    if R.autocorrelation 
-        return (md = (R.solvent.nmols - 1) / 2, random = R.options.n_random_samples) 
-    else
-        return (md = R.solute.nmols, random = R.options.n_random_samples)
-    end
-end
-
-# autocorrelation can be obtained from the comparison of solute and solvent indexes
-isautocorrelation(solute_indexes, solvent_indexes) = solute_indexes == solvent_indexes ? true : false
-
 """
 
 $(TYPEDEF)
@@ -249,6 +223,32 @@ end
 # What to show at the REPL
 #
 Base.show(io::IO, R::Result) = show(io, overview(R))
+
+#=
+Type of calculation: auto or cross-correlations - have different sampling schemes
+
+Choose self and cross versions
+
+In both the self and (cross) non-self cases, the number of random samples is 
+n_random_samples*solvent.nmols. However, in the non-self distribution
+the sampling of solvent distances is proportional to the number of solute
+molecules, thus the md count has to be averaged by solute.nmols. In the
+case of the self-distribution, we compute n(n-1)/2 distances, and we will
+divide this by n random samples, which is the sampling of the random
+distribution. Therefore, we must weight the self-distance count by dividing
+it by (n-1)/2, so that we have a count proportional to n as well, leading
+to the correct weight relative to the random sample. 
+=#
+function set_samples(R::Result) 
+    if R.autocorrelation 
+        return (md = (R.solvent.nmols - 1) / 2, random = R.options.n_random_samples) 
+    else
+        return (md = R.solute.nmols, random = R.options.n_random_samples)
+    end
+end
+
+# autocorrelation can be obtained from the comparison of solute and solvent indexes
+isautocorrelation(solute_indexes, solvent_indexes) = solute_indexes == solvent_indexes ? true : false
 
 #
 # Functions to compute volumes of shells
