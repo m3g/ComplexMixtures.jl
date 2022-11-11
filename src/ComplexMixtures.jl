@@ -4,7 +4,7 @@ using Printf
 using Parameters
 using ProgressMeter
 using Statistics
-using LinearAlgebra: norm, isdiag
+using LinearAlgebra: norm, isdiag, cross, dot
 using FortranFiles
 using PDBTools
 using StructTypes
@@ -13,6 +13,7 @@ using StaticArrays
 using DocStringExtensions
 using TestItems
 
+import ChunkSplitters
 import CellListMap
 using .CellListMap.PeriodicSystems
 import .CellListMap.PeriodicSystems: AbstractPeriodicSystem

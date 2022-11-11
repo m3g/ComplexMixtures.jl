@@ -6,18 +6,41 @@
 # autocorrelation or not), and the indexes of the solute molecules that will
 # be used as reference states for ideal gas distributions
 @with_kw struct Buffer
-    solute_read::Vector{Float64}
-    solvent_read::Vector{Float64}
-    solvent_tmp::Vector{Float64}
+    solute_read::Vector{SVector{3,Float64}}
+    solvent_read::Vector{SVector{3,Float64}}
+    solvent_tmp::Vector{SVector{3,Float64}}
     ref_solutes::Vector{Int}
 end
-function Buffer(t::Trajectory, R::Result)
+function Buffer(traj::Trajectory, R::Result)
     return Buffer(
-        solute_read = similar(t.x_solute), 
-        solvent_read = similar(t.x_solvent),
-        solvent_tmp = similar(t.x_solvent, length(t.x_solvent) - R.autocorrelation*t.solvent.natomspermol),
+        solute_read = similar(traj.x_solute), 
+        solvent_read = similar(traj.x_solvent),
+        solvent_tmp = similar(traj.x_solvent, length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol),
         ref_solutes = zeros(Int, R.options.n_random_samples),
     )
+end
+
+@testitem "Buffer" begin
+    using ComplexMixtures
+    using PDBTools
+    using ComplexMixtures.Testing
+    atoms = readPDB(Testing.pdbfile)
+    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
+    protein = Selection(select(atoms, "protein"), nmols=1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    R = Result(traj, options)
+    b0 = ComplexMixtures.Buffer(
+        solute_read = similar(traj.x_solute), 
+        solvent_read = similar(traj.x_solvent),
+        solvent_tmp = similar(traj.x_solvent, length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol),
+        ref_solutes = zeros(Int, R.options.n_random_samples),
+    )
+    b1 = ComplexMixtures.Buffer(traj, R)
+    for field in fieldnames(ComplexMixtures.Buffer)
+        @test typeof(getfield(b0, field)) == typeof(getfield(b1, field))
+        @test length(getfield(b0, field)) == length(getfield(b1, field))
+    end
 end
 
 """     
@@ -81,7 +104,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
         progress = Progress(R.nframes_read, 1)
     end
     read_lock = ReentrantLock()
-    Threads.@threads for (frame_range, ichunk) in chunks(1:R.nframes_read, nchunks)
+    Threads.@threads for (frame_range, ichunk) in ChunkSplitters.chunks(1:R.nframes_read, nchunks)
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].nframes_read = 0
         for _ in frame_range
@@ -102,7 +125,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
                 if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
                     GC.gc() 
                 end
-                next!(progress)
+                options.silent || next!(progress)
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
             # Compute distances in this frame and update results
@@ -125,13 +148,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
 end
 
 # Compute cell volume from unitcell matrix
-function cell_volume(system::AbstractPeriodicSystem)  
-    if unitcelltype(system) == CellListMap.OrthorhombicCell
-        prod(box.unit_cell.matrix[i,i] for i in 1:3)
-    else
-        error("Only Orthorhombic cells are currently supported.")
-    end
-end
+cell_volume(system::AbstractPeriodicSystem) = @views dot(cross(system.unitcell[:,1],system.unitcell[:,2]),system.unitcell[:,3])
 
 """
     mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
