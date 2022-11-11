@@ -28,22 +28,22 @@ function updatecounters!(R::Result, system::AbstractPeriodicSystem; random::Bool
     if !random
         for md in system.list
             !md.within_cutoff && continue
-            ibin = setbin(md.dmin_mol, R.options.binstep)
+            ibin = setbin(md.d, R.options.binstep)
             R.md_count[ibin] += 1
-            R.solute_atom[ibin, itype(dmin_mol[i].iat, R.solute)] += 1
-            R.solvent_atom[ibin, itype(dmin_mol[i].jat, R.solvent)] += 1
+            R.solute_atom[ibin, itype(md.i, R.solute)] += 1
+            R.solvent_atom[ibin, itype(md.j, R.solvent)] += 1
             if md.ref_atom_within_cutoff
-                ibin = setbin(list[i].dref_mol, R.options.binstep)
+                ibin = setbin(md.dref_atom, R.options.binstep)
                 R.rdf_count[ibin] += 1
             end
         end
     else
         for md in system.list
             !md.within_cutoff && continue
-            ibin = setbin(md.dmin_mol, R.options.binstep)
+            ibin = setbin(md.d, R.options.binstep)
             R.md_count_random[ibin] += 1
             if md.ref_atom_within_cutoff
-                ibin = setbin(list[i].dref_mol, R.options.binstep)
+                ibin = setbin(md.dref_atom, R.options.binstep)
                 R.rdf_count_random[ibin] += 1
             end
         end

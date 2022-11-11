@@ -56,6 +56,9 @@ include("./viewmol.jl")
 # Functions to compute distances
 include("./minimum_distances.jl")
 
+# Update counters routines
+include("./updatecounters.jl")
+
 # Main function
 include("./mddf.jl")
 
@@ -69,7 +72,6 @@ include("./isapprox.jl")
 
 # Structures and functions for the linked cell method
 include("./partialsort_cutoff.jl")
-include("./updatecounters.jl")
 include("./update_counters_frame.jl")
 =#
 
