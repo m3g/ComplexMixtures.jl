@@ -10,13 +10,17 @@
     solvent_read::Vector{SVector{3,Float64}}
     solvent_tmp::Vector{SVector{3,Float64}}
     ref_solutes::Vector{Int}
+    list::Vector{MinimumDistance}
 end
 function Buffer(traj::Trajectory, R::Result)
+    nat = length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol
+    nmol = R.solvent.nmols - R.autocorrelation
     return Buffer(
         solute_read = similar(traj.x_solute), 
         solvent_read = similar(traj.x_solvent),
-        solvent_tmp = similar(traj.x_solvent, length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol),
+        solvent_tmp = similar(traj.x_solvent, nat),
         ref_solutes = zeros(Int, R.options.n_random_samples),
+        list = fill(zero(MinimumDistance), nmol)
     )
 end
 
@@ -35,6 +39,7 @@ end
         solvent_read = similar(traj.x_solvent),
         solvent_tmp = similar(traj.x_solvent, length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol),
         ref_solutes = zeros(Int, R.options.n_random_samples),
+        list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols - R.autocorrelation),
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
@@ -42,6 +47,12 @@ end
         @test length(getfield(b0, field)) == length(getfield(b1, field))
     end
 end
+
+#
+# Defines is a molecule is a bulk molecule
+#
+inbulk(md::MinimumDistance,options::Options) =
+    options.usecutoff ? (md.within_cutoff && md.dmin_mol > options.dbulk) : !md.within_cutoff
 
 """     
     mddf(trajectory::Trajectory, options::Options)
@@ -191,13 +202,10 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         minimum_distances!(system, R)
-    
+
         # Add the number of solvent atoms in bulk 
-        if !options.usecutoff
-            av_solvent_atoms_in_bulk += count(md -> !md.within_cutoff, system.list)
-        else
-            av_solvent_atoms_in_bulk += count(md -> (md.within_cutoff && md.dmin_mol > options.dbulk), system.list)
-        end
+        n_solvent_in_bulk = count(md -> inbulk(md, options), system.list)
+        av_solvent_atoms_in_bulk += n_solvent_in_bulk
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
@@ -209,12 +217,16 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         # (as many times as needed, as the reference molecules may be repeated - particularly because
         # there may be only one solute molecule, in which case all distributions will be created for
         # the same solute molecule).
-        for i in 1:count(==(isolute), buff.ref_solutes)
+
+        # Save list for using data in ideal gas generator
+        buff.list .= system.list
+    
+        for _ in 1:count(==(isolute), buff.ref_solutes)
             # Copy solvent coordinates to temporary buffer
             buff.solvent_tmp .= system.ypositions
 
             # generate random solvent box, and store it in x_solvent_random
-            for j = 1:n_solvent_molecules
+            for _ = 1:n_solvent_molecules
                 # Choose randomly one molecule from the bulk, if there are bulk molecules
                 if n_solvent_in_bulk > 0 
                     irnd = rand(1:n_solvent_in_bulk)
@@ -222,16 +234,16 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
                     jmol = 0
                     while icount < irnd 
                         jmol += 1
-                        icount += !system.list[jmol].within_cutoff
+                        icount += inbulk(buff.list[jmol],options)
                     end
                 else
                     jmol = rand(1:n_solvent_molecules)
                 end
                 # Pick coordinates of the molecule to be randomly moved
-                y_new = viewmol(jmol, trajectory.ypositions, solvent) 
+                y_new = viewmol(jmol, system.ypositions, R.solvent) 
                 y_new .= buff.solvent_tmp[mol_range(jmol, R.solvent.natomspermol)]
                 # Randomize rotations and translation for this molecule 
-                random_move!(y_new, R.irefatom, sides, RNG)
+                random_move!(y_new, R.irefatom, system, RNG)
             end
 
             # Compute minimum distances in this random configurations

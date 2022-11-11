@@ -14,7 +14,7 @@ function itype(iatom::Int, natomspermol::Int)
 end
 
 # Calling using the structures of Solute and Solvent, to clear up the code above
-itype(iatom::Int, s::Selection) = itype(iatom, s.natomspermol)
+itype(iatom::Int, s::Union{SolSummary,Selection}) = itype(iatom, s.natomspermol)
 
 """
     updatecounters!(R::Result, system::AbstractPeriodicSystem)
@@ -33,7 +33,7 @@ function updatecounters!(R::Result, system::AbstractPeriodicSystem; random::Bool
             R.solute_atom[ibin, itype(md.i, R.solute)] += 1
             R.solvent_atom[ibin, itype(md.j, R.solvent)] += 1
             if md.ref_atom_within_cutoff
-                ibin = setbin(md.dref_atom, R.options.binstep)
+                ibin = setbin(md.d_ref_atom, R.options.binstep)
                 R.rdf_count[ibin] += 1
             end
         end
@@ -43,7 +43,7 @@ function updatecounters!(R::Result, system::AbstractPeriodicSystem; random::Bool
             ibin = setbin(md.d, R.options.binstep)
             R.md_count_random[ibin] += 1
             if md.ref_atom_within_cutoff
-                ibin = setbin(md.dref_atom, R.options.binstep)
+                ibin = setbin(md.d_ref_atom, R.options.binstep)
                 R.rdf_count_random[ibin] += 1
             end
         end
