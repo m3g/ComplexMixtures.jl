@@ -211,7 +211,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         irefatom=irefatom,
         lastframe_read=lastframe_read,
         nframes_read=nframes_read,
-        autocorrelation = isautocorrelation(trajectory.solute.index, trajectory.solvent.index),
+        autocorrelation = isautocorrelation(trajectory),
         solute=SolSummary(trajectory.solute),
         solvent=SolSummary(trajectory.solvent),
         files=[trajectory.filename],
@@ -248,7 +248,8 @@ function set_samples(R::Result)
 end
 
 # autocorrelation can be obtained from the comparison of solute and solvent indexes
-isautocorrelation(solute_indexes, solvent_indexes) = solute_indexes == solvent_indexes ? true : false
+isautocorrelation(solute_indexes::Vector{Int}, solvent_indexes::Vector{Int}) = solute_indexes == solvent_indexes ? true : false
+isautocorrelation(trajectory::Trajectory) = isautocorrelation(trajectory.solute.index, trajectory.solvent.index)
 
 #
 # Functions to compute volumes of shells

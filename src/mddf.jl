@@ -64,7 +64,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
 
     # Create data structures required for multithreading: needed to read coordinates in each
     # frame independently, and compute the minimum-distance list 
-    system = [setup_PeriodicSystem(R.autocorrelation, trajectory, options) for _ in 1:nchunks]
+    system = [setup_PeriodicSystem(trajectory, options) for _ in 1:nchunks]
     buff = [Buffer(trajectory, R) for _ in 1:nchunks]
 
     # Skip initial frames if desired
@@ -124,9 +124,6 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     return R
 end
 
-# Import type to simplify dispatch signatures
-import .CellListMap.PeriodicSystems: AbstractPeriodicSystem
-
 # Compute cell volume from unitcell matrix
 function cell_volume(system::AbstractPeriodicSystem)  
     if unitcelltype(system) == CellListMap.OrthorhombicCell
@@ -149,7 +146,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     # Initialize coordinates of the solvent: for autocorrelations, skip the first molecule
     if R.autocorrelation
         n_solvent_molecules = R.solvent.nmols - 1
-        system.ypositions .= buff.solvent_read[R.solvent.n_atoms_per_molecule+1:end]
+        system.ypositions .= buff.solvent_read[R.solvent.natomspermol+1:end]
     else
         n_solvent_molecules = R.solvent.nmols
         system.ypositions .= buff.solvent_read
@@ -215,7 +212,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
                 end
                 # Pick coordinates of the molecule to be randomly moved
                 y_new = viewmol(jmol, trajectory.ypositions, solvent) 
-                y_new .= buff.solvent_tmp[mol_range(jmol, R.solvent.n_atoms_per_molecule)]
+                y_new .= buff.solvent_tmp[mol_range(jmol, R.solvent.natomspermol)]
                 # Randomize rotations and translation for this molecule 
                 random_move!(y_new, R.irefatom, sides, RNG)
             end
@@ -241,7 +238,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         # Next, we place in position `isolute` the coordiantes of the `isolute` molecule,
         # replacing the `isolute+1` molecule that is there since initialization
         if R.autocorrelation 
-            ir = mol_range(isolute, R.solute.n_atoms_per_molecule)
+            ir = mol_range(isolute, R.solute.natomspermol)
             system.ypositions[ir] .= buff.solute_read[ir] 
         end
 
