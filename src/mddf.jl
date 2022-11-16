@@ -79,11 +79,9 @@ function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solv
         end
         # Pick coordinates of the molecule to be randomly moved
         y_new = viewmol(jmol, system.ypositions, R.solvent) 
-        y_new .= @view(buff.solvent_tmp[mol_range(jmol, R.solvent.natomspermol)])
+        y_new .= viewmol(jmol, buff.solvent_tmp, R.solvent)
         # Randomize rotations and translation for this molecule 
-    a = @allocated begin
         random_move!(y_new, R.irefatom, system, RNG)
-end; a > 0 && @show a
     end
 end
 
