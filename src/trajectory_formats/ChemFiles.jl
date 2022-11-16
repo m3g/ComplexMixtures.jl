@@ -21,7 +21,7 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     #
     filename::String
     format::AbstractString
-    stream::Stream{Chemfiles.Trajectory} # mutable such that we can close it and open it again
+    stream::Stream{<:Chemfiles.Trajectory} # mutable such that we can close it and open it again
     nframes::Int64
 
     # Vector wthat will be fed with the sizes of the periodic box 

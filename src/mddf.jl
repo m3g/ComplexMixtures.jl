@@ -330,7 +330,6 @@ end
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
-
 end
 
 

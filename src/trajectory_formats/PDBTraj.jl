@@ -16,7 +16,7 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    stream::Stream{IOStream} # The type of IOStream must be the result of open(filename, "r") for the given type
+    stream::Stream{<:IOStream} # The type of IOStream must be the result of open(filename, "r") for the given type
     nframes::Int64
 
     # This vector must be filled up with the size vectors of the periodic cell

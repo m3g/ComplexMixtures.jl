@@ -1,8 +1,6 @@
 #
 # Structure to contain DCD trajectories produces with Namd. 
 #
-import FortranFiles
-
 """
 
 $(TYPEDEF)
@@ -18,7 +16,7 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    stream::Stream{FortranFile} # special type of stream required for reading DCD files
+    stream::Stream{<:FortranFile} # special type of stream required for reading DCD files
     nframes::Int64
 
     # This vector must be filled up with the size of the periodic cell, if it
@@ -128,7 +126,7 @@ end
 #
 # Function that opens the trajectory stream
 #
-opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFiles.open(trajectory.filename))
+opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.filename))
 
 #
 # Function that closes the IO Stream of the trajectory
