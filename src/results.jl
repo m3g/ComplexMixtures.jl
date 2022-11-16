@@ -949,22 +949,24 @@ Print some information about the run.
 
 """
 function title(R::Result, solute::Selection, solvent::Selection)
-    print("""
-          $(bars)
-          Starting MDDF calculation:
-          $(R.nframes_read) frames will be considered.
-          Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-          Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
+    print(
+    """
+    $(bars)
+    Starting MDDF calculation:
+    $(R.nframes_read) frames will be considered.
+    Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
+    Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
     """)
 end
 function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
-    print(""" 
-          $(bars)
-          Starting MDDF calculation in parallel:
-          $(R.nframes_read) frames will be considered.
-          Number of calculation threads: $(nspawn)
-          Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-          Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
+    print(
+    """ 
+    $(bars)
+    Starting MDDF calculation in parallel:
+    $(R.nframes_read) frames will be considered.
+    Number of calculation threads: $(nspawn)
+    Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
+    Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
     """)
 end
 
