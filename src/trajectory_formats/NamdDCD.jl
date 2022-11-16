@@ -193,7 +193,7 @@ function getsides(trajectory::NamdDCD, iframe)
 end
 
 #
-# Leave DCD file in position to read the first frame
+# Leave DCD file in position to read the first frame: DCD files have a header
 #
 function firstframe!(st::FortranFile)
     # rewind
