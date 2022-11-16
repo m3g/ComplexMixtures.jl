@@ -81,7 +81,9 @@ function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solv
         y_new = viewmol(jmol, system.ypositions, R.solvent) 
         y_new .= @view(buff.solvent_tmp[mol_range(jmol, R.solvent.natomspermol)])
         # Randomize rotations and translation for this molecule 
+    a = @allocated begin
         random_move!(y_new, R.irefatom, system, RNG)
+end; a > 0 && @show a
     end
 end
 
@@ -111,6 +113,9 @@ julia> results = mddf(trajectory,options);
 
 """
 function mddf(trajectory::Trajectory, options::Options=Options())
+
+    # Open the trajectory stream, and go to the first frame
+    opentraj(trajectory)
 
     # Set random number generator
     RNG = init_random(options)
