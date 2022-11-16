@@ -114,8 +114,8 @@ julia> results = mddf(trajectory,options);
 """
 function mddf(trajectory::Trajectory, options::Options=Options())
 
-    # Open the trajectory stream, and go to the first frame
-    opentraj(trajectory)
+    # Open the trajectory stream
+    opentraj!(trajectory)
 
     # Set random number generator
     RNG = init_random(options)
@@ -179,7 +179,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
             mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
         end # frame range for this chunk
     end
-    closetraj(trajectory)
+    closetraj!(trajectory)
 
     # Sum up the results of all threads into the data of thread one (R1<-R1+R2)
     for ichunk in 1:nchunks

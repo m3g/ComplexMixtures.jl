@@ -10,6 +10,16 @@ See memory issue (https://github.com/chemfiles/Chemfiles.jl/issues/44)
 """
 abstract type Trajectory end
 
+# Mutable struct to contain the stream of the trajectory: mutable such that
+# we can open and close the trajectories
+mutable struct Stream{T}
+    st::T
+end
+
+# Get property with simplified syntax
+stream(traj::Trajectory) = traj.stream.st
+set_stream!(traj::Trajectory, st) = traj.stream.st = st
+
 # Include specific predefined trajectory types
 include("./trajectory_formats/ChemFiles.jl")
 include("./trajectory_formats/NamdDCD.jl")
@@ -70,7 +80,7 @@ setunitcell(trajectory::Trajectory) = setunitcell(trajectory.sides[1])
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     ComplexMixtures.nextframe!(traj)
     @test ComplexMixtures.setunitcell(traj) == SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
-    ComplexMixtures.closetraj(traj)
+    ComplexMixtures.closetraj!(traj)
 end
 
 @testitem "Trajectory" begin

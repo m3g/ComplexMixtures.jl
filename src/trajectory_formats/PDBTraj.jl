@@ -5,8 +5,7 @@ $(TYPEDEF)
 Structure to contain PDB trajectories. Frames must be separated by "END", and with periodic cell sizes
 in the "CRYST1" field.
 
-This structure and functions can be used as a template to implement the reading of other 
-trajectory formats. 
+This structure and functions can be used as a template to implement the reading of other trajectory formats. 
 
 $(TYPEDFIELDS)
 
@@ -17,7 +16,7 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    stream::IOStream
+    stream::Stream{IOStream} # The type of IOStream must be the result of open(filename, "r") for the given type
     nframes::Int64
 
     # This vector must be filled up with the size vectors of the periodic cell
@@ -31,24 +30,12 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
     x_solute::Vector{T}  # solute.natoms vectors of length 3
     x_solvent::Vector{T} # solvent.natoms vectors of length 3
 
-    #
-    # Additional data required for input/output functions
-    #
-    natoms::Int64
-
-    # Auxiliary vectors to contain all coordinates of a frame on reading 
-    x_read::Array{Float64,2}
-
 end
 
 """
     PDBTraj(pdbfile::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
 
-Function open will set up the IO stream of the trajectory, fill up the 
-number of frames field and additional parameters if required 
-
-The IO stream must be returned in a position such that the "nextframe!" function
-will be able to read the first frame of the trajectory
+Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required 
 
 """
 function PDBTraj(
@@ -58,19 +45,19 @@ function PDBTraj(
     T::Type = SVector{3,Float64},
 )
 
-    stream = open(pdbfile, "r")
+    st = open(pdbfile, "r")
 
     # Get the number of frames and number of atoms, check for adequacy of the format
     nframes = 0
     natoms = 0
-    for line in eachline(stream)
+    for line in eachline(st)
         if line[1:3] == "END"
             nframes = nframes + 1
         elseif nframes == 0 && (line[1:4] == "ATOM" || line[1:6] == "HETATM")
             natoms = natoms + 1
         end
     end
-    close(stream)
+    close(st)
 
     # Fill-up the sides vector of the trajectory. We assume here
     # that the sides are stored for each frame in the "CRYST1" field, for each frame.
@@ -80,9 +67,9 @@ function PDBTraj(
     # The function "getsides", below, must be adapted accordingly to return the correct
     # sides of the periodic box in each frame.
     sides = zeros(T, nframes)
-    stream = open(pdbfile, "r")
+    st = open(pdbfile, "r")
     iframe = 0
-    for line in eachline(stream)
+    for line in eachline(st)
         s = split(line)
         if s[1] == "CRYST1"
             iframe = iframe + 1
@@ -91,8 +78,11 @@ function PDBTraj(
         end
     end
 
+    # Setup the struct that contains the stream in the trajectory type
+    stream = Stream(st)
+
     # Return the stream closed, it is opened and closed within the mddf routine
-    close(stream)
+    close(st)
 
     return PDBTraj(
         pdbfile, # trajectory file name 
@@ -112,7 +102,8 @@ function Base.show(io::IO, trajectory::PDBTraj)
     print(io,""" 
           Trajectory in PDB format with:
               $(trajectory.nframes) frames.
-              $(trajectory.natoms) atoms.
+              Solute contains $(trajectory.solute.natoms) atoms.
+              Solvent contains $(trajectory.solvent.natoms) atoms.
           """)
 end
 
@@ -124,38 +115,30 @@ end
 # Having these vectors inside the trajectory structure avoids having to allocate
 # them everytime a new frame is read
 #
-function nextframe!(trajectory::PDBTraj{T}) where {T}
-
+function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
+    st = stream(trajectory)
     iatom = 0
-    record = readline(trajectory.stream)
+    record = readline(st)
+    i_solute = 1
+    i_solvent = 1
     while ((0 < length(record) < 3) || record[1:3] != "END")
         if length(record) >= 6
             if record[1:4] == "ATOM" || record[1:6] == "HETATM"
                 iatom = iatom + 1
-                trajectory.x_read[1, iatom] = parse(Float64, record[31:38])
-                trajectory.x_read[2, iatom] = parse(Float64, record[39:46])
-                trajectory.x_read[3, iatom] = parse(Float64, record[47:54])
+                x = parse(Float64, record[31:38])
+                y = parse(Float64, record[39:46])
+                z = parse(Float64, record[47:54])
+                if iatom == trajectory.solute.index[i_solute]
+                    trajectory.x_solute[i_solute] = T(x,y,z)
+                    i_solute += 1
+                elseif iatom == trajectory.solvent.index[i_solvent]
+                    trajectory.x_solvent[i_solvent] = T(x,y,z)
+                    i_solvent += 1
+                end
             end
         end
-        record = readline(trajectory.stream)
+        record = readline(st)
     end
-
-    # Save coordinates of solute and solvent in trajectory arrays
-    for i = 1:trajectory.solute.natoms
-        trajectory.x_solute[i] = T(
-            trajectory.x_read[1, trajectory.solute.index[i]],
-            trajectory.x_read[2, trajectory.solute.index[i]],
-            trajectory.x_read[3, trajectory.solute.index[i]],
-        )
-    end
-    for i = 1:trajectory.solvent.natoms
-        trajectory.x_solvent[i] = T(
-            trajectory.x_read[1, trajectory.solvent.index[i]],
-            trajectory.x_read[2, trajectory.solvent.index[i]],
-            trajectory.x_read[3, trajectory.solvent.index[i]],
-        )
-    end
-
 end
 
 # Function that returns the sides of the periodic box given the data structure. In this
@@ -167,11 +150,16 @@ function getsides(trajectory::PDBTraj, iframe)
 end
 
 #
+# Function that opens the trajectory stream
+#
+opentraj!(trajectory::PDBTraj) = set_stream!(trajectory, open(trajectory.filename, "r"))
+
+#
 # Function that closes the IO Stream of the trajectory
 #
-closetraj(trajectory::PDBTraj) = close(trajectory.stream)
+closetraj!(trajectory::PDBTraj) = close(stream(trajectory))
 
 #
 # Function that returns the trajectory in position to read the first frame
 #
-firstframe!(trajectory::PDBTraj) = seekstart(trajectory.stream)
+firstframe!(trajectory::PDBTraj) = seekstart(stream(trajectory))

@@ -21,7 +21,7 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     #
     filename::String
     format::AbstractString
-    stream::Vector{Chemfiles.Trajectory} # mutable such that we can close it and open it again
+    stream::Stream{Chemfiles.Trajectory} # mutable such that we can close it and open it again
     nframes::Int64
 
     # Vector wthat will be fed with the sizes of the periodic box 
@@ -45,11 +45,7 @@ end
 """
     ChemFile(filename::String, solute::Selection, solvent::Selection;format="" , T::Type = SVector{3,Float64})
 
-Function open will set up the IO stream of the trajectory, fill up the 
-number of frames field and additional parameters if required 
-
-The IO stream must be returned in a position such that the "nextframe!" function
-will be able to read the first frame of the trajectory
+Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required.
 
 """
 function ChemFile(
@@ -60,23 +56,22 @@ function ChemFile(
     T::Type=SVector{3,Float64}
 )
 
-    stream = Vector{Chemfiles.Trajectory}(undef, 1)
-    stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
+    st = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
 
     # Get the number of frames (the output of Chemfiles comes in UInt64 format, which is converted
     # to Int using (UInt % Int)
-    nframes = Chemfiles.length(stream[1]) % Int
+    nframes = Chemfiles.length(st) % Int
 
     # Read the first frame to get the number of atoms
-    frame = Chemfiles.read(stream[1])
+    frame = Chemfiles.read(st)
     natoms = Chemfiles.size(frame) % Int
     sides = Chemfiles.lengths(Chemfiles.UnitCell(frame)) # read the sides of the first frame
 
-    # Return the stream closed, it is opened and closed within the mddf routine
-    Chemfiles.close(stream[1])
+    # Initialize the stream struct of the Trajectory
+    stream = Stream(st)
 
-    # Reopen the stream, so that nextrame can read the first frame
-    #stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
+    # Return the stream closed, it is opened and closed within the mddf routine
+    Chemfiles.close(st)
 
     return ChemFile(
         filename, # trajectory file name 
@@ -111,7 +106,9 @@ end
 #
 function nextframe!(trajectory::ChemFile{T}) where {T}
 
-    frame = Chemfiles.read(trajectory.stream[1])
+    st = stream(trajectory)
+
+    frame = Chemfiles.read(st)
     positions = Chemfiles.positions(frame)
     sides = Chemfiles.lengths(Chemfiles.UnitCell(frame))
     trajectory.sides[1] = T(sides)
@@ -144,12 +141,20 @@ getsides(trajectory::ChemFile, iframe) = trajectory.sides[1]
 #
 # Function that closes the IO Stream of the trajectory
 #
-closetraj(trajectory::ChemFile) = Chemfiles.close(trajectory.stream[1])
+closetraj!(trajectory::ChemFile) = Chemfiles.close(stream(trajectory))
+
+#
+# Function to open the trajectory stream
+#
+function opentraj!(trajectory::Chemfile) 
+    st = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
+    set_stream!(trajectory, st)
+end
 
 #
 # Function that returns the trajectory in position to read the first frame
 #
 function firstframe!(trajectory::ChemFile)
-    Chemfiles.close(trajectory.stream[1])
-    trajectory.stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(trajectory.filename, 'r', trajectory.format), devnull)
+    closetraj!(trajectory)
+    opentraj!(trajectory)
 end
