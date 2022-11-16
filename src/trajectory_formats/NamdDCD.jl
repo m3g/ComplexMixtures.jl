@@ -18,7 +18,7 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    stream::FortranFile # special type of stream required for reading DCD files
+    stream::Ref{FortranFile} # special type of stream required for reading DCD files
     nframes::Int64
 
     # This vector must be filled up with the size of the periodic cell, if it
@@ -80,9 +80,8 @@ function NamdDCD(
         sides_in_dcd = true
     end
 
-    # rewind and let it ready to read first frame in the first call to nextframe
+    # Get number of frames
     firstframe!(stream)
-
     nframes = getnframes(stream, sides_in_dcd)
     lastatom = max(maximum(solute.index), maximum(solvent.index))
 
@@ -94,6 +93,9 @@ function NamdDCD(
     else
         sides = zeros(T, nframes)
     end
+
+    # Return the stream closed, it is opened and closed within the mddf routine
+    FortranFiles.close(stream)
 
     return NamdDCD(
         filename,
@@ -121,6 +123,16 @@ function Base.show(io::IO, traj::NamdDCD)
               Sides in DCD: $(traj.sides_in_dcd).
           """)
 end
+
+#
+# Function that opens the trajectory stream
+#
+opentraj!(trajectory::NamdDCD) = FortranFiles.open(trajectory.stream)
+
+#
+# Function that closes the IO Stream of the trajectory
+#
+closetraj(trajectory::NamdDCD) = FortranFiles.close(trajectory.stream)
 
 #
 # Function that reads the coordinates of the solute and solvent atoms from
@@ -164,11 +176,6 @@ function nextframe!(trajectory::NamdDCD{T}) where {T}
 end
 
 #
-# Function that closes the IO Stream of the trajectory
-#
-closetraj(trajectory::NamdDCD) = FortranFiles.close(trajectory.stream)
-
-#
 # Function that returns a vector of dimension 3 with the sides of the periodic box 
 # given the way that the box side information is stored in the Trajectory structure
 #
@@ -205,7 +212,6 @@ firstframe!(trajectory::NamdDCD) = firstframe!(trajectory.stream)
 # Sometimes the DCD files contains a wrong number of frames in the header, so to
 # get the actual number of frames, it is better to read it
 #
-
 function getnframes(stream::FortranFile, sides_in_dcd::Bool)
     firstframe!(stream)
     nframes = 0

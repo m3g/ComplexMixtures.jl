@@ -71,10 +71,12 @@ function ChemFile(
     frame = Chemfiles.read(stream[1])
     natoms = Chemfiles.size(frame) % Int
     sides = Chemfiles.lengths(Chemfiles.UnitCell(frame)) # read the sides of the first frame
+
+    # Return the stream closed, it is opened and closed within the mddf routine
     Chemfiles.close(stream[1])
 
     # Reopen the stream, so that nextrame can read the first frame
-    stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
+    #stream[1] = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
 
     return ChemFile(
         filename, # trajectory file name 

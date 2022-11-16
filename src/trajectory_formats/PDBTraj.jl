@@ -90,10 +90,9 @@ function PDBTraj(
                 T(parse(Float64, s[2]), parse(Float64, s[3]), parse(Float64, s[4]))
         end
     end
-    close(stream)
 
-    # Open again the stream, so that nextrame can read the first frame
-    stream = open(pdbfile, "r")
+    # Return the stream closed, it is opened and closed within the mddf routine
+    close(stream)
 
     return PDBTraj(
         pdbfile, # trajectory file name 
