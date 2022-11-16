@@ -114,8 +114,9 @@ julia> results = mddf(trajectory,options);
 """
 function mddf(trajectory::Trajectory, options::Options=Options())
 
-    # Open the trajectory stream
+    # Open the trajectory stream and go to first frame
     opentraj!(trajectory)
+    firstframe!(trajectory)
 
     # Set random number generator
     RNG = init_random(options)
