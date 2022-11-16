@@ -54,6 +54,37 @@ end
 inbulk(md::MinimumDistance,options::Options) =
     options.usecutoff ? (md.within_cutoff && md.dmin_mol > options.dbulk) : !md.within_cutoff
 
+"""
+    randomize_solvent!(system, buff, n_solvent_in_bulk, options, RNG)
+
+$(INTERNAL)
+
+Generate a random solvent distribution from the bulk molecules of a solvent
+
+"""
+function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solvent_in_bulk::Int, R::Result, RNG)
+    # generate random solvent box, and store it in x_solvent_random
+    for _ = 1:R.solvent.nmols
+        # Choose randomly one molecule from the bulk, if there are bulk molecules
+        if n_solvent_in_bulk > 0 
+            irnd = rand(1:n_solvent_in_bulk)
+            icount = 0
+            jmol = 0
+            while icount < irnd 
+                jmol += 1
+                icount += inbulk(buff.list[jmol],R.options)
+            end
+        else
+            jmol = rand(1:R.solvent.nmols)
+        end
+        # Pick coordinates of the molecule to be randomly moved
+        y_new = viewmol(jmol, system.ypositions, R.solvent) 
+        y_new .= buff.solvent_tmp[mol_range(jmol, R.solvent.natomspermol)]
+        # Randomize rotations and translation for this molecule 
+        random_move!(y_new, R.irefatom, system, RNG)
+    end
+end
+
 """     
     mddf(trajectory::Trajectory, options::Options)
 
@@ -220,31 +251,14 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Save list for using data in ideal gas generator
         buff.list .= system.list
-    
+
+        # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
         for _ in 1:count(==(isolute), buff.ref_solutes)
-            # Copy solvent coordinates to temporary buffer
+            # save coordinates of the solvent in temporary buffer
             buff.solvent_tmp .= system.ypositions
 
-            # generate random solvent box, and store it in x_solvent_random
-            for _ = 1:n_solvent_molecules
-                # Choose randomly one molecule from the bulk, if there are bulk molecules
-                if n_solvent_in_bulk > 0 
-                    irnd = rand(1:n_solvent_in_bulk)
-                    icount = 0
-                    jmol = 0
-                    while icount < irnd 
-                        jmol += 1
-                        icount += inbulk(buff.list[jmol],options)
-                    end
-                else
-                    jmol = rand(1:n_solvent_molecules)
-                end
-                # Pick coordinates of the molecule to be randomly moved
-                y_new = viewmol(jmol, system.ypositions, R.solvent) 
-                y_new .= buff.solvent_tmp[mol_range(jmol, R.solvent.natomspermol)]
-                # Randomize rotations and translation for this molecule 
-                random_move!(y_new, R.irefatom, system, RNG)
-            end
+            # Randomize solvent molecules
+            randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
 
             # Compute minimum distances in this random configurations
             minimum_distances!(system, R)
@@ -261,7 +275,6 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
             # restore system coordinates 
             system.ypositions .= buff.solvent_tmp
-
         end # ideal gas distribution
 
         # Next, we place in position `isolute` the coordiantes of the `isolute` molecule,
