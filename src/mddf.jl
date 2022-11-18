@@ -75,7 +75,7 @@ function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solv
                 icount += inbulk(buff.list[jmol],R.options)
             end
         else
-            jmol = rand(1:R.solvent.nmols)
+            jmol = random(RNG, 1:R.solvent.nmols)
         end
         # Pick coordinates of the molecule to be randomly moved
         y_new = viewmol(isolvent, system.ypositions, R.solvent) 
@@ -228,7 +228,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
     for i in 1:options.n_random_samples
-        buff.ref_solutes[i] = rand(1:R.solute.nmols)
+        buff.ref_solutes[i] = random(RNG, 1:R.solute.nmols)
     end
 
     # Counters for the number of atom in the bulk solution
