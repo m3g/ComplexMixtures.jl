@@ -64,10 +64,10 @@ Generate a random solvent distribution from the bulk molecules of a solvent
 """
 function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solvent_in_bulk::Int, R::Result, RNG)
     # generate random solvent box, and store it in x_solvent_random
-    for _ = 1:R.solvent.nmols
+    for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0 
-            irnd = rand(1:n_solvent_in_bulk)
+            irnd = random(RNG, 1:n_solvent_in_bulk)
             icount = 0
             jmol = 0
             while icount < irnd 
@@ -78,7 +78,8 @@ function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solv
             jmol = rand(1:R.solvent.nmols)
         end
         # Pick coordinates of the molecule to be randomly moved
-        y_new = viewmol(jmol, system.ypositions, R.solvent) 
+        y_new = viewmol(isolvent, system.ypositions, R.solvent) 
+        # Copy the coordinates of the random solvent molecule chosen
         y_new .= viewmol(jmol, buff.solvent_tmp, R.solvent)
         # Randomize rotations and translation for this molecule 
         random_move!(y_new, R.irefatom, system, RNG)
@@ -215,6 +216,10 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         system.ypositions .= buff.solvent_read
     end
 
+    # Save coordinates of the true solvent in this frame, because ypositions
+    # will be randomized later for the generation of ideal gas distributions
+    buff.solvent_tmp .= system.ypositions
+
     volume_frame = cell_volume(system)
     R.volume.total = R.volume.total + volume_frame
 
@@ -253,14 +258,11 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         # there may be only one solute molecule, in which case all distributions will be created for
         # the same solute molecule).
 
-        # Save list for using data in ideal gas generator
+        # Save coordinates and list for using data in ideal gas generator
         buff.list .= system.list
 
         # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
         for _ in 1:count(==(isolute), buff.ref_solutes)
-            # save coordinates of the solvent in temporary buffer
-            buff.solvent_tmp .= system.ypositions
-
             # Randomize solvent molecules
             randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
 
@@ -276,9 +278,6 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
             # Update the counters of the random distribution
             updatecounters!(R, system; random = true)
-
-            # restore system coordinates 
-            system.ypositions .= buff.solvent_tmp
         end # ideal gas distribution
 
         # Next, we place in position `isolute` the coordiantes of the `isolute` molecule,
