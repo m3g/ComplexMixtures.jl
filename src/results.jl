@@ -241,10 +241,19 @@ to the correct weight relative to the random sample.
 =#
 function set_samples(R::Result) 
     if R.autocorrelation 
-        return (md = (R.solvent.nmols - 1) / 2, random = R.options.n_random_samples) 
+        samples = (
+            n_solute_mols = (R.solvent.nmols - 1) / 2, 
+            n_solvent_mols = R.solvent.nmols - 1,
+            random = R.options.n_random_samples 
+        ) 
     else
-        return (md = R.solute.nmols, random = R.options.n_random_samples)
+        samples = (
+            n_solute_mols = R.solute.nmols, 
+            n_solvent_mols = R.solvent.nmols,
+            random = R.options.n_random_samples
+        )
     end
+    return samples
 end
 
 # autocorrelation can be obtained from the comparison of solute and solvent indexes
@@ -294,7 +303,6 @@ function sphereradiusfromshellvolume(volume, step)
     return (0.5 * (volume / fourthirdsofpi + 2 * rmin^3))^(1 / 3)
 end
 
-
 """
     finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
@@ -316,32 +324,43 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     end
 
     # Counters
-    @. R.md_count = R.md_count / (samples.md * R.nframes_read)
-    @. R.solute_atom = R.solute_atom / (samples.md * R.nframes_read)
-    @. R.solvent_atom = R.solvent_atom / (samples.md * R.nframes_read)
+    @. R.md_count = R.md_count / (samples.n_solute_mols * R.nframes_read)
+    @. R.solute_atom = R.solute_atom / (samples.n_solute_mols * R.nframes_read)
+    @. R.solvent_atom = R.solvent_atom / (samples.n_solute_mols * R.nframes_read)
     @. R.md_count_random = R.md_count_random / (samples.random * R.nframes_read)
-    @. R.rdf_count = R.rdf_count / (samples.md * R.nframes_read)
+    @. R.rdf_count = R.rdf_count / (samples.n_solute_mols * R.nframes_read)
     @. R.rdf_count_random = R.rdf_count_random / (samples.random * R.nframes_read)
 
-    # Volumes and Densities
+    # Volume of each bin shell and of the solute domain
     R.volume.total = R.volume.total / R.nframes_read
-    R.density.solvent = R.density.solvent / R.nframes_read
-    R.density.solute = R.density.solute / R.nframes_read
+    @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.n_solvent_mols)
+    R.volume.domain = sum(R.volume.shell)
 
-    R.volume.shell = R.volume.shell / R.nframes_read
-    R.volume.domain = R.volume.domain / R.nframes_read
-    R.volume.bulk = R.volume.bulk / R.nframes_read
-
-    R.density.solvent_bulk = R.density.solvent_bulk / R.nframes_read
+    # Bulk volume and density properties: either the bulk is considered everything
+    # that is not the domain, or the bulk is the region between d_bulk and cutoff,
+    # if R.options.usecutoff is true (meaning that there is a cutoff different from
+    # that of the bulk distance)
+    if !R.options.usecutoff
+        R.volume.bulk = R.volume.total - R.volume.domain
+        n_solvent_in_bulk = samples.n_solvent_mols - sum(R.rdf_count_random)
+    else
+        ibulk = setbin(R.dbulk + 0.5 * R.options.binstep, R.options.binstep)
+        n_solvent_in_bulk = 0.0
+        R.volume.bulk = 0.0
+        for i = ibulk:R.nbins
+            R.volume.bulk += R.volume.shell[i]
+            n_solvent_in_bulk += R.rdf_count_random[i]
+        end
+    end
+    R.density.solvent = R.solvent.nmols / R.volume.total
+    R.density.solute = R.solute.nmols / R.volume.total
+    R.density.solvent_bulk = n_solvent_in_bulk / R.volume.bulk
 
     #
-    # Computing the distribution functions and KB integrals, from the MDDF
-    # and from the RDF
+    # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
     for ibin = 1:R.nbins
-
         # For the MDDF
-
         if R.md_count_random[ibin] > 0.0
             R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
             for i = 1:trajectory.solute.natomspermol
@@ -372,8 +391,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             R.sum_rdf_count_random[ibin] = R.rdf_count_random[ibin]
         else
             R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
-            R.sum_rdf_count_random[ibin] =
-                R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
+            R.sum_rdf_count_random[ibin] = R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
         end
         R.kb_rdf[ibin] =
             units.Angs3tocm3permol *
@@ -918,25 +936,9 @@ function sum!(R1::Result, R2::Result)
     @. R1.rdf_count += R2.rdf_count
     @. R1.rdf_count_random += R2.rdf_count_random
 
-    sum!(R1.density, R2.density)
-    sum!(R1.volume, R2.volume)
+    R1.volume.total += R2.volume.total
 
     return R1
-end
-
-function sum!(D1::Density, D2::Density)
-    D1.solute += D2.solute
-    D1.solvent += D2.solvent
-    D1.solvent_bulk += D2.solvent_bulk
-    return D1
-end
-
-function sum!(V1::Volume, V2::Volume)
-    V1.total += V2.total
-    V1.bulk += V2.bulk
-    V1.domain += V2.domain
-    @. V1.shell += V2.shell
-    return V1
 end
 
 """
