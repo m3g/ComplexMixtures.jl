@@ -110,7 +110,7 @@ $(INTERNAL)
 
 """
 function minimum_distances!(system::AbstractPeriodicSystem, R::Result)
-    jref_atom = R.options.irefatom
+    jref_atom = R.irefatom
     jnatomspermol = R.solvent.natomspermol
     map_pairwise!(
         (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, list),
