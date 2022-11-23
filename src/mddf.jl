@@ -222,7 +222,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     buff.solvent_tmp .= system.ypositions
 
     # Sum up the volume of this frame
-    R.volume.total = R.volume.total + cell_volume(system)
+    R.volume.total += cell_volume(system)
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
     for i in 1:options.n_random_samples
