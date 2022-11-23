@@ -180,12 +180,15 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         error("in MDDF options: Reference atom index", options.irefatom, " is greater than number of atoms of the solvent molecule. ")
     end
 
+    # Open trajectory to read some data
+    opentraj!(trajectory)
+    firstframe!(trajectory)
+
     # Set reference atom as the closest one to the center of coordinates of the molecule, as default
     if options.irefatom == -1
         nextframe!(trajectory)
         first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
         irefatom = findmin(v -> norm(v - mean(first_mol)), first_mol)[2]
-        firstframe!(trajectory)
     else
         irefatom = options.irefatom
     end
@@ -196,6 +199,9 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
     else
         lastframe_read = options.lastframe
     end
+
+    # Close trajecotory
+    closetraj!(trajectory)
 
     # Actual number of frames that are read considering lastframe and stride
     nframes_read = round(Int, (lastframe_read - options.firstframe + 1) / options.stride)

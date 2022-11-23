@@ -110,10 +110,6 @@ julia> results = mddf(trajectory,options);
 """
 function mddf(trajectory::Trajectory, options::Options=Options())
 
-    # Open the trajectory stream and go to first frame
-    opentraj!(trajectory)
-    firstframe!(trajectory)
-
     # Set random number generator
     RNG = init_random(options)
 
@@ -133,6 +129,10 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     # frame independently, and compute the minimum-distance list 
     system = [setup_PeriodicSystem(trajectory, options) for _ in 1:nchunks]
     buff = [Buffer(trajectory, R) for _ in 1:nchunks]
+
+    # Open the trajectory stream and go to first frame
+    opentraj!(trajectory)
+    firstframe!(trajectory)
 
     # Skip initial frames if desired
     iframe = 0 # Counter for all frames of the input file, that must be read serially

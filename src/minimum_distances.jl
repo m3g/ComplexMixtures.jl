@@ -130,6 +130,8 @@ if an autocorrelation is being computed.
 
 """
 function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
+    opentraj!(trajectory)
+    firstframe!(trajectory)
     nextframe!(trajectory)
     unitcell = setunitcell(trajectory) # returns vector or matrix depending on the data
     firstframe!(trajectory)
@@ -142,6 +144,7 @@ function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
         nmd = trajectory.solvent.nmols
         ypositions = copy(trajectory.x_solvent)
     end
+    closetraj!(trajectory)
     system = PeriodicSystem(
         xpositions = xpositions,
         ypositions = ypositions,
