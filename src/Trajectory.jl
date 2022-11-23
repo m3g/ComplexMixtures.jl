@@ -78,6 +78,8 @@ setunitcell(trajectory::Trajectory) = setunitcell(trajectory.sides[1])
     protein = Selection(select(atoms, "protein"), nmols=1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    ComplexMixtures.opentraj!(traj)
+    ComplexMixtures.firstframe!(traj)
     ComplexMixtures.nextframe!(traj)
     @test ComplexMixtures.setunitcell(traj) == SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
     ComplexMixtures.closetraj!(traj)
@@ -101,14 +103,12 @@ end
 
     # PDB file
     traj = Trajectory("$(Testing.data_dir)/PDB/trajectory.pdb", protein, tmao, format="PDBTraj")
-    @test traj.natoms == 62026
     @test traj.solute.natoms == 1463
     @test traj.solvent.natoms == 2534
     @test traj.sides[1] ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
 
     # Chemfiles with NAMD
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao, chemfiles=true)
-    @test traj.natoms == 62026
     @test traj.nframes == 20
     @test traj.sides[1] ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
     @test traj.solute.natoms == 1463
@@ -119,7 +119,6 @@ end
     protein = Selection(select(atoms, "protein"), nmols=1)
     emi = Selection(select(atoms, "resname EMI"), natomspermol=20)
     traj = Trajectory("$(Testing.data_dir)/Gromacs/trajectory.xtc", protein, emi)
-    @test traj.natoms == 84864
     @test traj.nframes == 26
     @test traj.sides[1] ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
     @test traj.solute.natoms == 1231
