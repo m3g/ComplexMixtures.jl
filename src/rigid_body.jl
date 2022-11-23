@@ -169,13 +169,16 @@ Function that generates a new random position for a molecule.
 The new position is returned in `x_new`, a previously allocated array.
 
 """
-function random_move!(x::AbstractVector{T}, irefatom::Int, system::AbstractPeriodicSystem, RNG) where {T<:SVector}
+random_move!(x::AbstractVector{T}, irefatom::Int, system::AbstractPeriodicSystem, RNG) where {T<:SVector} =
+    random_move!(x, irefatom, system._box, RNG)
+# Using the `system._box`, such that we can test this without building the whole system
+function random_move!(x::AbstractVector{T}, irefatom::Int, box::CellListMap.Box, RNG) where {T<:SVector}
     # To avoid boundary problems, the center of coordinates are generated in a 
     # much larger region, and wrapped aftwerwards
     scale = 100.0
 
     # Generate random coordiantes for the center of mass
-    newcm = T(scale * (-system._box.unit_cell_max[i] / 2 + random(RNG, Float64) * system._box.unit_cell_max[i]) for i in 1:3)
+    newcm = T(scale * (-box.unit_cell_max[i] / 2 + random(RNG, Float64) * box.unit_cell_max[i]) for i in 1:3)
 
     # Generate random rotation angles 
     beta = 2π * random(RNG, Float64)
@@ -184,7 +187,7 @@ function random_move!(x::AbstractVector{T}, irefatom::Int, system::AbstractPerio
 
     # Take care that this molecule is not split by periodic boundary conditions, by
     # wrapping its coordinates around its reference atom
-    wrap!(x, x[irefatom], system._box)
+    wrap!(x, x[irefatom], box)
 
     # Move molecule to new position
     move!(x, newcm, beta, gamma, theta)
