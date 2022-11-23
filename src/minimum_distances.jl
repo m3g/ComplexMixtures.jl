@@ -41,12 +41,12 @@ associated with the same molecule.
 
 """
 function update_md(md1::MinimumDistance, md2::MinimumDistance)
-    found_ref = md1.ref_atom_within_cutoff || md2.ref_atom_within_cutoff
-    dref = found_ref ? min(md1.d_ref_atom, md2.d_ref_atom) : +Inf
+    ref_atom_within_cutoff = md1.ref_atom_within_cutoff || md2.ref_atom_within_cutoff
+    dref = ref_atom_within_cutoff ? min(md1.d_ref_atom, md2.d_ref_atom) : +Inf
     md = if md1.d < md2.d
-        MinimumDistance(md1.within_cutoff, md1.i, md1.j, md1.d, found_ref, dref)
+        MinimumDistance(md1.within_cutoff, md1.i, md1.j, md1.d, ref_atom_within_cutoff, dref)
     else
-        MinimumDistance(md2.within_cutoff, md2.i, md2.j, md2.d, found_ref, dref)
+        MinimumDistance(md2.within_cutoff, md2.i, md2.j, md2.d, ref_atom_within_cutoff, dref)
     end
     return md
 end
@@ -64,8 +64,7 @@ end
 import CellListMap.PeriodicSystems: copy_output, reset_output!, reducer
 copy_output(md::MinimumDistance) = 
     MinimumDistance(md.within_cutoff, md.i, md.j, md.d, md.ref_atom_within_cutoff, md.d_ref_atom)
-reset_output!(::MinimumDistance) = 
-    MinimumDistance(false, 0, 0, +Inf, false, +Inf)
+reset_output!(::MinimumDistance) = MinimumDistance(false, 0, 0, +Inf, false, +Inf)
 reducer(md1::MinimumDistance, md2::MinimumDistance) = update_md(md1, md2)
 
 """
@@ -92,9 +91,9 @@ Function that updates a list of minimum distances given the indexes of the atoms
 function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
     d = sqrt(d2)
     jmol = mol_index(j, j_natoms_per_molecule)
-    found_ref = j%jref_atom == 0
-    dref = found_ref ? d : +Inf
-    list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, found_ref, dref))
+    ref_atom_within_cutoff = j%jref_atom == 0
+    dref = ref_atom_within_cutoff ? d : +Inf
+    list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
     return list
 end
 
