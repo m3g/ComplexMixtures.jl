@@ -59,6 +59,14 @@ function PDBTraj(
     end
     close(st)
 
+    # Some error messages
+    if nframes == 0 
+        error("Could not read any frame from PDB file. Each frame must end with the END specifier")
+    end
+    if natoms == 0
+        error("Could not read any ATOM from the trajectory file.")
+    end
+
     # Fill-up the sides vector of the trajectory. We assume here
     # that the sides are stored for each frame in the "CRYST1" field, for each frame.
     # Here, we exemplify the option to read all sides at once and store them in a 
@@ -73,8 +81,7 @@ function PDBTraj(
         s = split(line)
         if s[1] == "CRYST1"
             iframe = iframe + 1
-            sides[iframe] =
-                T(parse(Float64, s[2]), parse(Float64, s[3]), parse(Float64, s[4]))
+            sides[iframe] = T(parse.(Float64, @view(s[2:4])))
         end
     end
 
