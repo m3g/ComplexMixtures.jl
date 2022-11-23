@@ -93,8 +93,6 @@ function PDBTraj(
         solvent,
         zeros(T, solute.natoms),
         zeros(T, solvent.natoms),
-        natoms, # Total number of atoms
-        Array{Float64}(undef, 3, natoms), # Auxiliary array for reading
     )
 end
 
