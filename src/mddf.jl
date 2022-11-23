@@ -11,6 +11,7 @@
     solvent_tmp::Vector{SVector{3,Float64}}
     ref_solutes::Vector{Int}
     list::Vector{MinimumDistance}
+    indexes_in_bulk::Vector{Int}
 end
 function Buffer(traj::Trajectory, R::Result)
     nat = length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol
@@ -20,7 +21,8 @@ function Buffer(traj::Trajectory, R::Result)
         solvent_read = similar(traj.x_solvent),
         solvent_tmp = similar(traj.x_solvent, nat),
         ref_solutes = zeros(Int, R.options.n_random_samples),
-        list = fill(zero(MinimumDistance), nmol)
+        list = fill(zero(MinimumDistance), nmol),
+        indexes_in_bulk = fill(0, nmol)
     )
 end
 
@@ -40,6 +42,7 @@ end
         solvent_tmp = similar(traj.x_solvent, length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols - R.autocorrelation),
+        indexes_in_bulk = fill(0, R.solvent.nmols - R.autocorrelation)
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
@@ -67,13 +70,7 @@ function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solv
     for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0 
-            irnd = random(RNG, 1:n_solvent_in_bulk)
-            icount = 0
-            jmol = 0
-            while icount < irnd 
-                jmol += 1
-                icount += inbulk(buff.list[jmol],R.options)
-            end
+            jmol = buff.indexes_in_bulk[random(RNG, 1:n_solvent_in_bulk)]
         else
             jmol = random(RNG, 1:R.solvent.nmols)
         end
@@ -145,11 +142,12 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     end
 
     # Print some information about this run
-    options.silent || title(R, trajectory.solute, trajectory.solvent, nchunks)
-
-    if !options.silent
+    if !options.silent 
+        title(R, trajectory.solute, trajectory.solvent, nchunks)
         progress = Progress(R.nframes_read, 1)
     end
+
+    # Loop over the trajectory
     read_lock = ReentrantLock()
     Threads.@threads for (frame_range, ichunk) in ChunkSplitters.chunks(1:R.nframes_read, nchunks)
         # Reset the number of frames read by each chunk
@@ -157,11 +155,14 @@ function mddf(trajectory::Trajectory, options::Options=Options())
         for _ in frame_range
             # Read frame coordinates
             lock(read_lock) do 
-                iframe += 1
+                # skip frames if stride > 1
                 while (iframe+1)%options.stride != 0
                     nextframe!(trajectory)
                     iframe += 1
                 end
+                # Read frame for computing 
+                iframe += 1
+                nextframe!(trajectory)
                 # The solute coordinates must be read in intermediate arrays, because the 
                 # solute molecules will be considered one at a time in the computation of the
                 # minimum distances
@@ -181,7 +182,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     end
     closetraj!(trajectory)
 
-    # Sum up the results of all threads into the data of thread one (R1<-R1+R2)
+    # Sum up the counts of all threads into the data of thread one (R1<-R1+R2)
     for ichunk in 1:nchunks
         R = sum!(R, R_chunk[ichunk])
     end
@@ -220,32 +221,23 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     # will be randomized later for the generation of ideal gas distributions
     buff.solvent_tmp .= system.ypositions
 
-    volume_frame = cell_volume(system)
-    R.volume.total = R.volume.total + volume_frame
-
-    R.density.solute = R.density.solute + (R.solute.nmols / volume_frame)
-    R.density.solvent = R.density.solvent + (R.solvent.nmols / volume_frame)
+    # Sum up the volume of this frame
+    R.volume.total = R.volume.total + cell_volume(system)
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
     for i in 1:options.n_random_samples
         buff.ref_solutes[i] = random(RNG, 1:R.solute.nmols)
     end
 
-    # Counters for the number of atom in the bulk solution
-    av_solvent_atoms_in_bulk = 0.0
-    av_solvent_atoms_in_bulk_random = 0.0
-
+    #
     # Compute the MDDFs for each solute molecule
+    #
     for isolute = 1:R.solute.nmols
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
         system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         minimum_distances!(system, R)
-
-        # Add the number of solvent atoms in bulk 
-        n_solvent_in_bulk = count(md -> inbulk(md, options), system.list)
-        av_solvent_atoms_in_bulk += n_solvent_in_bulk
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
@@ -261,6 +253,15 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         # Save coordinates and list for using data in ideal gas generator
         buff.list .= system.list
 
+        # Annotate the indexes of the molecules that are in the bulk solution
+        n_solvent_in_bulk = 0
+        for i = 1:R.solvent.nmols
+            if inbulk(system.list[i],options)
+                n_solvent_in_bulk += 1
+                buff.indexes_in_bulk[n_solvent_in_bulk] = i
+            end
+        end
+
         # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
         for _ in 1:count(==(isolute), buff.ref_solutes)
             # Randomize solvent molecules
@@ -269,18 +270,11 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
             # Compute minimum distances in this random configurations
             minimum_distances!(system, R)
 
-            # Count the number of random molecules in the bulk solution
-            if !options.usecutoff
-                av_solvent_atoms_in_bulk_random += count(md -> !md.within_cutoff, system.list)
-            else
-                av_solvent_atoms_in_bulk_random += count(md -> (md.within_cutoff && md.dmin_mol > options.dbulk), system.list)
-            end
-
             # Update the counters of the random distribution
-            updatecounters!(R, system; random = true)
-        end # ideal gas distribution
+            updatecounters!(R, system, Val(:random))
+        end
 
-        # Next, we place in position `isolute` the coordiantes of the `isolute` molecule,
+        # Next, we place in position `isolute` the coordinates of the `isolute` molecule,
         # replacing the `isolute+1` molecule that is there since initialization
         if R.autocorrelation 
             ir = mol_range(isolute, R.solute.natomspermol)
@@ -288,31 +282,6 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         end
 
     end # loop over solute molecules
-
-    # Normalize counters of solvent atoms in bulk by the number of samples
-    av_solvent_atoms_in_bulk /= R.solute.nmols
-    av_solvent_atoms_in_bulk_random /= options.n_random_samples
-
-    # Sum up to the density of the solvent in bulk (will be normalized by the summed volume later)
-    R.density.solvent_bulk += av_solvent_atoms_in_bulk
-
-    if R.autocorrelation
-        # The normalization below is tricky. The number that comes out from updatecounters is the
-        # sum, for every solvent molecule (minus one) of the distances that were not found to be in
-        # the solute domain. The total number of distances is n^2, because the sum inside updatecounter
-        # is made for all molecules (the same function is used for cross-distribution), but we called updatecounters
-        # only (n-1) times, so the actual sum of the distances considered is n(n-1). From this set
-        # the number of distances returned in n_dref_in_bulk is r=n(n-1)-nd/2, where nd is the
-        # number of distances in the domain. Thus, the number of distances in the domain, considering
-        # symmetric terms, is nd=2n(n-1)-2r. The average number of distances in the domain, per
-        # molecule, is thus nd/n=2(n-1)-2r/n. Finally, the number of solvent molecules in 
-        # bulk, for each molecule, is the total number of other molecules, (n-1), minus the
-        # number of molecules in the domain, that is (n-1)-nd/n=(n-1)-2(n-1)+2r/n, which
-        # finally simplifies to 2r/n-(n-1), which is the equation below. 
-        n_solvent_in_bulk = 2 * n_solvent_in_bulk / R.solvent.nmols - (R.solvent.nmols - 1)
-    else
-        n_solvent_in_bulk = n_solvent_in_bulk / R.solute.nmols
-    end
 
     return R
 end
@@ -329,11 +298,3 @@ end
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
 end
-
-
-
-
-
-
-
-
