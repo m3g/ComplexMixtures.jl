@@ -238,6 +238,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         minimum_distances!(system, R)
+        @show system.list
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
@@ -291,10 +292,27 @@ end
     using PDBTools
     using ComplexMixtures.Testing
 
-    atoms = readPDB(Testing.pdbfile)
     options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
+
+    # Test simple two-molecule system
+    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5)
+    atoms = readPDB("$(Testing.data_dir)/simple.pdb")
+    protein = Selection(select(atoms, "protein"), nmols=1)
+    water = Selection(select(atoms, "resname WAT"), natomspermol=3)
+    traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
+    R = mddf(traj, options)
+
+    @test R.volume.total == 27000.0
+    @test R.density.solute ≈ 1 / R.volume.total
+    @test R.density.solvent ≈ 2 / R.volume.total
+    @test R.density.solvent_bulk = 1 / R.volume.bulk
+
+    # Test actual system
+    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
+    atoms = readPDB(Testing.pdbfile)
     protein = Selection(select(atoms, "protein"), nmols=1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
+
 end
