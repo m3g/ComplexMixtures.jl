@@ -183,8 +183,8 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     closetraj!(trajectory)
 
     # Sum up the counts of all threads into the data of thread one (R1<-R1+R2)
-    for ichunk in 1:nchunks
-        R = sum!(R, R_chunk[ichunk])
+    for ichunk in eachindex(R_chunk)
+        sum!(R, R_chunk[ichunk])
     end
 
     # Setup the final data structure with final values averaged over the number of frames,
@@ -225,7 +225,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     R.volume.total += cell_volume(system)
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
-    for i in 1:options.n_random_samples
+    for i in eachindex(buff.ref_solutes)
         buff.ref_solutes[i] = random(RNG, 1:R.solute.nmols)
     end
 
@@ -255,7 +255,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Annotate the indexes of the molecules that are in the bulk solution
         n_solvent_in_bulk = 0
-        for i = 1:R.solvent.nmols
+        for i in eachindex(system.list)
             if inbulk(system.list[i],options)
                 n_solvent_in_bulk += 1
                 buff.indexes_in_bulk[n_solvent_in_bulk] = i
