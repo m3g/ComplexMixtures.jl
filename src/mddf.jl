@@ -276,19 +276,22 @@ end
     using ComplexMixtures.Testing
 
     # Test simple three-molecule system
-    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
     atoms = readPDB("$(Testing.data_dir)/simple.pdb")
     protein = Selection(select(atoms, "protein and model 1"), nmols=1)
     water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
-    R = mddf(traj, options)
 
-    @test R.volume.total == 27000.0
-    @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.01)
-    @test R.density.solute ≈ 1 / R.volume.total
-    @test R.density.solvent ≈ 3 / R.volume.total
-    @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+    for lastframe in [1,2]
+        options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
+        R = mddf(traj, options)
+        @test R.volume.total == 27000.0
+        @test R.volume.domain ≈ R.volume.total - R.volume.bulk
+        @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.01)
+        @test R.density.solute ≈ 1 / R.volume.total
+        @test R.density.solvent ≈ 3 / R.volume.total
+        @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+    end
+
 end
 
 @testitem "mddf - real system" begin
