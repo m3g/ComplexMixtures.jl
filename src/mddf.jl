@@ -1,3 +1,6 @@
+# Effective number of solvent molecules, if autocorrelation, or not
+solvent_nmols(R) = R.solvent.nmols - R.autocorrelation
+
 #
 # Structure to carry temporary arrays needed
 #
@@ -8,18 +11,16 @@
 @with_kw struct Buffer
     solute_read::Vector{SVector{3,Float64}}
     solvent_read::Vector{SVector{3,Float64}}
-    solvent_tmp::Vector{SVector{3,Float64}}
     ref_solutes::Vector{Int}
     list::Vector{MinimumDistance}
     indexes_in_bulk::Vector{Int}
 end
 function Buffer(traj::Trajectory, R::Result)
-    nat = length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol
-    nmol = R.solvent.nmols - R.autocorrelation
+    nmol = solvent_nmols(R)
+    nat = R.solvent.natomspermol*nmol
     return Buffer(
         solute_read = similar(traj.x_solute), 
         solvent_read = similar(traj.x_solvent),
-        solvent_tmp = similar(traj.x_solvent, nat),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(MinimumDistance), nmol),
         indexes_in_bulk = fill(0, nmol)
@@ -39,10 +40,9 @@ end
     b0 = ComplexMixtures.Buffer(
         solute_read = similar(traj.x_solute), 
         solvent_read = similar(traj.x_solvent),
-        solvent_tmp = similar(traj.x_solvent, length(traj.x_solvent) - R.autocorrelation*traj.solvent.natomspermol),
         ref_solutes = zeros(Int, R.options.n_random_samples),
-        list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols - R.autocorrelation),
-        indexes_in_bulk = fill(0, R.solvent.nmols - R.autocorrelation)
+        list = fill(zero(ComplexMixtures.MinimumDistance), solvent_nmols(R)),
+        indexes_in_bulk = fill(0, solvent_nmols(R))
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
@@ -66,13 +66,12 @@ Generate a random solvent distribution from the bulk molecules of a solvent
 
 """
 function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solvent_in_bulk::Int, R::Result, RNG)
-    # generate random solvent box, and store it in x_solvent_random
-    for isolvent = 1:R.solvent.nmols
+    for isolvent = 1:solvent_nmols(R)
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0 
             jmol = buff.indexes_in_bulk[random(RNG, 1:n_solvent_in_bulk)]
         else
-            jmol = random(RNG, 1:R.solvent.nmols)
+            jmol = random(RNG, 1:solvent_nmols(R))
         end
         # Pick coordinates of the molecule to be randomly moved
         y_new = viewmol(isolvent, system.ypositions, R.solvent) 
@@ -208,19 +207,6 @@ Computes the MDDF for a single frame, for autocorrelation of molecules. Modifies
 """
 function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
 
-    # Initialize coordinates of the solvent: for autocorrelations, skip the first molecule
-    if R.autocorrelation
-        n_solvent_molecules = R.solvent.nmols - 1
-        system.ypositions .= buff.solvent_read[R.solvent.natomspermol+1:end]
-    else
-        n_solvent_molecules = R.solvent.nmols
-        system.ypositions .= buff.solvent_read
-    end
-
-    # Save coordinates of the true solvent in this frame, because ypositions
-    # will be randomized later for the generation of ideal gas distributions
-    buff.solvent_tmp .= system.ypositions
-
     # Sum up the volume of this frame
     R.volume.total += cell_volume(system)
 
@@ -233,8 +219,22 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     # Compute the MDDFs for each solute molecule
     #
     for isolute = 1:R.solute.nmols
+
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
         system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
+
+        # Copy (restore) the data from buff.solvent_read, appropriately (skipping the current molecule if autocorrelation)
+        if R.autocorrelation
+            iymol = 0
+            for imol = 1:R.solvent.nmols
+                imol == isolute && continue
+                iymol += 1
+                ymol = viewmol(iymol, system.ypositions, R.solvent)
+                ymol .= viewmol(imol, buff.solvent_read, R.solvent)
+            end
+        else
+            system.ypositions .= buff.solvent_read
+        end
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         minimum_distances!(system, R)
@@ -275,13 +275,6 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
             updatecounters!(R, system, Val(:random))
         end
 
-        # Next, we place in position `isolute` the coordinates of the `isolute` molecule,
-        # replacing the `isolute+1` molecule that is there since initialization
-        if R.autocorrelation 
-            ir = mol_range(isolute, R.solute.natomspermol)
-            system.ypositions[ir] .= buff.solute_read[ir] 
-        end
-
     end # loop over solute molecules
 
     return R
@@ -292,20 +285,19 @@ end
     using PDBTools
     using ComplexMixtures.Testing
 
-    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
-
     # Test simple two-molecule system
     options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5)
     atoms = readPDB("$(Testing.data_dir)/simple.pdb")
     protein = Selection(select(atoms, "protein"), nmols=1)
     water = Selection(select(atoms, "resname WAT"), natomspermol=3)
     traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
-    R = mddf(traj, options)
+    
 
     @test R.volume.total == 27000.0
+    @test R.volume.domain ≈ (4π/3) * R.dbulk^3
     @test R.density.solute ≈ 1 / R.volume.total
-    @test R.density.solvent ≈ 2 / R.volume.total
-    @test R.density.solvent_bulk = 1 / R.volume.bulk
+    @test R.density.solvent ≈ 3 / R.volume.total
+    @test R.density.solvent_bulk = 2 / R.volume.bulk
 
     # Test actual system
     options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
