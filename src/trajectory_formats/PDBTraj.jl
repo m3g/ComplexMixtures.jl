@@ -51,9 +51,11 @@ function PDBTraj(
     nframes = 0
     natoms = 0
     for line in eachline(st)
-        if line[1:3] == "END"
+        isempty(line) && continue
+        line_data = split(line)
+        if line_data[1] == "END"
             nframes = nframes + 1
-        elseif nframes == 0 && (line[1:4] == "ATOM" || line[1:6] == "HETATM")
+        elseif nframes == 0 && line_data[1] in ("ATOM","HETATM")
             natoms = natoms + 1
         end
     end
@@ -78,6 +80,7 @@ function PDBTraj(
     st = open(pdbfile, "r")
     iframe = 0
     for line in eachline(st)
+        isempty(line) && continue
         s = split(line)
         if s[1] == "CRYST1"
             iframe = iframe + 1
