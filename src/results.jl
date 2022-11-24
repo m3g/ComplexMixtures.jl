@@ -340,7 +340,10 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     # Volume of each bin shell and of the solute domain
     R.volume.total = R.volume.total / R.nframes_read
     @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.n_solvent_mols)
-    R.volume.domain = sum(R.volume.shell)
+
+    # Solute domain volume
+    ibulk = setbin(R.dbulk + 0.5 * R.options.binstep, R.options.binstep)
+    R.volume.domain = sum(@view(R.volume.shell[1:ibulk-1]))
 
     # Bulk volume and density properties: either the bulk is considered everything
     # that is not the domain, or the bulk is the region between d_bulk and cutoff,
@@ -350,13 +353,8 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
         R.volume.bulk = R.volume.total - R.volume.domain
         n_solvent_in_bulk = samples.n_solvent_mols - sum(R.rdf_count_random)
     else
-        ibulk = setbin(R.dbulk + 0.5 * R.options.binstep, R.options.binstep)
-        n_solvent_in_bulk = 0.0
-        R.volume.bulk = 0.0
-        for i = ibulk:R.nbins
-            R.volume.bulk += R.volume.shell[i]
-            n_solvent_in_bulk += R.rdf_count_random[i]
-        end
+        n_solvent_in_bulk = sum(@view(R.rdf_count_random[ibulk:R.nbins]))
+        R.volume.bulk = sum(@view(R.volume.shell[ibulk:R.nbins]))
     end
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
