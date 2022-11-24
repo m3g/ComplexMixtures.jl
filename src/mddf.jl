@@ -76,7 +76,7 @@ function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solv
         # Pick coordinates of the molecule to be randomly moved
         y_new = viewmol(isolvent, system.ypositions, R.solvent) 
         # Copy the coordinates of the random solvent molecule chosen
-        y_new .= viewmol(jmol, buff.solvent_tmp, R.solvent)
+        y_new .= viewmol(jmol, buff.solvent_read, R.solvent)
         # Randomize rotations and translation for this molecule 
         random_move!(y_new, R.irefatom, system, RNG)
     end
@@ -291,7 +291,8 @@ end
     protein = Selection(select(atoms, "protein"), nmols=1)
     water = Selection(select(atoms, "resname WAT"), natomspermol=3)
     traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
-    
+
+    R = mddf(traj, options)
 
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ (4π/3) * R.dbulk^3
