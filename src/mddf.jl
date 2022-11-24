@@ -281,11 +281,11 @@ end
     protein = Selection(select(atoms, "protein"), nmols=1)
     water = Selection(select(atoms, "resname WAT"), natomspermol=3)
     traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
-
     R = mddf(traj, options)
 
     @test R.volume.total == 27000.0
-    @test R.volume.domain ≈ (4π/3) * R.dbulk^3
+    @test R.volume.domain ≈ R.volume.bulk
+    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk = 2 / R.volume.bulk
