@@ -248,14 +248,12 @@ to the correct weight relative to the random sample.
 function set_samples(R::Result) 
     if R.autocorrelation 
         samples = (
-            n_solute_mols=(R.solvent.nmols - 1) / 2,
-            n_solvent_mols=R.solvent.nmols - 1,
+            solvent_nmols=R.solvent.nmols - 1,
             random=R.options.n_random_samples
         ) 
     else
         samples = (
-            n_solute_mols=R.solute.nmols,
-            n_solvent_mols=R.solvent.nmols,
+            solvent_nmols=R.solvent.nmols,
             random=R.options.n_random_samples
         )
     end
@@ -330,16 +328,16 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     end
 
     # Counters
-    @. R.md_count = R.md_count / (samples.n_solute_mols * R.nframes_read)
-    @. R.solute_atom = R.solute_atom / (samples.n_solute_mols * R.nframes_read)
-    @. R.solvent_atom = R.solvent_atom / (samples.n_solute_mols * R.nframes_read)
+    @. R.md_count = R.md_count / (R.solute.nmols * R.nframes_read)
+    @. R.solute_atom = R.solute_atom / (R.solute.nmols * R.nframes_read)
+    @. R.solvent_atom = R.solvent_atom / (R.solute.nmols * R.nframes_read)
     @. R.md_count_random = R.md_count_random / (samples.random * R.nframes_read)
-    @. R.rdf_count = R.rdf_count / (samples.n_solute_mols * R.nframes_read)
+    @. R.rdf_count = R.rdf_count / (R.solute.nmols * R.nframes_read)
     @. R.rdf_count_random = R.rdf_count_random / (samples.random * R.nframes_read)
 
     # Volume of each bin shell and of the solute domain
     R.volume.total = R.volume.total / R.nframes_read
-    @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.n_solvent_mols)
+    @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
 
     # Solute domain volume
     ibulk = setbin(R.dbulk + 0.5 * R.options.binstep, R.options.binstep)
@@ -351,7 +349,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     # that of the bulk distance)
     if !R.options.usecutoff
         R.volume.bulk = R.volume.total - R.volume.domain
-        n_solvent_in_bulk = samples.n_solvent_mols - sum(R.rdf_count)
+        n_solvent_in_bulk = samples.solvent_nmols - sum(R.rdf_count)
     else
         n_solvent_in_bulk = sum(@view(R.rdf_count[ibulk:R.nbins]))
         R.volume.bulk = sum(@view(R.volume.shell[ibulk:R.nbins]))
@@ -512,10 +510,10 @@ end
     using ComplexMixtures.Testing
 
     # Test simple three-molecule system
-    atoms = readPDB("$(Testing.data_dir)/simple.pdb")
+    atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
     protein = Selection(select(atoms, "protein and model 1"), nmols=1)
     water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
+    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format="PDBTraj")
 
     options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=10^5, lastframe=1)
     R1 = mddf(traj, options)
