@@ -270,12 +270,12 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     return R
 end
 
-@testitem "mddf" begin
+@testitem "mddf - toy system" begin
     using ComplexMixtures
     using PDBTools
     using ComplexMixtures.Testing
 
-    # Test simple two-molecule system
+    # Test simple three-molecule system
     options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5)
     atoms = readPDB("$(Testing.data_dir)/simple.pdb")
     protein = Selection(select(atoms, "protein"), nmols=1)
@@ -284,18 +284,34 @@ end
     R = mddf(traj, options)
 
     @test R.volume.total == 27000.0
-    @test R.volume.domain ≈ R.volume.bulk
+    @test R.volume.domain ≈ R.volume.total - R.volume.bulk
     @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
-    @test R.density.solvent_bulk = 2 / R.volume.bulk
+    @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+end
+
+@testitem "mddf - real system" begin
+    using ComplexMixtures
+    using PDBTools
+    using ComplexMixtures.Testing
 
     # Test actual system
-    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
+    options = Options(stride=1,seed=1,StableRNG=true,nthreads=1,silent=true)
     atoms = readPDB(Testing.pdbfile)
     protein = Selection(select(atoms, "protein"), nmols=1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
 
+    @test R.volume.total ≈ 603078.4438609097
+    @test R.volume.domain ≈ 75368.14585709268
+    @test R.volume.bulk ≈ 527710.298003817
+    @test R.density.solute ≈ 1.6581590839128614e-6
+    @test R.density.solvent ≈ 0.00030012679418822794
+    @test R.density.solvent_bulk ≈ 0.000305944380109164
+    @test sum(R.mddf) ≈ 594.1347058364827
+    @test sum(R.rdf) ≈ 500.97105526052894
+    @test R.kb[end] ≈ -4960.311725361473
+    @test R.kb_rdf[end] ≈ -6042.919443198414
 end
