@@ -351,9 +351,9 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     # that of the bulk distance)
     if !R.options.usecutoff
         R.volume.bulk = R.volume.total - R.volume.domain
-        n_solvent_in_bulk = samples.n_solvent_mols - sum(R.rdf_count_random)
+        n_solvent_in_bulk = samples.n_solvent_mols - sum(R.rdf_count)
     else
-        n_solvent_in_bulk = sum(@view(R.rdf_count_random[ibulk:R.nbins]))
+        n_solvent_in_bulk = sum(@view(R.rdf_count[ibulk:R.nbins]))
         R.volume.bulk = sum(@view(R.volume.shell[ibulk:R.nbins]))
     end
     R.density.solvent = R.solvent.nmols / R.volume.total
