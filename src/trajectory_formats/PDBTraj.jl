@@ -124,8 +124,8 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
     st = stream(trajectory)
     iatom = 0
     record = readline(st)
-    i_solute = 1
-    i_solvent = 1
+    i_solute = 0
+    i_solvent = 0
     while ((0 < length(record) < 3) || record[1:3] != "END")
         if length(record) >= 6
             if record[1:4] == "ATOM" || record[1:6] == "HETATM"
@@ -133,13 +133,13 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
                 x = parse(Float64, record[31:38])
                 y = parse(Float64, record[39:46])
                 z = parse(Float64, record[47:54])
-                if i_solute < trajectory.solute.natoms && iatom == trajectory.solute.index[i_solute]
-                    trajectory.x_solute[i_solute] = T(x,y,z)
+                if i_solute < trajectory.solute.natoms && iatom == trajectory.solute.index[i_solute+1]
                     i_solute += 1
+                    trajectory.x_solute[i_solute] = T(x,y,z)
                 end
-                if i_solvent < trajectory.solvent.natoms && iatom == trajectory.solvent.index[i_solvent]
-                    trajectory.x_solvent[i_solvent] = T(x,y,z)
+                if i_solvent < trajectory.solvent.natoms && iatom == trajectory.solvent.index[i_solvent+1]
                     i_solvent += 1
+                    trajectory.x_solvent[i_solvent] = T(x,y,z)
                 end
             end
         end
