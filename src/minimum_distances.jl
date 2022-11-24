@@ -80,6 +80,21 @@ molecules have the same number of atoms.
 """
 mol_index(i, natomspermol) = (i - 1) ÷ natomspermol + 1
 
+# function that finds is an atom is a reference atom
+function isrefatom(i, iref, n_atoms_per_mol)
+    iat = i%n_atoms_per_mol
+    iat = ifelse(iat != 0, iat, n_atoms_per_mol)
+    return iat == iref
+end
+@testitem "isrefatom" begin
+    using ComplexMixtures
+    @test ComplexMixtures.isrefatom(1, 1, 3) == true
+    @test ComplexMixtures.isrefatom(2, 1, 3) == false
+    @test ComplexMixtures.isrefatom(3, 1, 3) == false
+    @test ComplexMixtures.isrefatom(4, 1, 3) == true
+    @test ComplexMixtures.isrefatom(5, 1, 3) == false
+end
+
 """
     update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
 
@@ -91,7 +106,7 @@ Function that updates a list of minimum distances given the indexes of the atoms
 function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
     d = sqrt(d2)
     jmol = mol_index(j, j_natoms_per_molecule)
-    ref_atom_within_cutoff = j%jref_atom == 0
+    ref_atom_within_cutoff = isrefatom(j, jref_atom, j_natoms_per_molecule)
     dref = ref_atom_within_cutoff ? d : +Inf
     list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
     return list
