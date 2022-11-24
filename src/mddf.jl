@@ -260,13 +260,8 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
         for _ in 1:count(==(isolute), buff.ref_solutes)
-            # Randomize solvent molecules
             randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
-
-            # Compute minimum distances in this random configurations
             minimum_distances!(system, R)
-
-            # Update the counters of the random distribution
             updatecounters!(R, system, Val(:random))
         end
 
