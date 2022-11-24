@@ -333,11 +333,12 @@ end
     using PDBTools
     using ComplexMixtures.Testing
 
-    # Test actual system: cross correlation
     options = Options(stride=1,seed=1,StableRNG=true,nthreads=1,silent=true)
     atoms = readPDB(Testing.pdbfile)
     protein = Selection(select(atoms, "protein"), nmols=1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+
+    # Test actual system: cross correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
     @test R.volume.total ≈ 603078.4438609097
@@ -351,8 +352,21 @@ end
     @test R.kb[end] ≈ -4960.311725361473
     @test R.kb_rdf[end] ≈ -6042.919443198414
 
-    water = Selection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", water)
+    # Self correlation
+    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
+    R = mddf(traj, options)
+    @test R.volume.total ≈ 603078.4438609097
+    @test R.volume.domain ≈ 6985.65864138887
+    @test R.volume.bulk ≈ 596092.7852195208
+    @test R.density.solute ≈ 0.00030012679418822794
+    @test R.density.solvent ≈ 0.00030012679418822794
+    @test R.density.solvent_bulk ≈ 0.00029884803949672213
+    @test sum(R.mddf) ≈ 269.7876874506709
+    @test sum(R.rdf) ≈ 195.07669034464615
+    @test R.kb[end] ≈ -415.27018868257363
+    @test R.kb_rdf[end] ≈ -455.7395488933383
 
-
+    # deveria ser deterministico sempre?
+    @test sum(R.md_count) ≈ 2.8939226519337016 # voltar
+    @test sum(R.rdf_count) ≈ 1.858839779005525 # voltar
 end
