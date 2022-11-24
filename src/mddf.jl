@@ -41,8 +41,8 @@ end
         solute_read = similar(traj.x_solute), 
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
-        list = fill(zero(ComplexMixtures.MinimumDistance), solvent_nmols(R)),
-        indexes_in_bulk = fill(0, solvent_nmols(R))
+        list = fill(zero(ComplexMixtures.MinimumDistance), ComplexMixtures.solvent_nmols(R)),
+        indexes_in_bulk = fill(0, ComplexMixtures.solvent_nmols(R))
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
