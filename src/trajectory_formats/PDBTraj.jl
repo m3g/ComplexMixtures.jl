@@ -136,7 +136,8 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
                 if i_solute < trajectory.solute.natoms && iatom == trajectory.solute.index[i_solute]
                     trajectory.x_solute[i_solute] = T(x,y,z)
                     i_solute += 1
-                elseif i_solvent < trajectory.solvent.natoms && iatom == trajectory.solvent.index[i_solvent]
+                end
+                if i_solvent < trajectory.solvent.natoms && iatom == trajectory.solvent.index[i_solvent]
                     trajectory.x_solvent[i_solvent] = T(x,y,z)
                     i_solvent += 1
                 end
