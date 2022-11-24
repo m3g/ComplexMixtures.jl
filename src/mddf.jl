@@ -276,10 +276,10 @@ end
     using ComplexMixtures.Testing
 
     # Test simple three-molecule system
-    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5)
+    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
     atoms = readPDB("$(Testing.data_dir)/simple.pdb")
-    protein = Selection(select(atoms, "protein"), nmols=1)
-    water = Selection(select(atoms, "resname WAT"), natomspermol=3)
+    protein = Selection(select(atoms, "protein and model 1"), nmols=1)
+    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
     R = mddf(traj, options)
 
