@@ -217,7 +217,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         irefatom=irefatom,
         lastframe_read=lastframe_read,
         nframes_read=nframes_read,
-        autocorrelation = isautocorrelation(trajectory),
+        autocorrelation=isautocorrelation(trajectory),
         solute=SolSummary(trajectory.solute),
         solvent=SolSummary(trajectory.solvent),
         files=[trajectory.filename],
@@ -248,15 +248,15 @@ to the correct weight relative to the random sample.
 function set_samples(R::Result) 
     if R.autocorrelation 
         samples = (
-            n_solute_mols = (R.solvent.nmols - 1) / 2, 
-            n_solvent_mols = R.solvent.nmols - 1,
-            random = R.options.n_random_samples 
+            n_solute_mols=(R.solvent.nmols - 1) / 2,
+            n_solvent_mols=R.solvent.nmols - 1,
+            random=R.options.n_random_samples
         ) 
     else
         samples = (
-            n_solute_mols = R.solute.nmols, 
-            n_solvent_mols = R.solvent.nmols,
-            random = R.options.n_random_samples
+            n_solute_mols=R.solute.nmols,
+            n_solvent_mols=R.solvent.nmols,
+            random=R.options.n_random_samples
         )
     end
     return samples
@@ -517,17 +517,17 @@ end
     water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
 
-    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=10^5, lastframe=1)
     R1 = mddf(traj, options)
 
-    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,firstframe=2)
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=10^5, firstframe=2)
     R2 = mddf(traj, options)
 
-    R = merge([R1,R2])
+    R = merge([R1, R2])
 
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.01)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
