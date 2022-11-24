@@ -88,6 +88,9 @@ function PDBTraj(
             sides[iframe] = T(parse.(Float64, @view(s[2:4])))
         end
     end
+    if iframe != nframes
+        error("Could not find CRYST1 fields with sides for all frames.")
+    end
 
     # Setup the struct that contains the stream in the trajectory type
     stream = Stream(st)
