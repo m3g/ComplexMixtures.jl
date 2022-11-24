@@ -225,7 +225,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Copy (restore) the data from buff.solvent_read, appropriately (skipping the current molecule if autocorrelation)
         if R.autocorrelation
-            imol_range = mol_range(isolute, R.solute.nmols)
+            imol_range = mol_range(isolute, R.solute.natomspermol)
             system.ypositions[1:imol_range[begin]-1] .= @view(buff.solvent_read[1:imol_range[begin]-1])
             system.ypositions[imol_range[begin]:end] .= @view(buff.solvent_read[imol_range[end]+1:end])
         else
@@ -275,11 +275,11 @@ end
     using PDBTools
     using ComplexMixtures.Testing
 
-    # Test simple three-molecule system
-    atoms = readPDB("$(Testing.data_dir)/simple.pdb")
+    # Test simple three-molecule system: cross correlation
+    atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
     protein = Selection(select(atoms, "protein and model 1"), nmols=1)
     water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
+    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format="PDBTraj")
 
     for lastframe in [1,2]
         options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
@@ -292,6 +292,40 @@ end
         @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
     end
 
+    # Self correlation
+    atoms = readPDB("$(Testing.data_dir)/toy/self_monoatomic.pdb")
+    atom = Selection(select(atoms, "resname WAT and model 1"), natomspermol=1)
+    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format="PDBTraj")
+
+    # without atoms in the bulk
+    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
+    R = mddf(traj, options)
+    @test R.volume.total == 27000.0
+    @test R.volume.domain ≈ R.volume.total - R.volume.bulk
+    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.1)
+    @test R.density.solute ≈ 2 / R.volume.total
+    @test R.density.solvent ≈ 2 / R.volume.total
+    @test sum(R.md_count) ≈ 1.0
+
+    # only with atoms in the bulk
+    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,firstframe=2)
+    R = mddf(traj, options)
+    @test R.volume.total == 27000.0
+    @test R.volume.domain ≈ R.volume.total - R.volume.bulk
+    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.1)
+    @test R.density.solute ≈ 2 / R.volume.total
+    @test R.density.solvent ≈ 2 / R.volume.total
+    @test R.density.solvent_bulk ≈ 1 / R.volume.bulk
+
+    # with both frames
+    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5)
+    R = mddf(traj, options)
+    @test R.volume.total == 27000.0
+    @test R.volume.domain ≈ R.volume.total - R.volume.bulk
+    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.1)
+    @test R.density.solute ≈ 2 / R.volume.total
+    @test R.density.solvent ≈ 2 / R.volume.total
+    @test R.density.solvent_bulk ≈ 0.5 / R.volume.bulk
 end
 
 @testitem "mddf - real system" begin
@@ -299,14 +333,13 @@ end
     using PDBTools
     using ComplexMixtures.Testing
 
-    # Test actual system
+    # Test actual system: cross correlation
     options = Options(stride=1,seed=1,StableRNG=true,nthreads=1,silent=true)
     atoms = readPDB(Testing.pdbfile)
     protein = Selection(select(atoms, "protein"), nmols=1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
-
     @test R.volume.total ≈ 603078.4438609097
     @test R.volume.domain ≈ 75368.14585709268
     @test R.volume.bulk ≈ 527710.298003817
@@ -317,4 +350,9 @@ end
     @test sum(R.rdf) ≈ 500.97105526052894
     @test R.kb[end] ≈ -4960.311725361473
     @test R.kb_rdf[end] ≈ -6042.919443198414
+
+    water = Selection(select(atoms, "water"), natomspermol=3)
+    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", water)
+
+
 end
