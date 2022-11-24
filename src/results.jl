@@ -416,7 +416,7 @@ a Result structure of the same type, with all the functions and counters represe
 of the set provided weighted by the number of frames read in each Result set.
 
 """
-function Base.merge(r::Vector{Result})
+function merge(r::Vector{<:Result})
 
     nr = length(r)
     nframes_read = r[1].nframes_read
@@ -504,6 +504,34 @@ function Base.merge(r::Vector{Result})
     end
 
     return R
+end
+
+@testitem "merge" begin
+    using ComplexMixtures
+    using PDBTools
+    using ComplexMixtures.Testing
+
+    # Test simple three-molecule system
+    atoms = readPDB("$(Testing.data_dir)/simple.pdb")
+    protein = Selection(select(atoms, "protein and model 1"), nmols=1)
+    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
+    traj = Trajectory("$(Testing.data_dir)/simple.pdb", protein, water, format="PDBTraj")
+
+    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
+    R1 = mddf(traj, options)
+
+    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,firstframe=2)
+    R2 = mddf(traj, options)
+
+    R = merge([R1,R2])
+
+    @test R.volume.total == 27000.0
+    @test R.volume.domain ≈ R.volume.total - R.volume.bulk
+    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.01)
+    @test R.density.solute ≈ 1 / R.volume.total
+    @test R.density.solvent ≈ 3 / R.volume.total
+    @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+
 end
 
 @testitem "Result - empty" begin
