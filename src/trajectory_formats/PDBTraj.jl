@@ -55,7 +55,8 @@ function PDBTraj(
         line_data = split(line)
         if line_data[1] == "END"
             nframes = nframes + 1
-        elseif nframes == 0 && line_data[1] in ("ATOM","HETATM")
+        end
+        if nframes == 0 && line_data[1] in ("ATOM","HETATM")
             natoms = natoms + 1
         end
     end
