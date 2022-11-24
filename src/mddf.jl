@@ -225,20 +225,15 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Copy (restore) the data from buff.solvent_read, appropriately (skipping the current molecule if autocorrelation)
         if R.autocorrelation
-            iymol = 0
-            for imol = 1:R.solvent.nmols
-                imol == isolute && continue
-                iymol += 1
-                ymol = viewmol(iymol, system.ypositions, R.solvent)
-                ymol .= viewmol(imol, buff.solvent_read, R.solvent)
-            end
+            imol_range = mol_range(isolute, R.solute.nmols)
+            system.ypositions[1:imol_range[begin]-1] .= @view(buff.solvent_read[1:imol_range[begin]-1])
+            system.ypositions[imol_range[begin]:end] .= @view(buff.solvent_read[imol_range[end]+1:end])
         else
             system.ypositions .= buff.solvent_read
         end
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         minimum_distances!(system, R)
-        @show system.list
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
