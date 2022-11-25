@@ -2,7 +2,7 @@
 
 julia_version = "1.8.2"
 manifest_format = "2.0"
-project_hash = "65b5cde1aea7f4fe2377209ee2e00b0a89018a8b"
+project_hash = "04a41e3666855e0da6b6365cbe64fccd81b20c8c"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -19,6 +19,12 @@ deps = ["Libdl", "Logging", "SHA"]
 git-tree-sha1 = "ecdec412a9abc8db54c0efc5548c64dfce072058"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
 version = "0.5.10"
+
+[[deps.CellListMap]]
+deps = ["DocStringExtensions", "LinearAlgebra", "Parameters", "ProgressMeter", "Random", "Setfield", "StaticArrays", "TestItems"]
+git-tree-sha1 = "6675fd056e13f31cc589511a13ccf8a27cd0e7cf"
+uuid = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
+version = "0.8.6"
 
 [[deps.Chemfiles]]
 deps = ["BinaryProvider", "Chemfiles_jll", "DocStringExtensions", "Libdl"]
@@ -42,6 +48,12 @@ deps = ["Chemfiles", "DocStringExtensions", "FortranFiles", "Future", "JSON3", "
 git-tree-sha1 = "0c8e791940e613df45a658168b9b5cc8420a961f"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
 version = "0.5.10"
+
+[[deps.ConstructionBase]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "fb21ddd70a051d882a1686a5a550990bbe371a95"
+uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+version = "1.4.1"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -125,6 +137,12 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
+[[deps.MacroTools]]
+deps = ["Markdown", "Random"]
+git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.10"
+
 [[deps.Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
@@ -136,6 +154,12 @@ version = "2.28.0+0"
 
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
+
+[[deps.MolecularMinimumDistances]]
+deps = ["CellListMap", "DocStringExtensions", "StaticArrays", "TestItems"]
+git-tree-sha1 = "68bc9937d9b6601c09154fe6e9e7ca5939cf121d"
+uuid = "46954fcc-1dd7-4352-b01d-a39240e91dc8"
+version = "0.4.2"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
@@ -214,6 +238,12 @@ version = "0.7.0"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[[deps.Setfield]]
+deps = ["ConstructionBase", "Future", "MacroTools", "StaticArraysCore"]
+git-tree-sha1 = "e2cc6d8c88613c05e1defb55170bf5ff211fbeac"
+uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+version = "1.1.1"
 
 [[deps.SnoopPrecompile]]
 git-tree-sha1 = "f604441450a3c0569830946e5b33b78c928e1a85"
