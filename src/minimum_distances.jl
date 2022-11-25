@@ -96,6 +96,26 @@ end
 end
 
 """
+    update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, isolute::Int, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
+
+$(INTERNAL)
+
+Function that updates a list of minimum distances given the indexes of the atoms involved for one pair within cutoff,
+for autocorrelations (such that the identity of `isolute` is needed)
+
+"""
+function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
+    jmol = mol_index(j, j_natoms_per_molecule)
+    if jmol != isolute
+        d = sqrt(d2)
+        ref_atom_within_cutoff = isrefatom(j, jref_atom, j_natoms_per_molecule)
+        dref = ref_atom_within_cutoff ? d : +Inf
+        list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
+    end
+    return list
+end
+
+"""
     update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
 
 $(INTERNAL)
@@ -123,13 +143,22 @@ $(INTERNAL)
 # Extended help
 
 """
-function minimum_distances!(system::AbstractPeriodicSystem, R::Result)
+function minimum_distances!(system::AbstractPeriodicSystem, R::Result, isolute::Int; preserve_lists::Bool = false)
     jref_atom = R.irefatom
     jnatomspermol = R.solvent.natomspermol
-    map_pairwise!(
-        (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, list),
-        system
-    )
+    if R.autocorrelation
+        map_pairwise!(
+            (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, isolute, list),
+            system;
+            preserve_lists = preserve_lists
+        )
+    else
+        map_pairwise!(
+            (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, list),
+            system;
+            preserve_lists = preserve_lists
+        )
+    end
     return system.list
 end
 
