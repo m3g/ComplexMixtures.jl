@@ -111,7 +111,7 @@ Function that updates a list of minimum distances given the indexes of the atoms
 function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
     d = sqrt(d2)
     jmol = mol_index(j, j_natoms_per_molecule)
-    ref_atom_within_cutoff = (itype(j, j_atoms_per_molecule) == jref_atom)
+    ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
     dref = ref_atom_within_cutoff ? d : +Inf
     list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
     return list
@@ -204,11 +204,11 @@ end
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
     system = ComplexMixtures.setup_PeriodicSystem(traj, options)
     @test system.cutoff == 10.0
-    @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 180) # one molecule less
-    @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 180)
+    @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181) # one molecule less
+    @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
     @test system.parallel == false
     @test length(system.xpositions) == 14 # one TMAO molecule
-    @test length(system.ypositions) == 2520 # one molecule less
+    @test length(system.ypositions) == 2534 # one molecule less
     @test system.unitcell == SMatrix{3,3}(i == j ? traj.sides[1][i] : 0.0 for i in 1:3, j in 1:3) 
     @test system._box == CellListMap.Box(traj.sides[1], 10.0, lcell=options.lcell)
 
