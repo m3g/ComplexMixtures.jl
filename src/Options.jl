@@ -23,7 +23,7 @@ $(TYPEDFIELDS)
 
     # Linked cell length will be (cutoff/lcell), might be tunned for maximum
     # performance
-    lcell::Int = 2
+    lcell::Int = 1
 
     # Sleep time between checks of threads for multple spawn
     sleep::Float64 = 0.01
