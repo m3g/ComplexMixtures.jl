@@ -89,7 +89,7 @@ Function that updates a list of minimum distances given the indexes of the atoms
 for autocorrelations (such that the identity of `isolute` is needed)
 
 """
-function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
+function update_list!(x, y, i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
     jmol = mol_index(j, j_natoms_per_molecule)
     if jmol != isolute
         d = sqrt(d2)
@@ -133,7 +133,7 @@ function minimum_distances!(system::AbstractPeriodicSystem, R::Result, isolute::
     jnatomspermol = R.solvent.natomspermol
     if R.autocorrelation
         map_pairwise!(
-            (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, isolute, list),
+            (x, y, i, j, d2, list) -> update_list!(x, y, i, j, d2, jref_atom, jnatomspermol, isolute, list),
             system;
             preserve_lists = preserve_lists
         )
@@ -172,6 +172,7 @@ function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
         output_name = :list,
         lcell=options.lcell,
         parallel=false, # Important: parallellization is performed at the frame level
+        autoswap=false, # The lists will be built for the solvent, always
     )
     return system
 end
