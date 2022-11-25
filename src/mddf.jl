@@ -176,7 +176,9 @@ function mddf(trajectory::Trajectory, options::Options=Options())
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
             # Compute distances in this frame and update results
+            @show ichunk, iframe - start 
             mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
+            @show ichunk, iframe - start 
         end # frame range for this chunk
     end
     closetraj!(trajectory)
@@ -218,9 +220,11 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     #
     # Compute the MDDFs for each solute molecule
     #
+    @show 1
     for isolute = 1:R.solute.nmols
 
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
+    @show 2
         system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
 
         # Copy (restore) the data from buff.solvent_read, appropriately (skipping the current molecule if autocorrelation)
@@ -233,7 +237,9 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         end
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
+    @show 3
         minimum_distances!(system, R)
+    @show 4
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
@@ -259,11 +265,11 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         end
 
         # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
-        for _ in 1:count(==(isolute), buff.ref_solutes)
-            randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
-            minimum_distances!(system, R)
-            updatecounters!(R, system, Val(:random))
-        end
+        #for _ in 1:count(==(isolute), buff.ref_solutes)
+        #    randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
+        #    minimum_distances!(system, R)
+        #    updatecounters!(R, system, Val(:random))
+        #end
 
     end # loop over solute molecules
 
