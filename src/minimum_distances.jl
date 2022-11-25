@@ -80,21 +80,6 @@ molecules have the same number of atoms.
 """
 mol_index(i, natomspermol) = (i - 1) ÷ natomspermol + 1
 
-# function that finds is an atom is a reference atom
-function isrefatom(i, iref, n_atoms_per_mol)
-    iat = i%n_atoms_per_mol
-    iat = ifelse(iat != 0, iat, n_atoms_per_mol)
-    return iat == iref
-end
-@testitem "isrefatom" begin
-    using ComplexMixtures
-    @test ComplexMixtures.isrefatom(1, 1, 3) == true
-    @test ComplexMixtures.isrefatom(2, 1, 3) == false
-    @test ComplexMixtures.isrefatom(3, 1, 3) == false
-    @test ComplexMixtures.isrefatom(4, 1, 3) == true
-    @test ComplexMixtures.isrefatom(5, 1, 3) == false
-end
-
 """
     update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, isolute::Int, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
 
@@ -108,7 +93,7 @@ function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list:
     jmol = mol_index(j, j_natoms_per_molecule)
     if jmol != isolute
         d = sqrt(d2)
-        ref_atom_within_cutoff = isrefatom(j, jref_atom, j_natoms_per_molecule)
+        ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
         dref = ref_atom_within_cutoff ? d : +Inf
         list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
     end
@@ -126,7 +111,7 @@ Function that updates a list of minimum distances given the indexes of the atoms
 function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
     d = sqrt(d2)
     jmol = mol_index(j, j_natoms_per_molecule)
-    ref_atom_within_cutoff = isrefatom(j, jref_atom, j_natoms_per_molecule)
+    ref_atom_within_cutoff = (itype(j, j_atoms_per_molecule) == jref_atom)
     dref = ref_atom_within_cutoff ? d : +Inf
     list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
     return list
@@ -169,8 +154,7 @@ $(INTERNAL)
 
 Setup the periodic system from CellListMap, to compute minimimum distances. The system
 will be setup such that `xpositions` corresponds to one molecule of the solute, and 
-`ypositions` contains all coordinates of all atoms of the solvent, minus one molecule
-if an autocorrelation is being computed. 
+`ypositions` contains all coordinates of all atoms of the solvent. 
 
 """
 function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
@@ -178,23 +162,13 @@ function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
     firstframe!(trajectory)
     nextframe!(trajectory)
     unitcell = setunitcell(trajectory) # returns vector or matrix depending on the data
-    firstframe!(trajectory)
-    # For autocorrelations, the length of the solvent array contains one less molecule
-    xpositions = copy(@view(trajectory.x_solute[1:trajectory.solute.natomspermol]))
-    if isautocorrelation(trajectory)
-        nmd = trajectory.solvent.nmols - 1
-        ypositions = copy(@view(trajectory.x_solvent[trajectory.solvent.natomspermol+1:end]))
-    else
-        nmd = trajectory.solvent.nmols
-        ypositions = copy(trajectory.x_solvent)
-    end
     closetraj!(trajectory)
     system = PeriodicSystem(
-        xpositions = xpositions,
-        ypositions = ypositions,
+        xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
+        ypositions = zeros(SVector{3,Float64}, trajectory.solvent.nmols * trajectory.solvent.natomspermol),
         unitcell = unitcell,
         cutoff = options.cutoff,
-        output = fill(zero(MinimumDistance), nmd),
+        output = fill(zero(MinimumDistance), trajectory.solvent.nmols),
         output_name = :list,
         lcell=options.lcell,
         parallel=false, # Important: parallellization is performed at the frame level

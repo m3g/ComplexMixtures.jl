@@ -1,6 +1,3 @@
-# Effective number of solvent molecules, if autocorrelation, or not
-solvent_nmols(R) = R.solvent.nmols - R.autocorrelation
-
 #
 # Structure to carry temporary arrays needed
 #
@@ -16,14 +13,12 @@ solvent_nmols(R) = R.solvent.nmols - R.autocorrelation
     indexes_in_bulk::Vector{Int}
 end
 function Buffer(traj::Trajectory, R::Result)
-    nmol = solvent_nmols(R)
-    nat = R.solvent.natomspermol*nmol
     return Buffer(
         solute_read = similar(traj.x_solute), 
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
-        list = fill(zero(MinimumDistance), nmol),
-        indexes_in_bulk = fill(0, nmol)
+        list = fill(zero(MinimumDistance), R.solvent.nmols),
+        indexes_in_bulk = fill(0, R.solvent.nmols)
     )
 end
 
@@ -41,8 +36,8 @@ end
         solute_read = similar(traj.x_solute), 
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
-        list = fill(zero(ComplexMixtures.MinimumDistance), ComplexMixtures.solvent_nmols(R)),
-        indexes_in_bulk = fill(0, ComplexMixtures.solvent_nmols(R))
+        list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols),
+        indexes_in_bulk = fill(0, R.solvent.nmols)
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
@@ -66,12 +61,12 @@ Generate a random solvent distribution from the bulk molecules of a solvent
 
 """
 function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solvent_in_bulk::Int, R::Result, RNG)
-    for isolvent = 1:solvent_nmols(R)
+    for isolvent = R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0 
             jmol = buff.indexes_in_bulk[random(RNG, 1:n_solvent_in_bulk)]
         else
-            jmol = random(RNG, 1:solvent_nmols(R))
+            jmol = random(RNG, 1:R.solvent.nmols)
         end
         # Pick coordinates of the molecule to be randomly moved
         y_new = viewmol(isolvent, system.ypositions, R.solvent) 
