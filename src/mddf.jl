@@ -61,7 +61,7 @@ Generate a random solvent distribution from the bulk molecules of a solvent
 
 """
 function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solvent_in_bulk::Int, R::Result, RNG)
-    for isolvent = R.solvent.nmols
+    for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0 
             jmol = buff.indexes_in_bulk[random(RNG, 1:n_solvent_in_bulk)]
@@ -223,7 +223,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed only for the first solute here
-        minimum_distances!(system, R, isolute; preserve_lists = isolute != 1)
+        minimum_distances!(system, R, isolute; preserve_lists = isolute > 1)
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
@@ -242,12 +242,13 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         # Annotate the indexes of the molecules that are in the bulk solution
         n_solvent_in_bulk = 0
         for i in eachindex(system.list)
+            R.autocorrelation && i == isolute && continue
             if inbulk(system.list[i],options)
                 n_solvent_in_bulk += 1
                 buff.indexes_in_bulk[n_solvent_in_bulk] = i
             end
         end
-
+        
         # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
         for _ in 1:count(==(isolute), buff.ref_solutes)
             randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
