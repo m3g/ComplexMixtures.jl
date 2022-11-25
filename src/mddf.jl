@@ -272,7 +272,7 @@ end
     traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format="PDBTraj")
 
     for lastframe in [1,2]
-        options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
+        options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=lastframe)
         R = mddf(traj, options)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
