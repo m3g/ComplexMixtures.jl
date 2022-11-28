@@ -128,20 +128,20 @@ $(INTERNAL)
 # Extended help
 
 """
-function minimum_distances!(system::AbstractPeriodicSystem, R::Result, isolute::Int; preserve_lists::Bool = false)
+function minimum_distances!(system::AbstractPeriodicSystem, R::Result, isolute::Int; update_lists::Bool)
     jref_atom = R.irefatom
     jnatomspermol = R.solvent.natomspermol
     if R.autocorrelation
         map_pairwise!(
             (x, y, i, j, d2, list) -> update_list!(x, y, i, j, d2, jref_atom, jnatomspermol, isolute, list),
             system;
-            preserve_lists = preserve_lists
+            update_lists = update_lists 
         )
     else
         map_pairwise!(
             (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, list),
             system;
-            preserve_lists = preserve_lists
+            update_lists = update_lists
         )
     end
     return system.list

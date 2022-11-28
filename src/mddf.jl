@@ -213,6 +213,7 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     #
     # Compute the MDDFs for each solute molecule
     #
+    update_lists = true
     for isolute = 1:R.solute.nmols
 
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
@@ -222,8 +223,10 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         system.ypositions .= buff.solvent_read
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
-        # The cell lists will be recomputed only for the first solute here
-        minimum_distances!(system, R, isolute; preserve_lists = isolute > 1)
+        # The cell lists will be recomputed for the first solute, or if a random distribution was computed
+        # for the previous solute
+        minimum_distances!(system, R, isolute; update_lists = update_lists)
+        update_lists = false
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
@@ -251,8 +254,9 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         
         # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
         for _ in 1:count(==(isolute), buff.ref_solutes)
+            update_lists = true
             randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
-            minimum_distances!(system, R, isolute; preserve_lists = false)
+            minimum_distances!(system, R, isolute; update_lists = update_lists)
             updatecounters!(R, system, Val(:random))
         end
 
