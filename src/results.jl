@@ -414,7 +414,7 @@ a Result structure of the same type, with all the functions and counters represe
 of the set provided weighted by the number of frames read in each Result set.
 
 """
-function merge(r::Vector{<:Result})
+function Base.merge(r::Vector{<:Result})
 
     nr = length(r)
     nframes_read = r[1].nframes_read
@@ -522,7 +522,6 @@ end
     R2 = mddf(traj, options)
 
     R = merge([R1, R2])
-
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
     @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
