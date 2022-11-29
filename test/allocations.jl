@@ -44,6 +44,6 @@
   @. buff.solvent_read = traj.x_solvent
   CM.update_unitcell!(system, CM.getsides(traj, 1))
   t_mddf_frame = @benchmark CM.mddf_frame!($R, $system, $buff, $options, $RNG) samples = 1 evals = 1
-  @test t_mddf_frame.allocs < 100
+  @test t_mddf_frame.allocs < 500
 
 end
