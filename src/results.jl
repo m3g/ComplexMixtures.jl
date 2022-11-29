@@ -245,12 +245,12 @@ distribution. Therefore, we must weight the self-distance count by dividing
 it by (n-1)/2, so that we have a count proportional to n as well, leading
 to the correct weight relative to the random sample. 
 =#
-function set_samples(R::Result) 
-    if R.autocorrelation 
+function set_samples(R::Result)
+    if R.autocorrelation
         samples = (
             solvent_nmols=R.solvent.nmols - 1,
             random=R.options.n_random_samples
-        ) 
+        )
     else
         samples = (
             solvent_nmols=R.solvent.nmols,
@@ -529,6 +529,25 @@ end
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
 
+
+    dir = "$(Testing.data_dir)/NAMD"
+    atoms = readPDB("$dir/structure.pdb")
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    water = Selection(select(atoms, "water"), natomspermol=3)
+
+    # save(R,"$dir/merged.json")
+    R_save = load("$dir/merged.json")
+
+    options = Options(firstframe=1, lastframe=2, seed=321, StableRNG=true, nthreads=1, silent=true)
+    traj = Trajectory("$dir/trajectory.dcd", tmao, water)
+    R1 = mddf(traj, options)
+
+    options = Options(firstframe=3, lastframe=6, seed=321, StableRNG=true, nthreads=1, silent=true)
+    traj = Trajectory("$dir/trajectory.dcd", tmao, water)
+    R2 = mddf(traj, options)
+
+    R = merge([R1, R2])
+    @test isapprox(R, R_save, debug=true)
 end
 
 @testitem "Result - empty" begin
@@ -707,20 +726,23 @@ function write(
         bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
         sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
         println(output, "#")
-        println(output, @sprintf( "# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
-        println(output,"""
-            # COLUMNS CORRESPOND TO:
-            #       1  Minimum distance to solute (dmin)
-            #       2  GMD distribution (md count normalized by md count of random-solute distribution
-            #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
-            #       4  Minimum distance site count for each dmin.
-            #       5  Minimum distance site count for each dmin for random solute distribution.
-            #       6  Cumulative number of molecules within dmin in the simulation.
-            #       7  Cumulative number of molecules within dmin for random solute distribution.
-            #       8  Volume of the shell of distance dmin and width binstep.
-            #
-            #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL
-        """)
+        println(output, @sprintf("# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
+        println(
+            output,
+            """
+    # COLUMNS CORRESPOND TO:
+    #       1  Minimum distance to solute (dmin)
+    #       2  GMD distribution (md count normalized by md count of random-solute distribution
+    #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
+    #       4  Minimum distance site count for each dmin.
+    #       5  Minimum distance site count for each dmin for random solute distribution.
+    #       6  Cumulative number of molecules within dmin in the simulation.
+    #       7  Cumulative number of molecules within dmin for random solute distribution.
+    #       8  Volume of the shell of distance dmin and width binstep.
+    #
+    #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL
+"""
+        )
         for i = 1:R.nbins
             line = "  " * format(R.d[i])                                   #  1-DISTANCE
             line = line * "  " * format(R.mddf[i])                         #  2-GMD
@@ -981,24 +1003,24 @@ Print some information about the run.
 """
 function title(R::Result, solute::Selection, solvent::Selection)
     print(
-    """
-    $(bars)
-    Starting MDDF calculation:
-    $(R.nframes_read) frames will be considered.
-    Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-    Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
-    """)
+        """
+        $(bars)
+        Starting MDDF calculation:
+        $(R.nframes_read) frames will be considered.
+        Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
+        Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
+        """)
 end
 function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
     print(
-    """ 
-    $(bars)
-    Starting MDDF calculation in parallel:
-    $(R.nframes_read) frames will be considered.
-    Number of calculation threads: $(nspawn)
-    Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-    Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
-    """)
+        """ 
+        $(bars)
+        Starting MDDF calculation in parallel:
+        $(R.nframes_read) frames will be considered.
+        Number of calculation threads: $(nspawn)
+        Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
+        Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
+        """)
 end
 
 #
@@ -1023,33 +1045,36 @@ $(TYPEDFIELDS)
 end
 
 function Base.show(io::IO, ov::Overview)
-    println(io,"""
-        $bars
-        
-        MDDF Overview:
-        
-        Solvent properties:
-        -------------------
-        
-        Simulation concentration: $(ov.density.solvent) mol L⁻¹
-        Molar volume: $(ov.solvent_molar_volume) cm³ mol⁻¹
-        
-        Concentration in bulk: $(ov.density.solvent_bulk) mol L⁻¹
-        Molar volume in bulk: $(ov.solvent_molar_volume_bulk) cm³ mol⁻¹
-        
-        Solute properties:
-        ------------------
-        
-        Simulation Concentration: $(ov.density.solute) mol L⁻¹
-        Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
-        
-        Using dbulk = $(ov.R.dbulk)Å:
-        Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
-        
-        Auto-correlation: $(ov.R.autocorrelation)
-        
-        Trajectory files and weights:
-        """)
+    println(
+        io,
+        """
+ $bars
+
+ MDDF Overview:
+
+ Solvent properties:
+ -------------------
+
+ Simulation concentration: $(ov.density.solvent) mol L⁻¹
+ Molar volume: $(ov.solvent_molar_volume) cm³ mol⁻¹
+
+ Concentration in bulk: $(ov.density.solvent_bulk) mol L⁻¹
+ Molar volume in bulk: $(ov.solvent_molar_volume_bulk) cm³ mol⁻¹
+
+ Solute properties:
+ ------------------
+
+ Simulation Concentration: $(ov.density.solute) mol L⁻¹
+ Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
+
+ Using dbulk = $(ov.R.dbulk)Å:
+ Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
+
+ Auto-correlation: $(ov.R.autocorrelation)
+
+ Trajectory files and weights:
+ """
+    )
     for i = 1:length(ov.R.files)
         println(io, "   $(ov.R.files[i]) - w = $(ov.R.weights[i])")
     end
@@ -1058,12 +1083,15 @@ function Base.show(io::IO, ov::Overview)
     long_range_std = std(ov.R.mddf[ifar:ov.R.nbins])
     long_range_mean_rdf = mean(ov.R.rdf[ifar:ov.R.nbins])
     long_range_std_rdf = std(ov.R.rdf[ifar:ov.R.nbins])
-    print(io,"""
+    print(
+        io,
+        """
 
-        Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
-        Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
+   Long range MDDF mean (expected 1.0): $long_range_mean ± $long_range_std
+   Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
 
-        $bars""")
+   $bars"""
+    )
 end
 
 """
