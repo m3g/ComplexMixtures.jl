@@ -1,14 +1,14 @@
-using Test
-using ComplexMixtures, PDBTools
-const CM = ComplexMixtures
 
-@testset "NAMD with ChemFiles" begin
+@testitem "NAMD with ChemFiles" begin
+  using ComplexMixtures, PDBTools
+  using ComplexMixtures.Testing
+  const CM = ComplexMixtures
 
   #
   # Tests with NAMD-DCD trajectory
   #
   
-  dir="./data/NAMD"
+  dir="$(Testing.data_dir)/NAMD"
   atoms = readPDB("$dir/structure.pdb")  
   options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
   
