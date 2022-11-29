@@ -63,9 +63,9 @@ the same seed and in serial mode.
 generator from the `StableRNGs` package, to produce identical runs on
 different architectures and Julia versions. Only used for testing. 
 
-`nthreads`: How many threads to use. By default, all available threads
-will be used (for multi-threading, one for managing, `n-1` for computation).  
-
+`nthreads`: How many threads to use. By default, it will be the number
+of physical cores of the computer.
+ 
 `lcell`: Integer, the cell length of the linked-cell method (actually
 the cell length is `cutoff/lcell`). Default: 2.  
 

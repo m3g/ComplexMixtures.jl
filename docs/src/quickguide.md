@@ -55,14 +55,13 @@ julia> include("example.jl")
 ```
 or directly with:
 ```
-% julia -t 5 example.jl
+% julia -t auto example.jl
 ```
-where `-t 5` is optional and defines how many processors will be used
-in the calculation (use, for maximal performance, the number of physical
-cores of your computer, *plus one*).  
+where `-t auto` is optional and defines how many processors will be used
+in the calculation. It is highly recommended to use multi-threading!
 
 !!! note
-    Julia compiles the code the first time it is run in each section. Thus, running script from the command line with, for example, `julia -t 5 example.jl` may appear slow, particularly if you are modifying the script interactively. Ideally, *do not restart Julia*, just repeatedly include your script in the same Julia section. The second time the script is loaded will be much faster. For example:
+    Julia compiles the code the first time it is run in each section. Thus, running script from the command line with, for example, `julia -t auto example.jl` may appear slow, particularly if you are modifying the script interactively. Ideally, *do not restart Julia*, just repeatedly include your script in the same Julia section. The second time the script is loaded will be much faster. For example:
     ```julia-repl
     julia> @time include("./example.jl") 
     # ... some output
