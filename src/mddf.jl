@@ -110,7 +110,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     # Number of threads (chunks) to use
     nchunks = options.nthreads
     if nchunks == 0
-        nchunks = Threads.nthreads()
+        nchunks = CpuId.cpucores()
     end
 
     # Structure in which the final results will be stored
@@ -214,13 +214,11 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
     # Compute the MDDFs for each solute molecule
     #
     update_lists = true
+    system.ypositions .= buff.solvent_read
     for isolute = 1:R.solute.nmols
 
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
         system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
-
-        # Copy (restore) the data from buff.solvent_read, appropriately (skipping the current molecule if autocorrelation)
-        system.ypositions .= buff.solvent_read
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
@@ -238,26 +236,26 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
         # (as many times as needed, as the reference molecules may be repeated - particularly because
         # there may be only one solute molecule, in which case all distributions will be created for
         # the same solute molecule).
-
-        # Save coordinates and list for using data in ideal gas generator
-        buff.list .= system.list
-
-        # Annotate the indexes of the molecules that are in the bulk solution
-        n_solvent_in_bulk = 0
-        for i in eachindex(system.list)
-            R.autocorrelation && i == isolute && continue
-            if inbulk(system.list[i],options)
-                n_solvent_in_bulk += 1
-                buff.indexes_in_bulk[n_solvent_in_bulk] = i
-            end
-        end
-        
-        # Generate random solvent distribution, as many times as needed to satisfy options.n_random_samples
-        for _ in 1:count(==(isolute), buff.ref_solutes)
+        nrand = count(==(isolute), buff.ref_solutes)
+        if nrand > 0
             update_lists = true
-            randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
-            minimum_distances!(system, R, isolute; update_lists = update_lists)
-            updatecounters!(R, system, Val(:random))
+            # Save coordinates and list
+            buff.list .= system.list
+            # Annotate the indexes of the molecules that are in the bulk solution
+            n_solvent_in_bulk = 0
+            for i in eachindex(system.list)
+                R.autocorrelation && i == isolute && continue
+                if inbulk(system.list[i],options)
+                    n_solvent_in_bulk += 1
+                    buff.indexes_in_bulk[n_solvent_in_bulk] = i
+                end
+            end
+            for _ in 1:nrand
+                randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
+                minimum_distances!(system, R, isolute; update_lists = update_lists)
+                updatecounters!(R, system, Val(:random))
+            end
+            system.ypositions .= buff.solvent_read
         end
 
     end # loop over solute molecules
