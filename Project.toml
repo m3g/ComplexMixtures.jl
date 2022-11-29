@@ -28,6 +28,7 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 CellListMap = "0.8.9"
 Chemfiles = "0.9 - 0.10"
 ChunkSplitters = "0.1"
+CpuId = "0.3"
 DocStringExtensions = "0.8, 0.9"
 FortranFiles = "0.6"
 JSON3 = "1"
@@ -38,13 +39,15 @@ StableRNGs = "1"
 StaticArrays = "1"
 StructTypes = "1"
 TestItems = "0.1"
-CpuId = "0.3"
 julia = "1.6"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
+PDBTools = "e29189f1-7114-4dbd-93d0-c5673a921a58"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
 
-[target]
-tests = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner"]
+[targets]
+test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner"]
