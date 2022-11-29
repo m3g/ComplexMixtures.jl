@@ -1,14 +1,13 @@
-using Test
-using ComplexMixtures, PDBTools
-const CM = ComplexMixtures
-
-@testset "Gromacs" begin
+@testitem "Gromacs" begin
+  using ComplexMixtures, PDBTools
+  using ComplexMixtures.Testing
+  const CM = ComplexMixtures
 
   #
   # Tests with Gromacs-XSC trajectory
   #
   
-  dir="./data/Gromacs"
+  dir="$(Testing.data_dir)/Gromacs"
   atoms = readPDB("$dir/system.pdb")  
   options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
   
@@ -23,7 +22,7 @@ const CM = ComplexMixtures
   @test isapprox(R,R_save,debug=true) 
   
   # Example 1: EMIM-DCA
-  
+
   # save(R,"$dir/EMI_DCA.json")
   R_save = load("$dir/EMI_DCA.json")
   emi = Selection(select(atoms,"resname EMI"),natomspermol=20)
