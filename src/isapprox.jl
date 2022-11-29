@@ -11,8 +11,9 @@ const CMTypes = Union{Result,Density,Volume,SolSummary,Options}
 Base.isapprox(r1::T, r2::T; debug=false) where T <: CMTypes
 ```
 
-Function to test if two runs offered similar results. Mostly used in the 
-package testing routines
+$(INTERNAL)
+
+Function to test if two runs offered similar results. Mostly used in the package testing routines.
 
 
 """
