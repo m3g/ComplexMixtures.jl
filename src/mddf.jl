@@ -328,7 +328,7 @@ end
     using PDBTools
     using ComplexMixtures.Testing
 
-    options = Options(stride=1,seed=1,StableRNG=true,nthreads=1,silent=true)
+    options = Options(seed=1,stride=1,StableRNG=true,nthreads=1,silent=true)
     atoms = readPDB(Testing.pdbfile)
     protein = Selection(select(atoms, "protein"), nmols=1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
@@ -336,11 +336,15 @@ end
     # Test actual system: cross correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
+    # Deterministic
     @test R.volume.total ≈ 603078.4438609097
-    @test R.volume.domain ≈ 75368.14585709268
-    @test R.volume.bulk ≈ 527710.298003817
+    @test sum(R.md_count) ≈ 25.250000000000007 
+    @test sum(R.rdf_count) ≈ 19.550000000000004
     @test R.density.solute ≈ 1.6581590839128614e-6
     @test R.density.solvent ≈ 0.00030012679418822794
+    # Dependent on the random number seed
+    @test R.volume.domain ≈ 75368.14585709268
+    @test R.volume.bulk ≈ 527710.298003817
     @test R.density.solvent_bulk ≈ 0.000305944380109164
     @test sum(R.mddf) ≈ 594.1347058364827
     @test sum(R.rdf) ≈ 500.97105526052894
@@ -350,18 +354,18 @@ end
     # Self correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
     R = mddf(traj, options)
+    # Deterministic
     @test R.volume.total ≈ 603078.4438609097
-    @test R.volume.domain ≈ 6985.65864138887
-    @test R.volume.bulk ≈ 596092.7852195208
+    @test sum(R.md_count) ≈ 2.8939226519337016
+    @test sum(R.rdf_count) ≈ 1.858839779005525
     @test R.density.solute ≈ 0.00030012679418822794
     @test R.density.solvent ≈ 0.00030012679418822794
-    @test R.density.solvent_bulk ≈ 0.00029884803949672213
-    @test sum(R.mddf) ≈ 269.7876874506709
-    @test sum(R.rdf) ≈ 195.07669034464615
-    @test R.kb[end] ≈ -415.27018868257363
-    @test R.kb_rdf[end] ≈ -455.7395488933383
-
-    # deveria ser deterministico sempre?
-    @test sum(R.md_count) ≈ 2.8939226519337016 # voltar
-    @test sum(R.rdf_count) ≈ 1.858839779005525 # voltar
+    # Dependent on the random number seed
+    @test R.volume.domain ≈ 6801.384672431371
+    @test R.volume.bulk ≈ 596277.0591884783 
+    @test R.density.solvent_bulk ≈ 0.00029875568324470034
+    @test sum(R.mddf) ≈ 274.3059721126019
+    @test sum(R.rdf) ≈ 167.99907918968694
+    @test R.kb[end] ≈ -415.39856380764314
+    @test R.kb_rdf[end] ≈ -345.01467846544756
 end
