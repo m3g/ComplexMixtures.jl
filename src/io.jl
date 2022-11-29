@@ -19,13 +19,13 @@ file_extension(file::String) = file[findlast(==('.'), file)+1:end]
 #
 # Function that determines if a character is empty
 #
-empty_char(c::Char) = in(c,(Char(9),Char(32)))
+empty_char(c::Char) = in(c, (Char(9), Char(32)))
 
 #
 # Function that checks if a line is a comment line or if it is empty
 #
-function commentary(s::String) 
-    i = findfirst(c -> !(empty_char(c)), s) 
+function commentary(s::String)
+    i = findfirst(c -> !(empty_char(c)), s)
     return isnothing(i) || s[i] == '#'
 end
 
@@ -75,10 +75,10 @@ mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
 
 @testitem "str numbers" begin
     import ComplexMixtures as CM
-    @test CM.atoms_str(1) == "1 atom" 
-    @test CM.atoms_str(2) == "2 atoms" 
-    @test CM.mol_str(1) == "1 molecule" 
-    @test CM.mol_str(2) == "2 molecules" 
+    @test CM.atoms_str(1) == "1 atom"
+    @test CM.atoms_str(2) == "2 atoms"
+    @test CM.mol_str(1) == "1 molecule"
+    @test CM.mol_str(2) == "2 molecules"
 end
 
 """

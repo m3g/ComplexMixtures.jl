@@ -24,9 +24,9 @@ end
 
 @testitem "Selection PDBTools" begin
     pdbfile = ComplexMixtures.Testing.pdbfile
-    s = Selection(pdbfile, "protein and residue 2", nmols=1, natomspermol=11)
+    s = Selection(pdbfile, "protein and residue 2", nmols = 1, natomspermol = 11)
     @test s.imol == ones(Int, 11)
-    @test s.index == [12 + i for i in 1:11] 
+    @test s.index == [12 + i for i = 1:11]
     @test s.names == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
     @test s.natoms == 11
     @test s.natomspermol == 11
@@ -44,9 +44,9 @@ end
     import PDBTools
     pdbfile = ComplexMixtures.Testing.pdbfile
     atoms = PDBTools.readPDB(pdbfile, "protein and residue 2") 
-    s = Selection(atoms, nmols=1, natomspermol=11)
+    s = Selection(atoms, nmols = 1, natomspermol = 11)
     @test s.imol == ones(Int, 11)
-    @test s.index == [12 + i for i in 1:11] 
+    @test s.index == [12 + i for i = 1:11]
     @test s.names == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
     @test s.natoms == 11
     @test s.natomspermol == 11
@@ -63,9 +63,9 @@ end
     using PDBTools
     pdbfile = ComplexMixtures.Testing.pdbfile
     indexes = index.(readPDB(pdbfile, "protein and residue 2"))
-    s = Selection(indexes, nmols=1, natomspermol=11)
+    s = Selection(indexes, nmols = 1, natomspermol = 11)
     @test s.imol == ones(Int, 11)
-    @test s.index == [12 + i for i in 1:11] 
+    @test s.index == [12 + i for i = 1:11]
     @test s.names == ["$i" for i in s.index]
     @test s.natoms == 11
     @test s.natomspermol == 11
@@ -73,7 +73,12 @@ end
 end
 
 # Function to initialize the structures
-function Selection(indexes::Vector{Int}, names::Vector{String}; nmols::Int = 0, natomspermol::Int = 0)
+function Selection(
+    indexes::Vector{Int},
+    names::Vector{String};
+    nmols::Int = 0,
+    natomspermol::Int = 0,
+)
 
     if nmols == 0 && natomspermol == 0
         throw(ArgumentError("Set nmols or natomspermol when defining a selection."))
@@ -93,12 +98,12 @@ function Selection(indexes::Vector{Int}, names::Vector{String}; nmols::Int = 0, 
         if natoms % nmols != 0
             throw(ArgumentError("Number of atoms in selection must be a multiple of nmols."))
         end
-        natomspermol = div(natoms,nmols)
+        natomspermol = div(natoms, nmols)
     else
         if natoms % natomspermol != 0
             throw(ArgumentError(" Number of atoms in selection must be a multiple of natomspermols."))
         end
-        nmols = div(natoms,natomspermol)
+        nmols = div(natoms, natomspermol)
     end
 
     # Setting the vector that contains the index of the molecule of each atom

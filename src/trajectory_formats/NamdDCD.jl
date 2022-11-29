@@ -63,7 +63,8 @@ function NamdDCD(
 
     # Read header
     IntVec = Vector{Int32}(undef, 17)
-    hdr, read_nframes, IntVec[1:8], ts, IntVec[9:17] = read(st, FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
+    hdr, read_nframes, IntVec[1:8], ts, IntVec[9:17] =
+        read(st, FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
     dummyi, title = read(st, Int32, FString{80})
     read_natoms = read(st, Int32)
 

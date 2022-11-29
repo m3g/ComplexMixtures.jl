@@ -66,9 +66,11 @@ function eulermat(beta, gamma, theta)
     s2 = sin(gamma)
     c3 = cos(theta)
     s3 = sin(theta)
-    @SMatrix [c2*c3 -c2*s3 s2
+    @SMatrix [
+        c2*c3 -c2*s3 s2
         (c1*s3+c3*s1*s2) (c1*c3-s1*s2*s3) -c2*s1
-        (s1*s3-c1*c3*s2) (c1*s2*s3+c3*s1) c1*c2]
+        (s1*s3-c1*c3*s2) (c1*s2*s3+c3*s1) c1*c2
+    ]
 end
 
 @testitem "eulermat" begin
@@ -102,15 +104,19 @@ end
     # Orthorhombic box
     box = CellListMap.Box(SVector(10.0, 10.0, 10.0), 1.0)
     x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[1], box) ≈ SVector{3,Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    @test ComplexMixtures.wrap!(x, x[1], box) ≈
+          SVector{3,Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
     x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[2], box) ≈ SVector{3,Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
+    @test ComplexMixtures.wrap!(x, x[2], box) ≈
+          SVector{3,Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
     # Triclinic box
     box = CellListMap.Box(@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], 1.0)
     x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[1], box) ≈ SVector{3,Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    @test ComplexMixtures.wrap!(x, x[1], box) ≈
+          SVector{3,Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
     x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[2], box) ≈ SVector{3,Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
+    @test ComplexMixtures.wrap!(x, x[2], box) ≈
+          SVector{3,Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
 end
 
 """
@@ -134,11 +140,16 @@ end
     using ComplexMixtures
     using StaticArrays
     x = [SVector(1.0, 0.0, 0.0), SVector(0.0, 0.0, 0.0)]
-    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, 0.0, 0.0) ≈ SVector{3,Float64}[[0.5, 0.0, 0.0], [-0.5, 0.0, 0.0]]
-    @test ComplexMixtures.move!(copy(x), SVector(1.0, 1.0, 1.0), 0.0, 0.0, 0.0) ≈ SVector{3,Float64}[[1.5, 1.0, 1.0], [0.5, 1.0, 1.0]]
-    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), π, 0.0, 0.0) ≈ SVector{3,Float64}[[0.5, 0.0, 0.0], [-0.5, 0.0, 0.0]]
-    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, π, 0.0) ≈ SVector{3,Float64}[[-0.5, 0.0, 0.0], [0.5, 0.0, 0.0]]
-    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, 0.0, π) ≈ SVector{3,Float64}[[-0.5, 0.0, 0.0], [0.5, 0.0, 0.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, 0.0, 0.0) ≈
+          SVector{3,Float64}[[0.5, 0.0, 0.0], [-0.5, 0.0, 0.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(1.0, 1.0, 1.0), 0.0, 0.0, 0.0) ≈
+          SVector{3,Float64}[[1.5, 1.0, 1.0], [0.5, 1.0, 1.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), π, 0.0, 0.0) ≈
+          SVector{3,Float64}[[0.5, 0.0, 0.0], [-0.5, 0.0, 0.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, π, 0.0) ≈
+          SVector{3,Float64}[[-0.5, 0.0, 0.0], [0.5, 0.0, 0.0]]
+    @test ComplexMixtures.move!(copy(x), SVector(0.0, 0.0, 0.0), 0.0, 0.0, π) ≈
+          SVector{3,Float64}[[-0.5, 0.0, 0.0], [0.5, 0.0, 0.0]]
 end
 
 """
@@ -154,16 +165,28 @@ Function that generates a new random position for a molecule.
 The new position is returned in `x_new`, a previously allocated array.
 
 """
-random_move!(x::AbstractVector{T}, irefatom::Int, system::AbstractPeriodicSystem, RNG) where {T<:SVector} =
-    random_move!(x, irefatom, system._box, RNG)
+random_move!(
+    x::AbstractVector{T},
+    irefatom::Int,
+    system::AbstractPeriodicSystem,
+    RNG,
+) where {T<:SVector} = random_move!(x, irefatom, system._box, RNG)
 # Using the `system._box`, such that we can test this without building the whole system
-function random_move!(x::AbstractVector{T}, irefatom::Int, box::CellListMap.Box, RNG) where {T<:SVector}
+function random_move!(
+    x::AbstractVector{T},
+    irefatom::Int,
+    box::CellListMap.Box,
+    RNG,
+) where {T<:SVector}
     # To avoid boundary problems, the center of coordinates are generated in a 
     # much larger region, and wrapped aftwerwards
     scale = 100.0
 
     # Generate random coordiantes for the center of mass
-    newcm = T(scale * (-box.unit_cell_max[i] / 2 + random(RNG, Float64) * box.unit_cell_max[i]) for i in 1:3)
+    newcm = T(
+        scale * (-box.unit_cell_max[i] / 2 + random(RNG, Float64) * box.unit_cell_max[i]) for
+        i = 1:3
+    )
 
     # Generate random rotation angles 
     beta = 2π * random(RNG, Float64)
@@ -186,8 +209,8 @@ end
     using LinearAlgebra: norm
     import CellListMap
     function check_internal_distances(x, y)
-        for i in firstindex(x):lastindex(x)-1
-            for j in i+1:lastindex(x)
+        for i = firstindex(x):lastindex(x)-1
+            for j = i+1:lastindex(x)
                 x_ij = norm(x[i] - x[j])
                 y_ij = norm(y[i] - y[j])
                 if !isapprox(x_ij, y_ij)
@@ -202,23 +225,20 @@ end
 
     # Orthorhombic cell
     box = CellListMap.Box(SVector(10.0, 10.0, 10.0), 0.1)
-    x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
+    x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
+    x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
+    x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
 
     # Triclinic cell
     box = CellListMap.Box(@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], 1.0)
-    x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
+    x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
+    x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ in 1:5]
+    x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
 
 end
-
-
-

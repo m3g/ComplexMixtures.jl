@@ -52,8 +52,8 @@ function ChemFile(
     filename::String,
     solute::Selection,
     solvent::Selection;
-    format="",
-    T::Type=SVector{3,Float64}
+    format = "",
+    T::Type = SVector{3,Float64},
 )
 
     st = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)

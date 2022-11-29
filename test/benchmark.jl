@@ -3,12 +3,12 @@ const CM = ComplexMixtures
 
 dir = "$(@__DIR__ )/data/NAMD"
 atoms = readPDB("$dir/structure.pdb")
-protein = Selection(select(atoms, "protein"), nmols=1)
-tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
-water = Selection(select(atoms, "water"), natomspermol=3)
+protein = Selection(select(atoms, "protein"), nmols = 1)
+tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+water = Selection(select(atoms, "water"), natomspermol = 3)
 
-options_single = Options(stride=1, seed=321, nthreads=1, silent=true)
-options_multi = Options(stride=1, seed=321, silent=true)
+options_single = Options(stride = 1, seed = 321, nthreads = 1, silent = true)
+options_multi = Options(stride = 1, seed = 321, silent = true)
 
 nthreads = options_multi.nthreads
 
@@ -76,4 +76,3 @@ println(" Water-Water - nthreads = $nthreads ")
 traj = Trajectory("$dir/trajectory.dcd", water)
 @time R = mddf(traj, options_multi)
 println(" --------------------------------------------------------------")
-

@@ -47,4 +47,3 @@
   @test t_mddf_frame.allocs < 100
 
 end
-

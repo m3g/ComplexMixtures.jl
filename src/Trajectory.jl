@@ -25,20 +25,26 @@ include("./trajectory_formats/ChemFiles.jl")
 include("./trajectory_formats/NamdDCD.jl")
 include("./trajectory_formats/PDBTraj.jl")
 
-function Trajectory(filename::String, solute::Selection, solvent::Selection; format::String="", chemfiles=false)
+function Trajectory(
+    filename::String,
+    solute::Selection,
+    solvent::Selection;
+    format::String = "",
+    chemfiles = false,
+)
     if !chemfiles && (format == "dcd" || FileOperations.file_extension(filename) == "dcd")
         trajectory = NamdDCD(filename, solute, solvent)
     elseif !chemfiles && format == "PDBTraj"
         trajectory = PDBTraj(filename, solute, solvent)
     else
-        trajectory = ChemFile(filename, solute, solvent, format=format)
+        trajectory = ChemFile(filename, solute, solvent, format = format)
     end
     return trajectory
 end
 
 # If only one selection is provided, assume that the solute and the solvent are the same
-Trajectory(filename::String, solvent::Selection; format::String="", chemfiles=false) =
-    Trajectory(filename, solvent, solvent, format=format, chemfiles=chemfiles)
+Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles = false) =
+    Trajectory(filename, solvent, solvent, format = format, chemfiles = chemfiles)
 
 #
 # Function to get the appropriate representation of the unit cell, depending on its type
@@ -48,7 +54,7 @@ function setunitcell(uc::AbstractVecOrMat)
         SVector(uc)
     else # Orthorhombic in practice 
         if isdiag(uc)
-            SVector{3}(uc[i,i] for i = 1:3)
+            SVector{3}(uc[i, i] for i = 1:3)
         else # Triclinic cell
             SMatrix{3,3}(uc)
         end
@@ -74,14 +80,15 @@ setunitcell(trajectory::Trajectory) = setunitcell(trajectory.sides[1])
 
     # From the trajectory
     atoms = readPDB(Testing.pdbfile)
-    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
-    protein = Selection(select(atoms, "protein"), nmols=1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     ComplexMixtures.opentraj!(traj)
     ComplexMixtures.firstframe!(traj)
     ComplexMixtures.nextframe!(traj)
-    @test ComplexMixtures.setunitcell(traj) == SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
+    @test ComplexMixtures.setunitcell(traj) ==
+          SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
     ComplexMixtures.closetraj!(traj)
 end
 
@@ -92,8 +99,8 @@ end
     using StaticArrays
 
     atoms = readPDB(Testing.pdbfile)
-    protein = Selection(select(atoms, "protein"), nmols=1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # NAMD DCD file
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
@@ -102,13 +109,23 @@ end
     @test traj.sides_in_dcd == true
 
     # PDB file
-    traj = Trajectory("$(Testing.data_dir)/PDB/trajectory.pdb", protein, tmao, format="PDBTraj")
+    traj = Trajectory(
+        "$(Testing.data_dir)/PDB/trajectory.pdb",
+        protein,
+        tmao,
+        format = "PDBTraj",
+    )
     @test traj.solute.natoms == 1463
     @test traj.solvent.natoms == 2534
     @test traj.sides[1] ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
 
     # Chemfiles with NAMD
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao, chemfiles=true)
+    traj = Trajectory(
+        "$(Testing.data_dir)/NAMD/trajectory.dcd",
+        protein,
+        tmao,
+        chemfiles = true,
+    )
     @test traj.nframes == 20
     @test traj.sides[1] ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
     @test traj.solute.natoms == 1463
@@ -116,8 +133,8 @@ end
 
     # Chemfiles with Gromacs
     atoms = readPDB("$(Testing.data_dir)/Gromacs/system.pdb")
-    protein = Selection(select(atoms, "protein"), nmols=1)
-    emi = Selection(select(atoms, "resname EMI"), natomspermol=20)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    emi = Selection(select(atoms, "resname EMI"), natomspermol = 20)
     traj = Trajectory("$(Testing.data_dir)/Gromacs/trajectory.xtc", protein, emi)
     @test traj.nframes == 26
     @test traj.sides[1] ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)

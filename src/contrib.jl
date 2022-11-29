@@ -19,13 +19,13 @@ function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vect
     # If the selection is a single molecule, the indexes are anything
     if s.nmols == 1
         for it in indexes
-            ind = findfirst(isequal(it),s.index)
+            ind = findfirst(isequal(it), s.index)
             if isnothing(ind)
                 error("Index $it of input list not found in selection indexes list.")
             end
             c += atom_contributions[:, ind]
         end
-    # If more than one molecule, the index must correspond to an atom within one molecule
+        # If more than one molecule, the index must correspond to an atom within one molecule
     else
         for it in indexes
             if it > s.natomspermol

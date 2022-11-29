@@ -18,7 +18,7 @@ function Buffer(traj::Trajectory, R::Result)
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(MinimumDistance), R.solvent.nmols),
-        indexes_in_bulk = fill(0, R.solvent.nmols)
+        indexes_in_bulk = fill(0, R.solvent.nmols),
     )
 end
 
@@ -27,9 +27,9 @@ end
     using PDBTools
     using ComplexMixtures.Testing
     atoms = readPDB(Testing.pdbfile)
-    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
-    protein = Selection(select(atoms, "protein"), nmols=1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = Result(traj, options)
     b0 = ComplexMixtures.Buffer(
@@ -37,7 +37,7 @@ end
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols),
-        indexes_in_bulk = fill(0, R.solvent.nmols)
+        indexes_in_bulk = fill(0, R.solvent.nmols),
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
@@ -49,8 +49,9 @@ end
 #
 # Defines is a molecule is a bulk molecule
 #
-inbulk(md::MinimumDistance,options::Options) =
-    options.usecutoff ? (md.within_cutoff && md.dmin_mol > options.dbulk) : !md.within_cutoff
+inbulk(md::MinimumDistance, options::Options) =
+    options.usecutoff ? (md.within_cutoff && md.dmin_mol > options.dbulk) :
+    !md.within_cutoff
 
 """
     randomize_solvent!(system, buff, n_solvent_in_bulk, options, RNG)
@@ -60,7 +61,13 @@ $(INTERNAL)
 Generate a random solvent distribution from the bulk molecules of a solvent
 
 """
-function randomize_solvent!(system::AbstractPeriodicSystem, buff::Buffer, n_solvent_in_bulk::Int, R::Result, RNG)
+function randomize_solvent!(
+    system::AbstractPeriodicSystem,
+    buff::Buffer,
+    n_solvent_in_bulk::Int,
+    R::Result,
+    RNG,
+)
     for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0 
@@ -102,7 +109,7 @@ julia> results = mddf(trajectory,options);
 ```
 
 """
-function mddf(trajectory::Trajectory, options::Options=Options())
+function mddf(trajectory::Trajectory, options::Options = Options())
 
     # Set random number generator
     RNG = init_random(options)
@@ -117,12 +124,12 @@ function mddf(trajectory::Trajectory, options::Options=Options())
     R = Result(trajectory, options)
 
     # Initializing the structure that carries the result per thread
-    R_chunk = [Result(trajectory, options) for _ in 1:nchunks]
+    R_chunk = [Result(trajectory, options) for _ = 1:nchunks]
 
     # Create data structures required for multithreading: needed to read coordinates in each
     # frame independently, and compute the minimum-distance list 
-    system = [setup_PeriodicSystem(trajectory, options) for _ in 1:nchunks]
-    buff = [Buffer(trajectory, R) for _ in 1:nchunks]
+    system = [setup_PeriodicSystem(trajectory, options) for _ = 1:nchunks]
+    buff = [Buffer(trajectory, R) for _ = 1:nchunks]
 
     # Open the trajectory stream and go to first frame
     opentraj!(trajectory)
@@ -150,7 +157,7 @@ function mddf(trajectory::Trajectory, options::Options=Options())
             # Read frame coordinates
             lock(read_lock) do 
                 # skip frames if stride > 1
-                while (iframe+1)%options.stride != 0
+                while (iframe + 1) % options.stride != 0
                     nextframe!(trajectory)
                     iframe += 1
                 end
@@ -190,7 +197,8 @@ function mddf(trajectory::Trajectory, options::Options=Options())
 end
 
 # Compute cell volume from unitcell matrix
-cell_volume(system::AbstractPeriodicSystem) = @views dot(cross(system.unitcell[:,1],system.unitcell[:,2]),system.unitcell[:,3])
+cell_volume(system::AbstractPeriodicSystem) =
+    @views dot(cross(system.unitcell[:, 1], system.unitcell[:, 2]), system.unitcell[:, 3])
 
 """
     mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
@@ -200,7 +208,13 @@ $(INTERNAL)
 Computes the MDDF for a single frame, for autocorrelation of molecules. Modifies the data in the `R` (type `Result`) structure.
 
 """
-function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
+function mddf_frame!(
+    R::Result,
+    system::AbstractPeriodicSystem,
+    buff::Buffer,
+    options::Options,
+    RNG,
+)
 
     # Sum up the volume of this frame
     R.volume.total += cell_volume(system)
@@ -245,12 +259,12 @@ function mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, op
             n_solvent_in_bulk = 0
             for i in eachindex(system.list)
                 R.autocorrelation && i == isolute && continue
-                if inbulk(system.list[i],options)
+                if inbulk(system.list[i], options)
                     n_solvent_in_bulk += 1
                     buff.indexes_in_bulk[n_solvent_in_bulk] = i
                 end
             end
-            for _ in 1:nrand
+            for _ = 1:nrand
                 randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
                 minimum_distances!(system, R, isolute; update_lists = update_lists)
                 updatecounters!(R, system, Val(:random))
@@ -270,16 +284,24 @@ end
 
     # Test simple three-molecule system: cross correlation
     atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
-    protein = Selection(select(atoms, "protein and model 1"), nmols=1)
-    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format="PDBTraj")
+    protein = Selection(select(atoms, "protein and model 1"), nmols = 1)
+    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
+    traj =
+        Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
 
-    for lastframe in [1,2]
-        options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=lastframe)
+    for lastframe in [1, 2]
+        options = Options(
+            seed = 321,
+            StableRNG = true,
+            nthreads = 1,
+            silent = true,
+            n_random_samples = 10^5,
+            lastframe = lastframe,
+        )
         R = mddf(traj, options)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.01)
+        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.01)
         @test R.density.solute ≈ 1 / R.volume.total
         @test R.density.solvent ≈ 3 / R.volume.total
         @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
@@ -287,35 +309,55 @@ end
 
     # Self correlation
     atoms = readPDB("$(Testing.data_dir)/toy/self_monoatomic.pdb")
-    atom = Selection(select(atoms, "resname WAT and model 1"), natomspermol=1)
+    atom = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
     traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format="PDBTraj")
 
     # without atoms in the bulk
-    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,lastframe=1)
+    options = Options(
+        seed = 321,
+        StableRNG = true,
+        nthreads = 1,
+        silent = true,
+        n_random_samples = 10^5,
+        lastframe = 1,
+    )
     R = mddf(traj, options)
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.1)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.1)
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test sum(R.md_count) ≈ 1.0
 
     # only with atoms in the bulk
-    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5,firstframe=2)
+    options = Options(
+        seed = 321,
+        StableRNG = true,
+        nthreads = 1,
+        silent = true,
+        n_random_samples = 10^5,
+        firstframe = 2,
+    )
     R = mddf(traj, options)
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.1)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.1)
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test R.density.solvent_bulk ≈ 1 / R.volume.bulk
 
     # with both frames
-    options = Options(seed=321,StableRNG=true,nthreads=1,silent=true,n_random_samples=10^5)
+    options = Options(
+        seed = 321,
+        StableRNG = true,
+        nthreads = 1,
+        silent = true,
+        n_random_samples = 10^5,
+    )
     R = mddf(traj, options)
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain,(4π/3) * R.dbulk^3; rtol = 0.1)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.1)
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test R.density.solvent_bulk ≈ 0.5 / R.volume.bulk
@@ -326,10 +368,10 @@ end
     using PDBTools
     using ComplexMixtures.Testing
 
-    options = Options(seed=1,stride=1,StableRNG=true,nthreads=1,silent=true)
+    options = Options(seed = 1, stride = 1, StableRNG = true, nthreads = 1, silent = true)
     atoms = readPDB(Testing.pdbfile)
-    protein = Selection(select(atoms, "protein"), nmols=1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # Test actual system: cross correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)

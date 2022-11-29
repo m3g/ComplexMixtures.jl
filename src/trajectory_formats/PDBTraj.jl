@@ -56,7 +56,7 @@ function PDBTraj(
         if line_data[1] == "END"
             nframes = nframes + 1
         end
-        if nframes == 0 && line_data[1] in ("ATOM","HETATM")
+        if nframes == 0 && line_data[1] in ("ATOM", "HETATM")
             natoms = natoms + 1
         end
     end
@@ -140,13 +140,15 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
                 x = parse(Float64, record[31:38])
                 y = parse(Float64, record[39:46])
                 z = parse(Float64, record[47:54])
-                if i_solute < trajectory.solute.natoms && iatom == trajectory.solute.index[i_solute+1]
+                if i_solute < trajectory.solute.natoms &&
+                   iatom == trajectory.solute.index[i_solute+1]
                     i_solute += 1
-                    trajectory.x_solute[i_solute] = T(x,y,z)
+                    trajectory.x_solute[i_solute] = T(x, y, z)
                 end
-                if i_solvent < trajectory.solvent.natoms && iatom == trajectory.solvent.index[i_solvent+1]
+                if i_solvent < trajectory.solvent.natoms &&
+                   iatom == trajectory.solvent.index[i_solvent+1]
                     i_solvent += 1
-                    trajectory.x_solvent[i_solvent] = T(x,y,z)
+                    trajectory.x_solvent[i_solvent] = T(x, y, z)
                 end
             end
         end

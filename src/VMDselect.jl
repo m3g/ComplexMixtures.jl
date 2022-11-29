@@ -82,8 +82,9 @@ end
     using ComplexMixtures
     pdbfile = "$(@__DIR__)/../test/data/NAMD/structure.pdb"
     if !isnothing(Sys.which("vmd"))
-        @test VMDselect(pdbfile, "protein and residue 1") == 
-            ([13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]) 
+        @test VMDselect(pdbfile, "protein and residue 1") == (
+            [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+            ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"],
+        )
     end
 end
-

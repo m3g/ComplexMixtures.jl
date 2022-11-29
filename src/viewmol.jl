@@ -21,8 +21,8 @@ $(INTERNAL)
 Returns a view of a coordinate vector corresponding to the atoms of a molecule with index i. n is the number of atoms of the molecule.
 
 """
-viewmol(i::Int, x::Vector{T}, n::Int) where {T} = @view(x[mol_range(i,n)])
+viewmol(i::Int, x::Vector{T}, n::Int) where {T} = @view(x[mol_range(i, n)])
 
 # From the selection of the solute or solvent
-viewmol(i::Int, x::Vector{T}, s::Union{Selection,SolSummary}) where {T} = viewmol(i, x, s.natomspermol)
-
+viewmol(i::Int, x::Vector{T}, s::Union{Selection,SolSummary}) where {T} =
+    viewmol(i, x, s.natomspermol)

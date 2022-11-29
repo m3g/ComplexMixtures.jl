@@ -144,7 +144,7 @@ end
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-function Result(trajectory::Trajectory, options::Options; irefatom=-1)
+function Result(trajectory::Trajectory, options::Options; irefatom = -1)
 
     # Check for simple input errors
     if options.stride < 1
@@ -192,7 +192,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
         irefatom = 0
         dmin = +Inf
         cm = mean(first_mol)
-        for (i,at) in pairs(first_mol)
+        for (i, at) in pairs(first_mol)
             d = norm(at - cm)
             if d < dmin 
                 dmin = d
@@ -220,18 +220,18 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
     end
 
     return Result(
-        options=options,
-        nbins=nbins,
-        dbulk=options.dbulk,
-        cutoff=cutoff,
-        irefatom=irefatom,
-        lastframe_read=lastframe_read,
-        nframes_read=nframes_read,
-        autocorrelation=isautocorrelation(trajectory),
-        solute=SolSummary(trajectory.solute),
-        solvent=SolSummary(trajectory.solvent),
-        files=[trajectory.filename],
-        weights=[1.0],
+        options = options,
+        nbins = nbins,
+        dbulk = options.dbulk,
+        cutoff = cutoff,
+        irefatom = irefatom,
+        lastframe_read = lastframe_read,
+        nframes_read = nframes_read,
+        autocorrelation = isautocorrelation(trajectory),
+        solute = SolSummary(trajectory.solute),
+        solvent = SolSummary(trajectory.solvent),
+        files = [trajectory.filename],
+        weights = [1.0],
     )
 end
 
@@ -257,22 +257,18 @@ to the correct weight relative to the random sample.
 =#
 function set_samples(R::Result)
     if R.autocorrelation
-        samples = (
-            solvent_nmols=R.solvent.nmols - 1,
-            random=R.options.n_random_samples
-        )
+        samples = (solvent_nmols = R.solvent.nmols - 1, random = R.options.n_random_samples)
     else
-        samples = (
-            solvent_nmols=R.solvent.nmols,
-            random=R.options.n_random_samples
-        )
+        samples = (solvent_nmols = R.solvent.nmols, random = R.options.n_random_samples)
     end
     return samples
 end
 
 # autocorrelation can be obtained from the comparison of solute and solvent indexes
-isautocorrelation(solute_indexes::Vector{Int}, solvent_indexes::Vector{Int}) = solute_indexes == solvent_indexes ? true : false
-isautocorrelation(trajectory::Trajectory) = isautocorrelation(trajectory.solute.index, trajectory.solvent.index)
+isautocorrelation(solute_indexes::Vector{Int}, solvent_indexes::Vector{Int}) =
+    solute_indexes == solvent_indexes ? true : false
+isautocorrelation(trajectory::Trajectory) =
+    isautocorrelation(trajectory.solute.index, trajectory.solvent.index)
 
 #
 # Functions to compute volumes of shells
@@ -387,7 +383,8 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             R.sum_md_count_random[ibin] = R.md_count_random[ibin]
         else
             R.sum_md_count[ibin] = R.sum_md_count[ibin-1] + R.md_count[ibin]
-            R.sum_md_count_random[ibin] = R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
+            R.sum_md_count_random[ibin] =
+                R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
         end
         R.kb[ibin] =
             units.Angs3tocm3permol *
@@ -403,7 +400,8 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             R.sum_rdf_count_random[ibin] = R.rdf_count_random[ibin]
         else
             R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
-            R.sum_rdf_count_random[ibin] = R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
+            R.sum_rdf_count_random[ibin] =
+                R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
         end
         R.kb_rdf[ibin] =
             units.Angs3tocm3permol *
@@ -432,10 +430,14 @@ function Base.merge(r::Vector{<:Result})
     for ir = 2:nr
         nframes_read += r[ir].nframes_read
         if r[ir].nbins != r[1].nbins
-            println("ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.")
+            println(
+                "ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.",
+            )
         end
         if (r[ir].cutoff - r[1].cutoff) > 1.e-8
-            println("ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.")
+            println(
+                "ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.",
+            )
         end
     end
     if error
@@ -452,18 +454,18 @@ function Base.merge(r::Vector{<:Result})
 
     # Final resuls
     R = Result(
-        options=r[1].options,
-        nbins=r[1].nbins,
-        dbulk=r[1].dbulk,
-        cutoff=r[1].cutoff,
-        irefatom=r[1].irefatom,
-        lastframe_read=r[nr].lastframe_read,
-        nframes_read=nframes_read,
-        autocorrelation=r[1].autocorrelation,
-        solute=r[1].solute,
-        solvent=r[1].solvent,
-        files=files,
-        weights=weights,
+        options = r[1].options,
+        nbins = r[1].nbins,
+        dbulk = r[1].dbulk,
+        cutoff = r[1].cutoff,
+        irefatom = r[1].irefatom,
+        lastframe_read = r[nr].lastframe_read,
+        nframes_read = nframes_read,
+        autocorrelation = r[1].autocorrelation,
+        solute = r[1].solute,
+        solvent = r[1].solvent,
+        files = files,
+        weights = weights,
     )
 
     # Average results weighting the data considering the number of frames of each data set
@@ -521,20 +523,34 @@ end
 
     # Test simple three-molecule system
     atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
-    protein = Selection(select(atoms, "protein and model 1"), nmols=1)
-    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format="PDBTraj")
+    protein = Selection(select(atoms, "protein and model 1"), nmols = 1)
+    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
+    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
 
-    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=10^5, lastframe=1)
+    options = Options(
+        seed = 321,
+        StableRNG = true,
+        nthreads = 1,
+        silent = true,
+        n_random_samples = 10^5,
+        lastframe = 1,
+    )
     R1 = mddf(traj, options)
 
-    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=10^5, firstframe=2)
+    options = Options(
+        seed = 321,
+        StableRNG = true,
+        nthreads = 1,
+        silent = true,
+        n_random_samples = 10^5,
+        firstframe = 2,
+    )
     R2 = mddf(traj, options)
 
     R = merge([R1, R2])
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
@@ -542,22 +558,36 @@ end
 
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
-    water = Selection(select(atoms, "water"), natomspermol=3)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    water = Selection(select(atoms, "water"), natomspermol = 3)
 
     # save(R,"$dir/merged.json")
     R_save = load("$dir/merged.json")
 
-    options = Options(firstframe=1, lastframe=2, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(
+        firstframe = 1,
+        lastframe = 2,
+        seed = 321,
+        StableRNG = true,
+        nthreads = 1,
+        silent = true,
+    )
     traj = Trajectory("$dir/trajectory.dcd", tmao, water)
     R1 = mddf(traj, options)
 
-    options = Options(firstframe=3, lastframe=6, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(
+        firstframe = 3,
+        lastframe = 6,
+        seed = 321,
+        StableRNG = true,
+        nthreads = 1,
+        silent = true,
+    )
     traj = Trajectory("$dir/trajectory.dcd", tmao, water)
     R2 = mddf(traj, options)
 
     R = merge([R1, R2])
-    @test isapprox(R, R_save, debug=true)
+    @test isapprox(R, R_save, debug = true)
 end
 
 @testitem "Result - empty" begin
@@ -565,8 +595,8 @@ end
     using ComplexMixtures.Testing
     using PDBTools
     atoms = readPDB(Testing.pdbfile)
-    protein = Selection(select(atoms, "protein"), nmols=1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     options = Options()
     # At this point we can only test an empty Result struct
@@ -643,9 +673,8 @@ function load(filename::String)
     return Result{Matrix{Float64}}(
         ntuple(length(r_names)) do i
             r_names[i] == :solute_atom ? solute_atom :
-            r_names[i] == :solvent_atom ? solvent_atom :
-            getfield(R, r_names[i])
-        end...
+            r_names[i] == :solvent_atom ? solvent_atom : getfield(R, r_names[i])
+        end...,
     )
 end
 
@@ -674,7 +703,7 @@ If the solute and solvent selections are provides, pass on the atom names.
 
 """
 write(R::Result, filename::String, solute::Selection, solvent::Selection) =
-    write(R, filename, solute_names=solute.names, solvent_names=solvent.names)
+    write(R, filename, solute_names = solute.names, solvent_names = solvent.names)
 
 
 """
@@ -688,8 +717,8 @@ Optional passing of atom names.
 function write(
     R::Result,
     filename::String;
-    solute_names::Vector{String}=["nothing"],
-    solvent_names::Vector{String}=["nothing"]
+    solute_names::Vector{String} = ["nothing"],
+    solvent_names::Vector{String} = ["nothing"],
 )
 
     # Names of output files containing atomic contibutions
@@ -865,7 +894,7 @@ if the distribution function was computed for all molecules. Thus, the necessity
 to identify the types of atoms involved in a selection.   
 
 """
-function which_types(s::Selection, indexes::Vector{Int}; warning=true)
+function which_types(s::Selection, indexes::Vector{Int}; warning = true)
     selected_types = Vector{Int}(undef, 0)
     ntypes = 0
     for i in indexes
@@ -947,12 +976,12 @@ function contrib(
     s::Selection,
     atom_contributions::Array{Float64},
     atoms::Vector{PDBTools.Atom};
-    warning=true
+    warning = true,
 )
     (warning && s.nmols > 1) && warning_nmols_types()
     indexes = [atom.index for atom in atoms]
     # Check which types of atoms belong to this selection
-    selected_types = which_types(s, indexes, warning=warning)
+    selected_types = which_types(s, indexes, warning = warning)
     return contrib(s, atom_contributions, selected_types)
 end
 
@@ -963,12 +992,12 @@ function contrib(
     s::Selection,
     atom_contributions::Array{Float64},
     residue::Residue;
-    warning=true
+    warning = true,
 )
     (warning && s.nmols > 1) && warning_nmols_types()
     indexes = collect(residue.range)
     # Check which types of atoms belong to this selection
-    selected_types = which_types(s, indexes, warning=warning)
+    selected_types = which_types(s, indexes, warning = warning)
     return contrib(s, atom_contributions, selected_types)
 end
 
@@ -1101,7 +1130,7 @@ function Base.show(io::IO, ov::Overview)
    Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
 
    $bars"""
-    )
+   )
 end
 
 """
@@ -1111,7 +1140,7 @@ Function that outputs the volumes and densities in the most natural units.
 """
 function overview(R::Result)
 
-    ov = Overview(R=R)
+    ov = Overview(R = R)
 
     # Molar volume of the solute domain
     ov.domain_molar_volume = R.volume.domain * units.Angs3tocm3permol

@@ -55,15 +55,21 @@ end
     import ComplexMixtures as CM
     md1 = CM.MinimumDistance(true, 1, 2, 1.0, true, 1.0)
     md2 = CM.MinimumDistance(true, 1, 2, 0.5, true, 0.5)
-    @test CM.update_md(md1,md2) == CM.MinimumDistance(true, 1, 2, 0.5, true, 0.5)
+    @test CM.update_md(md1, md2) == CM.MinimumDistance(true, 1, 2, 0.5, true, 0.5)
 end
 
 #
 # Methods to allow multi-threading in CellListMap
 #
 import CellListMap.PeriodicSystems: copy_output, reset_output!, reducer
-copy_output(md::MinimumDistance) = 
-    MinimumDistance(md.within_cutoff, md.i, md.j, md.d, md.ref_atom_within_cutoff, md.d_ref_atom)
+copy_output(md::MinimumDistance) = MinimumDistance(
+    md.within_cutoff,
+    md.i,
+    md.j,
+    md.d,
+    md.ref_atom_within_cutoff,
+    md.d_ref_atom,
+)
 reset_output!(::MinimumDistance) = MinimumDistance(false, 0, 0, +Inf, false, +Inf)
 reducer(md1::MinimumDistance, md2::MinimumDistance) = update_md(md1, md2)
 
@@ -89,13 +95,16 @@ Function that updates a list of minimum distances given the indexes of the atoms
 for autocorrelations (such that the identity of `isolute` is needed)
 
 """
-function update_list!(x, y, i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
+function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
     jmol = mol_index(j, j_natoms_per_molecule)
     if jmol != isolute
         d = sqrt(d2)
         ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
         dref = ref_atom_within_cutoff ? d : +Inf
-        list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
+        list[jmol] = update_md(
+            list[jmol],
+            MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref),
+        )
     end
     return list
 end
@@ -108,12 +117,20 @@ $(INTERNAL)
 Function that updates a list of minimum distances given the indexes of the atoms involved for one pair within cutoff.
 
 """
-function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
+function update_list!(
+    i,
+    j,
+    d2,
+    jref_atom,
+    j_natoms_per_molecule,
+    list::Vector{MinimumDistance},
+)
     d = sqrt(d2)
     jmol = mol_index(j, j_natoms_per_molecule)
     ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
     dref = ref_atom_within_cutoff ? d : +Inf
-    list[jmol] = update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
+    list[jmol] =
+        update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
     return list
 end
 
@@ -128,20 +145,26 @@ $(INTERNAL)
 # Extended help
 
 """
-function minimum_distances!(system::AbstractPeriodicSystem, R::Result, isolute::Int; update_lists::Bool)
+function minimum_distances!(
+    system::AbstractPeriodicSystem,
+    R::Result,
+    isolute::Int;
+    update_lists::Bool,
+)
     jref_atom = R.irefatom
     jnatomspermol = R.solvent.natomspermol
     if R.autocorrelation
         map_pairwise!(
-            (x, y, i, j, d2, list) -> update_list!(x, y, i, j, d2, jref_atom, jnatomspermol, isolute, list),
+            (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, isolute, list),
             system;
-            update_lists = update_lists 
+            update_lists = update_lists,
         )
     else
         map_pairwise!(
-            (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, list),
+            (x, y, i, j, d2, list) ->
+                update_list!(i, j, d2, jref_atom, jnatomspermol, list),
             system;
-            update_lists = update_lists
+            update_lists = update_lists,
         )
     end
     return system.list
@@ -170,9 +193,9 @@ function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
         cutoff = options.cutoff,
         output = fill(zero(MinimumDistance), trajectory.solvent.nmols),
         output_name = :list,
-        lcell=options.lcell,
-        parallel=false, # Important: parallellization is performed at the frame level
-        autoswap=false, # The lists will be built for the solvent, always
+        lcell = options.lcell,
+        parallel = false, # Important: parallellization is performed at the frame level
+        autoswap = false, # The lists will be built for the solvent, always
     )
     return system
 end
@@ -185,11 +208,11 @@ end
     import CellListMap
 
     atoms = readPDB(Testing.pdbfile)
-    options = Options(stride=5,seed=321,StableRNG=true,nthreads=1,silent=true)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
+    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # Cross-correlation
-    protein = Selection(select(atoms, "protein"), nmols=1)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     system = ComplexMixtures.setup_PeriodicSystem(traj, options)
     @test system.cutoff == 10.0
@@ -198,8 +221,9 @@ end
     @test system.parallel == false
     @test length(system.xpositions) == 1463
     @test length(system.ypositions) == 2534
-    @test system.unitcell == SMatrix{3,3}(i == j ? traj.sides[1][i] : 0.0 for i in 1:3, j in 1:3) 
-    @test system._box == CellListMap.Box(traj.sides[1], 10.0, lcell=options.lcell)
+    @test system.unitcell ==
+          SMatrix{3,3}(i == j ? traj.sides[1][i] : 0.0 for i = 1:3, j = 1:3)
+    @test system._box == CellListMap.Box(traj.sides[1], 10.0, lcell = options.lcell)
 
     # Auto-correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
@@ -210,7 +234,8 @@ end
     @test system.parallel == false
     @test length(system.xpositions) == 14 # one TMAO molecule
     @test length(system.ypositions) == 2534 # one molecule less
-    @test system.unitcell == SMatrix{3,3}(i == j ? traj.sides[1][i] : 0.0 for i in 1:3, j in 1:3) 
-    @test system._box == CellListMap.Box(traj.sides[1], 10.0, lcell=options.lcell)
+    @test system.unitcell ==
+          SMatrix{3,3}(i == j ? traj.sides[1][i] : 0.0 for i = 1:3, j = 1:3)
+    @test system._box == CellListMap.Box(traj.sides[1], 10.0, lcell = options.lcell)
 
 end
