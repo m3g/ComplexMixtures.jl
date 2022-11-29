@@ -8,10 +8,7 @@ returns the type of the atom, that is, the index of this atom within the molecul
 (goes from 1 to natomspermol)
 
 """
-function itype(iatom::Int, natomspermol::Int)
-    itype = iatom % natomspermol
-    return ifelse(itype == 0, natomspermol, itype)
-end
+itype(iatom::Int, natomspermol::Int) = mod1(iatom, natomspermol)
 
 # Calling using the structures of Solute and Solvent, to clear up the code above
 itype(iatom::Int, s::Union{SolSummary,Selection}) = itype(iatom, s.natomspermol)
