@@ -1,14 +1,14 @@
-using Test
-using ComplexMixtures, PDBTools
-const CM = ComplexMixtures
 
-@testset "PDB" begin
+@testitem "PDB" begin
+  using ComplexMixtures, PDBTools
+  using ComplexMixtures.Testing
+  const CM = ComplexMixtures
 
   #
   # Tests with trajectory given in a PDB file
   #
   
-  dir="./data/PDB"
+  dir="$(Testing.data_dir)/PDB"
   atoms = readPDB("$dir/trajectory.pdb","model 1")  
   options = Options(stride=1,seed=321,StableRNG=true,nthreads=1,silent=true)
  
@@ -22,7 +22,7 @@ const CM = ComplexMixtures
   R = mddf(traj,options)
   @test isapprox(R,R_save,debug=true) 
   
-  # Example 3: tmao-tmao
+  # Example 2: tmao-tmao
   
   # save(R,"$dir/tmao_tmao.json")
   R_save = load("$dir/tmao_tmao.json")
