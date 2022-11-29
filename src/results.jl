@@ -188,7 +188,17 @@ function Result(trajectory::Trajectory, options::Options; irefatom=-1)
     if options.irefatom == -1
         nextframe!(trajectory)
         first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
-        irefatom = findmin(v -> norm(v - mean(first_mol)), first_mol)[2]
+        # don't use findmin for compatibility with Julia 1.6
+        irefatom = 0
+        dmin = +Inf
+        cm = mean(first_mol)
+        for (i,at) in pairs(first_mol)
+            d = norm(at - cm)
+            if d < dmin 
+                dmin = d
+                irefatom = i
+            end
+        end
     else
         irefatom = options.irefatom
     end
