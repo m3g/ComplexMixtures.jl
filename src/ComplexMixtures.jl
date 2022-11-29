@@ -13,6 +13,7 @@ using StaticArrays
 using DocStringExtensions
 using TestItems
 
+import CpuId
 import ChunkSplitters
 import CellListMap
 using .CellListMap.PeriodicSystems
