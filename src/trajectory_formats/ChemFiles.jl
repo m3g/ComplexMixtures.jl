@@ -147,7 +147,7 @@ closetraj!(trajectory::ChemFile) = Chemfiles.close(stream(trajectory))
 # Function to open the trajectory stream
 #
 function opentraj!(trajectory::ChemFile) 
-    st = redirect_stdout(() -> Chemfiles.Trajectory(filename, 'r', format), devnull)
+    st = redirect_stdout(() -> Chemfiles.Trajectory(trajectory.filename, 'r', trajectory.format), devnull)
     set_stream!(trajectory, st)
 end
 
