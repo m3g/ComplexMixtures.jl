@@ -576,7 +576,7 @@ end
     @test length(R.d) == 500
     @test R.dbulk == 10.0
     @test (R.density.solute, R.density.solvent, R.density.solvent_bulk) == (0.0, 0.0, 0.0)
-    @test R.files[1] == normpath("$(Testing.data_dir)/NAMD/trajectory.dcd")
+    @test normpath(R.files[1]) == normpath("$(Testing.data_dir)/NAMD/trajectory.dcd")
     @test R.irefatom == 1
     @test length(R.kb) == 500
     @test length(R.kb_rdf) == 500
