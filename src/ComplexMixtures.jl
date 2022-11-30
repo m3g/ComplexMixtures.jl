@@ -66,16 +66,8 @@ include("./mddf.jl")
 # Testing function
 include("./isapprox.jl")
 
-#= 
-
-
 # Tools
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 
-# Structures and functions for the linked cell method
-include("./partialsort_cutoff.jl")
-include("./update_counters_frame.jl")
-=#
-
-end
+end # module ComplexMixtures
