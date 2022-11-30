@@ -85,61 +85,57 @@ function grid3D(
     # Building the grid with the nearest solute atom information
     igrid = 0
     grid = PDBTools.Atom[]
-    for ix = 1:n[1]
+    for ix = 1:n[1], iy = 1:n[2], iz = 1:n[3]
         x = lims.xmin[1] - dmax + step * (ix - 1)
-        for iy = 1:n[2]
-            y = lims.xmin[2] - dmax + step * (iy - 1)
-            for iz = 1:n[3]
-                z = lims.xmin[3] - dmax + step * (iz - 1)
-                rgrid = -1
-                iat, r = PDBTools.closest(x, y, z, solute_atoms)
-                if (dmin < r < dmax)
-                    if rgrid < 0 || r < rgrid
-                        at = solute_atoms[iat]
-                        # Get contribution of this atom to the MDDF
-                        c = ComplexMixtures.contrib(
-                            solute,
-                            mddf_result.solute_atom,
-                            [at.index],
-                        )
-                        # Interpolate c at the current distance
-                        iright = findfirst(d -> d > r, mddf_result.d)
-                        ileft = iright - 1
-                        cᵣ = interpolate(
-                            mddf_result.d[ileft],
-                            mddf_result.d[iright],
-                            c[ileft],
-                            c[iright],
-                            r,
-                        )
-                        if cᵣ > 0
-                            gridpoint = Atom(
-                                index = at.index,
-                                index_pdb = at.index_pdb,
-                                name = at.name,
-                                chain = at.chain,
-                                resname = at.resname,
-                                resnum = at.resnum,
-                                x = x,
-                                y = y,
-                                z = z,
-                                occup = r,
-                                beta = cᵣ,
-                                model = at.model,
-                                segname = at.segname,
-                            )
-                            if rgrid < 0
-                                igrid += 1
-                                push!(grid, gridpoint)
-                            elseif r < rgrid
-                                grid[igrid] = gridpoint
-                            end
-                            rgrid = r
-                        end # cᵣ>0
-                    end # rgrid
-                end # dmin/dmax
-            end #iz
-        end #iy
+        y = lims.xmin[2] - dmax + step * (iy - 1)
+        z = lims.xmin[3] - dmax + step * (iz - 1)
+        rgrid = -1
+        _, iat, r = PDBTools.closest(SVector(x, y, z), solute_atoms)
+        if (dmin < r < dmax)
+            if rgrid < 0 || r < rgrid
+                at = solute_atoms[iat]
+                # Get contribution of this atom to the MDDF
+                c = ComplexMixtures.contrib(
+                    solute,
+                    mddf_result.solute_atom,
+                    [at.index_pdb],
+                )
+                # Interpolate c at the current distance
+                iright = findfirst(d -> d > r, mddf_result.d)
+                ileft = iright - 1
+                cᵣ = interpolate(
+                    mddf_result.d[ileft],
+                    mddf_result.d[iright],
+                    c[ileft],
+                    c[iright],
+                    r,
+                )
+                if cᵣ > 0
+                    gridpoint = Atom(
+                        index = at.index,
+                        index_pdb = at.index_pdb,
+                        name = at.name,
+                        chain = at.chain,
+                        resname = at.resname,
+                        resnum = at.resnum,
+                        x = x,
+                        y = y,
+                        z = z,
+                        occup = r,
+                        beta = cᵣ,
+                        model = at.model,
+                        segname = at.segname,
+                    )
+                    if rgrid < 0
+                        igrid += 1
+                        push!(grid, gridpoint)
+                    elseif r < rgrid
+                        grid[igrid] = gridpoint
+                    end
+                    rgrid = r
+                end # cᵣ>0
+            end # rgrid
+        end # dmin/dmax
     end #ix
 
     # Now will scale the density to be between 0 and 99.9 in the temperature
@@ -153,7 +149,7 @@ function grid3D(
         gridpoint.beta = (gridpoint.beta - bmin) / (bmax - bmin)
     end
 
-    if output_file != nothing
+    if !isnothing(output_file)
         writePDB(grid, output_file)
     end
     return grid
