@@ -138,7 +138,7 @@ instead of indexes to the `contrib` function:
 
 ```julia
 oxygen = ["OH2"]
-o_contrib = contrib(solvent,R.solvent_atom,oxgyen) 
+o_contrib = contrib(solvent,R.solvent_atom,oxygen) 
 hydrogens = ["H1","H2"]
 h_contrib = contrib(solvent,R.solvent_atom,hydrogens)
 
@@ -180,7 +180,7 @@ plot is:
 
 ```julia
 plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
-plot(results.d,charged_contrib,label="Charged residues",linewidth=2)
+plot!(results.d,charged_contrib,label="Charged residues",linewidth=2)
 plot!(results.d,neutral_contrib,label="Neutral residues",linewidth=2)
 plot!(xlabel="Distance / Å",ylabel="MDDF")
 
