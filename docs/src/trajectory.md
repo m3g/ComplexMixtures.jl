@@ -1,4 +1,3 @@
-
 # [Loading trajectories](@id trajectories)
 
 To initialize a trajectory file for computation, use the command
@@ -22,22 +21,3 @@ produced with NAMD, Gromacs, LAMMPS, Amber, etc.
     ```julia
     trajectory = Trajectory("trajectory.xtc",solute,solvent,format="xtc")
     ```
-
-!!! note 
-    The trajectory stream is closed at the end of the MDDF computation.
-    Therefore if you want to reuse the same trajectory for another MDDF 
-    computation in the same script, you need to reload it. For example:
-    ```julia
-    solute = Selection("system.pdb","protein",nmols=1)
-    # Compute the protein-water MDDF
-    solvent = Selection("system.pdb","water",natomspermol=3)
-    trajectory = Trajectory("trajectory.xtc",solute,solvent)
-    R_water = mddf(trajectory)
-    # Compute the protein-urea MDDF
-    solvent = Selection("system.pdb","resname URE",natomspermol=8)
-    trajectory = Trajectory("trajectory.xtc",solute,solvent)
-    R_urea = mddf(trajectory)
-    ```
-
-
-
