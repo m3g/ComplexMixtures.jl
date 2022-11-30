@@ -78,18 +78,20 @@ The output `grid` variable contains the same information of the PDB file, which 
 
 ## Computing radial distribution functions
 
-The distributions returned by the `mddf` function (meaning `mddf` and
-`rdf`) vectors, are normalized either the random reference state or
+The distributions returned by the `mddf` function (the `mddf` and
+`rdf` vectors), are normalized by the random reference state or
 using a site count based on the numerical integration of the volume
-corresponding to each minimum-distance to the solute. If, however, the
+corresponding to each minimum-distance to the solute. 
+
+If, however, the
 solute is defined by a single atom (as the oxygen atom of water, for
 example), the numerical integration of the volume can be replaced by a
-simple analytical spherical shell volume, reducing noise. The `gr`
+simple analytical spherical shell volume, reducing noise. The `ComplexMixtures.gr`
 function returns the radial distribution function and the KB integral 
 computed from the results, using this volume estimate: 
 
 ```julia
-g, kb = gr(R)
+g, kb = ComplexMixtures.gr(R)
 
 ```
 
@@ -98,7 +100,7 @@ structure will be used to compute the radial distribution function. The
 function can be called with explicit control of all input parameters: 
 
 ```julia
-g, kb = gr(r,count,density,binstep)
+g, kb = ComplexMixtures.gr(r,count,density,binstep)
 
 ```
 where:
@@ -115,7 +117,7 @@ Example:
 ```julia
 ...
 R = mddf(trajectory,options)
-g, kb = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
+g, kb = ComplexMixtures.gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
 
 ```
 
