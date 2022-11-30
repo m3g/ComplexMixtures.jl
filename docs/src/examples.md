@@ -27,7 +27,7 @@ julia> ] add ComplexMixtures, PDBTools, Plots, LaTeXStrings, Formatting
 git clone https://github.com/m3g/ComplexMixturesExamples
 ```
 
-The files associated to the following examples are distributed at [this page](https://github.com/m3g/ComplexMixturesExamples/Protein_in_Glycerol). 
+The files associated to the following examples are distributed at [this page](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol). 
 
 ## Data
 
