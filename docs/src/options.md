@@ -9,7 +9,7 @@ options = Options(lastframe=1000)
 results = mddf(trajectory,options)
 ```
 
-### Most common options that the user might want to control are:
+### Common options that the user might want to set:
 
 `firstframe`: Integer, first frame of the trajectory to be considered.
 
@@ -67,10 +67,7 @@ different architectures and Julia versions. Only used for testing.
 of physical cores of the computer.
  
 `lcell`: Integer, the cell length of the linked-cell method (actually
-the cell length is `cutoff/lcell`). Default: 2.  
-
-`sleep`: Real, the time between checks between multiple spawns of
-calculations in parallel. Default 0.1 s. 
+the cell length is `cutoff/lcell`). Default: 1.  
 
 `GC`: Bool, force garbage collection, to avoid memory
 overflow. Default: `true`. That this might be required is probably a result of

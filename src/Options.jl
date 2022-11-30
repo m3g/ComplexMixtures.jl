@@ -25,8 +25,8 @@ $(TYPEDFIELDS)
     # performance
     lcell::Int = 1
 
-    # Sleep time between checks of threads for multple spawn
-    sleep::Float64 = 0.01
+    # Sleep: deprecated: keeping it here to keep output read/write compatibility
+    sleep::Float64 = 0.0
 
     # Force garbage collection in parallel runs to avoid memory overflow, 
     # whenever free memory in the system is smaller than GC_threshold
@@ -42,5 +42,4 @@ $(TYPEDFIELDS)
 
     # Do not show any output on the screen on execution of mddf routines
     silent::Bool = false
-
 end
