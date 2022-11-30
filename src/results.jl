@@ -766,9 +766,9 @@ function write(
         sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
         println(output, "#")
         println(output, @sprintf("# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
-        println(
-            output,
-            """
+        println(output, 
+    """
+    #
     # COLUMNS CORRESPOND TO:
     #       1  Minimum distance to solute (dmin)
     #       2  GMD distribution (md count normalized by md count of random-solute distribution
@@ -779,9 +779,7 @@ function write(
     #       7  Cumulative number of molecules within dmin for random solute distribution.
     #       8  Volume of the shell of distance dmin and width binstep.
     #
-    #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL
-"""
-        )
+    #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL""")
         for i = 1:R.nbins
             line = "  " * format(R.d[i])                                   #  1-DISTANCE
             line = line * "  " * format(R.mddf[i])                         #  2-GMD
