@@ -2,24 +2,21 @@
 # Parallel execution 
 
 An MDDF calculation can be performed in parallel, using many processors of a 
-single computer. The speedup is almost linear, as the parallelization is performed
-by splitting the calculation of each frame in each processor, in an
-asynchronous manner. To run the computation in parallel, just define the
-number of threads (processors) to be used, by defining the
-`JULIA_NUM_THREADS` environment variable:
-```
-export JULIA_NUM_THREADS=4
-```
-or, which is more simple in Julia 1.5 or greater, just start `julia`
-with:  
+single computer. To run the computation in parallel, initialize `julia` with
+the `-t auto` option:
 ```
 julia -t auto
 ```
+The computation will a number of computation threads equal to the number
+of physical cores of the computer. The number of computation threads to 
+be used can be set by the `Option(nthreads=N)` parameter, where `N` is
+an integer. Hyperthreading (using more threads than physical CPUs) 
+usually does not provide a significant speedup, and can be detrimental 
+in some cases.  
 
-To directly run a script, use
+To directly run a script in parallel, use:
 ```julia
 julia -t auto example.jl
-
 ```
 
 !!! note
