@@ -25,9 +25,6 @@ $(TYPEDFIELDS)
     # performance
     lcell::Int = 1
 
-    # Sleep: deprecated: keeping it here to keep output read/write compatibility
-    sleep::Float64 = 0.0
-
     # Force garbage collection in parallel runs to avoid memory overflow, 
     # whenever free memory in the system is smaller than GC_threshold
     GC::Bool = true
