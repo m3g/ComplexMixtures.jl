@@ -746,7 +746,7 @@ function write(
         println(output, @sprintf("# Output of ComplexMixtures - MDDF"))
         println(output, @sprintf("# Trajectory files and weights:"))
         for i = 1:length(R.files)
-            println(output, "#  $(R.files[i]) - w = $(R.weights[i])")
+            println(output, "#  $(normpath(R.files[i])) - w = $(R.weights[i])")
         end
         println(output, @sprintf("#"))
         println(output, @sprintf("# Density of solvent in simulation box (sites/A^3): %15.8f", R.density.solvent))
@@ -1113,7 +1113,7 @@ function Base.show(io::IO, ov::Overview)
  """
     )
     for i = 1:length(ov.R.files)
-        println(io, "   $(ov.R.files[i]) - w = $(ov.R.weights[i])")
+        println(io, "   $(normpath(ov.R.files[i])) - w = $(ov.R.weights[i])")
     end
     ifar = trunc(Int, ov.R.nbins - 1.0 / ov.R.options.binstep)
     long_range_mean = mean(ov.R.mddf[ifar:ov.R.nbins])
