@@ -316,11 +316,13 @@ end
 """
     finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
+$(INTERNAL)
+
 Function that computes the final results of all the data computed by averaging according to the sampling of each type of data, and converts to common units.
 
-Computes also the final distribution functions and KB integrals
+Computes also the final distribution functions and KB integrals.
 
-This function modified the values contained in the R data structure
+This function modified the values contained in the R data structure.
 
 """
 function finalresults!(R::Result, options::Options, trajectory::Trajectory)
@@ -333,7 +335,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
         R.d[i] = shellradius(i, options.binstep)
     end
 
-    # Counters
+    # Scale counters by number of samples and frames
     @. R.md_count = R.md_count / (R.solute.nmols * R.nframes_read)
     @. R.solute_atom = R.solute_atom / (R.solute.nmols * R.nframes_read)
     @. R.solvent_atom = R.solvent_atom / (R.solute.nmols * R.nframes_read)
@@ -363,6 +365,15 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
     R.density.solvent_bulk = n_solvent_in_bulk / R.volume.bulk
+
+    # Now that we know the the volume of the domain and the density of the solvent in the 
+    # bulk region, we can rescale the random counts to take into account that the the ideal
+    # gas distribution must have more molecules, with same bulk density, that the true
+    # distribution, because we have to take into consieration the available volume which is
+    # occupied by the solute
+    density_fix = R.density.solvent_bulk / R.density.solvent
+    R.md_count_random .= density_fix * R.md_count_random
+    R.rdf_count_random .= density_fix * R.rdf_count_random
 
     #
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
