@@ -386,10 +386,10 @@ end
     @test R.volume.domain ≈ 75368.14585709268
     @test R.volume.bulk ≈ 527710.298003817
     @test R.density.solvent_bulk ≈ 0.000305944380109164
-    @test sum(R.mddf) ≈ 594.1347058364827
-    @test sum(R.rdf) ≈ 500.97105526052894
-    @test R.kb[end] ≈ -4960.311725361473
-    @test R.kb_rdf[end] ≈ -6042.919443198414
+    @test sum(R.mddf) ≈ 582.8371304452286 
+    @test sum(R.rdf) ≈ 491.4450029864516
+    @test R.kb[end] ≈ -6019.863896959123
+    @test R.kb_rdf[end] ≈ -6905.975623304156
 
     # Self correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
@@ -404,8 +404,8 @@ end
     @test R.volume.domain ≈ 6801.384672431371
     @test R.volume.bulk ≈ 596277.0591884783 
     @test R.density.solvent_bulk ≈ 0.00029875568324470034
-    @test sum(R.mddf) ≈ 274.3059721126019
-    @test sum(R.rdf) ≈ 167.99907918968694
-    @test R.kb[end] ≈ -415.39856380764314
-    @test R.kb_rdf[end] ≈ -345.01467846544756
+    @test sum(R.mddf) ≈ 275.5648734200309
+    @test sum(R.rdf) ≈ 168.77009506954508 
+    @test R.kb[end] ≈ -386.8513153147712
+    @test R.kb_rdf[end] ≈ -326.32083509753284
 end
