@@ -42,4 +42,5 @@ $(TYPEDFIELDS)
 
     # Do not show any output on the screen on execution of mddf routines
     silent::Bool = false
+
 end
