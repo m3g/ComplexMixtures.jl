@@ -184,8 +184,7 @@ function random_move!(
 
     # Generate random coordiantes for the center of mass
     newcm = T(
-        scale * (-box.unit_cell_max[i] / 2 + random(RNG, Float64) * box.unit_cell_max[i]) for
-        i = 1:3
+        scale * (-box.unit_cell_max[i] / 2 + random(RNG, Float64) * box.unit_cell_max[i]) for i = 1:3
     )
 
     # Generate random rotation angles 
