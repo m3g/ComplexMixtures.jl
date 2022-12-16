@@ -4,24 +4,21 @@ First you need to install the Julia language in your platform, from:
 [http://julialang.org](http://julialang.org). Julia version 1.6 or greater is required.
 
 Next, run julia, and within the julia REPL interface, install the ComplexMixtures package using
-```julia
+```julia-repl
 julia> import Pkg
 
 julia> Pkg.add("ComplexMixtures")
-
 ```
-or simply
-```julia
+or simply (you cannot copy/paste this, the `]` will take you to the `pkg>` prompt):
+```julia-repl
 julia> ] add ComplexMixtures
-
 ```
 
 To follow all the examples provided in this manual, the 
 [PDBTools](http://m3g.iqm.unicamp.br/PDBTools) 
 and [Plots](http://docs.juliaplots.org/latest/) have to be installed as well:
-```julia
+```julia-repl
 julia> ] add PDBTools, Plots
-
 ```
 
 If you are first-time `julia` user, load these packages for the first
@@ -30,7 +27,7 @@ take quite a while when done for the first time, because it is compiled
 at this point (this was greatly improved in Julia versions greater than 1.6, which
 are highly recommended). To load the packages, use:
 
-```
+```julia
 using ComplexMixtures, PDBTools, Plots
 ```
 
@@ -41,7 +38,6 @@ be used following the instructions and examples.
     By loading the package with 
     ```julia
     using ComplexMixtures
-
     ```
     the most common functions of the package become readily available by their direct name, 
     for example `mddf(...)`.
@@ -49,15 +45,11 @@ be used following the instructions and examples.
     If you don't want to bring the functions into the scope of your script, use
     ```julia
     import ComplexMixtures
-
     ```
     Then, the functions of the package are called, for example, using `ComplexMixtures.mddf(...)`.
-    To avoid having to write `ComplexMixtures` all the time, define an
-    accronym. For example:
+    To avoid having to write `ComplexMixtures` all the time, define an accronym. For example:
     ```julia
-    import ComplexMixtures 
-    const CM = ComplexMixtures
+    import ComplexMixtures as CM
     CM.mddf(...)
-
     ```
 

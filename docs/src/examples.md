@@ -18,8 +18,10 @@ Image of the system of the example: a protein solvated by a mixture of glycreol 
 - Download and install [Julia](https://julialang.org)
 
 - Install the required packages. Within Julia, do:
-```julia
-julia> ] add ComplexMixtures, PDBTools, Plots, LaTeXStrings, Formatting
+```julia-repl
+julia> import Pkg
+
+julia> Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings", "Formatting"])
 ```
 
 - Get the files:
@@ -45,7 +47,7 @@ This example illustrates the regular usage of `ComplexMixtures`, to compute the 
 
 ```bash
 cd ComplexMixturesExamples/Protein_in_Glycerol/MDDF
-julia mddf.jl
+julia -t auto mddf.jl
 ```
 
 ### Detailed explanation of the example:
@@ -76,7 +78,7 @@ solvent = Selection(glyc,natomspermol=14)
 
 Read and setup the Trajectory structure required for the computations:
 ```julia
-trajectory = Trajectory("../Data/glyc50.dcd",solute,solvent)
+trajectory = Trajectory("../Data/glyc50_complete.dcd",solute,solvent)
 ```
 
 Run the calculation and get results:
@@ -128,11 +130,13 @@ First, we will plot the MDDF and the corresponding Kirkwood-Buff integral, which
 
 ```julia
 plot(layout=(1,2))
-plot!(results.d,results.mddf,
-      xlabel=L"r/\AA",ylabel="mddf",subplot=1)
+plot!(results.d,results.mddf,xlabel=L"r/\AA",ylabel="mddf",subplot=1)
 hline!([1],linestyle=:dash,linecolor=:gray,subplot=1)
-plot!(results.d,results.kb/1000, #to L/mol
-      xlabel=L"r/\AA",ylabel=L"G_{us}/\mathrm{L~mol^{-1}}",subplot=2)
+plot!(
+    results.d,results.kb/1000, #to L/mol
+    xlabel=L"r/\AA",ylabel=L"G_{us}/\mathrm{L~mol^{-1}}",
+    subplot=2
+)
 plot!(size=(800,300),margin=4mm)
 savefig("./mddf.pdf")
 ```
@@ -145,7 +149,7 @@ This will produce the following plot:
 </center>
 ```
 
-#### Atomic contributions to the MDDF
+### Atomic contributions to the MDDF
 
 Selecting the atoms corresponding to the hydroxyl groups, and of the aliphatic carbons of Glycerol. Here we list the types of the atoms as specified by the force-field.
 ```julia
@@ -282,13 +286,17 @@ labels = PDBTools.oneletter.(resname.(residues)).*format.(resnum.(residues))
 And, finally, we produce the plot, with a series of options that make this particular contour plot look nice:
 
 ```julia
-contourf(irange,R.d[idmin:idmax],rescontrib[idmin:idmax,irange],
-         color=cgrad(:tempo),linewidth=0.1,linecolor=:black,
-         colorbar=:none,levels=5,
-         xlabel="Residue",ylabel=L"r/\AA",
-         xticks=(irange,labels[irange]),xrotation=60,
-         xtickfont=font(6,plot_font),
-         size=(500,280))
+contourf(
+    irange, # x
+    R.d[idmin:idmax], # y
+    rescontrib[idmin:idmax,irange], # z
+    xlabel="Residue", ylabel=L"r/\AA",
+    xticks=(irange,labels[irange]), xrotation=60,
+    xtickfont=font(6,plot_font),
+    color=cgrad(:tempo), linewidth=0.1, linecolor=:black,
+    colorbar=:none, levels=5,
+    size=(500,280)
+)
 ```
 
 The final figure is saved as a `pdf` file:
@@ -375,11 +383,14 @@ solute = Selection(protein,nmols=1)
 The 3D grid representing the density around the protein is computed with the `grid3D` function provided by `ComplexMixtures`. It receives the `solute` structure (of type `Selection`), the list of solute atoms (of type `PDBTools.Atoms`, as the `protein` selection above), the name of the output file and some optional parameters to define the grid. Here we compute the grid only between 1.5 and 3.5Å, characterizing the first and second solvation shells. The grid has by default a `step` of 0.5Å. 
 
 ```julia
-grid = grid3D(solute=solute,
-              solute_atoms=protein,
-              mddf_result=R,
-              output_file="grid.pdb",
-              dmin=1.5,dmax=3.5)
+grid = grid3D(
+    solute=solute,
+    solute_atoms=protein,
+    mddf_result=R,
+    output_file="grid.pdb",
+    dmin=1.5,
+    dmax=3.5
+)
 ```
 
 The command above will generate the grid, save it to `grid.pdb` and let it available in the `grid.pdb` array of atoms, for further inspection, if desired. 
