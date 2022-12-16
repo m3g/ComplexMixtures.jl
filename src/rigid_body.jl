@@ -34,7 +34,7 @@ random(RNG::Array{T}) where {T} = rand(RNG[Threads.threadid()])
 random(RNG::Array{T}, arg) where {T} = rand(RNG[Threads.threadid()], arg)
 
 """
-  eulermat(beta, gamma, theta, deg::String)
+    eulermat(beta, gamma, theta, deg::String)
 
 $(INTERNAL)
 
@@ -120,7 +120,7 @@ end
 end
 
 """
-  move!(x::AbstractVector, newcm::AbstractVector,beta, gamma, theta)
+    move!(x::AbstractVector, newcm::AbstractVector,beta, gamma, theta)
 
 $(INTERNAL)
 
@@ -153,10 +153,10 @@ end
 end
 
 """
-  random_move!(x_ref::AbstractVector{T}, 
-               irefatom::Int,
-               system::AbstractPeriodicSystem,
-               x_new::AbstractVector{T}, RNG) where {T<:SVector}
+    random_move!(x_ref::AbstractVector{T}, 
+                 irefatom::Int,
+                 system::AbstractPeriodicSystem,
+                 x_new::AbstractVector{T}, RNG) where {T<:SVector}
 
 $(INTERNAL)
 

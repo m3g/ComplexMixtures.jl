@@ -1,5 +1,7 @@
 """
 
+$(INTERNAL)
+
 Union of types to define an `isaprox` for testing.
 
 """
