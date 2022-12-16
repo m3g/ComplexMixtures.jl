@@ -33,7 +33,7 @@ the contributions of every type of atom of the solute and the solvent.
 These data is available at the `results.solute_atom` and
 `results.solvent_atom` arrays: 
 
-```julia
+```julia-repl
 julia> results.solute_atom
 50×1463 Array{Float64,2}:
  0.0  0.0      0.0  …  0.0  0.0  0.0
@@ -49,7 +49,6 @@ julia> results.solvent_atom
  ...
  0.26087    0.26087    0.173913
  0.25641    0.0854701  0.170940
-
 ```
 
 Here, `50` is the number of bins of the histogram, whose distances are
@@ -63,13 +62,12 @@ The three columns of the `results.solvent_atom` array correspond to the
 thee atoms of the water molecule in this example. The sequence of atoms
 correspond to that of the PDB file, but can be retrieved with:
 
-```julia
+```julia-repl
 julia> solvent.names
 3-element Array{String,1}:
  "OH2"
  "H1"
  "H2"
-
 ```
 
 Therefore, if the first column of the `results.solvent_atom` vector is
@@ -82,7 +80,6 @@ using Plots
 plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
 plot!(results.d,results.solvent_atom[:,1],label="OH2",linewidth=2)
 plot!(xlabel="Distance / Å",ylabel="MDDF")
-
 ```
 
 ```@raw html
@@ -112,7 +109,7 @@ provide a list of indexes to the `contrib` function. For example,
 to select the hydrogen atoms, which are the second and third atoms of the 
 water molecule, use:
 
-```julia
+```julia-repl
 julia> indexes = [ 2, 3 ]
 julia> h_contrib = contrib(solvent,R.solvent_atom,indexes)
 500-element Array{Float64,1}:
@@ -121,14 +118,13 @@ julia> h_contrib = contrib(solvent,R.solvent_atom,indexes)
  ⋮
  0.7742706465861815
  0.8084139794974875
-
 ```
+
 Plotting both the oxygen (`index = 1`) and hydrogen contributions
 results in:
 
 ```@raw html
 <img src="../figures/h_and_oh2.png" width="60%">
-
 ```
 
 ### Selecting by atom name
@@ -141,7 +137,6 @@ oxygen = ["OH2"]
 o_contrib = contrib(solvent,R.solvent_atom,oxygen) 
 hydrogens = ["H1","H2"]
 h_contrib = contrib(solvent,R.solvent_atom,hydrogens)
-
 ```
 
 The above plot can be obtained with:
@@ -151,7 +146,6 @@ plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
 plot!(results.d,o_contrib,label="OH2",linewidth=2)
 plot!(results.d,h_contrib,label="Hydrogen atoms",linewidth=2)
 plot!(xlabel="Distance / Å",ylabel="MDDF")
-
 ```
 
 ## General selections using PDBTools
@@ -172,8 +166,8 @@ charged_contrib = contrib(solute,R.solute_atom,charged_residues)
 
 neutral_residues = PDBTools.select(atoms,"neutral")
 neutral_contrib = contrib(solute,R.solute_atom,neutral_residues)
-
 ```
+
 The `charged` and `neutral` outputs are vectors containing the
 contributions of these residues to the total MDDF. The corresponding
 plot is:   
@@ -183,13 +177,11 @@ plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
 plot!(results.d,charged_contrib,label="Charged residues",linewidth=2)
 plot!(results.d,neutral_contrib,label="Neutral residues",linewidth=2)
 plot!(xlabel="Distance / Å",ylabel="MDDF")
-
 ```
 Resulting in:
 
 ```@raw html
 <img src="../figures/charged_and_neutral.png" width="60%">
-
 ```
 
 Note here how charged residues contribute strongly to the peak at

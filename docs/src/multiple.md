@@ -11,14 +11,13 @@ Let us assume that we have three Gromacs trajectories, with file names
 these file names:
 
 ```julia
-trajs = [ "traj1.xtc" , "traj2.xtc" , "traj3.xtc" ]
+trajectory_files = [ "traj1.xtc" , "traj2.xtc" , "traj3.xtc" ]
 ```
 
-And define a vector of `Result` types with 3 positions, with undefined
-initialization:
+And define an empty vector of `Result` structures:
 
 ```julia
-results = Vector{Result}(undef,3)
+results = Result[]
 ```
 
 ### Run the calculations in a loop
@@ -30,9 +29,10 @@ simple loop, such as
 atoms = PDBTools.readPDB("./system.pdb")
 solute = Selection(atoms,"protein",nmols=1)
 solvent = Selection(atoms,"resname TMAO",,natomspermol=14)
-for i in 1:3 # alternatively use 1:length(trajs) 
-  trajectory = Trajectory(trajs[i],solute,solvent)
-  results[i] = mddf(trajectory)
+for file in trajectory_files
+  trajectory = Trajectory(file,solute,solvent)
+  # compute the MDDF data and push the result to the results array
+  push!(results, mddf(trajectory))
 end
 ```
 
@@ -58,7 +58,7 @@ can be used to merge previously merged results with new results as well.
     The names of the files and
     and weights are stored in the `R.files` and `R.weights` vectors of
     the results structure:
-    ```julia
+    ```julia-repl
     julia> R.files
     3-element Array{String,1}:
      "./traj1.xtc"

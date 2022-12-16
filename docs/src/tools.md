@@ -65,11 +65,12 @@ protein = select(pdb,"protein")
 solute = Selection(protein,nmols=1)
 
 # Compute the 3D density grid and output it to the PDB file
-grid = grid3D(solute=solute,
-              solute_atoms=protein,
-              mddf_result=R,
-              output_file="grid.pdb")
-
+grid = grid3D(
+    solute=solute,
+    solute_atoms=protein,
+    mddf_result=R,
+    output_file="grid.pdb"
+)
 ```
 
 The call to `grid3D` in the last command will write an output a PDB file with the grid points, which loaded in a visualization software side-by-side with the protein structure, allows the production of the images shown. The `grid.pdb` file contains a regular PDB format, but the atoms are grid points. The identity of the atoms correspond to the identity of the protein atom contributing to the MDDF at that point (the closest protein atom). The temperature-factor column (`beta`) contains the relative contribution of that atom to the MDDF at the corresponding distance, and the `occupancy` field contains the distance itself.
@@ -92,7 +93,6 @@ computed from the results, using this volume estimate:
 
 ```julia
 g, kb = ComplexMixtures.gr(R)
-
 ```
 
 By default, the single-reference count (`rdf_count`) of the Result
@@ -101,7 +101,6 @@ function can be called with explicit control of all input parameters:
 
 ```julia
 g, kb = ComplexMixtures.gr(r,count,density,binstep)
-
 ```
 where:
 
@@ -118,7 +117,6 @@ Example:
 ...
 R = mddf(trajectory,options)
 g, kb = ComplexMixtures.gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
-
 ```
 
 ## Overview of the solvent and solute properties 
@@ -127,7 +125,7 @@ The output to the REPL of the Result structure provides an overview of the
 properties of the solution. The data can be retrieved into a data structure
 using the `overview` function. Examples:     
 
-```julia
+```julia-repl
 ...
 julia> results = mddf(trajectory)
 
@@ -164,7 +162,6 @@ julia> results
  Long range RDF mean (expected 1.0): 1.15912932236198 +/- 0.05735018864444404
 
 -------------------------------------------------------------------------------
-
 ```
 
 In this case, since solute and solvent are equivalent and the system is
@@ -175,12 +172,11 @@ different from the solvent density in the simulation).
 
 To retrieve the data of the overview structure use, for example:
 
-```julia
+```julia-repl
 julia> overview = overview(results);
 
 julia> overview.solute_molar_volume
 657.5051512801567
-
 ```
 
 

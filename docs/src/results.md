@@ -11,7 +11,7 @@ such that the `results` variable contain the `Result` data structure. By
 default, the histograms contain 500 bins (`binstep=0.002` and
 `cutoff=10.`) such that all data-vectors will contain 500 lines.
 
-To know how to save and load saved data, read the [next](@ref save) section.
+To learn how to save and load saved data, read the [next](@ref save) section.
 
 ## The Result data structure: main data
 
@@ -24,7 +24,7 @@ The following vector will contain values ranging from 0. to `cutoff`,
 and the distance at each bin is the distance in that bin for which half
 of the volume of the bin is within `d`, and half of the volume is above
 `d`, if the volume was spherical: 
-```julia
+```julia-repl
 julia> results.d
 500-element Array{Float64,1}:
  0.015874010519682
@@ -32,7 +32,6 @@ julia> results.d
  ⋮
  9.970010030080179
  9.99001000999998
-
 ```
 
 ## Minimum-distance distribution function: `results.mddf`
@@ -41,7 +40,7 @@ The `results.mddf` vector will contain the main result, which the
 minimum-distance distribution function. For a properly-sampled
 simulation, it will be zero at very short distances and converge to 1.0
 for distances smaller than the `cutoff`:
-```julia
+```julia-repl
 julia> results.mddf
 500-element Array{Float64,1}:
  0.0
@@ -70,7 +69,7 @@ plot(results.d,results.mddf,xlabel="d/A",ylabel="mddf(d) / L/mol")
 The `results.kb` vector will contain the Kirkwood-Buff integral computed
 as a function of the minimum-distance to the solute. For properly
 sampled simulations, it is expected to converge at large distances.  
-```julia
+```julia-repl
 julia> results.kb
 500-element Array{Float64,1}:
      0.0
@@ -79,7 +78,6 @@ julia> results.kb
      ⋮
     0.72186381783
     1.13624162115
-
 ```
 
 A typical plot of `results.kb` as a function of `results.d` will look
