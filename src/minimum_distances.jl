@@ -137,12 +137,10 @@ end
 """
     minimum_distances!(system::CellListMap.PeriodicSystem, R::Result)
 
-Function that computes the list of distances of solvent molecules to a solute molecule. 
-It updates the lists of minimum distances. 
-
 $(INTERNAL)
 
-# Extended help
+Function that computes the list of distances of solvent molecules to a solute molecule. 
+It updates the lists of minimum distances. 
 
 """
 function minimum_distances!(

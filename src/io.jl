@@ -34,6 +34,8 @@ end # module
 
 """
 
+$(INTERNAL)
+
 $(TYPEDEF)
 
 Structure to contain the names of the output files.
@@ -48,6 +50,8 @@ $(TYPEDFIELDS)
 end
 
 """
+
+$(INTERNAL)
 
 $(TYPEDEF)
 

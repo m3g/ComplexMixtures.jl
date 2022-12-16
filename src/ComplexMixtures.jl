@@ -27,7 +27,7 @@ export overview, gr, grid3D
 export VMDselect
 
 # Message for internal doc strings
-const INTERNAL = "Internal sructure or function, interface may change."
+const INTERNAL = "**Internal structure or function, interface may change.**"
 
 # Module for testing
 include("./Testing.jl")

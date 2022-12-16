@@ -10,6 +10,7 @@ makedocs(
     pages = [
         "Introduction" => "index.md",
         "Installation" => "installation.md",
+        "Parallel execution" => "parallel.md",
         "Quick Guide" => "quickguide.md",
         "Full Example" => "examples.md",
         "Set solute and solvent" => "selection.md",
@@ -19,7 +20,6 @@ makedocs(
         "Atomic and group contributions" => "contrib.md",
         "Save and load" => "save.md",
         "Multiple trajectories" => "multiple.md",
-        "Parallel execution" => "parallel.md",
         "Options" => "options.md",
         "Tools" => "tools.md",
         "Help entries" => "help.md",

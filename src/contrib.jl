@@ -1,8 +1,5 @@
 """
-
-```
-contrib(s::Selection, atom_contributions::Array{Float64}, selection)
-```
+    contrib(s::Selection, atom_contributions::Array{Float64}, selection)
 
 Extract the contribution of a given atom type selection from the 
 solute or solvent atomic contributions to the MDDF.

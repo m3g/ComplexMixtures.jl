@@ -68,6 +68,8 @@ end
 
 """
 
+$(INTERNAL)
+
 $(TYPEDEF)
 
 Structures to contain the details of a solute or solvent to store in the results of the MDDF calculation.
@@ -274,7 +276,7 @@ isautocorrelation(trajectory::Trajectory) =
 # Functions to compute volumes of shells
 #
 """
-  sphericalshellvolume(i,step)
+    sphericalshellvolume(i,step)
 
 $(INTERNAL)
 
@@ -287,7 +289,9 @@ function sphericalshellvolume(i, step)
 end
 
 """
-  shellradius(i,step)
+    shellradius(i,step)
+
+$(INTERNAL)
 
 Compute the point in which the radius comprises half of the volume of the shell.
 
@@ -299,7 +303,9 @@ end
 
 
 """
-  sphereradiusfromshellvolume(volume,step)
+    sphereradiusfromshellvolume(volume,step)
+
+$(INTERNAL)
 
 Computes the radius that corresponds to a spherical shell of a given volume.
 
@@ -666,7 +672,7 @@ end
 
 
 """
-  load(filename::String)
+    load(filename::String)
 
 Function to load the json saved results file into the `Result` data structure.
 
@@ -885,7 +891,9 @@ function write(
 end
 
 """
-  which_types(s::Selection, indexes::Vector{Int})
+    which_types(s::Selection, indexes::Vector{Int})
+
+$(INTERNAL)
 
 Function that returns the list of the indexes of the types of the atoms in a
 selection. For example, if a selection corresponds to a solvent of water molecules:
@@ -1021,6 +1029,8 @@ end
 """
     sum!(R1::Result, R2::Result)
 
+$(INTERNAL)
+
 Sum the counts of two Results structures, adding the result to the first structure as in R1 = R1 + R2.
 
 """
@@ -1075,6 +1085,8 @@ end
 # Print overview of the results in the REPL
 #
 """
+
+$(INTERNAL)
 
 $(TYPEDEF)
 
