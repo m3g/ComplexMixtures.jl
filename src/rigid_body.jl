@@ -127,7 +127,7 @@ Function that generates a new random position for a molecule.
 The new position is returned in `x_new`, a previously allocated array.
 
 """
-random_move!(
+function random_move!(
     x::AbstractVector{<:SVector{3}},
     irefatom::Int,
     system::AbstractPeriodicSystem,
@@ -139,7 +139,7 @@ random_move!(
 
     # Generate random coordinates for the center of mass
     cmin, cmax = PeriodicSystems.get_computing_box(system)
-    newcm = scale * (cmin + random(RNG, Float64) * (cmax - cmin))
+    newcm = SVector{3}(scale * (cmin[i] + random(RNG, Float64) * (cmax[i] - cmin[i])) for i in 1:3)
 
     # Generate random rotation angles 
     beta = 2π * random(RNG, Float64)
@@ -162,7 +162,7 @@ end
     using ComplexMixtures
     using StaticArrays
     using LinearAlgebra: norm
-    import CellListMap
+    using CellListMap.PeriodicSystems
     function check_internal_distances(x, y)
         for i = firstindex(x):lastindex(x)-1
             for j = i+1:lastindex(x)
@@ -177,23 +177,22 @@ end
     end
 
     RNG = ComplexMixtures.init_random(Options())
-
     # Orthorhombic cell
-    box = CellListMap.Box(SVector(10.0, 10.0, 10.0), 0.1)
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
+    system = PeriodicSystem(positions=x, cutoff=0.1, unitcell=SVector(10.0, 10.0, 10.0), output=0.0)
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
+    system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
+    system.xpositions .= [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
 
     # Triclinic cell
-    box = CellListMap.Box(@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], 1.0)
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
-    x = [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, box, RNG))
+    system = PeriodicSystem(positions=x, cutoff=0.1, unitcell=@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], output=0.0)
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
+    system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
+    system.xpositions .= [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
 
 end
