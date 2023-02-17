@@ -92,7 +92,7 @@ of the periodic box. This is needed to generate correct random rotations for the
 """
 function wrap!(x::AbstractVector{T}, vref, box::CellListMap.Box) where {T<:SVector}
     for i in eachindex(x)
-        x[i] = CellListMap.wrap_relative_to(x[i], vref, box)
+        x[i] = CellListMap.wrap_relative_to(x[i], vref, box.input_unit_cell.matrix)
     end
     return x
 end
@@ -182,10 +182,9 @@ function random_move!(
     # much larger region, and wrapped aftwerwards
     scale = 100.0
 
-    # Generate random coordiantes for the center of mass
-    newcm = T(
-        scale * (-box.unit_cell_max[i] / 2 + random(RNG, Float64) * box.unit_cell_max[i]) for i = 1:3
-    )
+    # Generate random coordinates for the center of mass
+    box_length = box.computing_box[2] - box.computing_box[1]
+    newcm = scale * (box.computing_box[1] + random(RNG, Float64) * box_length)
 
     # Generate random rotation angles 
     beta = 2π * random(RNG, Float64)
