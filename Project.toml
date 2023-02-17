@@ -26,7 +26,7 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 
 [compat]
 CellListMap = "0.8.12"
-Chemfiles = "0.9 - 0.10"
+Chemfiles = "0.9, 0.10"
 ChunkSplitters = "0.1"
 CpuId = "0.3"
 DocStringExtensions = "0.8, 0.9"
