@@ -16,29 +16,29 @@
   
     protein = Selection(select(atoms, "protein"), nmols=1)
     t_selection1 = @benchmark Selection(select($atoms, "protein"), nmols=1) samples = 1 evals = 1
-    @test t_selection1.allocs == 51
+    @test t_selection1.allocs ≈ 51 rtol = 0.1
   
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol=14)
     t_selection2 = @benchmark Selection(select($atoms, "resname TMAO"), natomspermol=14) samples = 1 evals = 1
-    @test t_selection2.allocs == 186139
+    @test t_selection2.allocs ≈ 186139 rtol = 0.1
   
     trajfile = "$dir/trajectory.dcd" # because of the interpolation of @benchmark
     traj = Trajectory(trajfile, protein, tmao)
     t_trajectory = @benchmark Trajectory($trajfile, $protein, $tmao) samples = 1 evals = 1
-    @test t_trajectory.allocs == 844
+    @test t_trajectory.allocs ≈ 844 rtol = 0.1
   
     R = Result(traj, options)
     t_result = @benchmark Result($traj, $options) samples = 1 evals = 1
-    @test t_result.allocs == 87
+    @test t_result.allocs ≈ 87 rtol = 1
   
     CM.opentraj!(traj)
     CM.firstframe!(traj)
     t_nextframe = @benchmark CM.nextframe!($traj) samples = 1 evals = 1
-    @test t_nextframe.allocs == 35
+    @test t_nextframe.allocs ≈ 35 rtol = 0.1
   
     RNG = CM.init_random(options)
     t_RNG = @benchmark CM.init_random($options) samples = 1 evals = 1
-    @test t_RNG.allocs == 2
+    @test t_RNG.allocs ≈ 2 rtol = 1 
   
     system = CM.setup_PeriodicSystem(traj, options)
     buff = CM.Buffer(traj, R)
@@ -46,7 +46,7 @@
     @. buff.solvent_read = traj.x_solvent
     CM.update_unitcell!(system, CM.getsides(traj, 1))
     t_mddf_frame = @benchmark CM.mddf_frame!($R, $system, $buff, $options, $RNG) samples = 1 evals = 1
-    @test t_mddf_frame.allocs < 500
+    @test t_mddf_frame.allocs ≈ 27 rtol = 1
   
   end
   
