@@ -82,44 +82,6 @@ end
 end
 
 """
-    wrap!(x::AbstractVector{T}, vref, box::CellListMap.Box) where T<:SVector
-
-$(INTERNAL)
-
-Wrap the coordinates of a molecule such that its atoms are not spread in different images
-of the periodic box. This is needed to generate correct random rotations for the molecule.
-
-"""
-function wrap!(x::AbstractVector{T}, vref, box::CellListMap.Box) where {T<:SVector}
-    for i in eachindex(x)
-        x[i] = CellListMap.wrap_relative_to(x[i], vref, box.input_unit_cell.matrix)
-    end
-    return x
-end
-
-@testitem "wrap!" begin
-    using ComplexMixtures
-    using StaticArrays
-    import CellListMap
-    # Orthorhombic box
-    box = CellListMap.Box(SVector(10.0, 10.0, 10.0), 1.0)
-    x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[1], box) ≈
-          SVector{3,Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
-    x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[2], box) ≈
-          SVector{3,Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
-    # Triclinic box
-    box = CellListMap.Box(@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], 1.0)
-    x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[1], box) ≈
-          SVector{3,Float64}[[1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
-    x = [SVector(1.0, 0.0, 0.0), SVector(10.0, 0.0, 0.0)]
-    @test ComplexMixtures.wrap!(x, x[2], box) ≈
-          SVector{3,Float64}[[11.0, 0.0, 0.0], [10.0, 0.0, 0.0]]
-end
-
-"""
     move!(x::AbstractVector, newcm::AbstractVector,beta, gamma, theta)
 
 $(INTERNAL)
@@ -166,25 +128,18 @@ The new position is returned in `x_new`, a previously allocated array.
 
 """
 random_move!(
-    x::AbstractVector{T},
+    x::AbstractVector{<:SVector{3}},
     irefatom::Int,
     system::AbstractPeriodicSystem,
     RNG,
-) where {T<:SVector} = random_move!(x, irefatom, system._box, RNG)
-# Using the `system._box`, such that we can test this without building the whole system
-function random_move!(
-    x::AbstractVector{T},
-    irefatom::Int,
-    box::CellListMap.Box,
-    RNG,
-) where {T<:SVector}
+)
     # To avoid boundary problems, the center of coordinates are generated in a 
     # much larger region, and wrapped aftwerwards
     scale = 100.0
 
     # Generate random coordinates for the center of mass
-    box_length = box.computing_box[2] - box.computing_box[1]
-    newcm = scale * (box.computing_box[1] + random(RNG, Float64) * box_length)
+    cmin, cmax = PeriodicSystems.get_computing_box(system)
+    newcm = scale * (cmin + random(RNG, Float64) * (cmax - cmin))
 
     # Generate random rotation angles 
     beta = 2π * random(RNG, Float64)
@@ -193,7 +148,9 @@ function random_move!(
 
     # Take care that this molecule is not split by periodic boundary conditions, by
     # wrapping its coordinates around its reference atom
-    wrap!(x, x[irefatom], box)
+    for iat in x
+        x[iat] = CellListMap.wrap_relative_to(x[iat], x[irefatom], system.unitcell)
+    end
 
     # Move molecule to new position
     move!(x, newcm, beta, gamma, theta)
