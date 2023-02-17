@@ -148,7 +148,7 @@ random_move!(
 
     # Take care that this molecule is not split by periodic boundary conditions, by
     # wrapping its coordinates around its reference atom
-    for iat in x
+    for iat in eachindex(x)
         x[iat] = CellListMap.wrap_relative_to(x[iat], x[irefatom], system.unitcell)
     end
 
