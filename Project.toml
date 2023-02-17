@@ -1,7 +1,7 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
 authors = ["Leandro Martinez <lmartine@unicamp.br>"]
-version = "0.6.1-DEV"
+version = "0.6.2"
 
 [deps]
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
@@ -9,7 +9,6 @@ Chemfiles = "46823bd8-5fb3-5f92-9aa0-96921f3dd015"
 ChunkSplitters = "ae650224-84b6-46f8-82ea-d812ca08434e"
 CpuId = "adafc99b-e345-5852-983c-f28acb93d879"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
-Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FortranFiles = "c58ffaec-ab22-586d-bfc5-781a99fd0b10"
 Future = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
@@ -26,7 +25,7 @@ StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 
 [compat]
-CellListMap = "0.8.9"
+CellListMap = "0.8.12"
 Chemfiles = "0.9 - 0.10"
 ChunkSplitters = "0.1"
 CpuId = "0.3"
