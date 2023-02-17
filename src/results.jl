@@ -572,7 +572,6 @@ end
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
 
-
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)

@@ -383,13 +383,13 @@ end
     @test R.density.solute ≈ 1.6581590839128614e-6
     @test R.density.solvent ≈ 0.00030012679418822794
     # Dependent on the random number seed
-    @test R.volume.domain ≈ 75368.14585709268
-    @test R.volume.bulk ≈ 527710.298003817
-    @test R.density.solvent_bulk ≈ 0.000305944380109164
-    @test sum(R.mddf) ≈ 582.8371304452286 
-    @test sum(R.rdf) ≈ 491.4450029864516
-    @test R.kb[end] ≈ -6019.863896959123
-    @test R.kb_rdf[end] ≈ -6905.975623304156
+    @test R.volume.domain ≈ 75368.14585709268 rtol = 0.1
+    @test R.volume.bulk ≈ 527710.298003817 rtol = 0.1
+    @test R.density.solvent_bulk ≈ 0.000305944380109164 rtol = 0.1
+    @test sum(R.mddf) ≈ 582.8371304452286 rtol = 0.1 
+    @test sum(R.rdf) ≈ 491.4450029864516 rtol = 0.1
+    @test R.kb[end] ≈ -6019.863896959123 rtol = 0.5
+    @test R.kb_rdf[end] ≈ -6905.975623304156 rtol = 0.5
 
     # Self correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
@@ -401,11 +401,11 @@ end
     @test R.density.solute ≈ 0.00030012679418822794
     @test R.density.solvent ≈ 0.00030012679418822794
     # Dependent on the random number seed
-    @test R.volume.domain ≈ 6801.384672431371
-    @test R.volume.bulk ≈ 596277.0591884783 
-    @test R.density.solvent_bulk ≈ 0.00029875568324470034
-    @test sum(R.mddf) ≈ 275.5648734200309
-    @test sum(R.rdf) ≈ 168.77009506954508 
-    @test R.kb[end] ≈ -386.8513153147712
-    @test R.kb_rdf[end] ≈ -326.32083509753284
+    @test R.volume.domain ≈ 6801.384672431371 rtol = 0.1
+    @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1 
+    @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
+    @test sum(R.mddf) ≈ 275.5648734200309 rtol = 0.1
+    @test sum(R.rdf) ≈ 168.77009506954508 rtol = 0.1 
+    @test R.kb[end] ≈ -386.8513153147712 rtol = 0.5
+    @test R.kb_rdf[end] ≈ -326.32083509753284 rtol = 0.5
 end
