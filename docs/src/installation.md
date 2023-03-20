@@ -3,6 +3,12 @@
 First you need to install the Julia language in your platform, from: 
 [http://julialang.org](http://julialang.org). Julia version 1.6 or greater is required.
 
+!!! tip
+     New to Julia? Julia is a modern high-level yet performant programming language. Some tips
+     and a nice workflow for using it effectively can be found [here](https://m3g.github.io/JuliaNotes.jl/stable/workflow/). 
+
+     For this specific package, following a the step-by-step examples provided here after installing Julia should be enough. 
+
 Next, run julia, and within the julia REPL interface, install the ComplexMixtures package using
 ```julia-repl
 julia> import Pkg
