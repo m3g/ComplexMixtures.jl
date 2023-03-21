@@ -30,13 +30,59 @@ compute Kirkwood-Buff integrals to connect the accumulation or depletion
 of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
+## Features
+
+Check out our [examples repository](https://github.com/m3g/ComplexMixturesExamples), featuring the analysis of solvation structures for proteins, polymers, membrane, and complex solutions! The examples are also described in our [featured article](https://doi.org/10.1016/j.molliq.2021.117945).
+
+### 1. Minimum-distance distribution functions: understanding solvation at a molecular level
+
+This figure illustrates one of the main features of minimum-distance distribution functions, by showing the distribution of DMF molecules at the surface of an polyacrylamide molecule. The direct interactions are evident by the peak at hydrogen-bonding distances and, additionally, the contribution of each group of atoms of the DMF can be clearly distinguished by decomposing the total MDDF into atomic or chemical group contributions. 
+
+```@raw html
+<center>
+<img width=60% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Polyacrylamide_in_DMF/results/mddf_groups.png">
+<br>
+<b>Minimum distance distribution function and its decomposition into the chemical
+groups of the solvent (top) and solute (bottom) molecules.<br><br></b> 
+</center>
+```
+
+Decomposition of the total MDDF into the contributions of the solute atoms (in this case, a protein) is also possible. Any chemical group decomposition is possible. Here, we decompose the MDDF into the contribution of each protein residue. 
+
 ```@raw html
 <center>
 <img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
 <br>
-<b>Density map of a solvent in the vicinity of each protein residue (see the Full Example section).</b> 
+<b>Density map of a solvent in the vicinity of each protein residue.</b> 
 </center>
 ```
+
+### 2. Thermodynamic interpretation through Kirkwood-Buff theory
+
+Minimum-distance distribution functions can be used to compute Kirkwood-Buff integrals, and thus, thermodynamic parameters associated to solvation. 
+
+Kirkwood-Buff integrals carry the information of the total accumulation or depletion of each solvent around a solute. For example, the figure below displays the KB integrals of an ionic liquid solvating different conformational states of a protein [[link]](https://www.sciencedirect.com/science/article/pii/S016773222201491X?via%3Dihub). The figure illustrates that the solvation structures are dependent on the protein folding state. 
+
+```@raw html
+<center>
+<img width="50%" src="../figures/KBs.png">
+<br>
+<b>Kirkwood-Buff integrals of an ionic liquid solvating a protein in different conformational states.</b><br><br> 
+</center>
+```
+
+From differences in KB integrals among cossolvents, the Preferential Solvation parameter can be computed. This is an important parameter because it can be measured experimentally and is ultimately associated with the equilibrium thermodynamics of the solvation. In the following figure, we show that, for example, the preferential solvation of a protein in different folding states is dependent in a non-trivial way on the concentration of an ionic liquid in aqueous solutions. 
+
+```@raw html
+<center>
+<img width="50%" src="../figures/Gamma.png">
+<br>
+<b>Kirkwood-Buff integrals of an ionic liquid solvating a protein in different conformational states.</b><br><br>
+</center>
+```
+
+In particular, the plot shows that besides being preferentially excluded from the protein surface at high concentrations in the native state, suggesting protein folding stabilization, the interactions with the protein in the denatured states are stronger, leading to denaturation at all concentrations. 
+
 
 ## References
 
