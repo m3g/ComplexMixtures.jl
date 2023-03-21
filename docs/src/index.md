@@ -65,7 +65,7 @@ Kirkwood-Buff integrals carry the information of the total accumulation or deple
 
 ```@raw html
 <center>
-<img width="50%" src="../figures/KBs.png">
+<img width="50%" src="./figures/KBs.png">
 <br>
 <b>Kirkwood-Buff integrals of an ionic liquid solvating a protein in different conformational states.</b><br><br> 
 </center>
@@ -75,7 +75,7 @@ From differences in KB integrals among cossolvents, the Preferential Solvation p
 
 ```@raw html
 <center>
-<img width="50%" src="../figures/Gamma.png">
+<img width="50%" src="./figures/Gamma.png">
 <br>
 <b>Kirkwood-Buff integrals of an ionic liquid solvating a protein in different conformational states.</b><br><br>
 </center>
