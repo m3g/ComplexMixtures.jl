@@ -679,6 +679,7 @@ Function to load the json saved results file into the `Result` data structure.
 function load(filename::String)
     f = open(filename, "r")
     R = JSON3.read(f, Result{Vector{Float64}})
+    close(f)
     # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
     solute_atom = reshape(R.solute_atom, R.nbins, :)
     solvent_atom = reshape(R.solvent_atom, R.nbins, :)
