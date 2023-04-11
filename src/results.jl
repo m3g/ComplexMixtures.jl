@@ -684,8 +684,6 @@ function load(filename::String)
     solute_atom = reshape(R.solute_atom, R.nbins, :)
     solvent_atom = reshape(R.solvent_atom, R.nbins, :)
     r_names = fieldnames(Result)
-    # Check type of calculation
-
     # Return the Result{Matrix{Float64}} type with the appropriate fields 
     return Result{Matrix{Float64}}(
         ntuple(length(r_names)) do i
