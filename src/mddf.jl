@@ -71,9 +71,9 @@ function randomize_solvent!(
     for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0 
-            jmol = buff.indexes_in_bulk[random(RNG, 1:n_solvent_in_bulk)]
+            jmol = buff.indexes_in_bulk[rand(RNG, 1:n_solvent_in_bulk)]
         else
-            jmol = random(RNG, 1:R.solvent.nmols)
+            jmol = rand(RNG, 1:R.solvent.nmols)
         end
         # Pick coordinates of the molecule to be randomly moved
         y_new = viewmol(isolvent, system.ypositions, R.solvent) 
@@ -221,7 +221,7 @@ function mddf_frame!(
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
     for i in eachindex(buff.ref_solutes)
-        buff.ref_solutes[i] = random(RNG, 1:R.solute.nmols)
+        buff.ref_solutes[i] = rand(RNG, 1:R.solute.nmols)
     end
 
     #

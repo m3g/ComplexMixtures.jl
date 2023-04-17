@@ -3,35 +3,20 @@
 # mutiple-threading problems
 #
 
-import Random
-using StableRNGs
-using Future: randjump
-
+import RandomNumbers.Xorshifts as RndX
+import StableRNGs
 function init_random(options)
-    if options.seed > 0
-        if options.StableRNG == true
-            RNG = StableRNGs.StableRNG(options.seed)
-        else
-            RNG = [randjump(Random.MersenneTwister(options.seed), big(10)^20)]
-            foreach(_ -> push!(RNG, randjump(last(RNG), big(10)^20)), 2:Threads.nthreads())
-        end
+    if options.StableRNG
+        seed = abs(RndX.rand(Int))
+        RNG = StableRNGs.StableRNG(seed)
     else
-        if options.StableRNG == true
-            seed = abs(rand(Int))
-            RNG = StableRNGs.StableRNG(seed)
-        else
-            RNG = [randjump(Random.MersenneTwister(), big(10)^20)]
-            foreach(_ -> push!(RNG, randjump(last(RNG), big(10)^20)), 2:Threads.nthreads())
-        end
+        RNG = RndX.Xoroshiro128Plus()
+    end
+    if options.seed > 0
+        RndX.seed!(RNG, options.seed)
     end
     return RNG
 end
-
-random(RNG::StableRNGs.LehmerRNG) = rand(RNG)
-random(RNG::StableRNGs.LehmerRNG, arg) = rand(RNG, arg)
-
-random(RNG::Array{T}) where {T} = rand(RNG[Threads.threadid()])
-random(RNG::Array{T}, arg) where {T} = rand(RNG[Threads.threadid()], arg)
 
 """
     eulermat(beta, gamma, theta, deg::String)
@@ -139,12 +124,12 @@ function random_move!(
 
     # Generate random coordinates for the center of mass
     cmin, cmax = PeriodicSystems.get_computing_box(system)
-    newcm = SVector{3}(scale * (cmin[i] + random(RNG, Float64) * (cmax[i] - cmin[i])) for i in 1:3)
+    newcm = SVector{3}(scale * (cmin[i] + rand(RNG, Float64) * (cmax[i] - cmin[i])) for i in 1:3)
 
     # Generate random rotation angles 
-    beta = 2π * random(RNG, Float64)
-    gamma = 2π * random(RNG, Float64)
-    theta = 2π * random(RNG, Float64)
+    beta = 2π * rand(RNG, Float64)
+    gamma = 2π * rand(RNG, Float64)
+    theta = 2π * rand(RNG, Float64)
 
     # Take care that this molecule is not split by periodic boundary conditions, by
     # wrapping its coordinates around its reference atom
