@@ -14,6 +14,9 @@ format in this example, which is the default output of `NAMD` and `CHARMM` simul
 packages.
 
 ```julia
+# Activate environment (see the Installation -> Recommended Workflow manual section)
+import Pkg; Pkg.activate("/home/user/MyNewPaper")
+
 # Load packages
 using PDBTools
 using ComplexMixtures 
@@ -70,6 +73,8 @@ where `-t auto` will launch `julia` with multi-threading. It is highly recommend
     0.703780 seconds (3.24 M allocations: 897.260 MiB, 12.22% gc time)
     ```
     The first time the script was called it took ~30s, which included compilation of the code and loading of the packages. The second time the script was included it took 0.7s. Thus, for interactive modification of the script, don't restart Julia.
+
+    This has been much improved in Julia 1.9, particularly if a stable environment is used, as suggested.
 
 ## Detailed description of the example
 
