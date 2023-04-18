@@ -64,6 +64,8 @@ using Plots
 # etc ... 
 ```
 
+And the script can be run with `julia -t auto script.jl` (where `-t auto` allows for multi-threading), or included in julia with `julia> include("./scritp.jl")`, as described in the next section.
+
 !!! tip
     By loading the package with 
     ```julia
