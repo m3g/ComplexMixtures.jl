@@ -8,15 +8,11 @@ Union of types to define an `isaprox` for testing.
 const CMTypes = Union{Result,Density,Volume,SolSummary,Options}
 
 """
-
-```
-Base.isapprox(r1::T, r2::T; debug=false) where T <: CMTypes
-```
+    Base.isapprox(r1::T, r2::T; debug=false) where T <: CMTypes
 
 $(INTERNAL)
 
 Function to test if two runs offered similar results. Mostly used in the package testing routines.
-
 
 """
 function Base.isapprox(r1::T, r2::T; debug = false) where {T<:CMTypes}

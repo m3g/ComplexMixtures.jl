@@ -1,8 +1,5 @@
 """
-
-```
-grid3D(solute,solute_atoms,mddf_result,output_file; dmin=1.5, ddax=5.0, step=0.5)
-```
+    grid3D(solute,solute_atoms,mddf_result,output_file; dmin=1.5, ddax=5.0, step=0.5)
 
 This function builds the grid of the 3D density function and fills an array of
 mutable structures of type Atom, containing the position of the atoms of 

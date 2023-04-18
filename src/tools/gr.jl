@@ -1,7 +1,5 @@
 """
-```
-gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binstep::Float64)
-```
+    gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binstep::Float64)
 
 Computes the radial distribution function from the count data and
 the density.
@@ -30,10 +28,7 @@ end
 
 
 """
-
-```
-gr(R::Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
-```
+    gr(R::Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
 
 If a Result structure is provided without further details, use the rdf count
 and the bulk solvent density.

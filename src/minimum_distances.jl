@@ -29,10 +29,7 @@ import Base: zero
 zero(::Type{MinimumDistance}) = MinimumDistance(false, 0, 0, +Inf, false, +Inf)
 
 """
-
-```
-update_md(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T}
-```
+    update_md(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T}
 
 $(INTERNAL)
 
