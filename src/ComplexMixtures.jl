@@ -1,5 +1,6 @@
 module ComplexMixtures
 
+using PrecompileTools
 using Printf
 using Parameters
 using ProgressMeter
@@ -69,5 +70,8 @@ include("./isapprox.jl")
 # Tools
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
+
+# Precompilation directives
+include("precompile.jl")
 
 end # module ComplexMixtures
