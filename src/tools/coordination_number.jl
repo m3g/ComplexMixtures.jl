@@ -59,7 +59,7 @@ function coordination_number(s::Selection, atom_contributions::Matrix{Float64}, 
     # Extract the group contributions to the MDDF
     group_contrib = contrib(s, atom_contributions, group)
     # Compute the coordination number
-    return coordination_number(group_contrib, R)
+    return coordination_number(R, group_contrib)
 end
 function coordination_number(R::Result, group_contributions::Vector{Float64})
     cn = cumsum(group_contributions[i] * R.md_count_random[i] for i in eachindex(group_contributions)) 
