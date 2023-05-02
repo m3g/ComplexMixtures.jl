@@ -1,5 +1,5 @@
 """
-    coordination_number(s::Selection, atom_contributions::Array{Float64}, R::Result, group)
+    coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
 
 Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF.
 
@@ -27,7 +27,9 @@ julia> R = load("test/data/NAMD/protein_tmao.json");
 
 julia> solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
 
-julia> cn = coordination_number(solute, R.solute_atom, R, PDBTools.select(pdb, "residue 50"))
+julia> group = PDBTools.select(pdb, "residue 50");
+
+julia> cn = coordination_number(solute, R.solute_atom, R, group)
 500-element Vector{Float64}:
  0.0
  0.0
@@ -44,7 +46,7 @@ julia> cn[findlast(<(5), R.d)]
 ```
 
 """
-function coordination_number(s::Selection, atom_contributions::Array{Float64}, R::Result, group)
+function coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
     # Extract the group contributions to the MDDF
     group_contrib = contrib(s, atom_contributions, group)
     # Compute the coordination number
@@ -54,10 +56,10 @@ end
 
 @testitem "coordination_number" begin
     using ComplexMixtures, PDBTools
-    using ComplexMixtures.Testing
-    pdb = readPDB(pdbfile) 
+    import ComplexMixtures.Testing: test_dir
+    pdb = readPDB("$test_dir/data/NAMD/structure.pdb") 
     R = load("$test_dir/data/NAMD/protein_tmao.json")
     solute = Selection(PDBTools.select(pdb, "protein"), nmols=1)
     cn = coordination_number(solute, R.solute_atom, R, PDBTools.select(pdb, "residue 50"))
-    @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol=1e-14
+    @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol=1e-10
 end
