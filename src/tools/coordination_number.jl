@@ -1,9 +1,15 @@
 """
+    coordination_number(R::Result, group_contributions::Vector{Float64})
     coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
 
 Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF.
 
-`s` here is the solute or solvent selection (type `ComplexMixtures.Selection`)
+If the `group_contributions` to the `mddf` are computed previously with the `contrib` function, the result can be used
+to compute the coordination number by calling `coordination_number(R::Result, group_contributions)`.
+
+Otherwise, the coordination number can be computed directly with the second call, where:
+
+`s` is the solute or solvent selection (type `ComplexMixtures.Selection`)
 
 `atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure
 
@@ -12,37 +18,40 @@ Computes the coordination number of a given group of atoms from the solute or so
 and the last argument is the selection of atoms from the solute to be considered, given as a list of indexes, list of atom names, 
 or a selection following the syntax of `PDBTools`, or vector of `PDBTools.Atom`s, or a `PDBTools.Residue`
 
-# Example
+# Examples
 
-In the following example we compute the coordination number of the solute atoms of residue 50 with the solvent atoms of TMAO,
+In the following example we compute the coordination number of the atoms of residue 50 (of the solute) with the solvent atoms of TMAO,
 as a function of the distance. Finally, we show the average number of TMAO molecules within 5 Angstroms of residue 50. 
 The `findlast(<(5), R.d)` part of the code below returns the index of the last element of the `R.d` array that is smaller than 5 Angstroms.
 
-```julia-repl
-julia> using ComplexMixtures, PDBTools
+## Precomputing the group contributions Using the `contrib` function
 
-julia> pdb = readPDB("test/data/NAMD/structure.pdb");
+```julia
+using ComplexMixtures, PDBTools
+pdb = readPDB("test/data/NAMD/structure.pdb");
+R = load("test/data/NAMD/protein_tmao.json");
+solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
+residue50 = PDBTools.select(pdb, "residue 50");
+# Compute the group contributions to the MDDF
+residue50_contribution = contrib(solute, R.solute_atom, residue50);
+# Now compute the coordination number
+residue50_coordination = coordination_number(R, residue50_contribution)
+# Output the average number of TMAO molecules within 5 Angstroms of residue 50
+residue50_coordination[findlast(<(5), R.d)]
+```
 
-julia> R = load("test/data/NAMD/protein_tmao.json");
+## Without precomputing the `group_contribution`
 
-julia> solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
-
-julia> group = PDBTools.select(pdb, "residue 50");
-
-julia> cn = coordination_number(solute, R.solute_atom, R, group)
-500-element Vector{Float64}:
- 0.0
- 0.0
- 0.0
- 0.0
- ⋮
- 0.24999999999999997
- 0.24999999999999997
- 0.24999999999999997
- 0.24999999999999997
-
-julia> cn[findlast(<(5), R.d)]
-0.24999999999999997
+```julia
+using ComplexMixtures, PDBTools
+pdb = readPDB("test/data/NAMD/structure.pdb");
+R = load("test/data/NAMD/protein_tmao.json");
+solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
+residue50 = PDBTools.select(pdb, "residue 50");
+# Compute the coordination number
+residue50_coordination = coordination_number(solute, R.solute_atom, R, group)
+# Output the average number of TMAO molecules within 5 Angstroms of residue 50
+residue50_coordination[findlast(<(5), R.d)]
 ```
 
 """
@@ -50,9 +59,13 @@ function coordination_number(s::Selection, atom_contributions::Matrix{Float64}, 
     # Extract the group contributions to the MDDF
     group_contrib = contrib(s, atom_contributions, group)
     # Compute the coordination number
-    cn = cumsum(group_contrib[i] * R.md_count_random[i] for i in eachindex(group_contrib)) 
+    return coordination_number(group_contrib, R)
+end
+function coordination_number(R::Result, group_contributions::Vector{Float64})
+    cn = cumsum(group_contributions[i] * R.md_count_random[i] for i in eachindex(group_contributions)) 
     return cn
 end
+
 
 @testitem "coordination_number" begin
     using ComplexMixtures, PDBTools
