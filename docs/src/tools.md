@@ -8,17 +8,16 @@ Some tools are provided to analyze the results:
 
 ## Coordination numbers
 
-The function with methods
-
+The function
 ```julia
 coordination_number(R::Result, group_contributions::Vector{Float64})
 ```
-
-Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF.
+computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF. Here, `R` is
+the result of the `mddf` calculation, and `group_contributions` is the output of the `contrib` function for the desired set of atoms.
 
 ### Example
 
-In the following example we compute the coordination number of the atoms of residue 50 (which belongs to the solute) with the solvent atoms of TMAO, as a function of the distance. The plot produced will show side by side the residue contribution to the MDDF and the corresponding coordination number.
+In the following example we compute the coordination number of the atoms of `residue 50` (which belongs to the solute - a protein) with the solvent atoms of TMAO, as a function of the distance. The plot produced will show side by side the residue contribution to the MDDF and the corresponding coordination number.
 
 ```julia
 using ComplexMixtures, PDBTools
