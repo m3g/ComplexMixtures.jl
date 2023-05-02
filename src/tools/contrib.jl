@@ -1,8 +1,7 @@
 """
-  contrib(s::Selection, atom_contributions::Matrix{Float64}, selection)
+    contrib(s::Selection, atom_contributions::Matrix{Float64}, selection)
 
-Extract the contribution of a given atom type selection from the 
-solute or solvent atomic contributions to the MDDF.
+Extract the contribution of a given atom type selection from the solute or solvent atomic contributions to the MDDF.
 
 `s` here is the solute or solvent selection (type `ComplexMixtures.Selection`)
 `atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure,
