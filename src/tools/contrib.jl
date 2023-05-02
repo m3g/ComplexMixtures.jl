@@ -1,5 +1,5 @@
 """
-    contrib(s::Selection, atom_contributions::Array{Float64}, selection)
+  contrib(s::Selection, atom_contributions::Matrix{Float64}, selection)
 
 Extract the contribution of a given atom type selection from the 
 solute or solvent atomic contributions to the MDDF.
@@ -20,17 +20,15 @@ function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vect
             if isnothing(ind)
                 error("Index $it of input list not found in selection indexes list.")
             end
-            c += atom_contributions[:, ind]
+            c += @view(atom_contributions[:, ind])
         end
         # If more than one molecule, the index must correspond to an atom within one molecule
     else
         for it in indexes
             if it > s.natomspermol
-                error(
-                    "The index list contains atoms with indexes greater than the number of atoms of the molecule.",
-                )
+                error("The index list contains atoms with indexes greater than the number of atoms of the molecule.")
             end
-            c += atom_contributions[:, it]
+            c += @view(atom_contributions[:, it])
         end
     end
     return c
@@ -56,7 +54,7 @@ end
 #
 function contrib(
     s::Selection,
-    atom_contributions::Array{Float64},
+    atom_contributions::Matrix{Float64},
     atoms::Vector{PDBTools.Atom};
     warning = true,
 )
@@ -72,7 +70,7 @@ end
 #
 function contrib(
     s::Selection,
-    atom_contributions::Array{Float64},
+    atom_contributions::Matrix{Float64},
     residue::Residue;
     warning = true,
 )
@@ -84,8 +82,8 @@ function contrib(
 end
 
 function warning_nmols_types()
-    println(
-        "WARNING: there is more than one molecule in this selection. " *
-        "Contributions are summed over all atoms of the same type.",
-    )
+    println("""
+        WARNING: There is more than one molecule in this selection.
+                 Contributions are summed over all atoms of the same type.
+    """)
 end
