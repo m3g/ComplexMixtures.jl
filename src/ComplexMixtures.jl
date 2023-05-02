@@ -23,9 +23,12 @@ import .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 import Random
 
 export Selection, Trajectory, mddf, save, load, write, Options, Result
-export contrib, merge
-export overview, gr, grid3D
+export merge
+export overview
 export VMDselect
+
+# Tools
+export contrib, coordination_number, gr, grid3D
 
 # Message for internal doc strings
 const INTERNAL = "**Internal structure or function, interface may change.**"
@@ -68,6 +71,8 @@ include("./mddf.jl")
 include("./isapprox.jl")
 
 # Tools
+include("./tools/contrib.jl")
+include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 
