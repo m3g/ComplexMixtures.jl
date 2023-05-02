@@ -1,4 +1,4 @@
-# [Tools and Examples](@id Tools)
+# [Tools](@id Tools)
 
 A set of examples of analyses that can be performed with `ComplexMixtures` is given 
 in [this site](https://github.com/m3g/ComplexMixturesExamples). A brief the description
@@ -12,59 +12,44 @@ The function with methods
 
 ```julia
 coordination_number(R::Result, group_contributions::Vector{Float64})
-coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
 ```
 
 Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF.
 
-If the `group_contributions` to the `mddf` are computed previously with the `contrib` function, the result can be used
-to compute the coordination number by calling `coordination_number(R::Result, group_contributions)`.
+### Example
 
-Otherwise, the coordination number can be computed directly with the second call, where:
-
-`s` here is the solute or solvent selection (type `ComplexMixtures.Selection`)
-
-`atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure
-
-`R` is the `Result` structure,
-
-and the last argument is the selection of atoms from the solute to be considered, given as a list of indexes, list of atom names, 
-a selection following the syntax of `PDBTools`, vector of `PDBTools.Atom`s, or a `PDBTools.Residue`.
-
-### Examples
-
-In the following example we compute the coordination number of the atoms of residue 50 (which belongs to the solute) with the solvent atoms of TMAO,
-as a function of the distance. Finally, we show the average number of TMAO molecules within 5 Angstroms of residue 50. 
-The `findlast(<(5), R.d)` part of the code below returns the index of the last element of the `R.d` array that is smaller than 5 Angstroms.
-
-#### Precomputing MDDF group contributions using the `contrib` function
+In the following example we compute the coordination number of the atoms of residue 50 (which belongs to the solute) with the solvent atoms of TMAO, as a function of the distance. The plot produced will show side by side the residue contribution to the MDDF and the corresponding coordination number.
 
 ```julia
 using ComplexMixtures, PDBTools
-pdb = readPDB("test/data/NAMD/structure.pdb");
-R = load("test/data/NAMD/protein_tmao.json");
-solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
-residue50 = PDBTools.select(pdb, "residue 50");
+using Plots, EasyFit
+pdb = readPDB("test/data/NAMD/structure.pdb")
+R = load("test/data/NAMD/protein_tmao.json")
+solute = Selection(PDBTools.select(pdb, "protein"), nmols=1)
+residue50 = PDBTools.select(pdb, "residue 50")
 # Compute the group contribution to the MDDF
-residue50_contribution = contrib(solute, R.solute_atom, residue50);
+residue50_contribution = contrib(solute, R.solute_atom, residue50)
 # Now compute the coordination number
 residue50_coordination = coordination_number(R, residue50_contribution)
-# Output the average number of TMAO molecules within 5 Angstroms of residue 50
-residue50_coordination[findlast(<(5), R.d)]
+# Plot with twin y-axis
+plot(R.d, movavg(residue50_contribution,n=10).x,
+    xaxis="distance / Å", 
+    yaxis="MDDF contribution", 
+    linewidth=2, label=nothing, color=1
+)
+plot!(twinx(),R.d, residue50_coordination, 
+    yaxis="Coordination number", 
+    linewidth=2, label=nothing, color=2
+)
+plot!(title="Residue 50", framestyle=:box, subplot=1)
 ```
 
-#### Without precomputing the `group_contribution`
+With appropriate input data, this code produces:
 
-```julia
-using ComplexMixtures, PDBTools
-pdb = readPDB("test/data/NAMD/structure.pdb");
-R = load("test/data/NAMD/protein_tmao.json");
-solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
-residue50 = PDBTools.select(pdb, "residue 50");
-# Compute the coordination number
-residue50_coordination = coordination_number(solute, R.solute_atom, R, group)
-# Output the average number of TMAO molecules within 5 Angstroms of residue 50
-residue50_coordination[findlast(<(5), R.d)]
+```@raw html
+<center>
+<img width=60% src="../figures/coordination.png" width=80%>
+</center>
 ```
 
 ## Computing a 2D density map around a macromolecule 
