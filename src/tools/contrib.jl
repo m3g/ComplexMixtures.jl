@@ -10,7 +10,7 @@ and the last argument is the selection of atoms from the solute to be considered
 of indexes, list of atom names, vector of `PDBTools.Atom`s, or a `PDBTools.Residue`. 
 
 """
-function contrib(s::Selection, atom_contributions::Array{Float64}, indexes::Vector{Int})
+function contrib(s::Selection, atom_contributions::Matrix{Float64}, indexes::Vector{Int})
     nbins = size(atom_contributions, 1)
     c = zeros(nbins)
     # If the selection is a single molecule, the indexes are anything
@@ -37,7 +37,7 @@ end
 #
 # If a list of atom names is provided
 #
-function contrib(s::Selection, atom_contributions::Array{Float64}, names::Vector{String})
+function contrib(s::Selection, atom_contributions::Matrix{Float64}, names::Vector{String})
     indexes = Vector{Int}(undef, 0)
     for name in names
         index = findall(isequal(name), s.names)
