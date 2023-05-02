@@ -6,6 +6,58 @@ of the possible results is provided here.
 
 Some tools are provided to analyze the results:
 
+## Coordination numbers
+
+The function 
+
+```julia
+coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
+```
+
+Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF.
+
+`s` here is the solute or solvent selection (type `ComplexMixtures.Selection`)
+
+`atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure
+
+`R` is the `Result` structure,
+
+and the last argument is the selection of atoms from the solute to be considered, given as a list of indexes, list of atom names, 
+a selection following the syntax of `PDBTools`, vector of `PDBTools.Atom`s, or a `PDBTools.Residue`.
+
+### Example
+
+In the following example we compute the coordination number of the solute atoms of residue 50 with the solvent atoms of TMAO,
+as a function of the distance. Finally, we show the average number of TMAO molecules within 5 Angstroms of residue 50. 
+The `findlast(<(5), R.d)` part of the code below returns the index of the last element of the `R.d` array that is smaller than 5 Angstroms.
+
+```julia-repl
+julia> using ComplexMixtures, PDBTools
+
+julia> pdb = readPDB("test/data/NAMD/structure.pdb");
+
+julia> R = load("test/data/NAMD/protein_tmao.json");
+
+julia> solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
+
+julia> group = PDBTools.select(pdb, "residue 50");
+
+julia> cn = coordination_number(solute, R.solute_atom, R, group)
+500-element Vector{Float64}:
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ ⋮
+ 0.24999999999999997
+ 0.24999999999999997
+ 0.24999999999999997
+ 0.24999999999999997
+
+julia> cn[findlast(<(5), R.d)]
+0.24999999999999997
+```
+
 ## Computing a 2D density map around a macromolecule 
 
 One nice way to visualize the accumulation or depletion of a solvent around a macromolecule (a protein, for example), is to obtain a 2D map of the density as a function of the distance from its surface. For example, in the figure below the density of a solute (here, Glycerol), in the neighborhood of a protein is shown:
