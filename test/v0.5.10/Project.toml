@@ -1,5 +1,0 @@
-[deps]
-ComplexMixtures = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
-MolecularMinimumDistances = "46954fcc-1dd7-4352-b01d-a39240e91dc8"
-PDBTools = "e29189f1-7114-4dbd-93d0-c5673a921a58"
-StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
