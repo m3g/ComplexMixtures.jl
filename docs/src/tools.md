@@ -23,7 +23,7 @@ residues = collect(eachresidue(protein))
 residue_contributions = zeros(length(R.d),length(residues))
 for (i,residue) in pairs(residues)
   c = contrib(solute,R.solute_atom,residue) 
-  residue_contributions[i,:] .= c
+  residue_contributions[:,i] .= c
 end
 ```
 
