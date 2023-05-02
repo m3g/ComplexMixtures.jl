@@ -57,9 +57,17 @@ end
 @testitem "coordination_number" begin
     using ComplexMixtures, PDBTools
     import ComplexMixtures.Testing: test_dir
+
     pdb = readPDB("$test_dir/data/NAMD/structure.pdb") 
     R = load("$test_dir/data/NAMD/protein_tmao.json")
     solute = Selection(PDBTools.select(pdb, "protein"), nmols=1)
     cn = coordination_number(solute, R.solute_atom, R, PDBTools.select(pdb, "residue 50"))
     @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol=1e-10
+
+    pdb = readPDB("$test_dir/data/NAMD/Protein_in_Glycerol/system.pdb")
+    R = load("$test_dir/data/NAMD/Protein_in_Glycerol/protein_water.json") 
+    group = PDBTools.select(pdb, "protein")
+    solute = Selection(group, nmols=1)
+    cn = coordination_number(solute, R.solute_atom, R, group)
+    @test maximum(R.sum_md_count .- cn) < 1e-10
 end
