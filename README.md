@@ -62,15 +62,11 @@ If this package was useful to you, please cite the following articles:
 
 * L. Martínez, **ComplexMixtures.jl: Investigating the structure of solutions of complex-shaped molecules from a solvent-shell perspective** *J. Mol. Liq.* 117945, 2021.  [[Full Text]](https://doi.org/10.1016/j.molliq.2021.117945)
 
-* L. Martínez, S. Shimizu, **Molecular interpretation of preferential
-  interactions in protein solvation: a solvent-shell perspective by
-  means of minimum-distance distribution functions.** *J. Chem. Theor.
-  Comp.* 13, 6358–6372, 2017. [[Full Text]](http://pubs.acs.org/doi/abs/10.1021/acs.jctc.7b00599)
+* L. Martínez, S. Shimizu, **Molecular interpretation of preferential interactions in protein solvation: a solvent-shell perspective by means of minimum-distance distribution functions.** *J. Chem. Theor.  Comp.* 13, 6358–6372, 2017. [[Full Text]](http://pubs.acs.org/doi/abs/10.1021/acs.jctc.7b00599)
 
 ## Additional resources
 
-Please go to [http://m3g.iqm.unicamp.br](http://m3g.iqm.unicamp.br) to find additional resources
-publications associated with this project. 
+Please go to [http://m3g.iqm.unicamp.br](http://m3g.iqm.unicamp.br) to find additional resources and publications associated with this project. 
 
 
 
