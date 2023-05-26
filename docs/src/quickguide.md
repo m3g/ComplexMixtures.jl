@@ -39,7 +39,7 @@ trajectory = Trajectory("./trajectory.dcd",solute,solvent)
 # Run the calculation and get results
 results = mddf(trajectory)
 
-# Save the reults to recover them later if required
+# Save the results to recover them later if required
 save(results,"./results.json")
 
 # Plot the some of the most important results 
