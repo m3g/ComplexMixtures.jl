@@ -28,7 +28,7 @@ $(INTERNAL)
 Function that sets to which histogram bin a data point pertains simple, but important to keep consistency over all calls.
 
 """
-setbin(d, step) = trunc(Int, d / step) + 1
+setbin(d, step) = max(1, ceil(Int, d / step))
 
 """
 
@@ -176,7 +176,7 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         end
         cutoff = options.cutoff
     end
-    nbins = setbin(cutoff, options.binstep) - 1
+    nbins = setbin(cutoff, options.binstep)
 
     if options.irefatom > trajectory.solvent.natoms
         error("in MDDF options: Reference atom index", options.irefatom, " is greater than number of atoms of the solvent molecule. ")
@@ -774,13 +774,12 @@ function write(
         println(output, @sprintf("#"))
         if R.options.usecutoff
             ibulk = setbin(R.options.dbulk, R.options.binstep)
-        else
-            ibulk = round(Int, R.nbins - 1 / R.options.binstep)
+            bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
+            sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
+            println(output, "#")
+            println(output, "# Using cutoff distance: $(R.cutoff)")
+            println(output, @sprintf("# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
         end
-        bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
-        sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
-        println(output, "#")
-        println(output, @sprintf("# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
         println(output, 
     """
     #
