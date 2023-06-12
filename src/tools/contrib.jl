@@ -8,14 +8,28 @@ Extract the contribution of a given atom type selection from the solute or solve
 and the last argument is the selection of atoms from the solute to be considered, given as a list 
 of indexes, list of atom names, vector of `PDBTools.Atom`s, or a `PDBTools.Residue`. 
 
+## Extended help
+
+The function has an additional keyword option `first_atom_is_ref` that is `false` by default. If set to `true`,
+the index first atom of the selection is considered as a reference atom. For example if a solute has 100 atoms,
+but its first atom in the PDB file is number 901, the selection of indexes `[1, 2, 3]` will refer to atoms
+with indexes `[901, 902, 903]`.
+
 """
-function contrib(s::Selection, atom_contributions::Matrix{Float64}, indexes::Vector{Int})
+function contrib(s::Selection, atom_contributions::Matrix{Float64}, indexes::Vector{Int}; first_atom_is_ref = false)
     nbins = size(atom_contributions, 1)
     c = zeros(nbins)
-    # If the selection is a single molecule, the indexes are anything
+    # If the first atom is a reference atom, the indexes are shifted by the index of the first atom
+    if first_atom_is_ref
+        first_index = first(s.index) - 1
+    else
+        first_index = 0
+    end
+    # If the selection is a single molecule, the indexes can be anything (as they are the numbers printed
+    # in the PDB file)
     if s.nmols == 1
         for it in indexes
-            ind = findfirst(isequal(it), s.index)
+            ind = findfirst(isequal(first_index + it), s.index)
             if isnothing(ind)
                 error("Index $it of input list not found in selection indexes list.")
             end
@@ -45,7 +59,7 @@ function contrib(s::Selection, atom_contributions::Matrix{Float64}, names::Vecto
         end
         append!(indexes, index)
     end
-    return contrib(s, atom_contributions, indexes)
+    return contrib(s, atom_contributions, indexes; first_atom_is_ref = true)
 end
 
 #
@@ -85,4 +99,40 @@ function warning_nmols_types()
         WARNING: There is more than one molecule in this selection.
                  Contributions are summed over all atoms of the same type.
     """)
+end
+
+@testitem "solute position" begin
+    using ComplexMixtures
+    using PDBTools
+    using ComplexMixtures.Testing
+
+    dir = "$(Testing.data_dir)/PDB"
+    atoms = readPDB("$dir/trajectory.pdb", "model 1")
+
+    solute = Selection(select(atoms, "resname TMAO and resnum 1"), nmols = 1)
+    solvent = Selection(select(atoms, "resname TMAO and resnum 2"), nmols = 1)
+
+    traj = Trajectory("$dir/trajectory.pdb", solute, solvent, format = "PDBTraj")
+    results = mddf(traj)
+
+    # solute contributions fetching
+    N_contrib = contrib(solute, results.solute_atom, ["N"])
+    @test length(N_contrib) == 500
+
+    C1_contrib = contrib(solute, results.solute_atom, ["C1"])
+    @test length(C1_contrib) == 500
+
+    H33_contrib = contrib(solute, results.solute_atom, ["H33"])
+    @test length(H33_contrib) == 500
+
+    # solvent contributions fetching
+    N_contrib = contrib(solvent, results.solvent_atom, ["N"])
+    @test length(N_contrib) == 500
+
+    C1_contrib = contrib(solvent, results.solvent_atom, ["C1"])
+    @test length(C1_contrib) == 500
+
+    H33_contrib = contrib(solvent, results.solvent_atom, ["H33"])
+    @test length(H33_contrib) == 500
+
 end
