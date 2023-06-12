@@ -10,8 +10,8 @@ of indexes, list of atom names, vector of `PDBTools.Atom`s, or a `PDBTools.Resid
 
 ## Extended help
 
-The function has an additional keyword option `first_atom_is_ref` that is `false` by default. If set to `true`,
-the index first atom of the selection is considered as a reference atom. For example if a solute has 100 atoms,
+For selections of one molecule, the function has an additional keyword option `first_atom_is_ref` that is `false` by default. 
+If set to `true`, the index first atom of the selection is considered as a reference atom. For example if a solute has 100 atoms,
 but its first atom in the PDB file is number 901, the selection of indexes `[1, 2, 3]` will refer to atoms
 with indexes `[901, 902, 903]`.
 
@@ -19,15 +19,15 @@ with indexes `[901, 902, 903]`.
 function contrib(s::Selection, atom_contributions::Matrix{Float64}, indexes::Vector{Int}; first_atom_is_ref = false)
     nbins = size(atom_contributions, 1)
     c = zeros(nbins)
-    # If the first atom is a reference atom, the indexes are shifted by the index of the first atom
-    if first_atom_is_ref
-        first_index = first(s.index) - 1
-    else
-        first_index = 0
-    end
     # If the selection is a single molecule, the indexes can be anything (as they are the numbers printed
     # in the PDB file)
     if s.nmols == 1
+        # If the first atom is a reference atom, the indexes are shifted by the index of the first atom
+        if first_atom_is_ref
+            first_index = first(s.index) - 1
+        else
+            first_index = 0
+        end
         for it in indexes
             ind = findfirst(isequal(first_index + it), s.index)
             if isnothing(ind)
@@ -35,11 +35,11 @@ function contrib(s::Selection, atom_contributions::Matrix{Float64}, indexes::Vec
             end
             c += @view(atom_contributions[:, ind])
         end
-        # If more than one molecule, the index must correspond to an atom within one molecule
+    # If more than one molecule, the index must correspond to an atom within one molecule
     else
         for it in indexes
             if it > s.natomspermol
-                error("The index list contains atoms with indexes greater than the number of atoms of the molecule.")
+                error("The index list contains atoms with indexes greater than the number of atoms of one molecule.")
             end
             c += @view(atom_contributions[:, it])
         end
@@ -110,7 +110,7 @@ end
     atoms = readPDB("$dir/trajectory.pdb", "model 1")
 
     solute = Selection(select(atoms, "resname TMAO and resnum 1"), nmols = 1)
-    solvent = Selection(select(atoms, "resname TMAO and resnum 2"), nmols = 1)
+    solvent = Selection(select(atoms, "resname TMAO and resnum 2 or resname TMAO and resnum 3"), nmols = 2)
 
     traj = Trajectory("$dir/trajectory.pdb", solute, solvent, format = "PDBTraj")
     results = mddf(traj)
