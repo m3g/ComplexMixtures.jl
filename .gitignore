@@ -47,3 +47,4 @@ examples/teste*.xyz
 docs/Manifest.toml
 test/docs/Manifest.toml
 test/docs/Project.toml
+src/__pycache__/ComplexMixtures.cpython-310.pyc
