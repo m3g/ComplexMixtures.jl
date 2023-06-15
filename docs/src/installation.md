@@ -1,5 +1,10 @@
 # Installation
 
+!!! note
+    This is a package written in Julia. We invite you to learn the language, but if you want to just call this package 
+    from Python, read the [From Python](@ref python) section of the manual. Understanding all the features of the package 
+    requires reading the manual as whole.
+
 ## Install Julia
 
 First you need to install the Julia language in your platform, from: 

@@ -22,6 +22,7 @@ makedocs(
         "Multiple trajectories" => "multiple.md",
         "Options" => "options.md",
         "Tools" => "tools.md",
+        "From Python" => "python.md",
         "Help entries" => "help.md",
         "References" => "references.md"
     ]
