@@ -1,7 +1,7 @@
 # [From Python](@id python)
 
 !!! note
-    Most features of the package are available through this Python interface. However, some flexibility may be reduced and, also, the tunning of the plot appearances is left to the user, as it is expected that he/she is fluent with some tools within Python for chosing this interface.
+    Most features of the package are available through this Python interface. However, some flexibility may be reduced and, also, the tunning of the plot appearance is left to the user, as it is expected that he/she is fluent with some tools within Python if chosing this interface.
 
     Python 3 or greater is required.
 
