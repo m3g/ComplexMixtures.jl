@@ -15,7 +15,8 @@ function VMDselect(inputfile::String, selection::String; vmd = "vmd")
         error("Could not find file: $inputfile")
     end
 
-    vmd_input = Base.open("./VMDINPUT_TMP.VMD", "w")
+    vmdinput_file = tempname()
+    vmd_input = Base.open(vmdinput_file, "w")
     Base.write(vmd_input, "mol new \"$inputfile\" \n")
     Base.write(vmd_input, "set sel [ atomselect top \"$selection\" ] \n")
     Base.write(vmd_input, "puts \"INDEXLIST\" \n")
@@ -27,7 +28,7 @@ function VMDselect(inputfile::String, selection::String; vmd = "vmd")
     Base.write(vmd_input, "exit \n")
     Base.close(vmd_input)
 
-    vmd_output = Base.read(`$vmd -dispdev text -e ./VMDINPUT_TMP.VMD`, String)
+    vmd_output = Base.read(`$vmd -dispdev text -e $vmdinput_file`, String)
 
     # Read indexes
     local index_list::String
@@ -72,10 +73,8 @@ function VMDselect(inputfile::String, selection::String; vmd = "vmd")
     for i = 1:nsel
         selection_names[i] = strip(name_split[i])
     end
-    run(`\rm -f ./VMDINPUT_TMP.VMD`)
 
     return selection_indexes, selection_names
-
 end
 
 @testitem "VMDSelect" begin

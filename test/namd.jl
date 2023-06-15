@@ -23,10 +23,10 @@
     @test isapprox(R, R_save, debug = true)
 
     # Test save and load
-    save(R, "test.json")
-    R_load = load("test.json")
+    temp_output = tempname()
+    save(R, temp_output)
+    R_load = load(temp_output)
     @test R_load ≈ R_save
-    #rm("./test.json",force=true)
 
     # Example 2: water-tmao
 
