@@ -4,7 +4,7 @@
     This is a package written in Julia. We invite you to experiment with the language, but if you want to just call this package 
     from Python, read the [From Python](@ref python) section of the manual. Understanding all the features of the package 
     requires reading the manual as whole. The syntaxes of using this package from Julia or Python are almost identical, and the
-    motivation for using Python should be mostly the familiarity of further analsys tools, as the plotting packages. 
+    motivation for using Python should be mostly the familiarity with further analsys tools, as the plotting packages. 
 
 ## Install Julia
 
