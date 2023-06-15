@@ -123,7 +123,7 @@ axs[1].set(xlabel="distance / Angs", ylabel="MDDF")
 plt.savefig("mddf_kb.png")
 ```
 
-### Atomic contributions to the MDDF
+## Atomic contributions to the MDDF
 
 Selecting the atoms corresponding to the hydroxyl groups, and of the aliphatic carbons of Glycerol. Here we list the types of the atoms as specified by the force-field. 
 
