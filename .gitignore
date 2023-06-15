@@ -45,3 +45,5 @@ examples/teste*.xyz
 *example*.pdf
 .vscode/settings.json
 docs/Manifest.toml
+test/docs/Manifest.toml
+test/docs/Project.toml
