@@ -1,8 +1,10 @@
 """
+    coordination_number(R::Result) = R.coordination_number
     coordination_number(R::Result, group_contributions::Vector{Float64})
     coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
 
-Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF.
+Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF. 
+If no group is defined (first call above), the coordination number of the whole solute or solvent is returned.
 
 If the `group_contributions` to the `mddf` are computed previously with the `contributions` function, the result can be used
 to compute the coordination number by calling `coordination_number(R::Result, group_contributions)`.

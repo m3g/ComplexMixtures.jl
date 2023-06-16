@@ -15,6 +15,11 @@ coordination_number(R::Result, group_contributions::Vector{Float64})
 computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF. Here, `R` is
 the result of the `mddf` calculation, and `group_contributions` is the output of the `contributions` function for the desired set of atoms.
 
+If no group is defined, the coordination number of the complete solute is returned, which is equivalent to the `R.coordination_number` field of the `Result` data structure:
+```
+coordination_number(R::Result) == R.coordination_number
+```
+
 ### Example
 
 In the following example we compute the coordination number of the atoms of `residue 50` (which belongs to the solute - a protein) with the solvent atoms of TMAO, as a function of the distance. The plot produced will show side by side the residue contribution to the MDDF and the corresponding coordination number.
