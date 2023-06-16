@@ -92,7 +92,15 @@ Function that updates a list of minimum distances given the indexes of the atoms
 for autocorrelations (such that the identity of `isolute` is needed)
 
 """
-function update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
+function update_list!(
+    i,
+    j,
+    d2,
+    jref_atom,
+    j_natoms_per_molecule,
+    isolute,
+    list::Vector{MinimumDistance},
+)
     jmol = mol_index(j, j_natoms_per_molecule)
     if jmol != isolute
         d = sqrt(d2)
@@ -150,7 +158,8 @@ function minimum_distances!(
     jnatomspermol = R.solvent.natomspermol
     if R.autocorrelation
         map_pairwise!(
-            (x, y, i, j, d2, list) -> update_list!(i, j, d2, jref_atom, jnatomspermol, isolute, list),
+            (x, y, i, j, d2, list) ->
+                update_list!(i, j, d2, jref_atom, jnatomspermol, isolute, list),
             system;
             update_lists = update_lists,
         )
@@ -183,7 +192,10 @@ function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
     closetraj!(trajectory)
     system = PeriodicSystem(
         xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
-        ypositions = zeros(SVector{3,Float64}, trajectory.solvent.nmols * trajectory.solvent.natomspermol),
+        ypositions = zeros(
+            SVector{3,Float64},
+            trajectory.solvent.nmols * trajectory.solvent.natomspermol,
+        ),
         unitcell = unitcell,
         cutoff = options.usecutoff ? options.cutoff : options.dbulk,
         output = fill(zero(MinimumDistance), trajectory.solvent.nmols),

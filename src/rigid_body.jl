@@ -124,7 +124,9 @@ function random_move!(
 
     # Generate random coordinates for the center of mass
     cmin, cmax = PeriodicSystems.get_computing_box(system)
-    newcm = SVector{3}(scale * (cmin[i] + rand(RNG, Float64) * (cmax[i] - cmin[i])) for i in 1:3)
+    newcm = SVector{3}(
+        scale * (cmin[i] + rand(RNG, Float64) * (cmax[i] - cmin[i])) for i = 1:3
+    )
 
     # Generate random rotation angles 
     beta = 2π * rand(RNG, Float64)
@@ -164,7 +166,12 @@ end
     RNG = ComplexMixtures.init_random(Options())
     # Orthorhombic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    system = PeriodicSystem(positions=x, cutoff=0.1, unitcell=SVector(10.0, 10.0, 10.0), output=0.0)
+    system = PeriodicSystem(
+        positions = x,
+        cutoff = 0.1,
+        unitcell = SVector(10.0, 10.0, 10.0),
+        output = 0.0,
+    )
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
     system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
@@ -173,7 +180,12 @@ end
 
     # Triclinic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    system = PeriodicSystem(positions=x, cutoff=0.1, unitcell=@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0], output=0.0)
+    system = PeriodicSystem(
+        positions = x,
+        cutoff = 0.1,
+        unitcell = @SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0],
+        output = 0.0,
+    )
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
     system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))

@@ -43,7 +43,7 @@ end
 @testitem "Selection Vector{PDBTools.Atom}" begin
     import PDBTools
     pdbfile = ComplexMixtures.Testing.pdbfile
-    atoms = PDBTools.readPDB(pdbfile, "protein and residue 2") 
+    atoms = PDBTools.readPDB(pdbfile, "protein and residue 2")
     s = Selection(atoms, nmols = 1, natomspermol = 11)
     @test s.imol == ones(Int, 11)
     @test s.index == [12 + i for i = 1:11]

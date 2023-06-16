@@ -63,8 +63,10 @@ function PDBTraj(
     close(st)
 
     # Some error messages
-    if nframes == 0 
-        error("Could not read any frame from PDB file. Each frame must end with the END specifier")
+    if nframes == 0
+        error(
+            "Could not read any frame from PDB file. Each frame must end with the END specifier",
+        )
     end
     if natoms == 0
         error("Could not read any ATOM from the trajectory file.")

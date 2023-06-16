@@ -3,10 +3,10 @@ Pkg.add("Documenter")
 using ComplexMixtures
 using Documenter
 using ComplexMixtures
-push!(LOAD_PATH,"../src/")
+push!(LOAD_PATH, "../src/")
 makedocs(
-    modules=[ComplexMixtures],
-    sitename="ComplexMixtures.jl",
+    modules = [ComplexMixtures],
+    sitename = "ComplexMixtures.jl",
     pages = [
         "Introduction" => "index.md",
         "Installation" => "installation.md",
@@ -24,12 +24,12 @@ makedocs(
         "Tools" => "tools.md",
         "From Python" => "python.md",
         "Help entries" => "help.md",
-        "References" => "references.md"
-    ]
+        "References" => "references.md",
+    ],
 )
 deploydocs(
     repo = "github.com/m3g/ComplexMixtures.jl.git",
     target = "build",
     branch = "gh-pages",
-    versions = ["stable" => "v^", "v#.#" ],
+    versions = ["stable" => "v^", "v#.#"],
 )

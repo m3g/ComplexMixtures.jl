@@ -17,10 +17,10 @@ with indexes `[901, 902, 903]`.
 
 """
 function contributions(
-    s::Selection, 
-    atom_contributions::Matrix{Float64}, 
-    indexes::Vector{Int}; 
-    first_atom_is_ref = false
+    s::Selection,
+    atom_contributions::Matrix{Float64},
+    indexes::Vector{Int};
+    first_atom_is_ref = false,
 )
     nbins = size(atom_contributions, 1)
     c = zeros(nbins)
@@ -44,7 +44,9 @@ function contributions(
     else
         for it in indexes
             if it > s.natomspermol
-                error("The index list contains atoms with indexes greater than the number of atoms of one molecule.")
+                error(
+                    "The index list contains atoms with indexes greater than the number of atoms of one molecule.",
+                )
             end
             c += @view(atom_contributions[:, it])
         end
@@ -56,9 +58,9 @@ end
 # If a list of atom names is provided
 #
 function contributions(
-    s::Selection, 
-    atom_contributions::Matrix{Float64}, 
-    names::Vector{String}
+    s::Selection,
+    atom_contributions::Matrix{Float64},
+    names::Vector{String},
 )
     indexes = Vector{Int}(undef, 0)
     for name in names
@@ -119,7 +121,10 @@ end
     atoms = readPDB("$dir/trajectory.pdb", "model 1")
 
     solute = Selection(select(atoms, "resname TMAO and resnum 1"), nmols = 1)
-    solvent = Selection(select(atoms, "resname TMAO and resnum 2 or resname TMAO and resnum 3"), nmols = 2)
+    solvent = Selection(
+        select(atoms, "resname TMAO and resnum 2 or resname TMAO and resnum 3"),
+        nmols = 2,
+    )
 
     traj = Trajectory("$dir/trajectory.pdb", solute, solvent, format = "PDBTraj")
     results = mddf(traj)

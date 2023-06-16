@@ -14,7 +14,7 @@
 end
 function Buffer(traj::Trajectory, R::Result)
     return Buffer(
-        solute_read = similar(traj.x_solute), 
+        solute_read = similar(traj.x_solute),
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(MinimumDistance), R.solvent.nmols),
@@ -33,7 +33,7 @@ end
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = Result(traj, options)
     b0 = ComplexMixtures.Buffer(
-        solute_read = similar(traj.x_solute), 
+        solute_read = similar(traj.x_solute),
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols),
@@ -70,13 +70,13 @@ function randomize_solvent!(
 )
     for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
-        if n_solvent_in_bulk > 0 
+        if n_solvent_in_bulk > 0
             jmol = buff.indexes_in_bulk[rand(RNG, 1:n_solvent_in_bulk)]
         else
             jmol = rand(RNG, 1:R.solvent.nmols)
         end
         # Pick coordinates of the molecule to be randomly moved
-        y_new = viewmol(isolvent, system.ypositions, R.solvent) 
+        y_new = viewmol(isolvent, system.ypositions, R.solvent)
         # Copy the coordinates of the random solvent molecule chosen
         y_new .= viewmol(jmol, buff.solvent_read, R.solvent)
         # Randomize rotations and translation for this molecule 
@@ -143,19 +143,20 @@ function mddf(trajectory::Trajectory, options::Options = Options())
     end
 
     # Print some information about this run
-    if !options.silent 
+    if !options.silent
         title(R, trajectory.solute, trajectory.solvent, nchunks)
         progress = Progress(R.nframes_read, 1)
     end
 
     # Loop over the trajectory
     read_lock = ReentrantLock()
-    Threads.@threads for (frame_range, ichunk) in ChunkSplitters.chunks(1:R.nframes_read, nchunks)
+    Threads.@threads for (frame_range, ichunk) in
+                         ChunkSplitters.chunks(1:R.nframes_read, nchunks)
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].nframes_read = 0
         for _ in frame_range
             # Read frame coordinates
-            lock(read_lock) do 
+            lock(read_lock) do
                 # skip frames if stride > 1
                 while (iframe + 1) % options.stride != 0
                     nextframe!(trajectory)
@@ -171,8 +172,9 @@ function mddf(trajectory::Trajectory, options::Options = Options())
                 @. buff[ichunk].solvent_read = trajectory.x_solvent
                 update_unitcell!(system[ichunk], getsides(trajectory, iframe))
                 # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
-                if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
-                    GC.gc() 
+                if options.GC &&
+                   (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+                    GC.gc()
                 end
                 options.silent || next!(progress)
             end # release reading lock
@@ -286,7 +288,8 @@ end
     atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
     protein = Selection(select(atoms, "protein and model 1"), nmols = 1)
     water = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
-    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
+    traj =
+        Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
 
     for lastframe in [1, 2]
         options = Options(
@@ -309,7 +312,8 @@ end
     # Self correlation
     atoms = readPDB("$(Testing.data_dir)/toy/self_monoatomic.pdb")
     atom = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
-    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format="PDBTraj")
+    traj =
+        Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
 
     # without atoms in the bulk
     options = Options(
@@ -377,7 +381,7 @@ end
     R = mddf(traj, options)
     # Deterministic
     @test R.volume.total ≈ 603078.4438609097
-    @test sum(R.md_count) ≈ 25.250000000000007 
+    @test sum(R.md_count) ≈ 25.250000000000007
     @test sum(R.rdf_count) ≈ 19.550000000000004
     @test R.density.solute ≈ 1.6581590839128614e-6
     @test R.density.solvent ≈ 0.00030012679418822794
@@ -385,7 +389,7 @@ end
     @test R.volume.domain ≈ 75368.14585709268 rtol = 0.1
     @test R.volume.bulk ≈ 527710.298003817 rtol = 0.1
     @test R.density.solvent_bulk ≈ 0.000305944380109164 rtol = 0.1
-    @test sum(R.mddf) ≈ 582.8371304452286 rtol = 0.1 
+    @test sum(R.mddf) ≈ 582.8371304452286 rtol = 0.1
     @test sum(R.rdf) ≈ 491.4450029864516 rtol = 0.1
     @test R.kb[end] ≈ -6019.863896959123 rtol = 0.5
     @test R.kb_rdf[end] ≈ -6905.975623304156 rtol = 0.5
@@ -401,10 +405,10 @@ end
     @test R.density.solvent ≈ 0.00030012679418822794
     # Dependent on the random number seed
     @test R.volume.domain ≈ 6801.384672431371 rtol = 0.1
-    @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1 
+    @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1
     @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
     @test sum(R.mddf) ≈ 275.5648734200309 rtol = 0.1
-    @test sum(R.rdf) ≈ 168.77009506954508 rtol = 0.1 
+    @test sum(R.rdf) ≈ 168.77009506954508 rtol = 0.1
     @test R.kb[end] ≈ -386.8513153147712 rtol = 0.5
     @test R.kb_rdf[end] ≈ -326.32083509753284 rtol = 0.5
 end

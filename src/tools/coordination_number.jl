@@ -57,14 +57,22 @@ residue50_coordination[findlast(<(5), R.d)]
 ```
 
 """
-function coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
+function coordination_number(
+    s::Selection,
+    atom_contributions::Matrix{Float64},
+    R::Result,
+    group,
+)
     # Extract the group contributions to the MDDF
     group_contributions = contributions(s, atom_contributions, group)
     # Compute the coordination number
     return coordination_number(R, group_contributions)
 end
 function coordination_number(R::Result, group_contributions::Vector{Float64})
-    cn = cumsum(group_contributions[i] * R.md_count_random[i] for i in eachindex(group_contributions)) 
+    cn = cumsum(
+        group_contributions[i] * R.md_count_random[i] for
+        i in eachindex(group_contributions)
+    )
     return cn
 end
 
@@ -73,16 +81,16 @@ end
     using ComplexMixtures, PDBTools
     import ComplexMixtures.Testing: test_dir
 
-    pdb = readPDB("$test_dir/data/NAMD/structure.pdb") 
+    pdb = readPDB("$test_dir/data/NAMD/structure.pdb")
     R = load("$test_dir/data/NAMD/protein_tmao.json")
-    solute = Selection(PDBTools.select(pdb, "protein"), nmols=1)
+    solute = Selection(PDBTools.select(pdb, "protein"), nmols = 1)
     cn = coordination_number(solute, R.solute_atom, R, PDBTools.select(pdb, "residue 50"))
-    @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol=1e-10
+    @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol = 1e-10
 
     pdb = readPDB("$test_dir/data/NAMD/Protein_in_Glycerol/system.pdb")
-    R = load("$test_dir/data/NAMD/Protein_in_Glycerol/protein_water.json") 
+    R = load("$test_dir/data/NAMD/Protein_in_Glycerol/protein_water.json")
     group = PDBTools.select(pdb, "protein")
-    solute = Selection(group, nmols=1)
+    solute = Selection(group, nmols = 1)
     cn = coordination_number(solute, R.solute_atom, R, group)
     @test maximum(R.coordination_number .- cn) < 1e-10
 end

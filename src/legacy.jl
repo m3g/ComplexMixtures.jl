@@ -12,7 +12,7 @@ const contrib = contributions
     using ComplexMixtures, PDBTools
     import ComplexMixtures.Testing: test_dir
 
-    pdb = readPDB("$test_dir/data/NAMD/structure.pdb") 
+    pdb = readPDB("$test_dir/data/NAMD/structure.pdb")
     R = load("$test_dir/data/NAMD/protein_tmao.json")
 
     @test R.sum_md_count == R.coordination_number
@@ -20,4 +20,3 @@ const contrib = contributions
 
     @test ComplexMixtures.contrib == ComplexMixtures.contributions
 end
-
