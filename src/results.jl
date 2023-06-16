@@ -105,8 +105,8 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     # Data to compute the MDDF distribution and corresponding KB integral
     md_count::Vector{Float64} = zeros(nbins)
     md_count_random::Vector{Float64} = zeros(nbins)
-    sum_md_count::Vector{Float64} = zeros(nbins)
-    sum_md_count_random::Vector{Float64} = zeros(nbins)
+    coordination_number::Vector{Float64} = zeros(nbins)
+    coordination_number_random::Vector{Float64} = zeros(nbins)
     mddf::Vector{Float64} = zeros(nbins)
     kb::Vector{Float64} = zeros(nbins)
 
@@ -396,17 +396,17 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             end
         end
         if ibin == 1
-            R.sum_md_count[ibin] = R.md_count[ibin]
-            R.sum_md_count_random[ibin] = R.md_count_random[ibin]
+            R.coordination_number[ibin] = R.md_count[ibin]
+            R.coordination_number_random[ibin] = R.md_count_random[ibin]
         else
-            R.sum_md_count[ibin] = R.sum_md_count[ibin-1] + R.md_count[ibin]
-            R.sum_md_count_random[ibin] =
-                R.sum_md_count_random[ibin-1] + R.md_count_random[ibin]
+            R.coordination_number[ibin] = R.coordination_number[ibin-1] + R.md_count[ibin]
+            R.coordination_number_random[ibin] =
+                R.coordination_number_random[ibin-1] + R.md_count_random[ibin]
         end
         R.kb[ibin] =
             units.Angs3tocm3permol *
             (1 / R.density.solvent_bulk) *
-            (R.sum_md_count[ibin] - R.sum_md_count_random[ibin])
+            (R.coordination_number[ibin] - R.coordination_number_random[ibin])
 
         # For the RDF
         if R.rdf_count_random[ibin] > 0.0
@@ -501,8 +501,8 @@ function Base.merge(r::Vector{<:Result})
         @. R.md_count += w * r[ir].md_count
         @. R.md_count_random += w * r[ir].md_count_random
 
-        @. R.sum_md_count += w * r[ir].sum_md_count
-        @. R.sum_md_count_random += w * r[ir].sum_md_count_random
+        @. R.coordination_number += w * r[ir].coordination_number
+        @. R.coordination_number_random += w * r[ir].coordination_number_random
 
         @. R.solute_atom += w * r[ir].solute_atom
         @. R.solvent_atom += w * r[ir].solvent_atom
@@ -639,8 +639,8 @@ end
     @test R.solvent == ComplexMixtures.SolSummary(2534, 181, 14)
     @test size(R.solute_atom) == (500, 1463)
     @test size(R.solvent_atom) == (500, 14)
-    @test length(R.sum_md_count) == 500
-    @test length(R.sum_md_count_random) == 500
+    @test length(R.coordination_number) == 500
+    @test length(R.coordination_number_random) == 500
     @test length(R.sum_rdf_count_random) == 500
     @test (R.volume.total, R.volume.bulk, R.volume.domain, length(R.volume.shell)) == (0.0, 0.0, 0.0, 500)
     @test R.weights[1] == 1.0
@@ -800,8 +800,8 @@ function write(
             line = line * "  " * format(R.kb[i])                           #  3-KB INT
             line = line * "  " * format(R.md_count[i])                     #  4-MD COUNT
             line = line * "  " * format(R.md_count_random[i])              #  5-COUNT RAND
-            line = line * "  " * format(R.sum_md_count[i])                 #  6-SUM MD
-            line = line * "  " * format(R.sum_md_count_random[i])          #  7-SUM RAND
+            line = line * "  " * format(R.coordination_number[i])                 #  6-SUM MD
+            line = line * "  " * format(R.coordination_number_random[i])          #  7-SUM RAND
             line = line * "  " * format(R.volume.shell[i])                 #  8-SHELL VOL
             println(output, line)
         end

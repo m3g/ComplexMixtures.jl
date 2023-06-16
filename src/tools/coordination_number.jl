@@ -82,5 +82,5 @@ end
     group = PDBTools.select(pdb, "protein")
     solute = Selection(group, nmols=1)
     cn = coordination_number(solute, R.solute_atom, R, group)
-    @test maximum(R.sum_md_count .- cn) < 1e-10
+    @test maximum(R.coordination_number .- cn) < 1e-10
 end
