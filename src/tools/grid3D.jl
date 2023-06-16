@@ -92,7 +92,7 @@ function grid3D(
             if rgrid < 0 || r < rgrid
                 at = solute_atoms[iat]
                 # Get contribution of this atom to the MDDF
-                c = ComplexMixtures.contrib(
+                c = ComplexMixtures.contributions(
                     solute,
                     mddf_result.solute_atom,
                     [at.index_pdb],

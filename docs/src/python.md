@@ -145,13 +145,13 @@ hydroxyls = cm.list(["O1","O2","O3","H1","H2","H3"])
 aliphatic = cm.list(["C1","C2","HA","HB","HC","HD"])
 
 # Extract the contributions of the groups above
-hydr_contrib = cm.contrib(solvent,results.solvent_atom,hydroxyls)
-aliph_contrib = cm.contrib(solvent,results.solvent_atom,aliphatic)
+hydr_contributions = cm.contributions(solvent,results.solvent_atom,hydroxyls)
+aliph_contributions = cm.contributions(solvent,results.solvent_atom,aliphatic)
 
 # Plot
 plt.plot(results.d, results.mddf)
-plt.plot(results.d, hydr_contrib)
-plt.plot(results.d, aliph_contrib)
+plt.plot(results.d, hydr_contributions)
+plt.plot(results.d, aliph_contributions)
 plt.xlabel("distance / Angs")
 plt.ylabel("MDDF")
 plt.savefig("group_contributions.png")
@@ -160,38 +160,3 @@ plt.savefig("group_contributions.png")
 !!! note
     The syntax here diverges from the Julia-only examples by requiring the lists of names
     to be converted to Julia arrays, which happens by using the `cm.list(python_list)` function calls.
-
-                                                                                                      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -737,14 +737,14 @@ function write(
 )
 
     # Names of output files containing atomic contibutions
-    atom_contrib_solvent = normpath(
+    atom_contributions_solvent = normpath(
         FileOperations.remove_extension(filename) *
-        "-ATOM_CONTRIB_SOLVENT." *
+        "-ATOM_CONTRIBUTIONS_SOLVENT." *
         FileOperations.file_extension(filename)
     )
-    atom_contrib_solute = normpath(
+    atom_contributions_solute = normpath(
         FileOperations.remove_extension(filename) *
-        "-ATOM_CONTRIB_SOLUTE." *
+        "-ATOM_CONTRIBUTIONS_SOLUTE." *
         FileOperations.file_extension(filename)
     )
 
@@ -809,7 +809,7 @@ function write(
 
     # Writting gmd per atom contributions for the solvent
 
-    open(atom_contrib_solvent, "w") do output
+    open(atom_contributions_solvent, "w") do output
         println(output,
             """
             # Solvent atomic contributions to total MDDF.
@@ -842,7 +842,7 @@ function write(
     end # file writting
 
     # Writting gmd per atom contributions for the solute
-    open(atom_contrib_solute, "w") do output
+    open(atom_contributions_solute, "w") do output
         println(output,
             """
             #
@@ -878,8 +878,8 @@ function write(
     println("""
     OUTPUT FILES:
 
-    Wrote solvent atomic GMD contributions to file: $atom_contrib_solvent
-    Wrote solute atomic GMD contributions to file: $atom_contrib_solute
+    Wrote solvent atomic GMD contributions to file: $atom_contributions_solvent
+    Wrote solute atomic GMD contributions to file: $atom_contributions_solute
 
     Wrote main output file: $filename
     """)

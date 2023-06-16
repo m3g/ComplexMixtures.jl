@@ -1,4 +1,4 @@
-# [Atomic and group contributions](@id contrib)
+# [Atomic and group contributions](@id contributions)
 
 One of the interesting features of Minimum-Distance distributions is
 that they can be naturally decomposed into the atomic or group
@@ -7,7 +7,7 @@ distance, it is natural to decompose that peak into the contributions of
 each type of solute or solvent atom to that peak.     
 
 To obtain the atomic contributions of an atom or group of atoms, the
-`contrib` functions are provided. For example, in a system composed
+`contributions` function is provided. For example, in a system composed
 of a protein and water, we would have defined the solute and solvent
 using:
 
@@ -90,13 +90,12 @@ plot!(xlabel="Distance / Å",ylabel="MDDF")
 
 To plot the contributions of the hydrogen atoms of water to the total
 MDDF, we have to select the two atoms, named `H1` and `H2`. The
-`contrib` function provides several practical ways of doing that,
+`contributions` function provides several practical ways of doing that,
 with or without the use of `PDBTools`. 
 
-The `contrib` function receives three parameters: 
+The `contributions` function receives three parameters: 
 
-1. The `solute` or `solvent` data structure, created with
-   `Selection`. 
+1. The `solute` or `solvent` data structure, created with `Selection`. 
 2. The array of atomic contributions (here `results.solute_atom` or
    `results.solvent_atom`), corresponding to the selection in 1.
 3. A selection of a group of atoms within the molecule of interest,
@@ -105,13 +104,13 @@ The `contrib` function receives three parameters:
 ### Selecting by indexes within the molecule
 
 To select simply by the index of the atoms of the molecules, just
-provide a list of indexes to the `contrib` function. For example,
+provide a list of indexes to the `contributions` function. For example,
 to select the hydrogen atoms, which are the second and third atoms of the 
 water molecule, use:
 
 ```julia-repl
 julia> indexes = [ 2, 3 ]
-julia> h_contrib = contrib(solvent,R.solvent_atom,indexes)
+julia> h_contributions = contributions(solvent,R.solvent_atom,indexes)
 500-element Array{Float64,1}:
  0.0
  0.0
@@ -130,21 +129,21 @@ results in:
 ### Selecting by atom name
 
 The exact same plot above could be obtained by providing lists of atom names
-instead of indexes to the `contrib` function:
+instead of indexes to the `contributions` function:
 
 ```julia
 oxygen = ["OH2"]
-o_contrib = contrib(solvent,R.solvent_atom,oxygen) 
+o_contributions = contributions(solvent,R.solvent_atom,oxygen) 
 hydrogens = ["H1","H2"]
-h_contrib = contrib(solvent,R.solvent_atom,hydrogens)
+h_contributions = contributions(solvent,R.solvent_atom,hydrogens)
 ```
 
 The above plot can be obtained with:
 ```julia
 using Plots
 plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
-plot!(results.d,o_contrib,label="OH2",linewidth=2)
-plot!(results.d,h_contrib,label="Hydrogen atoms",linewidth=2)
+plot!(results.d,o_contributions,label="OH2",linewidth=2)
+plot!(results.d,h_contributions,label="Hydrogen atoms",linewidth=2)
 plot!(xlabel="Distance / Å",ylabel="MDDF")
 ```
 
@@ -153,7 +152,7 @@ plot!(xlabel="Distance / Å",ylabel="MDDF")
 More interesting and general is to select atoms of a complex
 molecule, like a protein, using residue names, types, etc. Here we
 illustrate how this is done by providing selection strings to
-`contrib` to obtain the contributions to the MDDF of different
+`contributions` to obtain the contributions to the MDDF of different
 types of residues of a protein to the total MDDF. 
 
 For example, if we want to split the contributions of the charged and
@@ -162,10 +161,10 @@ code. Here, `solute` refers to the protein.
 
 ```julia
 charged_residues = PDBTools.select(atoms,"charged")
-charged_contrib = contrib(solute,R.solute_atom,charged_residues)
+charged_contributions = contributions(solute,R.solute_atom,charged_residues)
 
 neutral_residues = PDBTools.select(atoms,"neutral")
-neutral_contrib = contrib(solute,R.solute_atom,neutral_residues)
+neutral_contributions = contributions(solute,R.solute_atom,neutral_residues)
 ```
 
 The `charged` and `neutral` outputs are vectors containing the
@@ -174,8 +173,8 @@ plot is:
 
 ```julia
 plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
-plot!(results.d,charged_contrib,label="Charged residues",linewidth=2)
-plot!(results.d,neutral_contrib,label="Neutral residues",linewidth=2)
+plot!(results.d,charged_contributions,label="Charged residues",linewidth=2)
+plot!(results.d,neutral_contributions,label="Neutral residues",linewidth=2)
 plot!(xlabel="Distance / Å",ylabel="MDDF")
 ```
 Resulting in:
@@ -188,26 +187,3 @@ Note here how charged residues contribute strongly to the peak at
 hydrogen-bonding distances, but much less in general. Of course all
 selection options could be used, to obtain the contributions of specific
 types of residues, atoms, the backbone, the side-chains, etc. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

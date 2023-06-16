@@ -286,8 +286,7 @@ end
     atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
     protein = Selection(select(atoms, "protein and model 1"), nmols = 1)
     water = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
-    traj =
-        Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
+    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
 
     for lastframe in [1, 2]
         options = Options(

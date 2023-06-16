@@ -13,7 +13,7 @@ The function
 coordination_number(R::Result, group_contributions::Vector{Float64})
 ```
 computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF. Here, `R` is
-the result of the `mddf` calculation, and `group_contributions` is the output of the `contrib` function for the desired set of atoms.
+the result of the `mddf` calculation, and `group_contributions` is the output of the `contributions` function for the desired set of atoms.
 
 ### Example
 
@@ -27,7 +27,7 @@ R = load("test/data/NAMD/protein_tmao.json")
 solute = Selection(PDBTools.select(pdb, "protein"), nmols=1)
 residue50 = PDBTools.select(pdb, "residue 50")
 # Compute the group contribution to the MDDF
-residue50_contribution = contrib(solute, R.solute_atom, residue50)
+residue50_contribution = contributions(solute, R.solute_atom, residue50)
 # Now compute the coordination number
 residue50_coordination = coordination_number(R, residue50_contribution)
 # Plot with twin y-axis
@@ -67,7 +67,7 @@ Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hyd
 residues = collect(eachresidue(protein))
 residue_contributions = zeros(length(R.d),length(residues))
 for (i,residue) in pairs(residues)
-  c = contrib(solute,R.solute_atom,residue) 
+  c = contributions(solute,R.solute_atom,residue) 
   residue_contributions[:,i] .= c
 end
 ```

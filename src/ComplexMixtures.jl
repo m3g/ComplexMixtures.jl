@@ -28,7 +28,7 @@ export overview
 export VMDselect
 
 # Tools
-export contrib, coordination_number, gr, grid3D
+export contributions, coordination_number, gr, grid3D
 
 # Message for internal doc strings
 const INTERNAL = "**Internal structure or function, interface may change.**"
@@ -71,10 +71,13 @@ include("./mddf.jl")
 include("./isapprox.jl")
 
 # Tools
-include("./tools/contrib.jl")
+include("./tools/contributions.jl")
 include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
+
+# Legacy interfaces
+include("./legacy.jl")
 
 # Precompilation directives
 include("precompile.jl")

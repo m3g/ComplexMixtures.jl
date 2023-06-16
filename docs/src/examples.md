@@ -157,19 +157,19 @@ hydroxyls = ["O1","O2","O3","H1","H2","H3"]
 aliphatic = ["C1","C2","HA","HB","HC","HD"]
 ```
 
-The `contrib` function of `ComplexMixtures` will extract from the result the contributions of each set of atoms to the total MDDF:
+The `contributions` function of `ComplexMixtures` will extract from the result the contributions of each set of atoms to the total MDDF:
 
 ```julia
-hydr_contrib = contrib(solvent,results.solvent_atom,hydroxyls)
-aliph_contrib = contrib(solvent,results.solvent_atom,aliphatic)
+hydr_contributions = contributions(solvent,results.solvent_atom,hydroxyls)
+aliph_contributions = contributions(solvent,results.solvent_atom,aliphatic)
 ```
 
 And, finally, here we plot these group contributions on top of the total MDDF:
 
 ```julia
 plot(results.d,results.mddf,xlabel=L"r/\AA",ylabel="mddf",size=(600,400))
-plot!(results.d,hydr_contrib,label="Hydroxils")
-plot!(results.d,aliph_contrib,label="Aliphatic chain")
+plot!(results.d,hydr_contributions,label="Hydroxils")
+plot!(results.d,aliph_contributions,label="Aliphatic chain")
 hline!([1],linestyle=:dash,linecolor=:gray)
 savefig("./mddf_atom_contrib.pdf")
 ```
@@ -261,10 +261,10 @@ Set a matrix that will store the results, with a number of lines corresponding t
 rescontrib = zeros(length(R.mddf),length(residues))
 ```
 
-Now, collect the contribution of each residue as a column of the above matrix. The notation `pairs(residues)` returns tuples containg the index `ires` and the corresponding residue. The `.=` symbol sets each element of the corresponding column of the  `rescontrib` matrix to the output of `contrib` (by broadcasting).  
+Now, collect the contribution of each residue as a column of the above matrix. The notation `pairs(residues)` returns tuples containg the index `ires` and the corresponding residue. The `.=` symbol sets each element of the corresponding column of the  `rescontrib` matrix to the output of `contributions` (by broadcasting).  
 ```julia
 for (ires,residue) in pairs(residues)
-  rescontrib[:,ires] .= contrib(solute,R.solute_atom,residue)
+  rescontrib[:,ires] .= contributions(solute,R.solute_atom,residue)
 end
 ```
 
@@ -303,7 +303,6 @@ The final figure is saved as a `pdf` file:
 ```julia
 savefig("./density2D.pdf")
 ```
-
 
 # 3D residue contribution density map
 

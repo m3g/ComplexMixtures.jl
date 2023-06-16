@@ -212,7 +212,7 @@ to obtain:
 </center>
 ```
 
-See the [Atomic and group contributions](@ref contrib) section for a
+See the [Atomic and group contributions](@ref contributions) section for a
 detailed account on how to obtain a molecular picture of the solvation
 by splitting the MDDF in the contributions of each type of atom of the
 solvent, each type of residue of the protein, etc.

@@ -1,5 +1,5 @@
 """
-    contrib(s::Selection, atom_contributions::Matrix{Float64}, selection)
+    contributions(s::Selection, atom_contributions::Matrix{Float64}, selection)
 
 Extract the contribution of a given atom type selection from the solute or solvent atomic contributions to the MDDF.
 
@@ -16,7 +16,12 @@ but its first atom in the PDB file is number 901, the selection of indexes `[1, 
 with indexes `[901, 902, 903]`.
 
 """
-function contrib(s::Selection, atom_contributions::Matrix{Float64}, indexes::Vector{Int}; first_atom_is_ref = false)
+function contributions(
+    s::Selection, 
+    atom_contributions::Matrix{Float64}, 
+    indexes::Vector{Int}; 
+    first_atom_is_ref = false
+)
     nbins = size(atom_contributions, 1)
     c = zeros(nbins)
     # If the selection is a single molecule, the indexes can be anything (as they are the numbers printed
@@ -50,7 +55,11 @@ end
 #
 # If a list of atom names is provided
 #
-function contrib(s::Selection, atom_contributions::Matrix{Float64}, names::Vector{String})
+function contributions(
+    s::Selection, 
+    atom_contributions::Matrix{Float64}, 
+    names::Vector{String}
+)
     indexes = Vector{Int}(undef, 0)
     for name in names
         index = findall(isequal(name), s.names)
@@ -59,13 +68,13 @@ function contrib(s::Selection, atom_contributions::Matrix{Float64}, names::Vecto
         end
         append!(indexes, index)
     end
-    return contrib(s, atom_contributions, indexes; first_atom_is_ref = true)
+    return contributions(s, atom_contributions, indexes; first_atom_is_ref = true)
 end
 
 #
 # If a list of atoms of PDBTools.Atom is provided
 #
-function contrib(
+function contributions(
     s::Selection,
     atom_contributions::Matrix{Float64},
     atoms::Vector{PDBTools.Atom};
@@ -75,13 +84,13 @@ function contrib(
     indexes = [atom.index for atom in atoms]
     # Check which types of atoms belong to this selection
     selected_types = which_types(s, indexes, warning = warning)
-    return contrib(s, atom_contributions, selected_types)
+    return contributions(s, atom_contributions, selected_types)
 end
 
 #
 # If a residue of type PDBTools.Residue is provided
 #
-function contrib(
+function contributions(
     s::Selection,
     atom_contributions::Matrix{Float64},
     residue::Residue;
@@ -91,7 +100,7 @@ function contrib(
     indexes = collect(residue.range)
     # Check which types of atoms belong to this selection
     selected_types = which_types(s, indexes, warning = warning)
-    return contrib(s, atom_contributions, selected_types)
+    return contributions(s, atom_contributions, selected_types)
 end
 
 function warning_nmols_types()
@@ -116,23 +125,23 @@ end
     results = mddf(traj)
 
     # solute contributions fetching
-    N_contrib = contrib(solute, results.solute_atom, ["N"])
-    @test length(N_contrib) == 500
+    N_contributions = contributions(solute, results.solute_atom, ["N"])
+    @test length(N_contributions) == 500
 
-    C1_contrib = contrib(solute, results.solute_atom, ["C1"])
-    @test length(C1_contrib) == 500
+    C1_contributions = contributions(solute, results.solute_atom, ["C1"])
+    @test length(C1_contributions) == 500
 
-    H33_contrib = contrib(solute, results.solute_atom, ["H33"])
-    @test length(H33_contrib) == 500
+    H33_contributions = contributions(solute, results.solute_atom, ["H33"])
+    @test length(H33_contributions) == 500
 
     # solvent contributions fetching
-    N_contrib = contrib(solvent, results.solvent_atom, ["N"])
-    @test length(N_contrib) == 500
+    N_contributions = contributions(solvent, results.solvent_atom, ["N"])
+    @test length(N_contributions) == 500
 
-    C1_contrib = contrib(solvent, results.solvent_atom, ["C1"])
-    @test length(C1_contrib) == 500
+    C1_contributions = contributions(solvent, results.solvent_atom, ["C1"])
+    @test length(C1_contributions) == 500
 
-    H33_contrib = contrib(solvent, results.solvent_atom, ["H33"])
-    @test length(H33_contrib) == 500
+    H33_contributions = contributions(solvent, results.solvent_atom, ["H33"])
+    @test length(H33_contributions) == 500
 
 end

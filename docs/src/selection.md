@@ -19,7 +19,7 @@ solute = Selection(indexes,nmols=1)
     without ambiguity. 
 
 The atom names can be also provided such that some of the output files
-contain more information on the [atomic contributions](@ref contrib). In this
+contain more information on the [atomic contributions](@ref contributions). In this
 case the syntax is:
 ```julia
 indexes = [ 1, 2, 3, 4, 5 ]

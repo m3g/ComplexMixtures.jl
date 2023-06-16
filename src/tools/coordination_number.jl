@@ -4,7 +4,7 @@
 
 Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF.
 
-If the `group_contributions` to the `mddf` are computed previously with the `contrib` function, the result can be used
+If the `group_contributions` to the `mddf` are computed previously with the `contributions` function, the result can be used
 to compute the coordination number by calling `coordination_number(R::Result, group_contributions)`.
 
 Otherwise, the coordination number can be computed directly with the second call, where:
@@ -24,7 +24,7 @@ In the following example we compute the coordination number of the atoms of resi
 as a function of the distance. Finally, we show the average number of TMAO molecules within 5 Angstroms of residue 50. 
 The `findlast(<(5), R.d)` part of the code below returns the index of the last element of the `R.d` array that is smaller than 5 Angstroms.
 
-## Precomputing the group contributions Using the `contrib` function
+## Precomputing the group contributions Using the `contributions` function
 
 ```julia
 using ComplexMixtures, PDBTools
@@ -33,7 +33,7 @@ R = load("test/data/NAMD/protein_tmao.json");
 solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
 residue50 = PDBTools.select(pdb, "residue 50");
 # Compute the group contributions to the MDDF
-residue50_contribution = contrib(solute, R.solute_atom, residue50);
+residue50_contribution = contributions(solute, R.solute_atom, residue50);
 # Now compute the coordination number
 residue50_coordination = coordination_number(R, residue50_contribution)
 # Output the average number of TMAO molecules within 5 Angstroms of residue 50
@@ -57,9 +57,9 @@ residue50_coordination[findlast(<(5), R.d)]
 """
 function coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
     # Extract the group contributions to the MDDF
-    group_contrib = contrib(s, atom_contributions, group)
+    group_contributions = contributions(s, atom_contributions, group)
     # Compute the coordination number
-    return coordination_number(R, group_contrib)
+    return coordination_number(R, group_contributions)
 end
 function coordination_number(R::Result, group_contributions::Vector{Float64})
     cn = cumsum(group_contributions[i] * R.md_count_random[i] for i in eachindex(group_contributions)) 
