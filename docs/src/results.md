@@ -114,12 +114,14 @@ plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol")
 
 Obtaining the MDDF involves the computation of some intermediate properties that are frequently useful for additional solution structure analysis. In particular, the coordination numbers are computed. For example, the coordination number as a function from the distance to the solute can be retrieved from a `Results` data structure with:
 ```julia
-coordination_number = result.sum_md_count
+coordination_number = results.coordination_number
 ```
 and this data can be plotted against the distances by:
 ```julia
-plot(result.d,result.sum_md_count)
+plot(result.d,results.coordination_number)
 ```
+
+The coordination number of subgroups can also be obtained, as explained in the [Coordination number](@ref coordination_number) section.
 
 The complete data available is:
 
@@ -128,10 +130,10 @@ The complete data available is:
 | `d` | Vector of distances of the histograms.  | `Vector{Float64}` | To be used as the `x` coordinate on plotting any of the data. | 
 | `md_count` | Non-normalized count of minimum distances at each `d`.  | `Vector{Float64}` | This is the number of minimum distances found at each histogram bin, without normalization. Usually this is not interesting to analyze, because it is dependent on the bin size. | 
 | `md_count_random` | Number of minimum distances found at each histogram bin for the random distribution. | `Vector{Float64}` | This is the normalization required to convert the `md_count` array into the minimum-distance distribution. | 
-| `sum_md_count` | Cumulative number of sites found for each histogram distance. | `Vector{Float64}` | **This is the coordination number**, that is, the number of sites found cumulative up to each distance, without any normalization. | 
-| `sum_md_count_random` | Cumulative site count for the random distribution. | `Vector{Float64}` | Usually not interesting for analysis. | 
+| `coordination_number` | Cumulative number of sites found for each histogram distance. | `Vector{Float64}` | **This is the coordination number**, that is, the number of sites found cumulative up to each distance, without any normalization. | 
+| `coordination_number_random` | Cumulative site count for the random distribution. | `Vector{Float64}` | Usually not interesting for analysis. | 
 | `mddf` | The final distribution function. | `Vector{Float64}` | This is the MDDF computed (`md_count` normalized by `md_count_random`). It is the main result of the calculation. | 
-| `kb` | The final Kirkwood-Buff integral. | `Vector{Float64}` | This is the final KB integral, as a function of the integration distance from the solute. Computed as `sum_md_count - sum_md_count_random` |  
+| `kb` | The final Kirkwood-Buff integral. | `Vector{Float64}` | This is the final KB integral, as a function of the integration distance from the solute. Computed as `coordination_number - coordination_number_random` |  
 | `solute_atom` | Atomic contributions of the solute. | `Matrix{Float64}` | This is a matrix with `nbins` lines and `solute.natomspermol` columns, containing the atomic contributions of each solute atom to the complete MDDF. |   
 | `solvent_atom` | Atomic contributions of the solvent. | `Matrix{Float64}` | This is a matrix with `nbins` lines and `solvent.natomspermol` columns, containing the atomic contributions of each solvent atom to the complete MDDF. |   
 | `density` | Density properties of the system. | `Density` | Contains the data of the solute density, solvent density, and solvent density at the bulk region. |  

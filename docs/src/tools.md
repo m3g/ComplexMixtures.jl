@@ -6,7 +6,7 @@ of the possible results is provided here.
 
 Some tools are provided to analyze the results:
 
-## Coordination numbers
+## [Coordination numbers](@id coordination_number)
 
 The function
 ```julia
