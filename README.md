@@ -4,7 +4,7 @@ A package to study the structure of solutions formed by solutes and solvents of 
 
 ## Documentation:
 
-The documentation is available at: [https://m3g.github.io/ComplexMixtures.jl/stable](https://m3g.github.io/ComplexMixtures.jl/stable)
+The documentation is available at: [https://m3g.github.io/ComplexMixtures.jl/stable](https://m3g.github.io/ComplexMixtures.jl)
 
 ### Examples
 
