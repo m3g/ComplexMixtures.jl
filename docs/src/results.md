@@ -126,7 +126,7 @@ The coordination number of subgroups can also be obtained, as explained in the [
 The complete data available is:
 
 | Parameter | Meaning | Type of value | Comment | 
-|-----------|---------|---------------|---------|
+|:----------|:--------|:-------------:|:--------|
 | `d` | Vector of distances of the histograms.  | `Vector{Float64}` | To be used as the `x` coordinate on plotting any of the data. | 
 | `md_count` | Non-normalized count of minimum distances at each `d`.  | `Vector{Float64}` | This is the number of minimum distances found at each histogram bin, without normalization. Usually this is not interesting to analyze, because it is dependent on the bin size. | 
 | `md_count_random` | Number of minimum distances found at each histogram bin for the random distribution. | `Vector{Float64}` | This is the normalization required to convert the `md_count` array into the minimum-distance distribution. | 
@@ -142,11 +142,12 @@ The complete data available is:
 | `volume` | Volume measures. | `Volume` | Contains the total volume of the simulation, the bulk volume, the volume of the solute domain and the shell volume of each `bin` of the histogram. These are computed by numerical integration from the random distributions.  |   
 | `files` | List of files read. | `Vector{String}` | | 
 | `weights` | Weights of each file in the final counts. | `Vector{Float64}` | If the trajectories have different lengths or number of frames, the weights are adapted accordingly. | 
+|    |     |    |   | 
 
 ### Other Result parameters available which are set at Options:
 
 | Parameter | Meaning | Type of value | Comment | 
-|-----------|---------|---------------|---------|
+|:----------|:--------|:-------------:|:--------|
 | `nbins` | Number of bins of the histograms. | `Int` | | 
 | `dbulk` | Distance from solute of bulk solution. | `Float64` |  |
 | `cutoff` | Maximum distance to be considered for histograms. | `Float64`  | | 
@@ -161,6 +162,7 @@ The complete data available is:
 | `options` | Calculation options. | `Options` | Carries (some redundant) options set by the user. | 
 | `lastframe_read` | Last frame read from the trajectory. | `Int` | | 
 | `n_frames_read` | Number of frames read from the trajectory. | `Int` | Can differ from `lastframe_read` if `stride != 1` | 
+|    |     |    |   | 
 
 
 
