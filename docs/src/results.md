@@ -136,7 +136,9 @@ The complete data available is:
 | `kb` | The final Kirkwood-Buff integral. | `Vector{Float64}` | This is the final KB integral, as a function of the integration distance from the solute. Computed as `coordination_number - coordination_number_random` |  
 | `solute_atom` | Atomic contributions of the solute. | `Matrix{Float64}` | This is a matrix with `nbins` lines and `solute.natomspermol` columns, containing the atomic contributions of each solute atom to the complete MDDF. |   
 | `solvent_atom` | Atomic contributions of the solvent. | `Matrix{Float64}` | This is a matrix with `nbins` lines and `solvent.natomspermol` columns, containing the atomic contributions of each solvent atom to the complete MDDF. |   
-| `density` | Density properties of the system. | `Density` | Contains the data of the solute density, solvent density, and solvent density at the bulk region. |  
+| `density.solute` | Density (concentration) of the solute in the complete simulation box. | `Float64` | In units of molecules/$\textrm{\AA}^3$ |  
+| `density.solvent` | Density (concentration) of the solvent in the complete simulation box. | `Float64` | In units of molecules/$\textrm{\AA}^3$ |  
+| `density.solvent_bulk` | Density (concentration) of the solute in the bulk region. | `Float64` | In units of molecules/$\textrm{\AA}^3$ |  
 | `volume` | Volume measures. | `Volume` | Contains the total volume of the simulation, the bulk volume, the volume of the solute domain and the shell volume of each `bin` of the histogram. These are computed by numerical integration from the random distributions.  |   
 | `files` | List of files read. | `Vector{String}` | | 
 | `weights` | Weights of each file in the final counts. | `Vector{Float64}` | If the trajectories have different lengths or number of frames, the weights are adapted accordingly. | 
