@@ -6,6 +6,7 @@ getproperty(r::Result, ::Val{S}) where {S} = getfield(r, S)
 getproperty(r::Result, ::Val{:sum_md_count}) = r.coordination_number
 getproperty(r::Result, ::Val{:sum_md_count_random}) = r.coordination_number_random
 
+export contrib
 const contrib = contributions
 
 @testitem "legacy" begin
