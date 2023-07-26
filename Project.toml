@@ -27,6 +27,7 @@ StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 
 [compat]
+Aqua = "0.6"
 BenchmarkTools = "1"
 CellListMap = "0.8.16"
 Chemfiles = "0.9, 0.10"
@@ -43,11 +44,12 @@ RandomNumbers = "1.5"
 StableRNGs = "1"
 StaticArrays = "1"
 StructTypes = "1"
-TestItems = "0.1"
 TestItemRunner = "0.2"
+TestItems = "0.1"
 julia = "1.6"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
 PDBTools = "e29189f1-7114-4dbd-93d0-c5673a921a58"
@@ -56,4 +58,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [targets]
-test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner"]
+test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner", "Aqua"]
