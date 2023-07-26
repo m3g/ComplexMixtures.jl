@@ -2,7 +2,7 @@
 [![Tests](https://img.shields.io/badge/build-passing-green)](https://github.com/m3g/ComplexMixtures.jl/actions)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
-# ComplexMixtures
+# ComplexMixtures.jl
 
 A package to study the structure of solutions formed by solutes and solvents of complex molecular shapes.
 
