@@ -77,7 +77,7 @@ From differences in KB integrals among cossolvents, the Preferential Solvation p
 <center>
 <img width="50%" src="./figures/Gamma.png">
 <br>
-<b>Kirkwood-Buff integrals of an ionic liquid solvating a protein in different conformational states.</b><br><br>
+<b>Preferential interaction parameters obtained for the solvation of a protein by ionic liquids.</b><br><br>
 </center>
 ```
 
