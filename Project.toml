@@ -1,7 +1,7 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
 authors = ["Leandro Martinez <lmartine@unicamp.br>"]
-version = "1.0.3-DEV"
+version = "1.0.3"
 
 [deps]
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
@@ -36,7 +36,7 @@ CpuId = "0.3"
 DocStringExtensions = "0.8, 0.9"
 FortranFiles = "0.6"
 JSON3 = "1"
-PDBTools = "0.13"
+PDBTools = "0.13, 0.14"
 Parameters = "0.12"
 PrecompileTools = "1"
 ProgressMeter = "1"
