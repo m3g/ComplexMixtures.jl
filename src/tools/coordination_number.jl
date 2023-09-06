@@ -57,6 +57,10 @@ residue50_coordination[findlast(<(5), R.d)]
 ```
 
 """
+function coordination_number end
+
+coordination_number(R::Result) = R.coordination_number
+
 function coordination_number(
     s::Selection,
     atom_contributions::Matrix{Float64},
@@ -75,7 +79,6 @@ function coordination_number(R::Result, group_contributions::Vector{Float64})
     )
     return cn
 end
-
 
 @testitem "coordination_number" begin
     using ComplexMixtures, PDBTools
