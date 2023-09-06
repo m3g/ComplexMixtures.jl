@@ -7,6 +7,7 @@ Defaults to reading with the Chemfiles infrastructure, except for DCD and PDB tr
 files, if the "PDBTraj" option is provided.
 
 See memory issue (https://github.com/chemfiles/Chemfiles.jl/issues/44)
+
 """
 abstract type Trajectory end
 
@@ -45,52 +46,6 @@ end
 # If only one selection is provided, assume that the solute and the solvent are the same
 Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles = false) =
     Trajectory(filename, solvent, solvent, format = format, chemfiles = chemfiles)
-
-#
-# Function to get the appropriate representation of the unit cell, depending on its type
-#
-function setunitcell(uc::AbstractVecOrMat)
-    unitcell = if uc isa AbstractVector # Orthorhombic cell
-        SVector(uc)
-    else # Orthorhombic in practice 
-        if isdiag(uc)
-            SVector{3}(uc[i, i] for i = 1:3)
-        else # Triclinic cell
-            SMatrix{3,3}(uc)
-        end
-    end
-    return unitcell
-end
-# From the trajectory file
-setunitcell(trajectory::Trajectory) = setunitcell(trajectory.sides[1])
-
-@testitem "setunitcell" begin
-    using ComplexMixtures
-    using ComplexMixtures.Testing
-    using PDBTools
-    using StaticArrays
-
-    # From the definition of the unitcell
-    uc = SVector(1.0, 1.0, 1.0)
-    @test ComplexMixtures.setunitcell(uc) == uc
-    uc_mat = SMatrix{3,3}(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-    @test ComplexMixtures.setunitcell(uc_mat) == uc
-    uc_mat = SMatrix{3,3}(1.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-    @test ComplexMixtures.setunitcell(uc_mat) == uc_mat
-
-    # From the trajectory
-    atoms = readPDB(Testing.pdbfile)
-    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
-    ComplexMixtures.opentraj!(traj)
-    ComplexMixtures.firstframe!(traj)
-    ComplexMixtures.nextframe!(traj)
-    @test ComplexMixtures.setunitcell(traj) ==
-          SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
-    ComplexMixtures.closetraj!(traj)
-end
 
 @testitem "Trajectory" begin
     using ComplexMixtures

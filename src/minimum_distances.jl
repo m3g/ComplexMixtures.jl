@@ -188,7 +188,12 @@ function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
     opentraj!(trajectory)
     firstframe!(trajectory)
     nextframe!(trajectory)
-    unitcell = setunitcell(trajectory) # returns vector or matrix depending on the data
+    unitcell = getunitcell(trajectory) # returns vector or matrix depending on the data
+    if isdiag(unitcell)
+        unitcell = SVector{3,Float64}(unitcell)
+    else
+        unitcell = SMatrix{3,3}(unitcell)
+    end
     closetraj!(trajectory)
     system = PeriodicSystem(
         xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
