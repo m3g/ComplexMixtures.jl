@@ -20,6 +20,20 @@ If no group is defined, the coordination number of the complete solute is return
 coordination_number(R::Result) == R.coordination_number
 ```
 
+!!! note
+    There are some systems for which the normalization of the distributions is not 
+    necessary or possible. It is still possible to compute the coordination numbers,
+    by running, instead of `mddf`, the `coordination_number` function:
+    ```
+    coordination_number(trajectory::Trajectory, options::Options)
+    ```
+    This call will return `Result` data structure but with all fields requiring 
+    normalization with zeros. In summary, this result
+    data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
+
+!!! compat
+    The use independent computation of coordination numbers was introduced in version 1.1.
+
 ### Example
 
 In the following example we compute the coordination number of the atoms of `residue 50` (which belongs to the solute - a protein) with the solvent atoms of TMAO, as a function of the distance. The plot produced will show side by side the residue contribution to the MDDF and the corresponding coordination number.
