@@ -1,10 +1,13 @@
-#
-# Structure to carry temporary arrays needed
-#
-# We need temporary buffers for reading the coordinates, a buffer to store
-# a temporary array of solvent coordinates (whose length is dependent on 
-# autocorrelation or not), and the indexes of the solute molecules that will
-# be used as reference states for ideal gas distributions
+#=
+
+Structure to carry temporary arrays needed
+
+We need temporary buffers for reading the coordinates, a buffer to store
+a temporary array of solvent coordinates (whose length is dependent on 
+autocorrelation or not), and the indexes of the solute molecules that will
+be used as reference states for ideal gas distributions
+
+=#
 @with_kw struct Buffer
     solute_read::Vector{SVector{3,Float64}}
     solvent_read::Vector{SVector{3,Float64}}
@@ -109,7 +112,7 @@ julia> results = mddf(trajectory,options);
 ```
 
 """
-function mddf(trajectory::Trajectory, options::Options = Options())
+function mddf(trajectory::Trajectory, options::Options = Options(); coordination_number_only = false)
 
     # Set random number generator
     RNG = init_random(options)
@@ -180,7 +183,11 @@ function mddf(trajectory::Trajectory, options::Options = Options())
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
             # Compute distances in this frame and update results
-            mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
+            if !coordination_number_only
+                mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
+            else
+                coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
+            end
         end # frame range for this chunk
     end
     closetraj!(trajectory)
@@ -207,7 +214,7 @@ cell_volume(system::AbstractPeriodicSystem) =
 
 $(INTERNAL)
 
-Computes the MDDF for a single frame, for autocorrelation of molecules. Modifies the data in the `R` (type `Result`) structure.
+Computes the MDDF for a single frame. Modifies the data in the `R` (type `Result`) structure.
 
 """
 function mddf_frame!(
@@ -240,7 +247,7 @@ function mddf_frame!(
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
         # for the previous solute
         minimum_distances!(system, R, isolute; update_lists = update_lists)
-        update_lists = false
+        update_lists = false # avoid recomputation of the cell lists in the next iteration
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
@@ -412,3 +419,74 @@ end
     @test R.kb[end] ≈ -386.8513153147712 rtol = 0.5
     @test R.kb_rdf[end] ≈ -326.32083509753284 rtol = 0.5
 end
+
+"""
+    coordination_number_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
+
+$(INTERNAL)
+
+Computes the coordination numbers for a single frame. Modifies the data in the `R` (type `Result`) structure.
+
+"""
+function coordination_number_frame!(
+    R::Result,
+    system::AbstractPeriodicSystem,
+    buff::Buffer,
+    options::Options,
+    RNG,
+)
+
+    # Sum up the volume of this frame
+    R.volume.total += cell_volume(system)
+
+    #
+    # Compute the MDDFs for each solute molecule
+    #
+    update_lists = true
+    system.ypositions .= buff.solvent_read
+    for isolute = 1:R.solute.nmols
+
+        # We need to do this one solute molecule at a time to avoid exploding the memory requirements
+        system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
+
+        # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
+        # The cell lists will be recomputed for the first solute, or if a random distribution was computed
+        # for the previous solute
+        minimum_distances!(system, R, isolute; update_lists = update_lists)
+        update_lists = false # avoid recomputation of the cell lists in the next iteration
+ 
+        # For each solute molecule, update the counters (this is highly suboptimal, because
+        # within updatecounters there are loops over solvent molecules, in such a way that
+        # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
+        # at this point with acceptable memory requirements
+        updatecounters!(R, system)
+
+    end # loop over solute molecules
+
+    return R
+end
+
+"""     
+    coordination_number(trajectory::Trajectory, options::Options)
+
+Computes the coordination numbers for each solute molecule in the trajectory, given the `Trajectory`.
+This is an auxiliary function of the `ComplexMixtures` package, which is used to compute 
+coordination numbers when the normalization of the distribution is not possible or needed. 
+
+The output is a `Result` structure, which contains the data as the result of a call to `mddf`, except
+that all counters which require normalization of the distribution will be zero. In summary, this result
+data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
+
+### Examples
+
+```julia-repl
+julia> trajectory = Trajectory("./trajectory.dcd",solute,solvent);
+
+julia> results = mddf(trajectory);
+
+julia> coordination_numbers = coordination_number(trajectory);
+```
+
+"""
+coordination_number(trajectory::Trajectory, options::Options = Options()) =
+    mddf(trajectory, options; coordination_number_only = true)
