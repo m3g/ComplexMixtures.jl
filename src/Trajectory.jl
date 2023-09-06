@@ -47,6 +47,35 @@ end
 Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles = false) =
     Trajectory(filename, solvent, solvent, format = format, chemfiles = chemfiles)
 
+#=
+    convert_unitcell(unitcell::Union{SVector{3}, SMatrix{3,3}})
+
+Function to return the unit cell as a vector or matrix, depending on if 
+the cell is diagonal or not, up to a relative precision of 1e-10 by default.
+
+=#
+function convert_unitcell(unitcell::AbstractMatrix; tol = 1e-10)
+    size(unitcell) == (3,3) || error("Unit cell must be a 3x3 matrix.")
+    s = minimum(diag(unitcell))
+    is_diag = all(unitcell[i,j] < tol*s for i in 1:3, j in 1:3 if i != j)
+    return is_diag ?  SVector(diag(unitcell)) : SMatrix(unitcell)
+end
+
+function print_unitcell(trajectory)
+    unitcell = convert_unitcell(getunitcell(trajectory))
+    if unitcell isa SVector
+        return "[ $(@sprintf("%6.2f", unitcell[1])) 0 0;" *
+               " 0 $(@sprintf("%6.2f", unitcell[2])) 0;" *
+               " 0 0 $(@sprintf("%6.2f", unitcell[3])) ]"
+    else
+        return "[ $(@sprintf("%6.2f %6.2f %6.2f", unitcell[1,1], unitcell[1,2], unitcell[1,3]));" *
+               " $(@sprintf("%6.2f %6.2f %6.2f", unitcell[2,1], unitcell[2,2], unitcell[2,3]));" *
+               " $(@sprintf("%6.2f %6.2f %6.2f", unitcell[3,1], unitcell[3,2], unitcell[3,3])) ]"
+    end
+end
+
+
+
 @testitem "Trajectory" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
@@ -61,7 +90,7 @@ Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles 
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     @test traj.nframes == 20
     @test traj.lastatom == 4012
-    @test traj.sides_in_dcd == true
+    @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
 
     # PDB file
     traj = Trajectory(
@@ -72,7 +101,7 @@ Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles 
     )
     @test traj.solute.natoms == 1463
     @test traj.solvent.natoms == 2534
-    @test traj.sides[1] ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
+    @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.47962951660156, 84.47962951660156, 84.47962951660156)
 
     # Chemfiles with NAMD
     traj = Trajectory(
@@ -82,7 +111,7 @@ Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles 
         chemfiles = true,
     )
     @test traj.nframes == 20
-    @test traj.sides[1] ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
+    @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
     @test traj.solute.natoms == 1463
     @test traj.solvent.natoms == 2534
 
@@ -92,7 +121,7 @@ Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles 
     emi = Selection(select(atoms, "resname EMI"), natomspermol = 20)
     traj = Trajectory("$(Testing.data_dir)/Gromacs/trajectory.xtc", protein, emi)
     @test traj.nframes == 26
-    @test traj.sides[1] ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
+    @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
     @test traj.solute.natoms == 1231
     @test traj.solvent.natoms == 5080
 

@@ -3,7 +3,7 @@
 $(TYPEDEF)
 
 Structure to contain PDB trajectories. Frames must be separated by "END", and with periodic cell sizes
-in the "CRYST1" field.
+in the "CRYST1" field, for each frame.
 
 This structure and functions can be used as a template to implement the reading of other trajectory formats. 
 
@@ -19,8 +19,8 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
     stream::Stream{<:IOStream} # The type of IOStream must be the result of open(filename, "r") for the given type
     nframes::Int64
 
-    # This vector must be filled up with the size vectors of the periodic cell
-    sides::Vector{T}
+    # unitcell in the current frame
+    unitcell::MMatrix{3,3,Float64,9}
 
     # Solute and solvent data
     solute::Selection
@@ -50,9 +50,13 @@ function PDBTraj(
     # Get the number of frames and number of atoms, check for adequacy of the format
     nframes = 0
     natoms = 0
+    unitcell = zeros(MMatrix{3,3,Float64,9})
     for line in eachline(st)
         isempty(line) && continue
         line_data = split(line)
+        if line_data[1] == "CRYST1"
+            unitcell .= pdb_readunitcell(line_data) 
+        end
         if line_data[1] == "END"
             nframes = nframes + 1
         end
@@ -63,6 +67,9 @@ function PDBTraj(
     close(st)
 
     # Some error messages
+    if all(unitcell .== 0)
+        error("Could not read unit cell from PDB file. Each frame must contain a CRYST1 field.")
+    end
     if nframes == 0
         error(
             "Could not read any frame from PDB file. Each frame must end with the END specifier",
@@ -70,28 +77,6 @@ function PDBTraj(
     end
     if natoms == 0
         error("Could not read any ATOM from the trajectory file.")
-    end
-
-    # Fill-up the sides vector of the trajectory. We assume here
-    # that the sides are stored for each frame in the "CRYST1" field, for each frame.
-    # Here, we exemplify the option to read all sides at once and store them in a 
-    # vector. Alternatively, the sides could be read for each frame
-    # independently within the "nextframe!" function, and saved as a sides(3) vector.  
-    # The function "getsides", below, must be adapted accordingly to return the correct
-    # sides of the periodic box in each frame.
-    sides = zeros(T, nframes)
-    st = open(pdbfile, "r")
-    iframe = 0
-    for line in eachline(st)
-        isempty(line) && continue
-        s = split(line)
-        if s[1] == "CRYST1"
-            iframe = iframe + 1
-            sides[iframe] = T(parse.(Float64, @view(s[2:4])))
-        end
-    end
-    if iframe != nframes
-        error("Could not find CRYST1 fields with sides for all frames.")
     end
 
     # Setup the struct that contains the stream in the trajectory type
@@ -104,7 +89,7 @@ function PDBTraj(
         pdbfile, # trajectory file name 
         stream,
         nframes,
-        sides, # array containing box sides
+        unitcell, # unitcell in the current frame
         solute,
         solvent,
         zeros(T, solute.natoms),
@@ -113,12 +98,13 @@ function PDBTraj(
 end
 
 function Base.show(io::IO, trajectory::PDBTraj)
-    print(io,""" 
+    print(io,strip(""" 
           Trajectory in PDB format with:
               $(trajectory.nframes) frames.
               Solute contains $(trajectory.solute.natoms) atoms.
               Solvent contains $(trajectory.solvent.natoms) atoms.
-          """)
+              Unit cell in current frame: $(print_unitcell(trajectory))
+          """))
 end
 
 #
@@ -137,6 +123,11 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
     i_solvent = 0
     while ((0 < length(record) < 3) || record[1:3] != "END")
         if length(record) >= 6
+            # Read unit cell
+            if record[1:6] == "CRYST1"
+                trajectory.unitcell .= pdb_readunitcell(split(record)) 
+            end
+            # Read atom coordinates into the solute and solvent arrays
             if record[1:4] == "ATOM" || record[1:6] == "HETATM"
                 iatom = iatom + 1
                 x = parse(Float64, record[31:38])
@@ -158,13 +149,10 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
     end
 end
 
-# Function that returns the sides of the periodic box given the data structure. In this
-# case, returns the 3-element vector corresponding to the box sides of the given frame
-function getsides(trajectory::PDBTraj, iframe)
-    # Sides is expected to be an array that contains the sides for each frame, and we return the
-    # vector containing the sides of the current fraem
-    return trajectory.sides[iframe]
-end
+#
+# Function that returns the unitcell of the current trajctory frame
+#
+getunitcell(trajectory::PDBTraj) = trajectory.unitcell
 
 #
 # Function that opens the trajectory stream
@@ -180,3 +168,27 @@ closetraj!(trajectory::PDBTraj) = close(stream(trajectory))
 # Function that returns the trajectory in position to read the first frame
 #
 firstframe!(trajectory::PDBTraj) = seekstart(stream(trajectory))
+
+#
+# Function to read a unit cell from the CRYST1 field of the PDB file
+# 
+# COLUMNS       DATA  TYPE    FIELD          DEFINITION
+# -------------------------------------------------------------
+#  1 -  6       Record name   "CRYST1"
+#  7 - 15       Real(9.3)     a              a (Angstroms).
+# 16 - 24       Real(9.3)     b              b (Angstroms).
+# 25 - 33       Real(9.3)     c              c (Angstroms).
+# 34 - 40       Real(7.2)     alpha          alpha (degrees).
+# 41 - 47       Real(7.2)     beta           beta (degrees).
+# 48 - 54       Real(7.2)     gamma          gamma (degrees).
+# 56 - 66       LString       sGroup         Space  group.
+# 67 - 70       Integer       z              Z value.
+function pdb_readunitcell(data::AbstractVector{<:AbstractString})
+    a = parse(Float64, data[2])
+    b = parse(Float64, data[3])
+    c = parse(Float64, data[4])
+    alpha = parse(Float64, data[5])
+    beta = parse(Float64, data[6])
+    gamma = parse(Float64, data[7])
+    return transpose(SMatrix{3,3}(Chemfiles.matrix(Chemfiles.UnitCell([a, b, c], [alpha, beta, gamma]))))
+end

@@ -5,7 +5,7 @@ using Printf
 using Parameters
 using ProgressMeter
 using Statistics
-using LinearAlgebra: norm, isdiag, cross, dot
+using LinearAlgebra: norm, cross, dot, diag
 using FortranFiles
 using PDBTools
 using StructTypes

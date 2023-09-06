@@ -188,12 +188,7 @@ function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
     opentraj!(trajectory)
     firstframe!(trajectory)
     nextframe!(trajectory)
-    unitcell = getunitcell(trajectory) # returns vector or matrix depending on the data
-    if isdiag(unitcell)
-        unitcell = SVector{3,Float64}(unitcell)
-    else
-        unitcell = SMatrix{3,3}(unitcell)
-    end
+    unitcell = convert_unitcell(getunitcell(trajectory)) # returns vector or matrix depending on the data
     closetraj!(trajectory)
     system = PeriodicSystem(
         xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
@@ -233,9 +228,11 @@ end
     @test system.parallel == false
     @test length(system.xpositions) == 1463
     @test length(system.ypositions) == 2534
-    @test system.unitcell ==
-          SMatrix{3,3}(i == j ? traj.sides[1][i] : 0.0 for i = 1:3, j = 1:3)
-    @test system._box == CellListMap.Box(traj.sides[1], 10.0, lcell = options.lcell)
+    @test system.unitcell ≈ [84.42188262939453 0.0 0.0; 0.0 84.42188262939453 0.0; 0.0 0.0 84.42188262939453]
+    @test system._box == CellListMap.Box(
+        ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)),
+        10.0, lcell = options.lcell
+    )
 
     # Auto-correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
@@ -246,8 +243,10 @@ end
     @test system.parallel == false
     @test length(system.xpositions) == 14 # one TMAO molecule
     @test length(system.ypositions) == 2534 # one molecule less
-    @test system.unitcell ==
-          SMatrix{3,3}(i == j ? traj.sides[1][i] : 0.0 for i = 1:3, j = 1:3)
-    @test system._box == CellListMap.Box(traj.sides[1], 10.0, lcell = options.lcell)
+    @test system.unitcell ≈ [84.42188262939453 0.0 0.0; 0.0 84.42188262939453 0.0; 0.0 0.0 84.42188262939453]
+    @test system._box == CellListMap.Box(
+        ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)),
+        10.0, lcell = options.lcell
+    )
 
 end

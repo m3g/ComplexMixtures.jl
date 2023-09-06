@@ -32,6 +32,9 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     x_solute::Vector{T}  # solute.natoms vectors of length 3 (preferentially static vectors)
     x_solvent::Vector{T} # solvent.natoms vectors of lenght 3 (preferentially static vectors)
 
+    # unitcell
+    unitcell::MMatrix{3,3,Float64,9}
+
     #
     # Additional data required for input/output functions
     #
@@ -62,6 +65,7 @@ function ChemFile(
     # Read the first frame to get the number of atoms
     frame = Chemfiles.read(st)
     natoms = Chemfiles.size(frame) % Int
+    unitcell = transpose(MMatrix{3,3}(Chemfiles.matrix(Chemfiles.UnitCell(frame))))
 
     # Initialize the stream struct of the Trajectory
     stream = Stream(st)
@@ -78,17 +82,18 @@ function ChemFile(
         solvent,
         zeros(T, solute.natoms),
         zeros(T, solvent.natoms),
+        unitcell,
         natoms, # Total number of atoms
     )
 end
 
 function Base.show(io::IO, trajectory::ChemFile)
-    print(io,"""
+    print(io,strip("""
           Trajectory read by Chemfiles with:
               $(trajectory.nframes) frames.
               $(trajectory.natoms) atoms.
-              PBC cell in current frame: $(trajectory.sides[1])
-          """)
+              Unit cell in current frame: $(convert_unitcell(getunitcell(trajectory)))
+          """))
 end
 
 #
@@ -105,6 +110,7 @@ function nextframe!(trajectory::ChemFile{T}) where {T}
 
     frame = Chemfiles.read(st)
     positions = Chemfiles.positions(frame)
+    trajectory.unitcell .= transpose(SMatrix{3,3}(Chemfiles.matrix(Chemfiles.UnitCell(frame))))
 
     # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
     # but the code in general is more clear aftwerwards by doing this)
@@ -125,9 +131,8 @@ function nextframe!(trajectory::ChemFile{T}) where {T}
 
 end
 
-# Returns the unitcell of the current frame, either as a vector,
-# for the case of orthorhombic cells, or as a matrix for the case of triclinic cells
-getunitcell(trajectory::ChemFile) = transpose(Chemfiles.UnitCell(Chemfiles.Frame(trajectory.stream)))
+# Returns the unitcell of the current frame, as a 3x3 matrix (static in this case)
+getunitcell(trajectory::ChemFile) = trajectory.unitcell
 
 #
 # Function that closes the IO Stream of the trajectory
@@ -159,24 +164,15 @@ end
     using PDBTools
     using StaticArrays
 
-    # From the definition of the unitcell
-    uc = SVector(0.0, 1.0, 1.0)
-    @test ComplexMixtures.getunitcell(uc) == uc
-    uc_mat = SMatrix{2,3}(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-    @test ComplexMixtures.getunitcell(uc_mat) == uc
-    uc_mat = SMatrix{2,3}(1.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-    @test ComplexMixtures.getunitcell(uc_mat) == uc_mat
-
-    # From the trajectory
     atoms = readPDB(Testing.pdbfile)
     options = Options(stride = 4, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    protein = Selection(select(atoms, "protein"), nmols = 0)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 13)
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     ComplexMixtures.opentraj!(traj)
     ComplexMixtures.firstframe!(traj)
     ComplexMixtures.nextframe!(traj)
-    @test ComplexMixtures.getunitcell(traj) ==
-          SVector(83.42188262939453, 84.42188262939453, 84.42188262939453)
+    @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈
+          SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
     ComplexMixtures.closetraj!(traj)
 end

@@ -173,7 +173,8 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
                 # minimum distances
                 @. buff[ichunk].solute_read = trajectory.x_solute
                 @. buff[ichunk].solvent_read = trajectory.x_solvent
-                update_unitcell!(system[ichunk], getsides(trajectory, iframe))
+                unitcell = convert_unitcell(getunitcell(trajectory))
+                update_unitcell!(system[ichunk], unitcell)
                 # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
                 if options.GC &&
                    (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
