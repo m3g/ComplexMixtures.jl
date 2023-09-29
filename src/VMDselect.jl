@@ -1,5 +1,5 @@
 """ 
-    VMDselect(inputfile::String, selection::String; vmd="vmd" )
+    VMDselect(inputfile::String, selection::String; vmd="vmd", srcload=nothing)
 
 Select atoms using vmd selection syntax, with vmd in background
 
@@ -8,8 +8,11 @@ Returns the list of index (one-based) and atom names
 Function to return the selection from a input file (topology, coordinates, etc), 
 by calling VMD in the background.
 
+The `srcload` argument can be used to load a list of scripts before loading the input file,
+for example with macros to define custom selection keywords.
+
 """
-function VMDselect(inputfile::String, selection::String; vmd = "vmd")
+function VMDselect(inputfile::String, selection::String; vmd = "vmd", srcload = nothing)
 
     if !isfile(inputfile)
         error("Could not find file: $inputfile")
@@ -17,6 +20,14 @@ function VMDselect(inputfile::String, selection::String; vmd = "vmd")
 
     vmdinput_file = tempname()
     vmd_input = Base.open(vmdinput_file, "w")
+    if !isnothing(srcload)
+        if srcload isa AbstractString
+            srcload = [srcload]
+        end
+        for srcfile in srcload
+            Base.write(vmd_input, "source \"$srcfile\" \n")
+        end
+    end
     Base.write(vmd_input, "mol new \"$inputfile\" \n")
     Base.write(vmd_input, "set sel [ atomselect top \"$selection\" ] \n")
     Base.write(vmd_input, "puts \"INDEXLIST\" \n")

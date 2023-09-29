@@ -86,6 +86,19 @@ The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and
 it takes a few seconds.     
 
+The `VMDSelect` function also accepts an optional keyword parameter `srcload`,
+which can be used to load custom scripts within `vmd` before running setting
+the selection. This allows the definition of `tcl` scripts with custom selection
+macros, for instance. The usage would be: 
+```julia
+sel = VMSelect("file.pdb", "resname MYRES"; srcload = [ "mymacros1.tcl", "mymacros2.tcl" ])
+```
+Which corresponds to `source`ing each of the macro files in VMD before defining the 
+selection with the custom `MYRES` name.
+
+!!! compat
+    Custom script source loading in VMDSelect was introduced in ComplexMixtures version 1.3.0.
+
 !!! warning
     VMD uses 0-based indexing and `VMDselect` adjusts that. However, if
     a selection is performed by index, as with `index 1`, VMD will
