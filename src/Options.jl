@@ -28,7 +28,7 @@ $(TYPEDFIELDS)
     # Force garbage collection in parallel runs to avoid memory overflow, 
     # whenever free memory in the system is smaller than GC_threshold
     GC::Bool = true
-    GC_threshold::Float64 = 0.1
+    GC_threshold::Float64 = 0.3
 
     # Random number generator options
     seed::Int = 321
