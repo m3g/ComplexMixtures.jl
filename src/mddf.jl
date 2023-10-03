@@ -148,7 +148,7 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
     # Print some information about this run
     if !options.silent
         title(R, trajectory.solute, trajectory.solvent, nchunks)
-        progress = Progress(R.nframes_read, 1)
+        progress = Progress(R.nframes_read; dt = 1)
     end
 
     # Loop over the trajectory
