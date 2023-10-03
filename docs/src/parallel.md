@@ -20,10 +20,11 @@ julia -t auto example.jl
 ```
 
 !!! note
-    The number of threads used for computation of the MDDF is the number
-    of physical CPUs of the computer, which are obtained programmatically.
-    Most times the use of hyper-threading is not beneficial. Adjust the 
-    number of threads with the `Options(nthreads=N)` parameter.
+    The number of threads used for computation of the MDDF is the number of threads available to Julia. 
+    Many computers allow hyperthreading, and not necessarily this this beneficial for the execution
+    of this package. The optimal number of threads may vary.
+    
+    To adjust the number of threads use the `Options(nthreads=N)` parameter.
 
 !!! warning
     If the calculations get `Killed` by no apparent reason, that is probably

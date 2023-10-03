@@ -120,7 +120,7 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
     # Number of threads (chunks) to use
     nchunks = options.nthreads
     if nchunks == 0
-        nchunks = CpuId.cpucores()
+        nchunks = Threads.nthreads()
     end
 
     # Structure in which the final results will be stored
