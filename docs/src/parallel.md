@@ -9,9 +9,6 @@ to use `8` parallel processes, use:
 julia -t 8 example.jl
 ```
 The computation will use a number of parallel processes equal to `N`. 
-Hyperthreading (using more threads than physical CPUs, something available
-in many CPUs) usually does not provide a significant speedup, and can be detrimental 
-in some cases.
 
 !!! note
     The number of threads used for computation of the MDDF is the number of threads available to Julia. 
@@ -20,7 +17,9 @@ in some cases.
     
     Independently of the number of threads initalized with the `-t` command-line
     parameter, the number of processes launched by `ComplexMixtures` in any 
-    given computation can be adjusted by the `Options(nthreads=N)` option.
+    given computation can be adjusted by the `Options(nthreads=N)` option. This
+    won't provide any speedup if the optional number of threads is greater than
+    the number of threads available to Julia at runtime.
 
 !!! warning
     If the calculations get `Killed` by no apparent reason, that is probably
