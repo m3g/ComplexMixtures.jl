@@ -40,4 +40,8 @@ $(TYPEDFIELDS)
     # Do not show any output on the screen on execution of mddf routines
     silent::Bool = false
 
+    # Statistical weights of each frame in the trajectory. An empty vector
+    # means that all frames have the same statistical weight
+    weights::Vector{Float64} = Float64[]
+
 end

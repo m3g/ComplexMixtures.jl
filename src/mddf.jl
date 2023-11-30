@@ -183,11 +183,17 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
                 options.silent || next!(progress)
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
+            # Read weight of this frame. 
+            if isempty(options.weights)
+                weight = 1.0
+            else
+                weight = options.weights[nframes_read]
+            end
             # Compute distances in this frame and update results
             if !coordination_number_only
-                mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
+                mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, weight, RNG)
             else
-                coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, RNG)
+                coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, weight, RNG)
             end
         end # frame range for this chunk
     end
@@ -226,8 +232,11 @@ function mddf_frame!(
     RNG,
 )
 
+    # Weight of this frame (depends on the sampling scheme)
+    weight = system.weight
+
     # Sum up the volume of this frame
-    R.volume.total += cell_volume(system)
+    R.volume.total += weight * cell_volume(system)
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
     for i in eachindex(buff.ref_solutes)
@@ -254,7 +263,7 @@ function mddf_frame!(
         # within updatecounters there are loops over solvent molecules, in such a way that
         # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
         # at this point with acceptable memory requirements
-        updatecounters!(R, system)
+        updatecounters!(R, system, weight)
 
         # If this molecule was chosen as a reference molecule for the ideal gas distribution, compute it
         # (as many times as needed, as the reference molecules may be repeated - particularly because
@@ -277,7 +286,7 @@ function mddf_frame!(
             for _ = 1:nrand
                 randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
                 minimum_distances!(system, R, isolute; update_lists = update_lists)
-                updatecounters!(R, system, Val(:random))
+                updatecounters!(R, system, weight, Val(:random))
             end
             system.ypositions .= buff.solvent_read
         end
