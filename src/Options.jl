@@ -7,7 +7,7 @@ Structure that contains the detailed input options.
 $(TYPEDFIELDS)
 
 """
-@with_kw struct Options
+Base.@kwdef struct Options
 
     firstframe::Int = 1
     lastframe::Int = -1
@@ -42,6 +42,49 @@ $(TYPEDFIELDS)
 
     # Statistical weights of each frame in the trajectory. An empty vector
     # means that all frames have the same statistical weight
-    weights::Vector{Float64} = Float64[]
+    frame_weights::Vector{Float64} = Float64[]
 
+end
+
+function Base.show(io::IO, o::Options)
+    print(io,chomp("""
+    $bars
+    Options - ComplexMixtures 
+    $bars
+    Trajectory frames: 
+        First frame to be considered: firstframe = $(o.firstframe) 
+        Last frame to be considered (-1 is last): lastframe = $(o.lastframe)
+        Stride: stride = $(o.stride)
+
+    Bulk region, cutoff, and histogram:
+        Bin step of histogram: binstep = $(o.binstep)
+        Bulk distance: dbulk = $(o.dbulk)
+        Use cutoff diffrent from dbulk: usecuoff = $(o.usecutoff)
+        Cutoff: cutoff = $(o.cutoff)
+
+    Statistical weight of frames:
+        frame_weights = $(
+            isempty(o.frame_weights) ? 1.0 : 
+                "["*
+                join(round.(o.frame_weights[begin:begin+1],digits=2), ", ")
+                *", ... ,"*
+                join(round.(o.frame_weights[end-1:end], digits=2), ", ")
+                *" ]"
+            )
+        length of weights vector = $(length(o.frame_weights))
+
+    Computation details: 
+        Reference atom for random rotations: irefatom = $(o.irefatom)
+        Number of random samples per frame: n_random_samples = $(o.n_random_samples)
+        Linked cell partition: lcell = $(o.lcell)
+        Force garbage collection: GC = $(o.GC)
+        Memory threshold for GC: GC_threshold = $(o.GC_threshold)
+        Seed for random number generator: $(o.seed)
+        Use stable random number generator: StableRNG = $(o.StableRNG) 
+        Number of threads to use (0 is all): nthreads = $(o.nthreads)
+        Silent output: $(o.silent)
+    $bars
+    """
+    ))
+    return nothing
 end

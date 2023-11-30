@@ -176,24 +176,23 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
                 unitcell = convert_unitcell(getunitcell(trajectory))
                 update_unitcell!(system[ichunk], unitcell)
                 # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
-                if options.GC &&
-                   (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+                if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
                     GC.gc()
                 end
                 options.silent || next!(progress)
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
             # Read weight of this frame. 
-            if isempty(options.weights)
-                weight = 1.0
+            if isempty(options.frame_weights)
+                frame_weight = 1.0
             else
-                weight = options.weights[nframes_read]
+                frame_weight = options.weights[nframes_read]
             end
             # Compute distances in this frame and update results
             if !coordination_number_only
-                mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, weight, RNG)
+                mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, frame_weight, RNG)
             else
-                coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, weight, RNG)
+                coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], frame_weight)
             end
         end # frame range for this chunk
     end
@@ -217,7 +216,7 @@ cell_volume(system::AbstractPeriodicSystem) =
     @views dot(cross(system.unitcell[:, 1], system.unitcell[:, 2]), system.unitcell[:, 3])
 
 """
-    mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
+    mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, frame_weight, RNG)
 
 $(INTERNAL)
 
@@ -229,14 +228,12 @@ function mddf_frame!(
     system::AbstractPeriodicSystem,
     buff::Buffer,
     options::Options,
+    frame_weight,
     RNG,
 )
 
-    # Weight of this frame (depends on the sampling scheme)
-    weight = system.weight
-
     # Sum up the volume of this frame
-    R.volume.total += weight * cell_volume(system)
+    R.volume.total += frame_weight * cell_volume(system)
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
     for i in eachindex(buff.ref_solutes)
@@ -263,7 +260,7 @@ function mddf_frame!(
         # within updatecounters there are loops over solvent molecules, in such a way that
         # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
         # at this point with acceptable memory requirements
-        updatecounters!(R, system, weight)
+        updatecounters!(R, system, frame_weight)
 
         # If this molecule was chosen as a reference molecule for the ideal gas distribution, compute it
         # (as many times as needed, as the reference molecules may be repeated - particularly because
@@ -286,7 +283,7 @@ function mddf_frame!(
             for _ = 1:nrand
                 randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
                 minimum_distances!(system, R, isolute; update_lists = update_lists)
-                updatecounters!(R, system, weight, Val(:random))
+                updatecounters!(R, system, frame_weight, Val(:random))
             end
             system.ypositions .= buff.solvent_read
         end
@@ -431,7 +428,7 @@ end
 end
 
 """
-    coordination_number_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, RNG)
+    coordination_number_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, frame_weight)
 
 $(INTERNAL)
 
@@ -442,12 +439,11 @@ function coordination_number_frame!(
     R::Result,
     system::AbstractPeriodicSystem,
     buff::Buffer,
-    options::Options,
-    RNG,
+    frame_weight::Float64,
 )
 
     # Sum up the volume of this frame
-    R.volume.total += cell_volume(system)
+    R.volume.total += frame_weight * cell_volume(system)
 
     #
     # Compute the MDDFs for each solute molecule
@@ -469,7 +465,7 @@ function coordination_number_frame!(
         # within updatecounters there are loops over solvent molecules, in such a way that
         # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
         # at this point with acceptable memory requirements
-        updatecounters!(R, system)
+        updatecounters!(R, system, frame_weight)
 
     end # loop over solute molecules
 

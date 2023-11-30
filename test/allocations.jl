@@ -17,14 +17,15 @@
             seed = 321,
             StableRNG = true,
         )
-        t_options = @benchmark Options(
+        t = @ballocated Options(
             lastframe = 1,
             seed = 321,
             StableRNG = true,
             nthreads = 1,
             silent = true,
+            frame_weights = $(Float64[]),
         ) samples = 1 evals = 1
-        @test t_options.allocs == 0
+        @test t == 0
 
         protein = Selection(select(atoms, "protein"), nmols = 1)
         t_selection1 =
@@ -62,7 +63,7 @@
         @. buff.solvent_read = traj.x_solvent
         CM.update_unitcell!(system, CM.convert_unitcell(CM.getunitcell(traj)))
         t_mddf_frame =
-            @benchmark CM.mddf_frame!($R, $system, $buff, $options, $RNG) samples = 1 evals = 1
+            @benchmark CM.mddf_frame!($R, $system, $buff, $options, 1.0, $RNG) samples = 1 evals = 1
         @test t_mddf_frame.allocs < 100
 
     end
