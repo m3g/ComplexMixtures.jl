@@ -34,3 +34,9 @@ function load_legacy_json(filename, json_version)
     return results
 end
 
+@testitem "load legacy file" begin
+    using ComplexMixtures
+    R = load("$(@__DIR__)/../../test/data/legacy/protein_tmao.json")
+    @test R.density.solvent_bulk ≈ 0.00030523537444306325
+end
+
