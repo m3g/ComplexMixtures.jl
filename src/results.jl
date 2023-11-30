@@ -96,6 +96,10 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
 
 """
 @with_kw_noshow mutable struct Result{T<:VecOrMat{Float64}}
+
+    # ComplexMixtures version that generated this results
+    Version::VersionNumber = pkgversion(@__MODULE__)
+
     # Histogram properties
     nbins::Int
     dbulk::Float64
@@ -669,6 +673,31 @@ function save(R::Result, filename::String)
     return "Results saved in JSON file: $filename"
 end
 
+#
+# This function tries to read a version number from a result.json
+# file. This is used to adjust the reading to legacy formats of the
+# output file.
+#
+function _get_version(filename)
+    i = 0
+    str = ""
+    file = open(filename, "r")
+    while true
+        c = read(file, Char)
+        i += 1
+        (c == ',' || i > 100) && break
+        str = str*c
+    end
+    close(file)
+    str = split(str, ":")
+    v = if occursin("Version", str[1])
+        parse(VersionNumber, string(str[2][begin+1:end-1]))
+    else
+        v"1.0.0" 
+    end
+    return v
+end
+
 
 """
     load(filename::String)
@@ -677,20 +706,52 @@ Function to load the json saved results file into the `Result` data structure.
 
 """
 function load(filename::String)
-    f = open(filename, "r")
-    R = JSON3.read(f, Result{Vector{Float64}})
-    close(f)
-    # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
-    solute_atom = reshape(R.solute_atom, R.nbins, :)
-    solvent_atom = reshape(R.solvent_atom, R.nbins, :)
-    r_names = fieldnames(Result)
-    # Return the Result{Matrix{Float64}} type with the appropriate fields 
-    return Result{Matrix{Float64}}(
-        ntuple(length(r_names)) do i
-            r_names[i] == :solute_atom ? solute_atom :
-            r_names[i] == :solvent_atom ? solvent_atom : getfield(R, r_names[i])
-        end...,
-    )
+    json_version = _get_version(filename)
+    current_version = pkgversion(@__MODULE__)
+    # Error if the json file is from a newer version than the current one
+    if json_version > current_version
+        error("""
+            Trying to load a json result file created with a newer version of ComplexMixtures. 
+            This can cause unpredictable errors. 
+
+            Current version of ComplexMixtures: $current_version
+            Version used to create the output .json file: $json_version
+
+            Please update ComplexMixtures and try again.
+        """)
+    end
+    # Load directly if within the output compatibility threshold 
+    if json_version > v"1.3.4"
+        f = open(filename, "r")
+        R = JSON3.read(f, Result{Vector{Float64}})
+        close(f)
+        # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
+        solute_atom = reshape(R.solute_atom, R.nbins, :)
+        solvent_atom = reshape(R.solvent_atom, R.nbins, :)
+        r_names = fieldnames(Result)
+        # Return the Result{Matrix{Float64}} type with the appropriate fields 
+        return Result{Matrix{Float64}}(
+            ntuple(length(r_names)) do i
+                r_names[i] == :solute_atom ? solute_atom :
+                r_names[i] == :solvent_atom ? solvent_atom : getfield(R, r_names[i])
+            end...,
+        )
+    end
+    # Load legacy results
+    json_version_str = json_version >= v"1.3.5" ? json_version : "<= 1.3.4"
+    @warn """
+        Loading result json file in legacy format. 
+
+        Current version of ComplexMixtures: $current_version
+        Version used to create the json file: $json_version_str
+
+        If the current version overwrites the json file, it won't be readable
+        with the older version of ComplexMixtures used to originally create it. 
+
+        Note: Only files generated with v1.0.0 or greater can be read, otherwise this will error.
+    """
+    results_updated = load_legacy_json(filename, json_version) 
+    return results_updated
 end
 
 @testitem "Result - load/save" begin
@@ -1015,8 +1076,8 @@ function Base.show(io::IO, ov::Overview)
         io,
         """
  $bars
-
- MDDF Overview:
+ MDDF Overview - ComplexMixtures - Version $(ov.R.Version)
+ $bars
 
  Solvent properties:
  -------------------

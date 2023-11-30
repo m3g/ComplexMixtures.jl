@@ -76,7 +76,7 @@ include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 
 # Legacy interfaces
-include("./legacy.jl")
+include("./legacy/legacy.jl")
 
 # Precompilation directives
 include("precompile.jl")

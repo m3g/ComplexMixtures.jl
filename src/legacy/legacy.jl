@@ -21,3 +21,16 @@ const contrib = contributions
 
     @test ComplexMixtures.contrib == ComplexMixtures.contributions
 end
+
+#
+# Function to load legacy result data structures
+#
+include("./data_structs_1.0.0-1.3.4.jl")
+
+function load_legacy_json(filename, json_version)
+    if json_version >= v"1.0.0" && json_version <= v"1.3.4"
+        results = load_json_LegacyA(filename)
+    end
+    return results
+end
+
