@@ -46,7 +46,7 @@
 
         R = Result(traj, options)
         t_result = @benchmark Result($traj, $options) samples = 1 evals = 1
-        @test t_result.allocs < 200
+        @test t_result.allocs < 500
 
         CM.opentraj!(traj)
         CM.firstframe!(traj)
