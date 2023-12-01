@@ -9,7 +9,10 @@ options = Options(lastframe=1000)
 results = mddf(trajectory,options)
 ```
 
-### Common options that the user might want to set:
+## Frame ranges and histogram properties
+
+These are common options that the regular user might want to set 
+in their calculation.
 
 `firstframe`: Integer, first frame of the trajectory to be considered.
 
@@ -38,7 +41,10 @@ estimated from the density within `dbulk` and `cutoff`. If `false`, the
 density of the solvent is estimated from the density outside `dbulk` by
 exclusion. Default: `false`. 
 
-### Options that most users will probably never change:
+## Lower level options
+
+These will probably never be set by the user, unless if dealing with 
+some special system (large very large, or very low density system).
 
 `irefatom`: Integer, index of the reference atom in the solvent molecule
 used to compute the shell volumes and domain volumes in the Monte-Carlo
@@ -78,4 +84,36 @@ parallel runs significantly if the GC runs too often.
 system required to force a GC run. That is, if `GC_threshold=0.1`, which
 is the default, every time the free memory becomes less or equal to 10%
 of the total memory available, a GC run occurs.  
+
+## Frame statistical reweighing  
+
+!!! compat
+    Frame reweighing is available in ComplexMixtures 1.4.0 or greater.
+
+Most times the weights of each frame of the trajectory are the same, resulting
+from some standard MD simulation. If, for some reason, the frames have 
+different statistical weights, the weights can be passed to the as an 
+optional parameter `frame_weights`.
+
+For example:
+```julia-repl
+julia> using ComplexMixtures
+
+julia> options = Options(frame_weights=[0.2, 0.2, 0.4])
+```
+The code above will assign a larger weight to the third frame of the trajectory.
+These weights are relative (meaning that `[1.0, 1.0, 2.0]` would produce 
+the same result). What will happen under the hood is that the distance counts
+of the frames will be multiplied by each frame weight, and normalized for the
+sum of the weights.
+
+**Important:** The length of the `frame_weights` vector must be at least equal
+to the number of the last frame read from the trajectory. That is, if `lastframe` 
+is not set, and all the frames will be read, the length of `frame_weights` must
+be equal to the length of the trajectory (the `stride` parameter will skip the
+information both of the frames and its weights). If `lastframe` is set, then
+the length of `frame_weights` must be at least `lastframe` (it can be greater,
+and further values will be ignored). Importantly, the indices of the elements
+in `frame_weights` are assumed to correspond to the indices of the frames
+in the original trajectory file.
 
