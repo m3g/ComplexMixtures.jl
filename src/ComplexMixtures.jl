@@ -2,7 +2,6 @@ module ComplexMixtures
 
 using PrecompileTools
 using Printf
-using Parameters
 using ProgressMeter
 using Statistics
 using LinearAlgebra: norm, cross, dot, diag
@@ -66,8 +65,8 @@ include("./updatecounters.jl")
 # Main function
 include("./mddf.jl")
 
-# Testing function
-include("./isapprox.jl")
+# Comparison operators for ComplexMixtures types
+include("./compare.jl")
 
 # Tools
 include("./tools/contributions.jl")
