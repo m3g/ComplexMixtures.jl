@@ -88,3 +88,17 @@ function Base.show(io::IO, o::Options)
     ))
     return nothing
 end
+
+#
+# We need to define a custom isequal function because now (as of 1.4.0)
+# the Options struct has a mutable field, which makes the comparison 
+# of the complete structs evaluate to false
+#
+import Base: == 
+function ==(o1::Options, o2::Options)
+    eq = true
+    for field in fieldnames(Options)
+        eq = getfield(o1, field) == getfield(o2, field)
+    end
+    return eq
+end
