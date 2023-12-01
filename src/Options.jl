@@ -7,7 +7,7 @@ Structure that contains the detailed input options.
 $(TYPEDFIELDS)
 
 """
-Base.@kwdef struct Options
+@kwdef struct Options
 
     firstframe::Int = 1
     lastframe::Int = -1
@@ -103,4 +103,59 @@ function ==(o1::Options, o2::Options)
         eq = getfield(o1, field) == getfield(o2, field)
     end
     return eq
+end
+
+# A copy function is needed for the merge function. Could be deepcopy,
+# but feels safer to control the copy here: need to copy the mutable
+# fields explicitly
+import Base: copy
+function copy(o::Options)
+    return Options(
+        firstframe = o.firstframe,
+        lastframe = o.lastframe,
+        stride = o.stride,
+        n_random_samples = o.n_random_samples,
+        binstep = o.binstep,
+        dbulk = o.dbulk,
+        cutoff = o.cutoff,
+        usecutoff = o.usecutoff,
+        lcell = o.lcell,
+        GC = o.GC,
+        GC_threshold = o.GC_threshold,
+        seed = o.seed,
+        StableRNG = o.StableRNG,
+        nthreads = o.nthreads,
+        silent = o.silent,
+        frame_weights = copy(o.frame_weights)
+    )
+end
+
+#
+# Merge function for options
+#
+function Base.merge(O::Vector{Options})
+    options = copy(O[1])
+    for i in 2:length(O)
+        if (isempty(options.frame_weights) && !isempty(O[i].frame_weights)) ||
+           (!isempty(options.frame_weights) && isempty(O[i].frame_weights))
+            throw(ArgumentError("Frame weights provided only for some results. The merged frame_weights will be empty and won't be meaningful."))
+        else
+            append!(options.frame_weights, O[i].frame_weights)
+        end
+    end
+    return options
+end
+
+@testitem "copy/merge Options" begin
+    o1 = Options()
+    o2 = copy(o1)
+    @test o1 == o2
+    o2 = Options()
+    om = merge([o1, o2])
+    @test om == o1
+    o2 = Options(frame_weights=[1.0, 2.0])
+    @test_throws ArgumentError merge([o1, o2])
+    o1 = Options(frame_weights=[0.5, 1.0])
+    om = merge([o1, o2])
+    @test om.frame_weights == [0.5, 1.0, 1.0, 2.0] 
 end
