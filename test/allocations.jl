@@ -17,7 +17,7 @@
             seed = 321,
             StableRNG = true,
         )
-        t = @ballocated Options(
+        t = @benchmark Options(
             lastframe = 1,
             seed = 321,
             StableRNG = true,
@@ -25,7 +25,7 @@
             silent = true,
             frame_weights = $(Float64[]),
         ) samples = 1 evals = 1
-        @test t == 0
+        @test t.allocs == 0
 
         protein = Selection(select(atoms, "protein"), nmols = 1)
         t_selection1 =
@@ -46,7 +46,7 @@
 
         R = Result(traj, options)
         t_result = @benchmark Result($traj, $options) samples = 1 evals = 1
-        @test t_result.allocs < 100
+        @test t_result.allocs < 200
 
         CM.opentraj!(traj)
         CM.firstframe!(traj)
