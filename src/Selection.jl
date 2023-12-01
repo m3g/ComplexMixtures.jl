@@ -123,3 +123,15 @@ end
 function Base.show(io::IO, s::Selection)
     print(io, "Selection of $(atoms_str(s.natoms)) belonging to $(mol_str(s.nmols)).")
 end
+
+@testitem "Selection - argument errors" begin
+    using ComplexMixtures
+    @test_throws ArgumentError Selection([1,2,3], ["A", "B", "C"])
+    @test_throws ArgumentError Selection(Int[], ["A", "B", "C"]; nmols = 1)
+    @test_throws ArgumentError Selection([1, 2, 3], String[]; nmols = 1)
+    @test_throws ArgumentError Selection([1, 2, 3], String["A", "B"]; nmols = 1)
+    @test_throws ArgumentError Selection([1,2,3], ["A", "B", "C"]; nmols = 2)
+    @test_throws ArgumentError Selection([1,2,3], ["A", "B", "C"]; natomspermol = 2)
+    @test Selection([1,2,3], ["A","B","C"], natomspermol=1) == Selection(3, 3, 1, [1,2,3], [1,2,3], ["A"])
+    @test Selection([1,2,3], ["A","B","C"], nmols=1) == Selection(3, 1, 3, [1,2,3], [1,1,1], ["A","B","C"])
+end
