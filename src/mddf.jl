@@ -194,13 +194,14 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
                 if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
                     GC.gc()
                 end
-                options.silent || next!(progress)
                 # Read weight of this frame. 
                 if isempty(options.frame_weights)
                     frame_weight = 1.0
                 else
                     frame_weight = options.frame_weights[iframe]
                 end
+                # Display progress bar
+                options.silent || next!(progress)
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
             # Compute distances in this frame and update results
