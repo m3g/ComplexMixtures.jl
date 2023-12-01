@@ -15,7 +15,7 @@
     # Example 1: protein-tmao
 
     # save(R,"$dir/protein_tmao.json")
-    R_save = load("$dir/protein_tmao.json")
+    R_save = load("$dir/protein_tmao.json"; legacy_warning = false)
     protein = Selection(select(atoms, "protein"), nmols = 1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
@@ -31,7 +31,7 @@
     # Example 2: water-tmao
 
     # save(R,"$dir/water_tmao.json")
-    R_save = load("$dir/water_tmao.json")
+    R_save = load("$dir/water_tmao.json"; legacy_warning = false)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     water = Selection(select(atoms, "water"), natomspermol = 3)
     traj = Trajectory("$dir/trajectory.dcd", tmao, water)
@@ -41,7 +41,7 @@
     # Example 3: tmao-tmao
 
     # save(R,"$dir/tmao_tmao.json")
-    R_save = load("$dir/tmao_tmao.json")
+    R_save = load("$dir/tmao_tmao.json"; legacy_warning = false)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$dir/trajectory.dcd", tmao)
     R = mddf(traj, options)
@@ -50,7 +50,7 @@
     # Example 3: water-water
 
     # save(R,"$dir/water_water.json")
-    R_save = load("$dir/water_water.json")
+    R_save = load("$dir/water_water.json"; legacy_warning = false)
     water = Selection(select(atoms, "water"), natomspermol = 3)
     traj = Trajectory("$dir/trajectory.dcd", water)
     R = mddf(traj, options)

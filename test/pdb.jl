@@ -15,7 +15,7 @@
     # Example 1: protein-tmao
 
     # save(R,"$dir/protein_tmao.json")
-    R_save = load("$dir/protein_tmao.json")
+    R_save = load("$dir/protein_tmao.json"; legacy_warning = false)
     protein = Selection(select(atoms, "protein"), nmols = 1)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$dir/trajectory.pdb", protein, tmao, format = "PDBTraj")
@@ -25,7 +25,7 @@
     # Example 2: tmao-tmao
 
     # save(R,"$dir/tmao_tmao.json")
-    R_save = load("$dir/tmao_tmao.json")
+    R_save = load("$dir/tmao_tmao.json"; legacy_warning = false)
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$dir/trajectory.pdb", tmao, format = "PDBTraj")
     R = mddf(traj, options)

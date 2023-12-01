@@ -14,7 +14,7 @@ const contrib = contributions
     import ComplexMixtures.Testing: test_dir
 
     pdb = readPDB("$test_dir/data/NAMD/structure.pdb")
-    R = load("$test_dir/data/NAMD/protein_tmao.json")
+    R = load("$test_dir/data/NAMD/protein_tmao.json"; legacy_warning = false)
 
     @test R.sum_md_count == R.coordination_number
     @test R.sum_md_count_random == R.coordination_number_random
@@ -36,7 +36,8 @@ end
 
 @testitem "load legacy file" begin
     using ComplexMixtures
-    R = load("$(@__DIR__)/../../test/data/legacy/protein_tmao.json")
+    using ComplexMixtures.Testing: data_dir
+    R = load("$(data_dir)/legacy/protein_tmao.json"; legacy_warning = false)
     @test R.density.solvent_bulk ≈ 0.00030523537444306325
 end
 
