@@ -576,12 +576,13 @@ end
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
 
+    # Test loading a saved merged file
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     water = Selection(select(atoms, "water"), natomspermol = 3)
 
-    # save(R,"$dir/merged.json")
+    #save(R,"$dir/merged.json")
     R_save = load("$dir/merged.json")
 
     options = Options(

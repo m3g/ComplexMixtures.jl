@@ -19,7 +19,7 @@ function Base.isapprox(r1::T, r2::T; debug = false) where {T<:CMTypes}
     check = true
     diff_list = Symbol[]
     for field in fieldnames(T)
-        if field == :files
+        if field in [ :files, :Version ]
             continue
         end
         x = getfield(r1, field)
