@@ -42,20 +42,20 @@ struct LegacySolSummaryA
     natomspermol::Int
 end
 
-@with_kw mutable struct LegacyDensityA
+@kwdef mutable struct LegacyDensityA
     solute::Float64 = 0.0
     solvent::Float64 = 0.0
     solvent_bulk::Float64 = 0.0
 end
 
-@with_kw mutable struct LegacyVolumeA
+@kwdef mutable struct LegacyVolumeA
     total::Float64
     bulk::Float64
     domain::Float64
     shell::Vector{Float64}
 end
 
-@with_kw_noshow mutable struct LegacyResultA{T<:VecOrMat{Float64}}
+@kwdef mutable struct LegacyResultA{T<:VecOrMat{Float64}}
 
     # Histogram properties
     nbins::Int

@@ -8,7 +8,7 @@ autocorrelation or not), and the indexes of the solute molecules that will
 be used as reference states for ideal gas distributions
 
 =#
-@with_kw struct Buffer
+@kwdef struct Buffer
     solute_read::Vector{SVector{3,Float64}}
     solvent_read::Vector{SVector{3,Float64}}
     ref_solutes::Vector{Int}

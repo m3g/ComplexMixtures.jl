@@ -43,7 +43,7 @@ Structure to contain the names of the output files.
 $(TYPEDFIELDS)
 
 """
-@with_kw mutable struct OutputFiles
+@kwdef mutable struct OutputFiles
     output::String
     solute_atoms::String
     solvent_atoms::String
@@ -60,15 +60,15 @@ Unit conversions.
 $(TYPEDFIELDS)
 
 """
-@with_kw struct Units
-    mole = 6.022140857e23
-    Angs3tocm3 = 1e24
-    Angs3toL = 1e27
-    Angs3tocm3permol = mole / Angs3tocm3
-    Angs3toLpermol = mole / Angs3toL
-    SitesperAngs3tomolperL = Angs3toL / mole
+@kwdef struct Units{T}
+    mole::T = 6.022140857e23
+    Angs3tocm3::T = 1e24
+    Angs3toL::T = 1e27
+    Angs3tocm3permol::T = mole / Angs3tocm3
+    Angs3toLpermol::T = mole / Angs3toL
+    SitesperAngs3tomolperL::T = Angs3toL / mole
 end
-const units = Units()
+const units = Units{Float64}()
 
 #
 # Decoration and title

@@ -7,17 +7,16 @@ Structure to contain the density values obtained from the calculation.
 $(TYPEDFIELDS)
 
 """
-@with_kw mutable struct Density
+@kwdef mutable struct Density
     solute::Float64 = 0.0
     solvent::Float64 = 0.0
     solvent_bulk::Float64 = 0.0
 end
 
-function reset!(d::Density)
-    d.solute = 0.0
-    d.solvent = 0.0
-    d.solvent_bulk = 0.0
-    return nothing
+function Base.show(io::IO, d::Density)
+    println(io, "Density of solute: ", d.solute)
+    println(io, "Density of solvent: ", d.solvent)
+    print(io, "Density of solvent in bulk: ", d.solvent_bulk)
 end
 
 """
@@ -39,7 +38,7 @@ Structures to contain the volumes obtained from calculations.
 $(TYPEDFIELDS)
 
 """
-@with_kw mutable struct Volume
+@kwdef mutable struct Volume
     total::Float64
     bulk::Float64
     domain::Float64
@@ -47,23 +46,11 @@ $(TYPEDFIELDS)
 end
 Volume(nbins::Int) = Volume(0.0, 0.0, 0.0, zeros(Float64, nbins))
 
-function reset!(v::Volume)
-    v.total = 0.0
-    v.bulk = 0.0
-    v.domain = 0.0
-    @. v.shell = 0.0
-    return nothing
-end
-
-# Function to compare equality of Volume and Density structs
-import Base: ==
-function ==(x::T, y::T) where {T<:Union{Density,Volume}}
-    for field in fieldnames(T)
-        if getfield(x, field) != getfield(y, field)
-            return false
-        end
-    end
-    return true
+function Base.show(io::IO, v::Volume)
+    println(io, "Total volume: ", v.total)
+    println(io, "Bulk volume: ", v.bulk)
+    println(io, "Domain volume: ", v.domain)
+    print(io, "Shell volumes: ", v.shell)
 end
 
 """
@@ -84,6 +71,12 @@ struct SolSummary
 end
 SolSummary(s::Selection) = SolSummary(s.natoms, s.nmols, s.natomspermol)
 
+function Base.show(io::IO, s::SolSummary)
+    println(io, "Number of atoms: ", s.natoms)
+    println(io, "Number of molecules: ", s.nmols)
+    print(io, "Number of atoms per molecule: ", s.natomspermol)
+end
+
 """
 
 $(TYPEDEF)
@@ -95,7 +88,7 @@ $(TYPEDFIELDS)
 The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
 
 """
-@with_kw_noshow mutable struct Result{T<:VecOrMat{Float64}}
+@kwdef mutable struct Result{T<:VecOrMat{Float64}}
 
     # ComplexMixtures version that generated this results
     Version::VersionNumber = pkgversion(@__MODULE__)
@@ -631,8 +624,6 @@ end
     R2 = mddf(traj, options)
     @test_throws ArgumentError merge([R1, R2])
 
-
-
 end
 
 @testitem "Result - empty" begin
@@ -772,196 +763,13 @@ end
 @testitem "Result - load/save" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
-    r = load("$(Testing.data_dir)/NAMD/protein_tmao.json")
+    r1 = load("$(Testing.data_dir)/NAMD/protein_tmao.json", legacy_warning = false)
     tmp = tempname()
-    save(r, tmp)
+    save(r1, tmp)
     r2 = load(tmp)
-    for field in fieldnames(typeof(r))
-        @test getfield(r, field) == getfield(r2, field)
-    end
+    @test r1 == r2
 end
 
-# Format numbers depending on their size
-format(x) = abs(x) < 999 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
-
-import Base.write
-"""
-    write(R::ComplexMixtures.Result, filename::String, solute::Selection, solvent::Selection)
-
-Function to write the final results to output files as simple tables that are human-readable and easy to analyze with other software
-
-If the solute and solvent selections are provides, pass on the atom names.
-
-"""
-write(R::Result, filename::String, solute::Selection, solvent::Selection) =
-    write(R, filename, solute_names = solute.names, solvent_names = solvent.names)
-
-
-"""
-    write(R::ComplexMixtures.Result, filename::String; 
-          solute_names::Vector{String} = ["nothing"], 
-          solvent_names::Vector{String} = ["nothing"])
-
-Optional passing of atom names.
-
-"""
-function write(
-    R::Result,
-    filename::String;
-    solute_names::Vector{String} = ["nothing"],
-    solvent_names::Vector{String} = ["nothing"],
-)
-
-    # Names of output files containing atomic contibutions
-    atom_contributions_solvent = normpath(
-        FileOperations.remove_extension(filename) *
-        "-ATOM_CONTRIBUTIONS_SOLVENT." *
-        FileOperations.file_extension(filename)
-    )
-    atom_contributions_solute = normpath(
-        FileOperations.remove_extension(filename) *
-        "-ATOM_CONTRIBUTIONS_SOLUTE." *
-        FileOperations.file_extension(filename)
-    )
-
-    #
-    # GMD computed with minimum distance
-    #
-
-    # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
-    mole = 6.022140857e23
-    convert = mole / 1.e24
-
-    open(filename, "w") do output
-        println(output, @sprintf("#"))
-        println(output, @sprintf("# Output of ComplexMixtures - MDDF"))
-        println(output, @sprintf("# Trajectory files and weights:"))
-        for i = 1:length(R.files)
-            println(output, "#  $(normpath(R.files[i])) - w = $(R.weights[i])")
-        end
-        println(output, @sprintf("#"))
-        println(output, @sprintf("# Density of solvent in simulation box (sites/A^3): %15.8f", R.density.solvent))
-        println(output, @sprintf("# Density of solvent in bulk (estimated) (sites/A^3): %15.8f", R.density.solvent_bulk))
-        println(output, @sprintf("# Molar volume of solvent in simulation (cc/mol): %15.8f", convert / R.density.solvent))
-        println(output, @sprintf("# Molar volume of solvent in bulk (estimated) (cc/mol): %15.8f", convert / R.density.solvent_bulk))
-        println(output, @sprintf("#"))
-        println(output, @sprintf("# Number of atoms solute: %i9", size(R.solute_atom, 2)))
-        println(output, @sprintf("# Number of atoms of the solvent: %i9", size(R.solvent_atom, 2)))
-        println(output, @sprintf("#"))
-        if R.options.usecutoff
-            ibulk = setbin(R.options.dbulk, R.options.binstep)
-            bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
-            sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
-            println(output, "#")
-            println(output, "# Using cutoff distance: $(R.cutoff)")
-            println(output, @sprintf("# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
-        end
-        println(output, 
-    """
-    #
-    # COLUMNS CORRESPOND TO:
-    #       1  Minimum distance to solute (dmin)
-    #       2  GMD distribution (md count normalized by md count of random-solute distribution
-    #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
-    #       4  Minimum distance site count for each dmin.
-    #       5  Minimum distance site count for each dmin for random solute distribution.
-    #       6  Cumulative number of molecules within dmin in the simulation.
-    #       7  Cumulative number of molecules within dmin for random solute distribution.
-    #       8  Volume of the shell of distance dmin and width binstep.
-    #
-    #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL""")
-        for i = 1:R.nbins
-            line = "  " * format(R.d[i])                                   #  1-DISTANCE
-            line = line * "  " * format(R.mddf[i])                         #  2-GMD
-            line = line * "  " * format(R.kb[i])                           #  3-KB INT
-            line = line * "  " * format(R.md_count[i])                     #  4-MD COUNT
-            line = line * "  " * format(R.md_count_random[i])              #  5-COUNT RAND
-            line = line * "  " * format(R.coordination_number[i])                 #  6-SUM MD
-            line = line * "  " * format(R.coordination_number_random[i])          #  7-SUM RAND
-            line = line * "  " * format(R.volume.shell[i])                 #  8-SHELL VOL
-            println(output, line)
-        end
-    end # file writting
-
-    # Writting gmd per atom contributions for the solvent
-
-    open(atom_contributions_solvent, "w") do output
-        println(output,
-            """
-            # Solvent atomic contributions to total MDDF.
-            #
-            # Trajectory files: $(R.files)
-            #
-            # Atoms: 
-            """)
-        for i = 1:size(R.solvent_atom, 2)
-            if solvent_names[1] == "nothing"
-                println(output, @sprintf("# %9i", i))
-            else
-                println(output, @sprintf("# %9i %5s", i, solvent_names[i]))
-            end
-        end
-        println(output, "#")
-        string = "#   DISTANCE     GMD TOTAL"
-        for i = 1:size(R.solvent_atom, 2)
-            string = string * @sprintf("  %12i", i)
-        end
-        println(output, string)
-        for i = 1:R.nbins
-            string = format(R.d[i])
-            string = string * "  " * format(R.mddf[i])
-            for j = 1:size(R.solvent_atom, 2)
-                string = string * "  " * format(R.solvent_atom[i, j])
-            end
-            println(output, string)
-        end
-    end # file writting
-
-    # Writting gmd per atom contributions for the solute
-    open(atom_contributions_solute, "w") do output
-        println(output,
-            """
-            #
-            # Solute atomic contributions to total MDDF.
-            #
-            # Trajectory files: $(R.files)
-            #
-            # Atoms
-            """)
-        for i = 1:size(R.solute_atom, 2)
-            if solute_names[1] == "nothing"
-                println(output, @sprintf("# %9i", i))
-            else
-                println(output, @sprintf("# %9i %5s", i, solute_names[i]))
-            end
-        end
-        println(output, "#")
-        string = "#   DISTANCE      GMD TOTAL"
-        for i = 1:size(R.solute_atom, 2)
-            string = string * @sprintf("  %12i", i)
-        end
-        println(output, string)
-        for i = 1:R.nbins
-            string = format(R.d[i]) * "  " * format(R.mddf[i])
-            for j = 1:size(R.solute_atom, 2)
-                string = string * "  " * format(R.solute_atom[i, j])
-            end
-            println(output, string)
-        end
-    end # file writting
-
-    # Write final messages with names of output files and their content
-    println("""
-    OUTPUT FILES:
-
-    Wrote solvent atomic GMD contributions to file: $atom_contributions_solvent
-    Wrote solute atomic GMD contributions to file: $atom_contributions_solute
-
-    Wrote main output file: $filename
-    """)
-
-    return "Results written to file: $filename"
-end
 
 """
     which_types(s::Selection, indexes::Vector{Int})
@@ -1077,7 +885,7 @@ Structure that is used to dispatch the show of a overview.
 $(TYPEDFIELDS)
 
 """
-@with_kw_noshow mutable struct Overview
+@kwdef mutable struct Overview
     R::Result
     domain_molar_volume::Float64 = 0.0
     density::Density = Density()
