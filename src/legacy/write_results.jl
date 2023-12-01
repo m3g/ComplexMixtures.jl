@@ -31,14 +31,14 @@ function write(
 
     # Names of output files containing atomic contibutions
     atom_contributions_solvent = normpath(
-        FileOperations.remove_extension(filename) *
+        filename[1:findlast(==('.'), filename)-1] *
         "-ATOM_CONTRIBUTIONS_SOLVENT." *
-        FileOperations.file_extension(filename)
+        split(filename, '.')[end]
     )
     atom_contributions_solute = normpath(
-        FileOperations.remove_extension(filename) *
+        filename[1:findlast(==('.'), filename)-1] *
         "-ATOM_CONTRIBUTIONS_SOLUTE." *
-        FileOperations.file_extension(filename)
+        split(filename, '.')[end]
     )
 
     #

@@ -33,7 +33,7 @@ function Trajectory(
     format::String = "",
     chemfiles = false,
 )
-    if !chemfiles && (format == "dcd" || FileOperations.file_extension(filename) == "dcd")
+    if !chemfiles && (format == "dcd" || split(filename, '.')[end] == "dcd")
         trajectory = NamdDCD(filename, solute, solvent)
     elseif !chemfiles && format == "PDBTraj"
         trajectory = PDBTraj(filename, solute, solvent)
