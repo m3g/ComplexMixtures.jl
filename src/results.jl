@@ -691,7 +691,7 @@ end
 Function to load the json saved results file into the `Result` data structure.
 
 """
-function load(filename::String)
+function load(filename::String; legacy_warning = true)
     json_version = _get_version(filename)
     current_version = pkgversion(@__MODULE__)
     # Error if the json file is from a newer version than the current one
@@ -725,17 +725,22 @@ function load(filename::String)
     end
     # Load legacy results
     json_version_str = json_version >= v"1.3.5" ? json_version : "<= 1.3.4"
-    @warn """
-        Loading result json file in legacy format. 
-
-        Current version of ComplexMixtures: $current_version
-        Version used to create the json file: $json_version_str
-
-        If the current version overwrites the json file, it won't be readable
-        with the older version of ComplexMixtures used to originally create it. 
-
-        Note: Only files generated with v1.0.0 or greater can be read, otherwise this will error.
-    """
+    if legacy_warning
+        @warn """\n
+            LOADING RESULT JSON FILE IN LEGACY FORMAT. 
+    
+            Current version of ComplexMixtures: $current_version
+            Version used to create the json file: $json_version_str
+    
+            If the current version overwrites the json file, it may not be readable
+            with the older version of ComplexMixtures used to originally create it. 
+    
+            Note: Output files generated with versions older than 1.0.0 will error.
+    
+            You can disable this warning by using `load(filename; legacy_warning = false)`
+    
+        """
+    end
     results_updated = load_legacy_json(filename, json_version) 
     return results_updated
 end
