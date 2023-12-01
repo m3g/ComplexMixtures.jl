@@ -392,6 +392,7 @@ end
     R1 = mddf(traj, options)
     traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
     options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [2.0, 1.0])
+    R2 = mddf(traj, options)
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Test some different weights
@@ -480,6 +481,9 @@ end
     @test sum(R.rdf) ≈ 168.77009506954508 rtol = 0.1
     @test R.kb[end] ≈ -386.8513153147712 rtol = 0.5
     @test R.kb_rdf[end] ≈ -326.32083509753284 rtol = 0.5
+
+    # Test varying frame weights
+
     
 end
 
