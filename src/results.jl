@@ -679,25 +679,10 @@ end
 # output file.
 #
 function _get_version(filename)
-    i = 0
-    str = ""
-    file = open(filename, "r")
-    while true
-        c = read(file, Char)
-        i += 1
-        (c == ',' || i > 100) && break
-        str = str*c
-    end
-    close(file)
-    str = split(str, ":")
-    v = if occursin("Version", str[1])
-        parse(VersionNumber, string(str[2][begin+1:end-1]))
-    else
-        v"1.0.0" 
-    end
-    return v
+    str = readuntil(filename, ',')
+    v = match(r"\"Version\":\"([^\"]*)\"", str)
+    return isnothing(v) ? v"1.0.0" : VersionNumber(v[1])
 end
-
 
 """
     load(filename::String)
