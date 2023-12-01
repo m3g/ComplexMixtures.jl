@@ -482,8 +482,17 @@ end
     @test R.kb[end] ≈ -386.8513153147712 rtol = 0.5
     @test R.kb_rdf[end] ≈ -326.32083509753284 rtol = 0.5
 
-    # Test varying frame weights
-
+    # Test varying frame weights: the trajectory below has 3 frames
+    # extracted from NAMD/trajectory.dcd, and the 2 first frames are the
+    # first frame duplicated.
+    traj1 = Trajectory("$(Testing.data_dir)/NAMD/traj_duplicated_first_frame.dcd", tmao)
+    R1 = mddf(traj1, Options())
+    traj2 = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
+    R2 = mddf(traj2, Options(lastframe=2, frame_weights=[2.0, 1.0]))
+    @test R2.md_count ≈ R1.md_count
+    R2 = mddf(traj2, Options(lastframe=2, frame_weights=[0.5, 0.25]))
+    @test R2.md_count ≈ R1.md_count
+    @test R2.volume.total ≈ R1.volume.total
     
 end
 
