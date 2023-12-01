@@ -126,6 +126,20 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
     # Structure in which the final results will be stored
     R = Result(trajectory, options)
 
+    # If frame weights are provided, the length of the weights vector has to at least
+    # of the of number of the last frame to be read
+    if !isempty(options.frame_weights)
+        if length(options.frame_weights) < R.lastframe_read
+            throw(ArgumentError(chomp("""\n
+            The length of the frame_weights vector provided must at least the number of frames to be read.
+            
+                Input given: length(options.frame_weights) = $(length(options.frame_weights))
+                             last frame to be read: $(R.lastframe_read)
+            
+            """)))
+        end
+    end
+
     # Initializing the structure that carries the result per thread
     R_chunk = [Result(trajectory, options) for _ = 1:nchunks]
 
@@ -158,6 +172,7 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].nframes_read = 0
         for _ in frame_range
+            local frame_weight # to indicate that this will be used in the scope
             # Read frame coordinates
             lock(read_lock) do
                 # skip frames if stride > 1
@@ -180,14 +195,14 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
                     GC.gc()
                 end
                 options.silent || next!(progress)
+                # Read weight of this frame. 
+                if isempty(options.frame_weights)
+                    frame_weight = 1.0
+                else
+                    frame_weight = options.frame_weights[iframe]
+                end
             end # release reading lock
             R_chunk[ichunk].nframes_read += 1
-            # Read weight of this frame. 
-            if isempty(options.frame_weights)
-                frame_weight = 1.0
-            else
-                frame_weight = options.weights[nframes_read]
-            end
             # Compute distances in this frame and update results
             if !coordination_number_only
                 mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, frame_weight, RNG)
@@ -302,8 +317,7 @@ end
     atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
     protein = Selection(select(atoms, "protein and model 1"), nmols = 1)
     water = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
-    traj =
-        Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
+    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
 
     for lastframe in [1, 2]
         options = Options(
@@ -323,11 +337,13 @@ end
         @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
     end
 
+    # Test wrong frame_weights input
+    @test_throws ArgumentError mddf(traj, Options(frame_weights = [1.0]))
+
     # Self correlation
     atoms = readPDB("$(Testing.data_dir)/toy/self_monoatomic.pdb")
     atom = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
-    traj =
-        Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
+    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
 
     # without atoms in the bulk
     options = Options(
@@ -345,6 +361,44 @@ end
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test sum(R.md_count) ≈ 1.0
+    
+    #
+    # Test varying frame weights
+    #
+    # Read only first frame
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, lastframe = 1)
+    R1 = mddf(traj, options)
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [1.0, 0.0])
+    R2 = mddf(traj, options)
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    # Read only last frame
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 2, lastframe = 2)
+    R1 = mddf(traj, options)
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [0.0, 1.0])
+    R2 = mddf(traj, options)
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    # Use equal weights
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 1, lastframe = 2)
+    R1 = mddf(traj, options)
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [0.3, 0.3])
+    R2 = mddf(traj, options)
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    # Check with the duplicated-first-frame trajectory 
+    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic_duplicated_first_frame.pdb", atom, format = "PDBTraj")
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 1, lastframe = 3)
+    R1 = mddf(traj, options)
+    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [2.0, 1.0])
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    # Test some different weights
+    R2 = mddf(traj, Options(silent = true, frame_weights = [2.0, 1.0]))
+    @test sum(R2.md_count) ≈ 2/3
+    R2 = mddf(traj, Options(silent = true, frame_weights = [1.0, 2.0]))
+    @test sum(R2.md_count) ≈ 1/3
 
     # only with atoms in the bulk
     options = Options(
@@ -378,6 +432,7 @@ end
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test R.density.solvent_bulk ≈ 0.5 / R.volume.bulk
+
 end
 
 @testitem "mddf - real system" begin
@@ -425,6 +480,7 @@ end
     @test sum(R.rdf) ≈ 168.77009506954508 rtol = 0.1
     @test R.kb[end] ≈ -386.8513153147712 rtol = 0.5
     @test R.kb_rdf[end] ≈ -326.32083509753284 rtol = 0.5
+    
 end
 
 """
