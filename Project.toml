@@ -1,7 +1,7 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
 authors = ["Leandro Martinez <lmartine@unicamp.br>"]
-version = "1.3.5-DEV"
+version = "1.4.0-DEV"
 
 [deps]
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
@@ -12,7 +12,6 @@ FortranFiles = "c58ffaec-ab22-586d-bfc5-781a99fd0b10"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PDBTools = "e29189f1-7114-4dbd-93d0-c5673a921a58"
-Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
@@ -34,7 +33,6 @@ DocStringExtensions = "0.8, 0.9"
 FortranFiles = "0.6"
 JSON3 = "1"
 PDBTools = "0.13, 0.14, 0.15"
-Parameters = "0.12"
 PrecompileTools = "1"
 ProgressMeter = "1.9"
 RandomNumbers = "1.5"
@@ -44,7 +42,7 @@ Statistics = "1"
 StructTypes = "1"
 TestItemRunner = "0.2"
 TestItems = "0.1"
-julia = "1.6"
+julia = "1.9"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"

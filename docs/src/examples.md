@@ -37,7 +37,7 @@ The [Data](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_G
 
 The sample trajectory is provided so that the first example can be run, yet do not expect that the results are the same, as the sampling is much lower in this case. The complete trajectory can be retrieved from [this link](https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing) (3GB file). 
 
-## Minimum-Distance Distribuion function
+## Minimum-Distance Distribution function
 
 Here we compute the minimum-distance distribution function, the Kirkwood-Buff integral, and the atomic contributions of the solvent to the density.
 
@@ -261,7 +261,7 @@ Set a matrix that will store the results, with a number of lines corresponding t
 rescontrib = zeros(length(R.mddf),length(residues))
 ```
 
-Now, collect the contribution of each residue as a column of the above matrix. The notation `pairs(residues)` returns tuples containg the index `ires` and the corresponding residue. The `.=` symbol sets each element of the corresponding column of the  `rescontrib` matrix to the output of `contributions` (by broadcasting).  
+Now, collect the contribution of each residue as a column of the above matrix. The notation `pairs(residues)` returns tuples containing the index `ires` and the corresponding residue. The `.=` symbol sets each element of the corresponding column of the  `rescontrib` matrix to the output of `contributions` (by broadcasting).  
 ```julia
 for (ires,residue) in pairs(residues)
   rescontrib[:,ires] .= contributions(solute,R.solute_atom,residue)

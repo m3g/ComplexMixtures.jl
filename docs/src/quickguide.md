@@ -94,7 +94,7 @@ The fastest way to understand how to use this package is through an
 example.  
 
 Let us consider a system of three components: a protein,
-water, a cossolvent: TMAO (trimetylamine-N-oxyde), which is a common
+water, a cosolvent: TMAO (trimetylamine-N-oxyde), which is a common
 osmolyte known to stabilize protein structures. A picture of this system
 is shown below, with the protein in blue, water, and TMAO molecules. The
 system was constructed with [Packmol](http://m3g.iqm.unicamp.br/packmol)

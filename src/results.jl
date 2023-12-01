@@ -7,17 +7,16 @@ Structure to contain the density values obtained from the calculation.
 $(TYPEDFIELDS)
 
 """
-@with_kw mutable struct Density
+@kwdef mutable struct Density
     solute::Float64 = 0.0
     solvent::Float64 = 0.0
     solvent_bulk::Float64 = 0.0
 end
 
-function reset!(d::Density)
-    d.solute = 0.0
-    d.solvent = 0.0
-    d.solvent_bulk = 0.0
-    return nothing
+function Base.show(io::IO, d::Density)
+    println(io, "Density of solute: ", d.solute)
+    println(io, "Density of solvent: ", d.solvent)
+    print(io, "Density of solvent in bulk: ", d.solvent_bulk)
 end
 
 """
@@ -39,7 +38,7 @@ Structures to contain the volumes obtained from calculations.
 $(TYPEDFIELDS)
 
 """
-@with_kw mutable struct Volume
+@kwdef mutable struct Volume
     total::Float64
     bulk::Float64
     domain::Float64
@@ -47,23 +46,11 @@ $(TYPEDFIELDS)
 end
 Volume(nbins::Int) = Volume(0.0, 0.0, 0.0, zeros(Float64, nbins))
 
-function reset!(v::Volume)
-    v.total = 0.0
-    v.bulk = 0.0
-    v.domain = 0.0
-    @. v.shell = 0.0
-    return nothing
-end
-
-# Function to compare equality of Volume and Density structs
-import Base: ==
-function ==(x::T, y::T) where {T<:Union{Density,Volume}}
-    for field in fieldnames(T)
-        if getfield(x, field) != getfield(y, field)
-            return false
-        end
-    end
-    return true
+function Base.show(io::IO, v::Volume)
+    println(io, "Total volume: ", v.total)
+    println(io, "Bulk volume: ", v.bulk)
+    println(io, "Domain volume: ", v.domain)
+    print(io, "Shell volumes: ", v.shell)
 end
 
 """
@@ -84,6 +71,12 @@ struct SolSummary
 end
 SolSummary(s::Selection) = SolSummary(s.natoms, s.nmols, s.natomspermol)
 
+function Base.show(io::IO, s::SolSummary)
+    println(io, "Number of atoms: ", s.natoms)
+    println(io, "Number of molecules: ", s.nmols)
+    print(io, "Number of atoms per molecule: ", s.natomspermol)
+end
+
 """
 
 $(TYPEDEF)
@@ -95,7 +88,11 @@ $(TYPEDFIELDS)
 The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
 
 """
-@with_kw_noshow mutable struct Result{T<:VecOrMat{Float64}}
+@kwdef mutable struct Result{T<:VecOrMat{Float64}}
+
+    # ComplexMixtures version that generated this results
+    Version::VersionNumber = pkgversion(@__MODULE__)
+
     # Histogram properties
     nbins::Int
     dbulk::Float64
@@ -319,6 +316,24 @@ function sphereradiusfromshellvolume(volume, step)
     return (0.5 * (volume / fourthirdsofpi + 2 * rmin^3))^(1 / 3)
 end
 
+#
+# Function to compute the normalization of the weights, given the optional
+# frame weights and the number of frames read, which is used in the case
+# that frame weights were not provided
+#
+function sum_frame_weights(R::Result)
+    i = R.options.firstframe
+    s = R.options.stride
+    l = R.lastframe_read
+    Q = if !isempty(R.options.frame_weights)
+        sum(R.options.frame_weights[i] for i in i:s:l)
+    else
+        # number of frames that were red from the file
+        round(Int, (l - i + 1) / s)
+    end
+    return Q
+end
+
 """
     finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
@@ -341,16 +356,19 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
         R.d[i] = shellradius(i, options.binstep)
     end
 
+    # Normalization of number of frames: sum of weights for all frames read
+    Q = sum_frame_weights(R)
+
     # Scale counters by number of samples and frames
-    @. R.md_count = R.md_count / (R.solute.nmols * R.nframes_read)
-    @. R.solute_atom = R.solute_atom / (R.solute.nmols * R.nframes_read)
-    @. R.solvent_atom = R.solvent_atom / (R.solute.nmols * R.nframes_read)
-    @. R.md_count_random = R.md_count_random / (samples.random * R.nframes_read)
-    @. R.rdf_count = R.rdf_count / (R.solute.nmols * R.nframes_read)
-    @. R.rdf_count_random = R.rdf_count_random / (samples.random * R.nframes_read)
+    @. R.md_count = R.md_count / (R.solute.nmols * Q)
+    @. R.solute_atom = R.solute_atom / (R.solute.nmols * Q)
+    @. R.solvent_atom = R.solvent_atom / (R.solute.nmols * Q)
+    @. R.md_count_random = R.md_count_random / (samples.random * Q)
+    @. R.rdf_count = R.rdf_count / (R.solute.nmols * Q)
+    @. R.rdf_count_random = R.rdf_count_random / (samples.random * Q)
 
     # Volume of each bin shell and of the solute domain
-    R.volume.total = R.volume.total / R.nframes_read
+    R.volume.total = R.volume.total / Q
     @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
 
     # Solute domain volume
@@ -440,7 +458,6 @@ of the set provided weighted by the number of frames read in each Result set.
 
 """
 function Base.merge(r::Vector{<:Result})
-
     nr = length(r)
     nframes_read = r[1].nframes_read
     error = false
@@ -451,7 +468,7 @@ function Base.merge(r::Vector{<:Result})
                 "ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.",
             )
         end
-        if (r[ir].cutoff - r[1].cutoff) > 1.e-8
+        if !(r[ir].cutoff ≈ r[1].cutoff)
             println(
                 "ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.",
             )
@@ -462,16 +479,16 @@ function Base.merge(r::Vector{<:Result})
     end
 
     # List of files and weights
-    nfiles = 0
-    for ir = 1:nr
-        nfiles += length(r[ir].files)
-    end
+    nfiles = sum(length(R.files) for R in r)
     files = Vector{String}(undef, nfiles)
     weights = Vector{Float64}(undef, nfiles)
 
-    # Final resuls
+    # First, merge the options
+    options = merge(getfield.(r, :options))
+
+    # Structure for merged results
     R = Result(
-        options = r[1].options,
+        options = options,
         nbins = r[1].nbins,
         dbulk = r[1].dbulk,
         cutoff = r[1].cutoff,
@@ -485,51 +502,42 @@ function Base.merge(r::Vector{<:Result})
         weights = weights,
     )
 
-    # Average results weighting the data considering the number of frames of each data set
+    # Total normalization factor: sum of the number of frame reads,
+    # or the sum of frame weights
+    Q = sum_frame_weights(R)
+
+    # Average results weighting the data considering the weights of the frames of each data set
     @. R.d = r[1].d
     ifile = 0
     for ir = 1:nr
-
-        w = r[ir].nframes_read / nframes_read
-
+        w = sum_frame_weights(r[ir]) / Q
         @. R.mddf += w * r[ir].mddf
         @. R.kb += w * r[ir].kb
-
         @. R.rdf += w * r[ir].rdf
         @. R.kb_rdf += w * r[ir].kb_rdf
-
         @. R.md_count += w * r[ir].md_count
         @. R.md_count_random += w * r[ir].md_count_random
-
         @. R.coordination_number += w * r[ir].coordination_number
         @. R.coordination_number_random += w * r[ir].coordination_number_random
-
         @. R.solute_atom += w * r[ir].solute_atom
         @. R.solvent_atom += w * r[ir].solvent_atom
-
         @. R.rdf_count += w * r[ir].rdf_count
         @. R.rdf_count_random += w * r[ir].rdf_count_random
-
         @. R.sum_rdf_count += w * r[ir].sum_rdf_count
         @. R.sum_rdf_count_random += w * r[ir].sum_rdf_count_random
-
         R.density.solute += w * r[ir].density.solute
         R.density.solvent += w * r[ir].density.solvent
         R.density.solvent_bulk += w * r[ir].density.solvent_bulk
-
         R.volume.total += w * r[ir].volume.total
         R.volume.bulk += w * r[ir].volume.bulk
         R.volume.domain += w * r[ir].volume.domain
         R.volume.shell += w * r[ir].volume.shell
-
         for j = 1:length(r[ir].files)
             ifile += 1
             R.files[ifile] = normpath(r[ir].files[j])
             R.weights[ifile] = w * r[ir].weights[j]
         end
-
     end
-
     return R
 end
 
@@ -572,12 +580,13 @@ end
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
 
+    # Test loading a saved merged file
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
     tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
     water = Selection(select(atoms, "water"), natomspermol = 3)
 
-    # save(R,"$dir/merged.json")
+    #save(R,"$dir/merged.json")
     R_save = load("$dir/merged.json")
 
     options = Options(
@@ -604,6 +613,17 @@ end
 
     R = merge([R1, R2])
     @test isapprox(R, R_save, debug = true)
+
+    # Test merging files for which weights are provided for the frames
+    traj = Trajectory("$dir/trajectory.dcd", tmao, water)
+    options = Options(firstframe = 1, lastframe = 2, seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = fill(0.3, 20))
+    R1 = mddf(traj, options)
+
+    # First lets test the error message, in case the frame_weights are not provided for all frames
+    options = Options(firstframe = 1, lastframe = 2, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    R2 = mddf(traj, options)
+    @test_throws ArgumentError merge([R1, R2])
+
 end
 
 @testitem "Result - empty" begin
@@ -669,6 +689,16 @@ function save(R::Result, filename::String)
     return "Results saved in JSON file: $filename"
 end
 
+#
+# This function tries to read a version number from a result.json
+# file. This is used to adjust the reading to legacy formats of the
+# output file.
+#
+function _get_version(filename)
+    str = readuntil(filename, ',')
+    v = match(r"\"Version\":\"([^\"]*)\"", str)
+    return isnothing(v) ? v"1.0.0" : VersionNumber(v[1])
+end
 
 """
     load(filename::String)
@@ -676,216 +706,70 @@ end
 Function to load the json saved results file into the `Result` data structure.
 
 """
-function load(filename::String)
-    f = open(filename, "r")
-    R = JSON3.read(f, Result{Vector{Float64}})
-    close(f)
-    # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
-    solute_atom = reshape(R.solute_atom, R.nbins, :)
-    solvent_atom = reshape(R.solvent_atom, R.nbins, :)
-    r_names = fieldnames(Result)
-    # Return the Result{Matrix{Float64}} type with the appropriate fields 
-    return Result{Matrix{Float64}}(
-        ntuple(length(r_names)) do i
-            r_names[i] == :solute_atom ? solute_atom :
-            r_names[i] == :solvent_atom ? solvent_atom : getfield(R, r_names[i])
-        end...,
-    )
+function load(filename::String; legacy_warning = true)
+    json_version = _get_version(filename)
+    current_version = pkgversion(@__MODULE__)
+    # Error if the json file is from a newer version than the current one
+    if json_version > current_version
+        error("""
+            Trying to load a json result file created with a newer version of ComplexMixtures. 
+            This can cause unpredictable errors. 
+
+            Current version of ComplexMixtures: $current_version
+            Version used to create the output .json file: $json_version
+
+            Please update ComplexMixtures and try again.
+        """)
+    end
+    # Load directly if within the output compatibility threshold 
+    if json_version > v"1.3.4"
+        f = open(filename, "r")
+        R = JSON3.read(f, Result{Vector{Float64}})
+        close(f)
+        # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
+        solute_atom = reshape(R.solute_atom, R.nbins, :)
+        solvent_atom = reshape(R.solvent_atom, R.nbins, :)
+        r_names = fieldnames(Result)
+        # Return the Result{Matrix{Float64}} type with the appropriate fields 
+        return Result{Matrix{Float64}}(
+            ntuple(length(r_names)) do i
+                r_names[i] == :solute_atom ? solute_atom :
+                r_names[i] == :solvent_atom ? solvent_atom : getfield(R, r_names[i])
+            end...,
+        )
+    end
+    # Load legacy results
+    json_version_str = json_version >= v"1.3.5" ? json_version : "<= 1.3.4"
+    if legacy_warning
+        @warn """\n
+            LOADING RESULT JSON FILE IN LEGACY FORMAT. 
+    
+            Current version of ComplexMixtures: $current_version
+            Version used to create the json file: $json_version_str
+    
+            If the current version overwrites the json file, it may not be readable
+            with the older version of ComplexMixtures used to originally create it. 
+    
+            Note: Output files generated with versions older than 1.0.0 will error.
+    
+            You can disable this warning by using `load(filename; legacy_warning = false)`
+    
+        """
+    end
+    results_updated = load_legacy_json(filename, json_version) 
+    return results_updated
 end
 
 @testitem "Result - load/save" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
-    r = load("$(Testing.data_dir)/NAMD/protein_tmao.json")
+    r1 = load("$(Testing.data_dir)/NAMD/protein_tmao.json", legacy_warning = false)
     tmp = tempname()
-    save(r, tmp)
+    save(r1, tmp)
     r2 = load(tmp)
-    for field in fieldnames(typeof(r))
-        @test getfield(r, field) == getfield(r2, field)
-    end
+    @test r1 == r2
 end
 
-# Format numbers depending on their size
-format(x) = abs(x) < 999 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
-
-import Base.write
-"""
-    write(R::ComplexMixtures.Result, filename::String, solute::Selection, solvent::Selection)
-
-Function to write the final results to output files as simple tables that are human-readable and easy to analyze with other software
-
-If the solute and solvent selections are provides, pass on the atom names.
-
-"""
-write(R::Result, filename::String, solute::Selection, solvent::Selection) =
-    write(R, filename, solute_names = solute.names, solvent_names = solvent.names)
-
-
-"""
-    write(R::ComplexMixtures.Result, filename::String; 
-          solute_names::Vector{String} = ["nothing"], 
-          solvent_names::Vector{String} = ["nothing"])
-
-Optional passing of atom names.
-
-"""
-function write(
-    R::Result,
-    filename::String;
-    solute_names::Vector{String} = ["nothing"],
-    solvent_names::Vector{String} = ["nothing"],
-)
-
-    # Names of output files containing atomic contibutions
-    atom_contributions_solvent = normpath(
-        FileOperations.remove_extension(filename) *
-        "-ATOM_CONTRIBUTIONS_SOLVENT." *
-        FileOperations.file_extension(filename)
-    )
-    atom_contributions_solute = normpath(
-        FileOperations.remove_extension(filename) *
-        "-ATOM_CONTRIBUTIONS_SOLUTE." *
-        FileOperations.file_extension(filename)
-    )
-
-    #
-    # GMD computed with minimum distance
-    #
-
-    # Conversion factor for volumes (as KB integrals), from A^3 to cm^3/mol
-    mole = 6.022140857e23
-    convert = mole / 1.e24
-
-    open(filename, "w") do output
-        println(output, @sprintf("#"))
-        println(output, @sprintf("# Output of ComplexMixtures - MDDF"))
-        println(output, @sprintf("# Trajectory files and weights:"))
-        for i = 1:length(R.files)
-            println(output, "#  $(normpath(R.files[i])) - w = $(R.weights[i])")
-        end
-        println(output, @sprintf("#"))
-        println(output, @sprintf("# Density of solvent in simulation box (sites/A^3): %15.8f", R.density.solvent))
-        println(output, @sprintf("# Density of solvent in bulk (estimated) (sites/A^3): %15.8f", R.density.solvent_bulk))
-        println(output, @sprintf("# Molar volume of solvent in simulation (cc/mol): %15.8f", convert / R.density.solvent))
-        println(output, @sprintf("# Molar volume of solvent in bulk (estimated) (cc/mol): %15.8f", convert / R.density.solvent_bulk))
-        println(output, @sprintf("#"))
-        println(output, @sprintf("# Number of atoms solute: %i9", size(R.solute_atom, 2)))
-        println(output, @sprintf("# Number of atoms of the solvent: %i9", size(R.solvent_atom, 2)))
-        println(output, @sprintf("#"))
-        if R.options.usecutoff
-            ibulk = setbin(R.options.dbulk, R.options.binstep)
-            bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
-            sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
-            println(output, "#")
-            println(output, "# Using cutoff distance: $(R.cutoff)")
-            println(output, @sprintf("# Average and standard deviation of bulk-gmd: %12.5f +/- %12.5f", bulkerror, sdbulkerror))
-        end
-        println(output, 
-    """
-    #
-    # COLUMNS CORRESPOND TO:
-    #       1  Minimum distance to solute (dmin)
-    #       2  GMD distribution (md count normalized by md count of random-solute distribution
-    #       3  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
-    #       4  Minimum distance site count for each dmin.
-    #       5  Minimum distance site count for each dmin for random solute distribution.
-    #       6  Cumulative number of molecules within dmin in the simulation.
-    #       7  Cumulative number of molecules within dmin for random solute distribution.
-    #       8  Volume of the shell of distance dmin and width binstep.
-    #
-    #   1-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL""")
-        for i = 1:R.nbins
-            line = "  " * format(R.d[i])                                   #  1-DISTANCE
-            line = line * "  " * format(R.mddf[i])                         #  2-GMD
-            line = line * "  " * format(R.kb[i])                           #  3-KB INT
-            line = line * "  " * format(R.md_count[i])                     #  4-MD COUNT
-            line = line * "  " * format(R.md_count_random[i])              #  5-COUNT RAND
-            line = line * "  " * format(R.coordination_number[i])                 #  6-SUM MD
-            line = line * "  " * format(R.coordination_number_random[i])          #  7-SUM RAND
-            line = line * "  " * format(R.volume.shell[i])                 #  8-SHELL VOL
-            println(output, line)
-        end
-    end # file writting
-
-    # Writting gmd per atom contributions for the solvent
-
-    open(atom_contributions_solvent, "w") do output
-        println(output,
-            """
-            # Solvent atomic contributions to total MDDF.
-            #
-            # Trajectory files: $(R.files)
-            #
-            # Atoms: 
-            """)
-        for i = 1:size(R.solvent_atom, 2)
-            if solvent_names[1] == "nothing"
-                println(output, @sprintf("# %9i", i))
-            else
-                println(output, @sprintf("# %9i %5s", i, solvent_names[i]))
-            end
-        end
-        println(output, "#")
-        string = "#   DISTANCE     GMD TOTAL"
-        for i = 1:size(R.solvent_atom, 2)
-            string = string * @sprintf("  %12i", i)
-        end
-        println(output, string)
-        for i = 1:R.nbins
-            string = format(R.d[i])
-            string = string * "  " * format(R.mddf[i])
-            for j = 1:size(R.solvent_atom, 2)
-                string = string * "  " * format(R.solvent_atom[i, j])
-            end
-            println(output, string)
-        end
-    end # file writting
-
-    # Writting gmd per atom contributions for the solute
-    open(atom_contributions_solute, "w") do output
-        println(output,
-            """
-            #
-            # Solute atomic contributions to total MDDF.
-            #
-            # Trajectory files: $(R.files)
-            #
-            # Atoms
-            """)
-        for i = 1:size(R.solute_atom, 2)
-            if solute_names[1] == "nothing"
-                println(output, @sprintf("# %9i", i))
-            else
-                println(output, @sprintf("# %9i %5s", i, solute_names[i]))
-            end
-        end
-        println(output, "#")
-        string = "#   DISTANCE      GMD TOTAL"
-        for i = 1:size(R.solute_atom, 2)
-            string = string * @sprintf("  %12i", i)
-        end
-        println(output, string)
-        for i = 1:R.nbins
-            string = format(R.d[i]) * "  " * format(R.mddf[i])
-            for j = 1:size(R.solute_atom, 2)
-                string = string * "  " * format(R.solute_atom[i, j])
-            end
-            println(output, string)
-        end
-    end # file writting
-
-    # Write final messages with names of output files and their content
-    println("""
-    OUTPUT FILES:
-
-    Wrote solvent atomic GMD contributions to file: $atom_contributions_solvent
-    Wrote solute atomic GMD contributions to file: $atom_contributions_solute
-
-    Wrote main output file: $filename
-    """)
-
-    return "Results written to file: $filename"
-end
 
 """
     which_types(s::Selection, indexes::Vector{Int})
@@ -1001,7 +885,7 @@ Structure that is used to dispatch the show of a overview.
 $(TYPEDFIELDS)
 
 """
-@with_kw_noshow mutable struct Overview
+@kwdef mutable struct Overview
     R::Result
     domain_molar_volume::Float64 = 0.0
     density::Density = Density()
@@ -1015,8 +899,8 @@ function Base.show(io::IO, ov::Overview)
         io,
         """
  $bars
-
- MDDF Overview:
+ MDDF Overview - ComplexMixtures - Version $(ov.R.Version)
+ $bars
 
  Solvent properties:
  -------------------

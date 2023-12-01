@@ -71,7 +71,7 @@ Kirkwood-Buff integrals carry the information of the total accumulation or deple
 </center>
 ```
 
-From differences in KB integrals among cossolvents, the Preferential Solvation parameter can be computed. This is an important parameter because it can be measured experimentally and is ultimately associated with the equilibrium thermodynamics of the solvation. In the following figure, we show that, for example, the preferential solvation of a protein in different folding states is dependent in a non-trivial way on the concentration of an ionic liquid in aqueous solutions. 
+From differences in KB integrals among cosolvents, the Preferential Solvation parameter can be computed. This is an important parameter because it can be measured experimentally and is ultimately associated with the equilibrium thermodynamics of the solvation. In the following figure, we show that, for example, the preferential solvation of a protein in different folding states is dependent in a non-trivial way on the concentration of an ionic liquid in aqueous solutions. 
 
 ```@raw html
 <center>

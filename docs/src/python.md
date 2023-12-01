@@ -1,7 +1,7 @@
 # [From Python](@id python)
 
 !!! note
-    Most features of the package are available through this Python interface. However, some flexibility may be reduced and, also, the tunning of the plot appearance is left to the user, as it is expected that he/she is fluent with some tools within Python if chosing this interface.
+    Most features of the package are available through this Python interface. However, some flexibility may be reduced and, also, the tunning of the plot appearance is left to the user, as it is expected that he/she is fluent with some tools within Python if choosing this interface.
 
     Python 3 or greater is required.
 
@@ -15,7 +15,7 @@ The following examples consider a system composed a protein solvated by a mixtur
 </center>
 ```
 
-Image of the system of the example: a protein solvated by a mixture of glycreol (green) and water, at a concentration of 50%vv. The complete
+Image of the system of the example: a protein solvated by a mixture of glycerol (green) and water, at a concentration of 50%vv. The complete
 example is available at [this repository](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol).
 
 ## Loading the `ComplexMixtures.py` file
@@ -57,7 +57,7 @@ export JULIA_NUM_THREADS=8
 ```
 The last line will allow Julia to execute multi-threaded, which will improve a lot the performance on most machines. Set the number of threads to the number of cores of your computer.
 
-## Minimum-Distance Distribuion function
+## Minimum-Distance Distribution function
 
 Note that the example here follows an identical syntax to the Julia example, except that we qualify the name of the loaded module and implicitly load the `PDBTools` package.
 

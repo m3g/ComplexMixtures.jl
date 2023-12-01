@@ -85,13 +85,13 @@ end
     import ComplexMixtures.Testing: test_dir
 
     pdb = readPDB("$test_dir/data/NAMD/structure.pdb")
-    R = load("$test_dir/data/NAMD/protein_tmao.json")
+    R = load("$test_dir/data/NAMD/protein_tmao.json"; legacy_warning = false)
     solute = Selection(PDBTools.select(pdb, "protein"), nmols = 1)
     cn = coordination_number(solute, R.solute_atom, R, PDBTools.select(pdb, "residue 50"))
     @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol = 1e-10
 
     pdb = readPDB("$test_dir/data/NAMD/Protein_in_Glycerol/system.pdb")
-    R = load("$test_dir/data/NAMD/Protein_in_Glycerol/protein_water.json")
+    R = load("$test_dir/data/NAMD/Protein_in_Glycerol/protein_water.json"; legacy_warning=false)
     group = PDBTools.select(pdb, "protein")
     solute = Selection(group, nmols = 1)
     cn = coordination_number(solute, R.solute_atom, R, group)

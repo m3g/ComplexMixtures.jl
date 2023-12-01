@@ -15,7 +15,7 @@ The computation will use a number of parallel processes equal to `N`.
     Many computers allow hyperthreading, and not necessarily this this beneficial for the execution
     of this package. The optimal number of threads may vary.
     
-    Independently of the number of threads initalized with the `-t` command-line
+    Independently of the number of threads initialized with the `-t` command-line
     parameter, the number of processes launched by `ComplexMixtures` in any 
     given computation can be adjusted by the `Options(nthreads=N)` option. This
     won't provide any speedup if the optional number of threads is greater than
