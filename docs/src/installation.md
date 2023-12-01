@@ -4,7 +4,7 @@
     This is a package written in Julia. We invite you to experiment with the language, but if you want to just call this package 
     from Python, read the [From Python](@ref python) section of the manual. Understanding all the features of the package 
     requires reading the manual as whole. The syntaxes of using this package from Julia or Python are almost identical, and the
-    motivation for using Python should be mostly the familiarity with further analsys tools, as the plotting packages. 
+    motivation for using Python should be mostly the familiarity with further analysis tools, as the plotting packages. 
 
 ## Install Julia
 
@@ -85,7 +85,7 @@ And the script can be run with `julia -t auto script.jl` (where `-t auto` allows
     import ComplexMixtures
     ```
     Then, the functions of the package are called, for example, using `ComplexMixtures.mddf(...)`.
-    To avoid having to write `ComplexMixtures` all the time, define an accronym. For example:
+    To avoid having to write `ComplexMixtures` all the time, define an acronym. For example:
     ```julia
     import ComplexMixtures as CM
     CM.mddf(...)
