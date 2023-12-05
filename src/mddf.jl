@@ -176,13 +176,13 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
             # Read frame coordinates
             lock(read_lock) do
                 # skip frames if stride > 1
-                while (iframe + 1) % options.stride != 0
+                while (iframe - options.firstframe + 1) % options.stride != 0
                     nextframe!(trajectory)
                     iframe += 1
                 end
                 # Read frame for computing 
-                iframe += 1
                 nextframe!(trajectory)
+                iframe += 1
                 # The solute coordinates must be read in intermediate arrays, because the 
                 # solute molecules will be considered one at a time in the computation of the
                 # minimum distances
@@ -492,6 +492,11 @@ end
     R2 = mddf(traj2, Options(lastframe=2, frame_weights=[2.0, 1.0]))
     @test R2.md_count ≈ R1.md_count
     R2 = mddf(traj2, Options(lastframe=2, frame_weights=[0.5, 0.25]))
+    @test R2.md_count ≈ R1.md_count
+    @test R2.volume.total ≈ R1.volume.total
+    # Varying weights with stride
+    R1 = mddf(traj1, Options(firstframe=2, lastframe=3))
+    R2 = mddf(traj1, Options(lastframe=3, stride=2, frame_weights=[1.0, 100.0, 1.0]))
     @test R2.md_count ≈ R1.md_count
     @test R2.volume.total ≈ R1.volume.total
     
