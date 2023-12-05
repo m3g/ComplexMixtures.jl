@@ -73,6 +73,10 @@ function coordination_number(
     return coordination_number(R, group_contributions)
 end
 function coordination_number(R::Result, group_contributions::Vector{Float64})
+    # obs: we accumulate group coordination numbers, but at the end we 
+    # divide by random count of, so we the group contributions are the contributions 
+    # to the MDDF. To recover the coordination number we need to multiply back
+    # the group contributions by the random count.
     cn = cumsum(
         group_contributions[i] * R.md_count_random[i] for
         i in eachindex(group_contributions)
@@ -82,16 +86,30 @@ end
 
 @testitem "coordination_number" begin
     using ComplexMixtures, PDBTools
-    import ComplexMixtures.Testing: test_dir
+    using ComplexMixtures.Testing
+    dir = "$(Testing.data_dir)/NAMD"
+    atoms = readPDB("$dir/structure.pdb")
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    options = Options(lastframe = 1, seed = 321, StableRNG = true, nthreads = 1, silent = true, n_random_samples=200)
+    traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
+    R = mddf(traj, options)
 
-    pdb = readPDB("$test_dir/data/NAMD/structure.pdb")
-    R = load("$test_dir/data/NAMD/protein_tmao.json"; legacy_warning = false)
-    solute = Selection(PDBTools.select(pdb, "protein"), nmols = 1)
-    cn = coordination_number(solute, R.solute_atom, R, PDBTools.select(pdb, "residue 50"))
-    @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol = 1e-10
+    # Test self-consistency
+    @test sum(R.solute_atom) ≈ sum(R.solvent_atom)
+    @test coordination_number(R, contributions(protein, R.solute_atom, select(atoms, "protein"))) == R.coordination_number
 
-    pdb = readPDB("$test_dir/data/NAMD/Protein_in_Glycerol/system.pdb")
-    R = load("$test_dir/data/NAMD/Protein_in_Glycerol/protein_water.json"; legacy_warning=false)
+    # Checked with vmd: same residue as (resname TMAO and within 3.0 of protein)
+    @test R.coordination_number[findfirst(>(3), R.d)] == 7.0
+    @test R.coordination_number[findfirst(>(5), R.d)] == 14.0
+
+    # THR93 forms a hydrogen bond with TMAO in this frame
+    thr93 = select(atoms, "protein and residue 93")
+    @test last(coordination_number(R, contributions(protein, R.solute_atom, thr93))) == 1
+
+    # Consistency of a read-out result
+    pdb = readPDB("$(Testing.data_dir)/NAMD/Protein_in_Glycerol/system.pdb")
+    R = load("$(Testing.data_dir)/NAMD/Protein_in_Glycerol/protein_water.json"; legacy_warning=false)
     group = PDBTools.select(pdb, "protein")
     solute = Selection(group, nmols = 1)
     cn = coordination_number(solute, R.solute_atom, R, group)

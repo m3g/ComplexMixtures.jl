@@ -83,7 +83,7 @@ function contributions(
     warning = true,
 )
     (warning && s.nmols > 1) && warning_nmols_types()
-    indexes = [atom.index for atom in atoms]
+    indexes = PDBTools.index.(atoms)
     # Check which types of atoms belong to this selection
     selected_types = which_types(s, indexes, warning = warning)
     return contributions(s, atom_contributions, selected_types)
