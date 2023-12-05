@@ -402,6 +402,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     #
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
+    warn = false
     for ibin = 1:R.nbins
         # For the MDDF
         if R.md_count_random[ibin] > 0.0
@@ -411,6 +412,11 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             end
             for j = 1:trajectory.solvent.natomspermol
                 R.solvent_atom[ibin, j] = R.solvent_atom[ibin, j] / R.md_count_random[ibin]
+            end
+        else
+            if !warn && !options.silent
+                @warn "Ideal-gas histogram bins with zero samples. Increase n_random_samples or trajectory length."
+                warn = true
             end
         end
         if ibin == 1
