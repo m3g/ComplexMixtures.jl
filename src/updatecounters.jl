@@ -43,7 +43,7 @@ function updatecounters!(R::Result, system::AbstractPeriodicSystem, frame_weight
         R.md_count_random[ibin] += frame_weight
         if md.ref_atom_within_cutoff
             ibin = setbin(md.d_ref_atom, R.options.binstep)
-            R.rdf_count_random[ibin] += 1
+            R.rdf_count_random[ibin] += frame_weight
         end
     end
     return R
