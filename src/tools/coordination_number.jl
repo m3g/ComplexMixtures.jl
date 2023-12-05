@@ -73,6 +73,10 @@ function coordination_number(
     return coordination_number(R, group_contributions)
 end
 function coordination_number(R::Result, group_contributions::Vector{Float64})
+    # obs: we accumulate group coordination numbers, but at the end we 
+    # divide by random count of, so we the group contributions are the contributions 
+    # to the MDDF. To recover the coordination number we need to multiply back
+    # the group contributions by the random count.
     cn = cumsum(
         group_contributions[i] * R.md_count_random[i] for
         i in eachindex(group_contributions)
@@ -82,12 +86,21 @@ end
 
 @testitem "coordination_number" begin
     using ComplexMixtures, PDBTools
-    import ComplexMixtures.Testing: test_dir
+    using ComplexMixtures.Testing
+    dir = "$(Testing.data_dir)/NAMD"
+    atoms = readPDB("$dir/structure.pdb")
+    protein = Selection(select(atoms, "protein"), nmols = 1)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    options = Options(lastframe = 1, seed = 321, StableRNG = true, nthreads = 1, silent = true, n_random_samples=200)
+    traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
+    R = mddf(traj, options)
 
-    pdb = readPDB("$test_dir/data/NAMD/structure.pdb")
-    R = load("$test_dir/data/NAMD/protein_tmao.json"; legacy_warning = false)
-    solute = Selection(PDBTools.select(pdb, "protein"), nmols = 1)
-    cn = coordination_number(solute, R.solute_atom, R, PDBTools.select(pdb, "residue 50"))
+    # Test self-consistency
+    @test sum(R.solute_atom) ≈ sum(R.solvent_atom)
+    @test coordination_number(R, contributions(protein, R.solute_atom, select(atoms, "protein"))) == R.coordination_number
+
+    cn = coordination_number(protein, R.solute_atom, R,  PDBTools.select(atoms, "residue 50"))
+
     @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol = 1e-10
 
     pdb = readPDB("$test_dir/data/NAMD/Protein_in_Glycerol/system.pdb")
