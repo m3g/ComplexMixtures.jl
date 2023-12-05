@@ -99,12 +99,17 @@ end
     @test sum(R.solute_atom) ≈ sum(R.solvent_atom)
     @test coordination_number(R, contributions(protein, R.solute_atom, select(atoms, "protein"))) == R.coordination_number
 
-    cn = coordination_number(protein, R.solute_atom, R,  PDBTools.select(atoms, "residue 50"))
+    # Checked with vmd: same residue as (resname TMAO and within 3.0 of protein)
+    @test R.coordination_number[findfirst(>(3), R.d)] == 7.0
+    @test R.coordination_number[findfirst(>(5), R.d)] == 14.0
 
-    @test cn[findlast(<(5), R.d)] ≈ 0.24999999999999997 atol = 1e-10
+    # THR93 forms a hydrogen bond with TMAO in this frame
+    thr93 = select(atoms, "protein and residue 93")
+    @test last(coordination_number(R, contributions(protein, R.solute_atom, thr93))) == 1
 
-    pdb = readPDB("$test_dir/data/NAMD/Protein_in_Glycerol/system.pdb")
-    R = load("$test_dir/data/NAMD/Protein_in_Glycerol/protein_water.json"; legacy_warning=false)
+    # Consistency of a read-out result
+    pdb = readPDB("$(Testing.data_dir)/NAMD/Protein_in_Glycerol/system.pdb")
+    R = load("$(Testing.data_dir)/NAMD/Protein_in_Glycerol/protein_water.json"; legacy_warning=false)
     group = PDBTools.select(pdb, "protein")
     solute = Selection(group, nmols = 1)
     cn = coordination_number(solute, R.solute_atom, R, group)
