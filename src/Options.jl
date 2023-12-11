@@ -44,6 +44,12 @@ $(TYPEDFIELDS)
     # means that all frames have the same statistical weight
     frame_weights::Vector{Float64} = Float64[]
 
+    # Groups: a list of groups of atoms for which the contributions will
+    # be recorded. Each group is a list of atom indexes. If the list of 
+    # groups is empty, the contributions will be recorded for all (type of) atoms   
+    solute_groups::Vector{Vector{Int}} = Vector{Int}[]
+    solvent_groups::Vector{Vector{Int}} = Vector{Int}[]
+
 end
 
 function Base.show(io::IO, o::Options)
@@ -74,6 +80,10 @@ function Base.show(io::IO, o::Options)
                 end
             )
         length of weights vector = $(length(o.frame_weights))
+   
+    Groups to compute contributions are pre-defined: 
+        For solute: $(isempty(o.solute_groups) ? "no" : "$(length(o.solute_groups)) group(s)")
+        For solvent: $(isempty(o.solvent_groups) ? "no" : "$(length(o.solvent_groups)) group(s)")
 
     Computation details: 
         Reference atom for random rotations: irefatom = $(o.irefatom)
@@ -112,7 +122,9 @@ function copy(o::Options)
         StableRNG = o.StableRNG,
         nthreads = o.nthreads,
         silent = o.silent,
-        frame_weights = copy(o.frame_weights)
+        frame_weights = copy(o.frame_weights),
+        solute_groups = Vector{Int}[ copy(g) for g in o.solute_groups ],
+        solvent_groups = Vector{Int}[ copy(g) for g in o.solvent_groups ],
     )
 end
 
@@ -120,19 +132,47 @@ end
 # Merge function for options
 #
 function Base.merge(O::Vector{Options})
-    options = copy(O[1])
-    for i in 2:length(O)
-        if (isempty(options.frame_weights) && !isempty(O[i].frame_weights)) ||
-           (!isempty(options.frame_weights) && isempty(O[i].frame_weights))
-            throw(ArgumentError("Frame weights provided only for some results. The merged frame_weights will be empty and won't be meaningful."))
-        else
+    local options
+    empty_solute_groups = false
+    empty_solvent_groups = false
+    empty_frame_weights = false
+    # Check if frame weights were provided to none, all, or some trajectories
+    # If there are weights for some trajectories, but not all, issue a warning
+    # and fill the empty weights with 1.0
+    nframeweights = count(isempty, o.frame_weights for o in O)
+    if nframeweights != 0 && nframeweights != length(O)
+        @warn """
+        Frame weights provided only for some results. 
+        The frame weights will be empty and should be provided manually or not used for further analysis.
+        """
+        empty_frame_weights = true
+    end
+    for i in eachindex(O)
+        if i == firstindex(O) 
+            options = copy(O[i])
+            continue
+        end
+        if !empty_frame_weights
             append!(options.frame_weights, O[i].frame_weights)
         end
+        # The group definitions must be the same for all results
+        if !empty_solute_groups && !isequal(options.solute_groups, O[i].solute_groups)
+            @warn "Groups for solute are not the same for all results. The merged solute_groups will be empty and won't be meaningful."
+            empty_solute_groups = true
+        end
+        if !empty_solvent_groups && !isequal(options.solvent_groups, O[i].solvent_groups)
+            @warn "Groups for solvent are not the same for all results. The merged solvent_groups will be empty and won't be meaningful."
+            empty_solvent_groups = true
+        end
     end
+    empty_frame_weights && (empty!(options.frame_weights))
+    empty_solute_groups && (empty!(options.solute_groups))
+    empty_solvent_groups && (empty!(options.solvent_groups))
     return options
 end
 
 @testitem "copy/merge Options" begin
+
     o1 = Options()
     o2 = copy(o1)
     @test o1 == o2
@@ -140,8 +180,49 @@ end
     om = merge([o1, o2])
     @test om == o1
     o2 = Options(frame_weights=[1.0, 2.0])
-    @test_throws ArgumentError merge([o1, o2])
+    @test merge([o1, o2]).frame_weights == Float64[]
     o1 = Options(frame_weights=[0.5, 1.0])
     om = merge([o1, o2])
     @test om.frame_weights == [0.5, 1.0, 1.0, 2.0] 
+
+    o1 = Options(solute_groups=[[1,2,3]])
+    @test o1.solute_groups == [[1,2,3]]
+    @test o1.solvent_groups == Vector{Int}[]
+    o2 = Options(solute_groups=[[1,2,3]])
+    om = merge([o1, o2])
+    @test om.solute_groups == [[1,2,3]]
+    @test om.solvent_groups == Vector{Int}[]
+    o2 = Options(solute_groups=[[1,2,3], [4,5,6]])
+    om = merge([o1, o2])
+    @test om.solute_groups == Vector{Int}[]
+    @test om.solvent_groups == Vector{Int}[]
+    o1 = Options(solute_groups=[[1,2,3], [4,5,6]])
+    o2 = Options(solute_groups=[[1,2,3]])
+    om = merge([o1, o2])
+    @test om.solute_groups == Vector{Int}[]
+    @test om.solvent_groups == Vector{Int}[]
+
+    o1 = Options(solvent_groups=[[1,2,3]])
+    @test o1.solvent_groups == [[1,2,3]]
+    @test o1.solute_groups == Vector{Int}[]
+    o2 = Options(solvent_groups=[[1,2,3]])
+    om = merge([o1, o2])
+    @test om.solvent_groups == [[1,2,3]]
+    @test om.solute_groups == Vector{Int}[]
+    o2 = Options(solvent_groups=[[1,2,3], [4,5,6]])
+    om = merge([o1, o2])
+    @test om.solvent_groups == Vector{Int}[]
+    @test om.solute_groups == Vector{Int}[]
+    o1 = Options(solvent_groups=[[1,2,3], [4,5,6]])
+    o2 = Options(solvent_groups=[[1,2,3]])
+    om = merge([o1, o2])
+    @test om.solvent_groups == Vector{Int}[]
+    @test om.solute_groups == Vector{Int}[]
+
+    o1 = Options(solvent_groups=[[1,2,3]], solute_groups=[[4,5,6]])
+    o2 = Options(solvent_groups=[[1,2,3]], solute_groups=[[4,5,6]])
+    om = merge([o1, o2])
+    @test om.solvent_groups == [[1,2,3]]
+    @test om.solute_groups == [[4,5,6]]
+
 end
