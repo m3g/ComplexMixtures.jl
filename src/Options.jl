@@ -180,7 +180,7 @@ end
     om = merge([o1, o2])
     @test om == o1
     o2 = Options(frame_weights=[1.0, 2.0])
-    @test merge([o1, o2]).frame_weights == Float64[]
+    @test @test_logs (:warn,) merge([o1, o2]).frame_weights == Float64[]
     o1 = Options(frame_weights=[0.5, 1.0])
     om = merge([o1, o2])
     @test om.frame_weights == [0.5, 1.0, 1.0, 2.0] 
@@ -193,12 +193,12 @@ end
     @test om.solute_groups == [[1,2,3]]
     @test om.solvent_groups == Vector{Int}[]
     o2 = Options(solute_groups=[[1,2,3], [4,5,6]])
-    om = merge([o1, o2])
+    om = @test_logs (:warn, ) merge([o1, o2])
     @test om.solute_groups == Vector{Int}[]
     @test om.solvent_groups == Vector{Int}[]
     o1 = Options(solute_groups=[[1,2,3], [4,5,6]])
     o2 = Options(solute_groups=[[1,2,3]])
-    om = merge([o1, o2])
+    om = @test_logs (:warn, ) merge([o1, o2])
     @test om.solute_groups == Vector{Int}[]
     @test om.solvent_groups == Vector{Int}[]
 
@@ -209,13 +209,14 @@ end
     om = merge([o1, o2])
     @test om.solvent_groups == [[1,2,3]]
     @test om.solute_groups == Vector{Int}[]
+    o1 = Options(solvent_groups=[[1,2,3]])
     o2 = Options(solvent_groups=[[1,2,3], [4,5,6]])
-    om = merge([o1, o2])
+    om = @test_logs (:warn, ) merge([o1, o2])
     @test om.solvent_groups == Vector{Int}[]
     @test om.solute_groups == Vector{Int}[]
     o1 = Options(solvent_groups=[[1,2,3], [4,5,6]])
     o2 = Options(solvent_groups=[[1,2,3]])
-    om = merge([o1, o2])
+    om = @test_logs (:warn, ) merge([o1, o2])
     @test om.solvent_groups == Vector{Int}[]
     @test om.solute_groups == Vector{Int}[]
 
