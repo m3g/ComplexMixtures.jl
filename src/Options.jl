@@ -141,10 +141,12 @@ function Base.merge(O::Vector{Options})
     # and fill the empty weights with 1.0
     nframeweights = count(isempty, o.frame_weights for o in O)
     if nframeweights != 0 && nframeweights != length(O)
-        @warn """
-        Frame weights provided only for some results. 
-        The frame weights will be empty and should be provided manually or not used for further analysis.
-        """
+        @warn begin 
+            """
+            Frame weights provided only for some results. 
+            The frame weights will be empty and should be provided manually or not used for further analysis.
+            """ 
+        end _file=nothing _line=nothing
         empty_frame_weights = true
     end
     for i in eachindex(O)
@@ -157,11 +159,21 @@ function Base.merge(O::Vector{Options})
         end
         # The group definitions must be the same for all results
         if !empty_solute_groups && !isequal(options.solute_groups, O[i].solute_groups)
-            @warn "Groups for solute are not the same for all results. The merged solute_groups will be empty and won't be meaningful."
+            @warn begin
+                """
+                Groups for solute are not the same for all results. 
+                The merged solute_groups will be empty and won't be meaningful.
+                """
+            end _file=nothing _line=nothing
             empty_solute_groups = true
         end
         if !empty_solvent_groups && !isequal(options.solvent_groups, O[i].solvent_groups)
-            @warn "Groups for solvent are not the same for all results. The merged solvent_groups will be empty and won't be meaningful."
+            @warn begin
+                """
+                Groups for solvent are not the same for all results. 
+                The merged solvent_groups will be empty and won't be meaningful.
+                """
+            end _file=nothing _line=nothing
             empty_solvent_groups = true
         end
     end

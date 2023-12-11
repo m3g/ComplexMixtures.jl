@@ -415,7 +415,12 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
             end
         else
             if !warn && !options.silent
-                @warn "Ideal-gas histogram bins with zero samples. Increase n_random_samples or trajectory length."
+                @warn begin
+                    """
+                    Ideal-gas histogram bins with zero samples. 
+                    Increase n_random_samples or trajectory length.
+                    """
+                end _file=nothing _line=nothing
                 warn = true
             end
         end
@@ -747,7 +752,8 @@ function load(filename::String; legacy_warning = true)
     # Load legacy results
     json_version_str = json_version >= v"1.3.5" ? json_version : "<= 1.3.4"
     if legacy_warning
-        @warn """\n
+        @warn begin 
+            """\n
             LOADING RESULT JSON FILE IN LEGACY FORMAT. 
     
             Current version of ComplexMixtures: $current_version
@@ -760,7 +766,8 @@ function load(filename::String; legacy_warning = true)
     
             You can disable this warning by using `load(filename; legacy_warning = false)`
     
-        """
+            """
+        end _file=nothing _line=nothing
     end
     results_updated = load_legacy_json(filename, json_version) 
     return results_updated
