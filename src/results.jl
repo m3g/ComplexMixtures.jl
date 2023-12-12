@@ -303,6 +303,12 @@ function sphericalshellvolume(i, step)
     return (4 * pi / 3) * ((rmin + step)^3 - rmin^3)
 end
 
+@testitem "sphericalshellvolume" begin
+    @test sphericalshellvolume(1, 1.0) ≈ 4 * pi / 3
+    @test sphericalshellvolume(2, 1.0) ≈ 4 * pi / 3 * (8 - 1)
+    @test sphericalshellvolume(3, 1.0) ≈ 4 * pi / 3 * (27 - 8)
+end
+
 """
     shellradius(i,step)
 
@@ -316,6 +322,10 @@ function shellradius(i, step)
     return (0.5 * ((rmin + step)^3 + rmin^3))^(1 / 3)
 end
 
+@testitem "shellradius" begin
+    @test shellradius(1, 0.1) ≈ 0.07937005259840998
+    @test shellradius(5, 0.3) ≈ 1.3664650373440481
+end
 
 """
     sphereradiusfromshellvolume(volume,step)
@@ -332,6 +342,11 @@ function sphereradiusfromshellvolume(volume, step)
     end
     rmin = (sqrt(3 * pi) * sqrt(3 * step * volume - pi * step^4) - 3 * pi * step^2) / (6 * pi * step)
     return (0.5 * (volume / fourthirdsofpi + 2 * rmin^3))^(1 / 3)
+end
+
+@testitem "sphereradiusfromshellvolume" begin
+    @test sphereradiusfromshellvolume(1.0, 0.2) ≈ 0.03351032163829113
+    @test sphereradiusfromshellvolume(100.0, 0.1) = 124.4112578723602
 end
 
 #
