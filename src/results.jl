@@ -149,36 +149,36 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
 
     # Check for simple input errors
     if options.stride < 1
-        error("in MDDF options: stride cannot be less than 1. ")
+       throw(ArgumentError("in MDDF options: stride cannot be less than 1. "))
     end
     if options.lastframe > 0 && options.lastframe < options.firstframe
-        error("in MDDF options: lastframe must be greater or equal to firstframe. ")
+        throw(ArgumentError("in MDDF options: lastframe must be greater or equal to firstframe. "))
     end
     if options.lastframe > trajectory.nframes
-        error("in MDDF options: lastframe is greater than trajectory.nframes. ")
+        throw(ArgumentError("in MDDF options: lastframe is greater than trajectory.nframes. "))
     end
 
     # Check for problems in dbulk and cutoff definitions
     cutoff = options.dbulk
     if (options.dbulk / options.binstep) % 1 > 1.e-5
-        error("in MDDF options: dbulk must be a multiple of binstep.")
+        throw(ArgumentError("in MDDF options: dbulk must be a multiple of binstep."))
     end
     if options.usecutoff
         if options.dbulk >= options.cutoff
-            error(" in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). ")
+            throw(ArgumentError(" in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). "))
         end
         if (options.cutoff / options.binstep) % 1 > 1.e-5
-            error("in MDDF options: cutoff must be a multiple of binstep.")
+            throw(ArgumentError("in MDDF options: cutoff must be a multiple of binstep."))
         end
         if ((options.cutoff - options.dbulk) / options.binstep) % 1 > 1.e-5
-            error("in MDDF options: (cutoff-dbulk) must be a multiple of binstep. ")
+            throw(ArgumentError("in MDDF options: (cutoff-dbulk) must be a multiple of binstep. "))
         end
         cutoff = options.cutoff
     end
     nbins = setbin(cutoff, options.binstep)
 
     if options.irefatom > trajectory.solvent.natoms
-        error("in MDDF options: Reference atom index", options.irefatom, " is greater than number of atoms of the solvent molecule. ")
+        throw(ArgumentError("in MDDF options: Reference atom index", options.irefatom, " is greater than number of atoms of the solvent molecule. "))
     end
 
     # Open trajectory to read some data
@@ -214,12 +214,6 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
     # Close trajecotory
     closetraj!(trajectory)
 
-    # Actual number of frames that are read considering lastframe and stride
-    nframes_read = round(Int, (lastframe_read - options.firstframe + 1) / options.stride)
-    if nframes_read == 0
-        error("Number of frames to read is zero. Check input parameters.")
-    end
-
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
     solute_group_count = if isempty(options.solute_groups)
@@ -250,6 +244,23 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         solute_group_count = solute_group_count,
         solvent_group_count = solvent_group_count, 
     )
+end
+
+@testitem "input: argument errors" begin
+    using PDBTools
+    using ComplexMixtures: Testing
+    atoms = readPDB("$(Testing.data_dir)/NAMD/structure.pdb")
+    trajectory = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao, water)
+    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    water = Selection(select(atoms, "water"), natomspermol = 3)
+    @test_throws ArgumentError mddf(trajectory, Options(stride = 0))
+    @test_throws ArgumentError mddf(trajectory, Options(firstframe = 2, lastframe = 1))
+    @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
+    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 10.0, binstep = 0.3))
+    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 10.0, cutoff = 10.0, usecutoff = true))
+    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 6.0, cutoff = 10.0, binstep = 0.3, usecutoff = true))
+    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 8.0, cutoff = 10.0, binstep = 0.3, usecutoff = true))
+    @test_throws ArgumentError mddf(trajectory, Options(irefatom = 1000))
 end
 
 #
