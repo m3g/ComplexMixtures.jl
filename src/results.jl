@@ -220,6 +220,8 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         error("Number of frames to read is zero. Check input parameters.")
     end
 
+    # Initialize the arrays that contain groups counts, depending on wheter
+    # groups were defined or not in the input Options
     solute_group_count = if isempty(options.solute_groups)
         [ zeros(nbins) for _ in 1:solute.natomspermol ]
     else
