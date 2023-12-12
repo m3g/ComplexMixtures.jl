@@ -112,9 +112,11 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     solvent::SolSummary
     solute::SolSummary
 
-    # Atomic contributions to the MDDFs
-    solute_atom::T = zeros(nbins, solute.natomspermol)
-    solvent_atom::T = zeros(nbins, solvent.natomspermol)
+    # Group (atomic type by default) contributions to 
+    # the coordination number counts. These are used to
+    # compute group contributions to the MDDFs
+    solute_group_count::Vector{Vector{Float64}}
+    solvent_group_count::Vector{Vector{Float64}}
 
     # Data to compute a RDF and the KB integral from this count
     rdf_count::Vector{Float64} = zeros(nbins)
@@ -218,6 +220,18 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         error("Number of frames to read is zero. Check input parameters.")
     end
 
+    solute_group_count = if isempty(options.solute_groups)
+        [ zeros(nbins) for _ in 1:solute.natomspermol ]
+    else
+        [ zeros(nbins) for _ in 1:length(options.solute_groups) ]
+    end
+
+    solvent_group_count = if isempty(options.solvent_groups)
+        [ zeros(nbins) for _ in 1:solvent.natomspermol ]
+    else
+        [ zeros(nbins) for _ in 1:length(options.solvent_groups) ]
+    end
+
     return Result(
         options = options,
         nbins = nbins,
@@ -231,6 +245,8 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         solvent = SolSummary(trajectory.solvent),
         files = [trajectory.filename],
         weights = [1.0],
+        solute_group_count = solute_group_count,
+        solvent_group_count = solvent_group_count, 
     )
 end
 
@@ -734,9 +750,9 @@ function load(filename::String; legacy_warning = true)
     end
     # Load directly if within the output compatibility threshold 
     if json_version > v"1.3.4"
-        f = open(filename, "r")
-        R = JSON3.read(f, Result{Vector{Float64}})
-        close(f)
+        R = open(filename, "r") do io
+            JSON3.read(io, Result{Vector{Float64}})
+        end
         # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
         solute_atom = reshape(R.solute_atom, R.nbins, :)
         solvent_atom = reshape(R.solvent_atom, R.nbins, :)
