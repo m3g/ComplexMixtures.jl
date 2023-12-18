@@ -7,9 +7,7 @@ import JSON3
 import PDBTools
 import PrecompileTools
 import Random
-import StaticArrays: SVector, SMatrix, @SMatrix
 import StructTypes
-import TestItems: @testitem
 
 using .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 using DocStringExtensions: @doc_str
@@ -17,7 +15,9 @@ using FortranFiles: FortranFile
 using LinearAlgebra: norm, cross, dot, diag
 using Printf: @printf
 using ProgressMeter: Progress, next!
+using StaticArrays: SVector, SMatrix, @SMatrix
 using Statistics: mean
+using TestItems: @testitem
 
 export AtomSelection 
 export Trajectory, mddf, save, load, write, Options, Result
