@@ -103,17 +103,20 @@ function AtomSelection(
     )
 end
 
-@testitem "AtomSelection indices" begin
+@testitem "AtomSelection - indices" begin
     using PDBTools
     pdbfile = ComplexMixtures.Testing.pdbfile
     indices = index.(readPDB(pdbfile, "protein and residue 2"))
     s = AtomSelection(indices, nmols = 1, natomspermol = 11)
     @test s.imol == ones(Int, 11)
-    @test s.index == [12 + i for i = 1:11]
-    @test s.names == ["$i" for i in s.index]
+    @test s.indices == [12 + i for i = 1:11]
+    @test s.names == Int[]
     @test s.natoms == 11
     @test s.natomspermol == 11
     @test s.nmols == 1
+    @test s.names = String[]
+    s = AtomSelection(indices, names = fill("C", length(indices)), nmols = 1, natomspermol = 11)
+    @test s.names == fill("C", length(indices)))) 
 end
 
 @testitem "AtomSelection - argument errors" begin
@@ -128,37 +131,9 @@ end
     @test AtomSelection([1,2,3], ["A","B","C"], nmols=1) == AtomSelection(3, 1, 3, [1,2,3], [1,1,1], ["A","B","C"])
 end
 
-
-# Initialize providing the file name, and calling by default PDBTools.select
-function AtomSelection(
-    pdbfile::String, 
-    selection::String; 
-    nmols::Int = 0, 
-    natomspermol::Int = 0,
-    groups::AbstractVector{AbstractVector{Int}} = Vector{Int}[],
-    names::AbstractVector{String} = String[]
-)
-    atoms = PDBTools.readPDB(pdbfile, selection)
-    return AtomSelection(
-        atoms, 
-        nmols = nmols, 
-        natomspermol = natomspermol,
-        names = names,
-        groups = groups,
-    )
-end
-
-@testitem "AtomSelection PDBTools" begin
-    pdbfile = ComplexMixtures.Testing.pdbfile
-    s = AtomSelection(pdbfile, "protein and residue 2", nmols = 1, natomspermol = 11)
-    @test s.imol == ones(Int, 11)
-    @test s.index == [12 + i for i = 1:11]
-    @test s.names == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
-    @test s.natoms == 11
-    @test s.natomspermol == 11
-    @test s.nmols == 1
-end
-
+#
+# Initialize the structure providing a vector of PDBTools.Atom(s)
+#
 # If the input is a vector of PDBTools.Atom types, load the index and types
 function AtomSelection(
     atoms::AbstractVector{<:PDBTools.Atom}; 
@@ -197,6 +172,38 @@ end
     pdbfile = ComplexMixtures.Testing.pdbfile
     atoms = PDBTools.readPDB(pdbfile, "protein and residue 2")
     s = AtomSelection(atoms, nmols = 1, natomspermol = 11)
+    @test s.imol == ones(Int, 11)
+    @test s.index == [12 + i for i = 1:11]
+    @test s.names == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
+    @test s.natoms == 11
+    @test s.natomspermol == 11
+    @test s.nmols == 1
+end
+
+#
+# Initialize providing the file name, and calling by default PDBTools.select
+#
+function AtomSelection(
+    pdbfile::String, 
+    selection::String; 
+    nmols::Int = 0, 
+    natomspermol::Int = 0,
+    groups::AbstractVector{AbstractVector{Int}} = Vector{Int}[],
+    names::AbstractVector{String} = String[]
+)
+    atoms = PDBTools.readPDB(pdbfile, selection)
+    return AtomSelection(
+        atoms, 
+        nmols = nmols, 
+        natomspermol = natomspermol,
+        names = names,
+        groups = groups,
+    )
+end
+
+@testitem "AtomSelection PDBTools" begin
+    pdbfile = ComplexMixtures.Testing.pdbfile
+    s = AtomSelection(pdbfile, "protein and residue 2", nmols = 1, natomspermol = 11)
     @test s.imol == ones(Int, 11)
     @test s.index == [12 + i for i = 1:11]
     @test s.names == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
