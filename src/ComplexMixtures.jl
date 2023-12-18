@@ -1,26 +1,26 @@
 module ComplexMixtures
 
-using PrecompileTools
-using Printf
-using ProgressMeter
-using Statistics
-using LinearAlgebra: norm, cross, dot, diag
-using FortranFiles
-using PDBTools
-using StructTypes
-using JSON3
-using StaticArrays
-using DocStringExtensions
-using TestItems
-
-import ChunkSplitters
 import CellListMap
-using .CellListMap.PeriodicSystems
-import .CellListMap.PeriodicSystems: AbstractPeriodicSystem
-
+import .CellListMap.PeriodicSystems
+import ChunkSplitters
+import JSON3
+import PDBTools
+import PrecompileTools
 import Random
+import StaticArrays: SVector, SMatrix, @SMatrix
+import StructTypes
+import TestItems: @testitem
 
-export Selection, Trajectory, mddf, save, load, write, Options, Result
+using .CellListMap.PeriodicSystems: AbstractPeriodicSystem
+using DocStringExtensions: @doc_str
+using FortranFiles: FortranFile
+using LinearAlgebra: norm, cross, dot, diag
+using Printf: @printf
+using ProgressMeter: Progress, next!
+using Statistics: mean
+
+export AtomSelection 
+export Trajectory, mddf, save, load, write, Options, Result
 export merge
 export overview
 export VMDselect
@@ -42,7 +42,7 @@ include("./Options.jl")
 
 # Structures and functions to deal with the solute and solvent selections
 include("./VMDselect.jl")
-include("./Selection.jl")
+include("./AtomSelection.jl")
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")

@@ -69,7 +69,7 @@ struct SolSummary
     nmols::Int
     natomspermol::Int
 end
-SolSummary(s::Selection) = SolSummary(s.natoms, s.nmols, s.natomspermol)
+SolSummary(s::AtomSelection) = SolSummary(s.natoms, s.nmols, s.natomspermol)
 
 function Base.show(io::IO, s::SolSummary)
     println(io, "Number of atoms: ", s.natoms)
@@ -117,6 +117,10 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     # compute group contributions to the MDDFs
     solute_group_count::Vector{Vector{Float64}}
     solvent_group_count::Vector{Vector{Float64}}
+
+    # Group or atom names
+    solute_group_names::Vector{String}
+    solvent_group_names::Vector{String}
 
     # Data to compute a RDF and the KB integral from this count
     rdf_count::Vector{Float64} = zeros(nbins)
@@ -189,6 +193,8 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
     if options.irefatom == -1
         nextframe!(trajectory)
         first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
+        # voltar
+        #irefatom = findmin(at -> norm(at - cm), first_mol)
         # don't use findmin for compatibility with Julia 1.6
         irefatom = 0
         dmin = +Inf
@@ -221,6 +227,11 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
     else
         [ zeros(nbins) for _ in 1:length(options.solute_groups) ]
     end
+    solute_group_names = if isempty(options.solute_groups)
+        trajectory.solute.names
+    else
+        [ string(i) for i in 1:length(options.solute_groups) ]
+    end
 
     solvent_group_count = if isempty(options.solvent_groups)
         [ zeros(nbins) for _ in 1:solvent.natomspermol ]
@@ -251,8 +262,8 @@ end
     using ComplexMixtures: Testing
     atoms = readPDB("$(Testing.data_dir)/NAMD/structure.pdb")
     trajectory = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao, water)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
-    water = Selection(select(atoms, "water"), natomspermol = 3)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    water = AtomSelection(select(atoms, "water"), natomspermol = 3)
     @test_throws ArgumentError mddf(trajectory, Options(stride = 0))
     @test_throws ArgumentError mddf(trajectory, Options(firstframe = 2, lastframe = 1))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
@@ -357,7 +368,7 @@ end
 
 @testitem "sphereradiusfromshellvolume" begin
     @test sphereradiusfromshellvolume(1.0, 0.2) ≈ 0.03351032163829113
-    @test sphereradiusfromshellvolume(100.0, 0.1) = 124.4112578723602
+    @test sphereradiusfromshellvolume(100.0, 0.1) ≈ 124.4112578723602
 end
 
 #
@@ -372,7 +383,7 @@ function sum_frame_weights(R::Result)
     Q = if !isempty(R.options.frame_weights)
         sum(R.options.frame_weights[i] for i in i:s:l)
     else
-        # number of frames that were red from the file
+        # number of frames that were read from the file
         round(Int, (l - i + 1) / s)
     end
     return Q
@@ -405,8 +416,8 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
     # Scale counters by number of samples and frames
     @. R.md_count = R.md_count / (R.solute.nmols * Q)
-    @. R.solute_atom = R.solute_atom / (R.solute.nmols * Q)
-    @. R.solvent_atom = R.solvent_atom / (R.solute.nmols * Q)
+    @. R.solute_group_count = R.solute_group_count / (R.solute.nmols * Q)
+    @. R.solvent_group_count = R.solvent_group_count / (R.solute.nmols * Q)
     @. R.md_count_random = R.md_count_random / (samples.random * Q)
     @. R.rdf_count = R.rdf_count / (R.solute.nmols * Q)
     @. R.rdf_count_random = R.rdf_count_random / (samples.random * Q)
@@ -443,21 +454,41 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     R.md_count_random .= density_fix * R.md_count_random
     R.rdf_count_random .= density_fix * R.rdf_count_random
 
+#    voltar
+    function group_contribution(R::Result, s::Symbol, igroup::Int)
+        group_contribution = zeros(R.nbins)
+        for ibin in 1:R.nbins
+            R.md_count_random[ibin] == 0 && continue
+            if s == :solute 
+                for i in eachindex(R.solute_group_count)
+                    group_contribution[ibin] = R.solute_group_count[i][ibin] / R.md_count_random[ibin]
+                end
+            end
+            if s == :solvent
+                for i in eachindex(R.solvent_group_count)
+                    group_contribution[ibin] = R.solvent_group_count[i][ibin] / R.md_count_random[ibin]
+                end
+            end
+        end
+        return group_contribution
+    end
+
+    function group_contribution(R::Result, s::Symbol, indexes::Vector{Int})
+    end
+
+    function group_contribution(R::Result, s::Symbol, selection::String)
+    end
+
+    function group_contribution(R::Result, s::Symbol, atoms::AbstractVector{<:PDBTools.Atom})
+    end
+
     #
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
     warn = false
     for ibin = 1:R.nbins
         # For the MDDF
-        if R.md_count_random[ibin] > 0.0
-            R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
-            for i = 1:trajectory.solute.natomspermol
-                R.solute_atom[ibin, i] = R.solute_atom[ibin, i] / R.md_count_random[ibin]
-            end
-            for j = 1:trajectory.solvent.natomspermol
-                R.solvent_atom[ibin, j] = R.solvent_atom[ibin, j] / R.md_count_random[ibin]
-            end
-        else
+        if R.md_count_random[ibin] == 0.0
             if !warn && !options.silent
                 @warn begin
                     """
@@ -467,7 +498,9 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
                 end _file=nothing _line=nothing
                 warn = true
             end
+            continue
         end
+        R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
         if ibin == 1
             R.coordination_number[ibin] = R.md_count[ibin]
             R.coordination_number_random[ibin] = R.md_count_random[ibin]
@@ -603,8 +636,8 @@ end
 
     # Test simple three-molecule system
     atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
-    protein = Selection(select(atoms, "protein and model 1"), nmols = 1)
-    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
+    protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
+    water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
     traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
 
     options = Options(
@@ -638,8 +671,8 @@ end
     # Test loading a saved merged file
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
-    water = Selection(select(atoms, "water"), natomspermol = 3)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    water = AtomSelection(select(atoms, "water"), natomspermol = 3)
 
     #save(R,"$dir/merged.json")
     R_save = load("$dir/merged.json")
@@ -686,8 +719,8 @@ end
     using ComplexMixtures.Testing
     using PDBTools
     atoms = readPDB(Testing.pdbfile)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     options = Options()
     # At this point we can only test an empty Result struct
@@ -829,7 +862,7 @@ end
 
 
 """
-    which_types(s::Selection, indexes::Vector{Int})
+    which_types(s::AtomSelection, indexes::Vector{Int})
 
 $(INTERNAL)
 
@@ -849,7 +882,7 @@ if the distribution function was computed for all molecules. Thus, the necessity
 to identify the types of atoms involved in a selection.   
 
 """
-function which_types(s::Selection, indexes::Vector{Int}; warning = true)
+function which_types(s::AtomSelection, indexes::Vector{Int}; warning = true)
     selected_types = Vector{Int}(undef, 0)
     ntypes = 0
     for i in indexes
@@ -898,15 +931,15 @@ function sum!(R1::Result, R2::Result)
 end
 
 """
-    title(R::Result, solute::Selection, solvent::Selection)
-    title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
+    title(R::Result, solute::AtomSelection, solvent::AtomSelection)
+    title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
 
 $(INTERNAL)
 
 Print some information about the run.
 
 """
-function title(R::Result, solute::Selection, solvent::Selection)
+function title(R::Result, solute::AtomSelection, solvent::AtomSelection)
     print(
         """
         $(bars)
@@ -916,7 +949,7 @@ function title(R::Result, solute::Selection, solvent::Selection)
         Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
         """)
 end
-function title(R::Result, solute::Selection, solvent::Selection, nspawn::Int)
+function title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
     print(
         """ 
         $(bars)

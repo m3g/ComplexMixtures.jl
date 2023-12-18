@@ -1,7 +1,7 @@
 """
     coordination_number(R::Result) = R.coordination_number
     coordination_number(R::Result, group_contributions::Vector{Float64})
-    coordination_number(s::Selection, atom_contributions::Matrix{Float64}, R::Result, group)
+    coordination_number(s::AtomSelection, atom_contributions::Matrix{Float64}, R::Result, group)
 
 Computes the coordination number of a given group of atoms from the solute or solvent atomic contributions to the MDDF. 
 If no group is defined (first call above), the coordination number of the whole solute or solvent is returned.
@@ -11,7 +11,7 @@ to compute the coordination number by calling `coordination_number(R::Result, gr
 
 Otherwise, the coordination number can be computed directly with the second call, where:
 
-`s` is the solute or solvent selection (type `ComplexMixtures.Selection`)
+`s` is the solute or solvent selection (type `ComplexMixtures.AtomSelection`)
 
 `atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure
 
@@ -32,7 +32,7 @@ The `findlast(<(5), R.d)` part of the code below returns the index of the last e
 using ComplexMixtures, PDBTools
 pdb = readPDB("test/data/NAMD/structure.pdb");
 R = load("test/data/NAMD/protein_tmao.json");
-solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
+solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1);
 residue50 = PDBTools.select(pdb, "residue 50");
 # Compute the group contributions to the MDDF
 residue50_contribution = contributions(solute, R.solute_atom, residue50);
@@ -48,7 +48,7 @@ residue50_coordination[findlast(<(5), R.d)]
 using ComplexMixtures, PDBTools
 pdb = readPDB("test/data/NAMD/structure.pdb");
 R = load("test/data/NAMD/protein_tmao.json");
-solute = Selection(PDBTools.select(pdb, "protein"), nmols=1);
+solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1);
 residue50 = PDBTools.select(pdb, "residue 50");
 # Compute the coordination number
 residue50_coordination = coordination_number(solute, R.solute_atom, R, group)
@@ -62,7 +62,7 @@ function coordination_number end
 coordination_number(R::Result) = R.coordination_number
 
 function coordination_number(
-    s::Selection,
+    s::AtomSelection,
     atom_contributions::Matrix{Float64},
     R::Result,
     group,
@@ -89,8 +89,8 @@ end
     using ComplexMixtures.Testing
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     options = Options(lastframe = 1, seed = 321, StableRNG = true, nthreads = 1, silent = true, n_random_samples=200)
     traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
@@ -111,7 +111,7 @@ end
     pdb = readPDB("$(Testing.data_dir)/NAMD/Protein_in_Glycerol/system.pdb")
     R = load("$(Testing.data_dir)/NAMD/Protein_in_Glycerol/protein_water.json"; legacy_warning=false)
     group = PDBTools.select(pdb, "protein")
-    solute = Selection(group, nmols = 1)
+    solute = AtomSelection(group, nmols = 1)
     cn = coordination_number(solute, R.solute_atom, R, group)
     @test maximum(R.coordination_number .- cn) < 1e-10
 end

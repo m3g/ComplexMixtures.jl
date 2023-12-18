@@ -31,8 +31,8 @@ end
     using ComplexMixtures.Testing
     atoms = readPDB(Testing.pdbfile)
     options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = Result(traj, options)
     b0 = ComplexMixtures.Buffer(
@@ -316,8 +316,8 @@ end
 
     # Test simple three-molecule system: cross correlation
     atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
-    protein = Selection(select(atoms, "protein and model 1"), nmols = 1)
-    water = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
+    protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
+    water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
     traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
 
     for lastframe in [1, 2]
@@ -343,7 +343,7 @@ end
 
     # Self correlation
     atoms = readPDB("$(Testing.data_dir)/toy/self_monoatomic.pdb")
-    atom = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
+    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
     traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
 
     # without atoms in the bulk
@@ -444,8 +444,8 @@ end
 
     options = Options(seed = 1, stride = 1, StableRNG = true, nthreads = 1, silent = true)
     atoms = readPDB(Testing.pdbfile)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # Test actual system: cross correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)

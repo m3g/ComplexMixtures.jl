@@ -16,8 +16,8 @@ using PDBTools, ComplexMixtures
 atoms = readPDB("system.pdb")
 protein = select(atoms,"protein")
 water = select(atoms,"water")
-solute = Selection(protein,nmols=1)
-solvent = Selection(water,natomspermol=3)
+solute = AtomSelection(protein,nmols=1)
+solvent = AtomSelection(water,natomspermol=3)
 ```
 
 The MDDF calculation is executed with:
@@ -95,7 +95,7 @@ with or without the use of `PDBTools`.
 
 The `contributions` function receives three parameters: 
 
-1. The `solute` or `solvent` data structure, created with `Selection`. 
+1. The `solute` or `solvent` data structure, created with `AtomSelection`. 
 2. The array of atomic contributions (here `results.solute_atom` or
    `results.solvent_atom`), corresponding to the selection in 1.
 3. A selection of a group of atoms within the molecule of interest,

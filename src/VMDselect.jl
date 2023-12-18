@@ -47,7 +47,7 @@ function VMDselect(inputfile::String, selection::String; vmd = "vmd", srcload = 
     for line in split(vmd_output, "\n")
         if readnext
             if line == "ENDINDEXLIST"
-                error("ERROR: Selection '$selection' does not contain any atom")
+                error("ERROR: AtomSelection '$selection' does not contain any atom")
             end
             index_list = line
             break
@@ -69,7 +69,7 @@ function VMDselect(inputfile::String, selection::String; vmd = "vmd", srcload = 
     for line in split(vmd_output, "\n")
         if readnext
             if line == "ENDNAMELIST"
-                error("ERROR: Selection '$selection' does not contain any atom")
+                error("ERROR: AtomSelection '$selection' does not contain any atom")
             end
             name_list = line
             break

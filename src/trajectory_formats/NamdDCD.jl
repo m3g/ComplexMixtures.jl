@@ -20,8 +20,8 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
     nframes::Int64
 
     # Data structures of the solute and solvent 
-    solute::Selection
-    solvent::Selection
+    solute::AtomSelection
+    solvent::AtomSelection
 
     # Coordinates of the solute and solvent atoms in a frame (3,natoms) for each array:
     x_solute::Vector{T}
@@ -42,15 +42,15 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
 end
 
 """
-    NamdDCD(filename::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
+    NamdDCD(filename::String, solute::AtomSelection, solvent::AtomSelection;T::Type = SVector{3,Float64})
 
 This function initializes the structure above, returning the data and the vectors with appropriate lengths.
 
 """
 function NamdDCD(
     filename::String,
-    solute::Selection,
-    solvent::Selection;
+    solute::AtomSelection,
+    solvent::AtomSelection;
     T::Type = SVector{3,Float64},
 )
 

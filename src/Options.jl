@@ -44,12 +44,6 @@ $(TYPEDFIELDS)
     # means that all frames have the same statistical weight
     frame_weights::Vector{Float64} = Float64[]
 
-    # Groups: a list of groups of atoms for which the contributions will
-    # be recorded. Each group is a list of atom indexes. If the list of 
-    # groups is empty, the contributions will be recorded for all (type of) atoms   
-    solute_groups::Vector{Vector{Int}} = Vector{Int}[]
-    solvent_groups::Vector{Vector{Int}} = Vector{Int}[]
-
 end
 
 function Base.show(io::IO, o::Options)

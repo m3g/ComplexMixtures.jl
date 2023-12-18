@@ -23,8 +23,8 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
     unitcell::MMatrix{3,3,Float64,9}
 
     # Solute and solvent data
-    solute::Selection
-    solvent::Selection
+    solute::AtomSelection
+    solvent::AtomSelection
 
     # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
     x_solute::Vector{T}  # solute.natoms vectors of length 3
@@ -33,15 +33,15 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
 end
 
 """
-    PDBTraj(pdbfile::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
+    PDBTraj(pdbfile::String, solute::AtomSelection, solvent::AtomSelection;T::Type = SVector{3,Float64})
 
 Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required 
 
 """
 function PDBTraj(
     pdbfile::String,
-    solute::Selection,
-    solvent::Selection;
+    solute::AtomSelection,
+    solvent::AtomSelection;
     T::Type = SVector{3,Float64},
 )
 

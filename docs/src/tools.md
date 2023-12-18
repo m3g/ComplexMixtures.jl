@@ -43,7 +43,7 @@ using ComplexMixtures, PDBTools
 using Plots, EasyFit
 pdb = readPDB("test/data/NAMD/structure.pdb")
 R = load("test/data/NAMD/protein_tmao.json")
-solute = Selection(PDBTools.select(pdb, "protein"), nmols=1)
+solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1)
 residue50 = PDBTools.select(pdb, "residue 50")
 # Compute the group contribution to the MDDF
 residue50_contribution = contributions(solute, R.solute_atom, residue50)
@@ -126,7 +126,7 @@ R = load("../Data/results_glyc50.json")
 
 # Inform which is the solute
 protein = select(pdb,"protein")
-solute = Selection(protein,nmols=1)
+solute = AtomSelection(protein,nmols=1)
 
 # Compute the 3D density grid and output it to the PDB file
 grid = grid3D(

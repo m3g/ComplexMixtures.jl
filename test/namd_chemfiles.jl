@@ -16,8 +16,8 @@
 
     # save(R,"$dir/protein_tmao.json")
     R_save = load("$dir/protein_tmao.json"; legacy_warning = false)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = CM.Trajectory("$dir/trajectory.dcd", protein, tmao, chemfiles = true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug = true)
@@ -32,8 +32,8 @@
 
     # save(R,"$dir/water_tmao.json")
     R_save = load("$dir/water_tmao.json"; legacy_warning = false)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
-    water = Selection(select(atoms, "water"), natomspermol = 3)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    water = AtomSelection(select(atoms, "water"), natomspermol = 3)
     traj = CM.Trajectory("$dir/trajectory.dcd", tmao, water, chemfiles = true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug = true)
@@ -42,7 +42,7 @@
 
     # save(R,"$dir/tmao_tmao.json")
     R_save = load("$dir/tmao_tmao.json"; legacy_warning = false)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = CM.Trajectory("$dir/trajectory.dcd", tmao, tmao, chemfiles = true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug = true)
@@ -51,7 +51,7 @@
 
     # save(R,"$dir/water_water.json")
     R_save = load("$dir/water_water.json"; legacy_warning = false)
-    water = Selection(select(atoms, "water"), natomspermol = 3)
+    water = AtomSelection(select(atoms, "water"), natomspermol = 3)
     traj = CM.Trajectory("$dir/trajectory.dcd", water, water, chemfiles = true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug = true)

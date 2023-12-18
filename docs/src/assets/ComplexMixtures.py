@@ -47,7 +47,7 @@ readPDB = jl.pdb.readPDB
 select = jl.pdb.select
 
 # From ComplexMixtures
-Selection = jl.cm.Selection
+AtomSelection = jl.cm.AtomSelection
 Trajectory = jl.cm.Trajectory
 Options = jl.cm.Options
 save = jl.cm.save

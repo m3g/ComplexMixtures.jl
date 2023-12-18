@@ -3,9 +3,9 @@ const CM = ComplexMixtures
 
 dir = "$(@__DIR__ )/data/NAMD"
 atoms = readPDB("$dir/structure.pdb")
-protein = Selection(select(atoms, "protein"), nmols = 1)
-tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
-water = Selection(select(atoms, "water"), natomspermol = 3)
+protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+water = AtomSelection(select(atoms, "water"), natomspermol = 3)
 
 options_single = Options(stride = 1, seed = 321, nthreads = 1, silent = true)
 options_multi = Options(stride = 1, seed = 321, silent = true)

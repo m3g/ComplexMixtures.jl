@@ -25,8 +25,8 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     nframes::Int64
 
     # Solute and solvent data
-    solute::Selection
-    solvent::Selection
+    solute::AtomSelection
+    solvent::AtomSelection
 
     # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
     x_solute::Vector{T}  # solute.natoms vectors of length 3 (preferentially static vectors)
@@ -43,15 +43,15 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
 end
 
 """
-    ChemFile(filename::String, solute::Selection, solvent::Selection;format="" , T::Type = SVector{3,Float64})
+    ChemFile(filename::String, solute::AtomSelection, solvent::AtomSelection;format="" , T::Type = SVector{3,Float64})
 
 Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required.
 
 """
 function ChemFile(
     filename::String,
-    solute::Selection,
-    solvent::Selection;
+    solute::AtomSelection,
+    solvent::AtomSelection;
     format = "",
     T::Type = SVector{3,Float64},
 )
@@ -166,8 +166,8 @@ end
 
     atoms = readPDB(Testing.pdbfile)
     options = Options(stride = 4, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     ComplexMixtures.opentraj!(traj)
     ComplexMixtures.firstframe!(traj)

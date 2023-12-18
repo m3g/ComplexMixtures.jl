@@ -5,7 +5,7 @@ This function builds the grid of the 3D density function and fills an array of
 mutable structures of type Atom, containing the position of the atoms of 
 grid, the closest atom to that position, and distance. 
 
-`solute` is a `ComplexMixtuers.Selection`, defining the solute. `solute_atoms` is the corresponding
+`solute` is a `ComplexMixtuers.AtomSelection`, defining the solute. `solute_atoms` is the corresponding
 vector of `PDBTools.Atom`s, and `mddf_result` is the result of a `mddf_result` calculation with 
 the correspondign solute. 
 
@@ -26,7 +26,7 @@ julia> R = ComplexMixtures.load("./results.json");
 
 julia> protein = select(pdb,"protein");
 
-julia> solute = ComplexMixtures.Selection(protein,nmols=1);
+julia> solute = ComplexMixtures.AtomSelection(protein,nmols=1);
 
 julia> grid = ComplexMixtures.grid3D(solute=solute, solute_atoms=protein, mddf_result=R, output_file="grid.pdb");
 

@@ -75,9 +75,9 @@ protein = cm.select(atoms,"protein")
 glyc = cm.select(atoms,"resname GLYC")
 
 # Setup solute and solvent structures, required for computing the MDDF, 
-# with `Selection` function of the `ComplexMixtures` package:
-solute = cm.Selection(protein,nmols=1)
-solvent = cm.Selection(glyc,natomspermol=14)
+# with `AtomSelection` function of the `ComplexMixtures` package:
+solute = cm.AtomSelection(protein,nmols=1)
+solvent = cm.AtomSelection(glyc,natomspermol=14)
 
 # Read and setup the Trajectory structure required for the computations:
 trajectory = cm.Trajectory("../Data/glyc50_complete.dcd",solute,solvent)
@@ -134,8 +134,8 @@ import matplotlib.pyplot as plt
 atoms = cm.readPDB("../Data/system.pdb")
 protein = cm.select(atoms,"protein")
 glyc = cm.select(atoms,"resname GLYC")
-solute = cm.Selection(protein,nmols=1)
-solvent = cm.Selection(glyc,natomspermol=14)
+solute = cm.AtomSelection(protein,nmols=1)
+solvent = cm.AtomSelection(glyc,natomspermol=14)
 
 # load results
 results = cm.load("../Data/results_glyc50.json")

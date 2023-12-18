@@ -70,10 +70,10 @@ protein = select(atoms,"protein")
 glyc = select(atoms,"resname GLYC")
 ```
 
-Setup solute and solvent structures, required for computing the MDDF, with `Selection` function of the `ComplexMixtures` package:
+Setup solute and solvent structures, required for computing the MDDF, with `AtomSelection` function of the `ComplexMixtures` package:
 ```julia
-solute = Selection(protein,nmols=1)
-solvent = Selection(glyc,natomspermol=14)
+solute = AtomSelection(protein,nmols=1)
+solvent = AtomSelection(glyc,natomspermol=14)
 ```
 
 Read and setup the Trajectory structure required for the computations:
@@ -240,13 +240,13 @@ R = load("./results_glyc50.json")
 ### Define which are the solute molecules (the protein)
 ```julia
 protein = select(pdb,"protein")
-solute = Selection(protein,nmols=1)
+solute = AtomSelection(protein,nmols=1)
 ```
 
 ### Define which are the solvent molecules (Glycerol here)
 ```julia
 glycerol = select(pdb,"resname GLYC")
-solvent = Selection(glycerol,natomspermol=14)
+solvent = AtomSelection(glycerol,natomspermol=14)
 ```
 
 ### Retrive the resiude contribution data
@@ -374,12 +374,12 @@ The solute here is the protein, and we need to setup the structures that define 
 protein = select(pdb,"protein")
 ```
 
-and then we define the solute structure that is actually used in `ComplexMixtures`, by passing those atoms and specifying that the solute is a single molecule to the `Selection` function of `ComplexMixtures`:
+and then we define the solute structure that is actually used in `ComplexMixtures`, by passing those atoms and specifying that the solute is a single molecule to the `AtomSelection` function of `ComplexMixtures`:
 ```julia
-solute = Selection(protein,nmols=1)
+solute = AtomSelection(protein,nmols=1)
 ```
 
-The 3D grid representing the density around the protein is computed with the `grid3D` function provided by `ComplexMixtures`. It receives the `solute` structure (of type `Selection`), the list of solute atoms (of type `PDBTools.Atoms`, as the `protein` selection above), the name of the output file and some optional parameters to define the grid. Here we compute the grid only between 1.5 and 3.5Å, characterizing the first and second solvation shells. The grid has by default a `step` of 0.5Å. 
+The 3D grid representing the density around the protein is computed with the `grid3D` function provided by `ComplexMixtures`. It receives the `solute` structure (of type `AtomSelection`), the list of solute atoms (of type `PDBTools.Atoms`, as the `protein` selection above), the name of the output file and some optional parameters to define the grid. Here we compute the grid only between 1.5 and 3.5Å, characterizing the first and second solvation shells. The grid has by default a `step` of 0.5Å. 
 
 ```julia
 grid = grid3D(

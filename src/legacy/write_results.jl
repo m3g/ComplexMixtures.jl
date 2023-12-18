@@ -3,14 +3,14 @@ format(x) = abs(x) < 998 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 
 import Base.write
 """
-    write(R::ComplexMixtures.Result, filename::String, solute::Selection, solvent::Selection)
+    write(R::ComplexMixtures.Result, filename::String, solute::AtomSelection, solvent::AtomSelection)
 
 Function to write the final results to output files as simple tables that are human-readable and easy to analyze with other software
 
 If the solute and solvent selections are provides, pass on the atom names.
 
 """
-write(R::Result, filename::String, solute::Selection, solvent::Selection) =
+write(R::Result, filename::String, solute::AtomSelection, solvent::AtomSelection) =
     write(R, filename, solute_names = solute.names, solvent_names = solvent.names)
 
 

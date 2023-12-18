@@ -30,8 +30,8 @@ protein = select(atoms,"protein")
 tmao = select(atoms,"resname TMAO")
 
 # Setup solute and solvent structures
-solute = Selection(protein,nmols=1)
-solvent = Selection(tmao,natomspermol=14)
+solute = AtomSelection(protein,nmols=1)
+solvent = AtomSelection(tmao,natomspermol=14)
 
 # Setup the Trajectory structure
 trajectory = Trajectory("./trajectory.dcd",solute,solvent)
@@ -114,10 +114,10 @@ Then, let us select the protein atoms (here we are using the `PDBTools.select` f
 ```julia
 protein = select(atoms,"protein")
 ```
-And, finally, let us use the `Selection` function to setup the
+And, finally, let us use the `AtomSelection` function to setup the
 structure required by the MDDF calculation:
 ```julia
-solute = Selection(protein,nmols=1)
+solute = AtomSelection(protein,nmols=1)
 ```
 
 !!! note
@@ -133,7 +133,7 @@ solute = Selection(protein,nmols=1)
 Equivalently, the solvent is set up with:
 ```julia
 tmao = select(atoms,"resname TMAO")
-solvent = Selection(tmao,natomspermol=14)
+solvent = AtomSelection(tmao,natomspermol=14)
 
 ```
 

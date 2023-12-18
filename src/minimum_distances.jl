@@ -216,10 +216,10 @@ end
 
     atoms = readPDB(Testing.pdbfile)
     options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # Cross-correlation
-    protein = Selection(select(atoms, "protein"), nmols = 1)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     system = ComplexMixtures.setup_PeriodicSystem(traj, options)
     @test system.cutoff == 10.0

@@ -1,9 +1,9 @@
 """
-    contributions(s::Selection, atom_contributions::Matrix{Float64}, selection)
+    contributions(s::AtomSelection, atom_contributions::Matrix{Float64}, selection)
 
 Extract the contribution of a given atom type selection from the solute or solvent atomic contributions to the MDDF.
 
-`s` here is the solute or solvent selection (type `ComplexMixtures.Selection`)
+`s` here is the solute or solvent selection (type `ComplexMixtures.AtomSelection`)
 `atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure,
 and the last argument is the selection of atoms from the solute to be considered, given as a list 
 of indexes, list of atom names, vector of `PDBTools.Atom`s, or a `PDBTools.Residue`. 
@@ -17,7 +17,7 @@ with indexes `[901, 902, 903]`.
 
 """
 function contributions(
-    s::Selection,
+    s::AtomSelection,
     atom_contributions::Matrix{Float64},
     indexes::Vector{Int};
     first_atom_is_ref = false,
@@ -58,7 +58,7 @@ end
 # If a list of atom names is provided
 #
 function contributions(
-    s::Selection,
+    s::AtomSelection,
     atom_contributions::Matrix{Float64},
     names::Vector{String},
 )
@@ -77,7 +77,7 @@ end
 # If a list of atoms of PDBTools.Atom is provided
 #
 function contributions(
-    s::Selection,
+    s::AtomSelection,
     atom_contributions::Matrix{Float64},
     atoms::Vector{PDBTools.Atom};
     warning = true,
@@ -93,7 +93,7 @@ end
 # If a residue of type PDBTools.Residue is provided
 #
 function contributions(
-    s::Selection,
+    s::AtomSelection,
     atom_contributions::Matrix{Float64},
     residue::Residue;
     warning = true,
@@ -120,8 +120,8 @@ end
     dir = "$(Testing.data_dir)/PDB"
     atoms = readPDB("$dir/trajectory.pdb", "model 1")
 
-    solute = Selection(select(atoms, "resname TMAO and resnum 1"), nmols = 1)
-    solvent = Selection(
+    solute = AtomSelection(select(atoms, "resname TMAO and resnum 1"), nmols = 1)
+    solvent = AtomSelection(
         select(atoms, "resname TMAO and resnum 2 or resname TMAO and resnum 3"),
         nmols = 2,
     )
