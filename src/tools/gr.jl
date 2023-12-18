@@ -34,3 +34,18 @@ If a Result structure is provided without further details, use the rdf count
 and the bulk solvent density.
 """
 gr(R::Result) = gr(R.d, R.rdf_count, R.density.solvent_bulk, R.options.binstep)
+
+@testitem "Radial distribution" begin
+    using ComplexMixtures, PDBTools
+    using ComplexMixtures.Testing
+    const CM = ComplexMixtures
+    dir = "$(Testing.data_dir)/Gromacs"
+    atoms = readPDB("$dir/system.pdb")
+    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    emi = AtomSelection(select(atoms, "resname EMI and name H01"), natomspermol = 20)
+    traj = Trajectory("$dir/trajectory.xtc", emi)
+    R = mddf(traj, options)
+    gr1, kb1 = gr(R)
+    @test isapprox(gr1, R.mddf)
+    @test isapprox(kb1, R.kb)
+end
