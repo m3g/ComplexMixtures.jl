@@ -10,12 +10,12 @@ import Random
 import StructTypes
 
 using .CellListMap.PeriodicSystems: AbstractPeriodicSystem
-using DocStringExtensions: @doc_str
+using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using FortranFiles: FortranFile
 using LinearAlgebra: norm, cross, dot, diag
-using Printf: @printf
+using Printf: @sprintf
 using ProgressMeter: Progress, next!
-using StaticArrays: SVector, SMatrix, @SMatrix
+using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
 using Statistics: mean
 using TestItems: @testitem
 

@@ -95,7 +95,7 @@ end
 function contributions(
     s::AtomSelection,
     atom_contributions::Matrix{Float64},
-    residue::Residue;
+    residue::PDBTools.Residue;
     warning = true,
 )
     (warning && s.nmols > 1) && warning_nmols_types()

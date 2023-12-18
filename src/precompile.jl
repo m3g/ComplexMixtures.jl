@@ -3,7 +3,7 @@ PrecompileTools.@setup_workload begin
     # precompile file and potentially make loading faster.
     dir = "$(Testing.data_dir)/NAMD"
     atoms = PDBTools.readPDB("$dir/structure.pdb", "resname TMAO")
-    tmao1 = AtomSelection(select(atoms, "resname TMAO and resnum 1"), natomspermol = 14)
+    tmao1 = AtomSelection(PDBTools.select(atoms, "resname TMAO and resnum 1"), natomspermol = 14)
     PrecompileTools.@compile_workload begin
         options = Options(lastframe = -1, silent = true)
         tmao2 = AtomSelection(
