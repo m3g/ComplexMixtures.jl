@@ -19,7 +19,9 @@ using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
 using Statistics: mean
 using TestItems: @testitem
 
-export AtomSelection 
+export AtomSelection, atom_group, atom_group_name, atom_group_names
+
+#=
 export Trajectory, mddf, save, load, write, Options, Result
 export merge
 export overview
@@ -32,7 +34,10 @@ export contributions, coordination_number, gr, grid3D
 const INTERNAL = "**Internal structure or function, interface may change.**"
 
 # Module for testing
+=#
 include("./Testing.jl")
+#=
+
 
 # Input and Output data structures
 include("./io.jl")
@@ -42,7 +47,9 @@ include("./Options.jl")
 
 # Structures and functions to deal with the solute and solvent selections
 include("./VMDselect.jl")
+=#
 include("./AtomSelection.jl")
+#=
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
@@ -79,5 +86,6 @@ include("./legacy/legacy.jl")
 
 # Precompilation directives
 include("precompile.jl")
+=#
 
 end # module ComplexMixtures
