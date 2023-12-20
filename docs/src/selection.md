@@ -1,73 +1,54 @@
 
-# [Set the solute and solvent selections](@id selections)
+# [Solute and solvent selections](@id selections)
 
-The solute and solvent are defined in ComplexMixtures as lists (vectors) of the
-indexes of the atoms of the system. The solute and solvent information
-is stored in the `AtomSelection` structure. For example, if the solute is a
-molecule formed by the first 5 atoms of the system, it would be defined
-as:     
-```julia
-indexes = [ 1, 2, 3, 4, 5 ]
-solute = AtomSelection(indexes,nmols=1)
+The solute and solvent are defined by selecting subsets of atoms from the 
+system. These subsets are defined by the `AtomSelection` data structures. 
+
+To construct a `AtomSelection` data structure, one needs to provide, at least,
+the (1-based) indices of the atoms that belong to the selection, and either
+the number of atoms of each molecule or the number of molecules in the selection.
+
+## Using the PDBTools package
+
+The [PDBTools](https://m3g.github.io/PDBTools) package helps the construction of 
+the solute and solvent data structures,
+by providing a convenient selection syntax. Additionally, it sets up the names
+of the atoms of the system in the data structure, which can be used to retrieve
+atom and and group contributions to MDDFs and coordination numbers. 
+
+For example, here we define a protein of a system as the solute:
+
+```jldoctest
+julia> using ComplexMixtures, PDBTools
+
+julia> atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+
+julia> protein = select(atoms, "protein");
+
+julia> solute = AtomSelection(protein, nmols=1)
+AtomSelection 
+    1463 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1463
+    Number of groups: 1463 
 ```
 
-!!! note
-    We need to inform the `AtomSelection` function about the number of atoms of
-    each molecule (using `natomspermol=3`, for example), or the number 
-    of molecules (using `nmols=1000`, for example),
-    such that the atoms belonging to each molecule can be determined
-    without ambiguity. 
+We need to inform the `AtomSelection` function about the number of atoms of
+each molecule (using `natomspermol=3`, for example), or the number 
+of molecules (using `nmols=1000`, for example),
+such that the atoms belonging to each molecule can be determined
+without ambiguity. 
 
-The atom names can be also provided such that some of the output files
-contain more information on the [atomic contributions](@ref contributions). In this
-case the syntax is:
-```julia
-indexes = [ 1, 2, 3, 4, 5 ]
-names = [ "H1", "H2", "H3", "H4", "C" ]
-solute = AtomSelection(indexes,names,nmols=1)
+Now, we define the solvent of the system as the water molecules:
+
+```jldoctest
+julia> water = select(atoms, "water"); 
+
+julia> solvent = AtomSelection(water, natomspermol=3)
+AtomSelection 
+    58014 atoms belonging to 19338 molecule(s).
+    Atoms per molecule: 3
+    Number of groups: 3
 ```
-
-!!! warning
-    The indexing in ComplexMixtures is 1-based. That means that the first atom of
-    your structure file is in position 1 of the coordinates. Please be
-    careful if using any selection tool to be sure that your selection
-    is correct.
-
-
-## Using PDBTools
-
-[PDBTools](https://github.com/m3g/PDBTools) is a package we developed to read and 
-write PDB files,
-which provides a simple selection tool. It is installed as a dependency 
-of ComplexMixtures.  Given a PDB file of the simulated system, the solute can
-be defined as, for example,
-```julia
-using PDBTools
-atoms = PDBTools.readPDB("system.pdb")
-protein = PDBTools.select(atoms,"protein")
-solute = AtomSelection(protein,nmols=1)
-```
-If the solvent is, for instance, water, the indexes of the water
-molecules can be obtained with:
-```julia
-water = PDBTools.select(atoms,"water")
-solvent = AtomSelection(water,natomspermol=3)
-```
-or, alternatively, a more compact syntax can be used, for example:
-```julia
-water = PDBTools.select("system.pdb","resname TIP3P")
-solvent = AtomSelection(water,natomspermol=3)
-```
-
-or even providing just the names of the input file and selection, which
-will run PDBTools in background:
-```julia
-solvent = AtomSelection("sytem.pdb","water",water,natomspermol=3)
-```
-
-!!! warning
-    The selection syntax of `PDBTools` is somewhat limited. Verify if the
-    selections correspond to the the desired sets of atoms every time.
 
 ## Using VMD
 
