@@ -1,13 +1,14 @@
 import Pkg
 Pkg.add("Documenter")
 using ComplexMixtures
+using PDBTools
 using Documenter
-using ComplexMixtures
 push!(LOAD_PATH, "../src/")
 makedocs(
     modules = [ComplexMixtures],
     sitename = "ComplexMixtures.jl",
     pages = [
+        #=
         "Introduction" => "index.md",
         "Installation" => "installation.md",
         "Parallel execution" => "parallel.md",
@@ -25,6 +26,7 @@ makedocs(
         "From Python" => "python.md",
         "Help entries" => "help.md",
         "References" => "references.md",
+        =#
     ],
 )
 deploydocs(
