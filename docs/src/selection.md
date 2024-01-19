@@ -65,10 +65,10 @@ solute = AtomSelection(indexes,names,nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and
-it takes a few seconds.     
+it takes a few seconds to be excuted.
 
 The `VMDSelect` function also accepts an optional keyword parameter `srcload`,
-which can be used to load custom scripts within `vmd` before running setting
+which can be used to load custom scripts within `vmd` before setting
 the selection. This allows the definition of `tcl` scripts with custom selection
 macros, for instance. The usage would be: 
 ```julia
@@ -85,4 +85,9 @@ selection with the custom `MYRES` name.
     a selection is performed by index, as with `index 1`, VMD will
     select the second atom, and the output will be `[2]`. AtomSelections by
     type, name, segment, residue name, etc, won't be a problem.
+
+## Predefinition of atom groups
+
+
+
 

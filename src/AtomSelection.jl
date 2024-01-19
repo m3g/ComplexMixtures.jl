@@ -120,7 +120,7 @@ The indexes of the atoms will be retrived from the
 indices of the atoms as defined in the PDB file, thus the PDB file must correspond to the same
 system as that of the simulation. 
 
-Either the number of molecules (`nmols`) or the number of atoms per molecule (`natomspermol`) must be provided.
+Either the number of molecules (`nmols`) **or** the number of atoms per molecule (`natomspermol`) must be provided.
 
 If the `groups` and `names` vectors are empty, the names of the groups
 will be retrieved from the atom names, and in the coordination numbers of each individual atom will be 
@@ -196,7 +196,7 @@ AtomSelection
 
 """
 function AtomSelection(args...; kargs...) 
-    throw(ArgumentError("No constructor for AtomSelection with this arguments. Please check the documentation."))
+    throw(ArgumentError("No constructor for AtomSelection with these arguments. Please check the documentation."))
 end
 
 #
