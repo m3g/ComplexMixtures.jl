@@ -122,7 +122,7 @@ The structure can be initialized in different ways:
     ) 
 ```
 
-The indexes of the atoms will be retrived from the
+The indices of the atoms will be retrived from the
 indices of the atoms as defined in the PDB file, thus the PDB file must correspond to the same
 system as that of the simulation. 
 
@@ -334,3 +334,85 @@ end
     @test s.natomspermol == 11
     @test s.nmols == 1
 end
+
+"""
+   **SoluteGroup** and **SolventGroup** data structures.
+
+These structures are used to select groups of atoms to extract their contributions 
+from the MDDF results. 
+
+Most tipically, the groups are defined from a selection of atoms with the PDBTools package,
+or by providing directly the indices of teh atoms in the structure. 
+
+Alternativelly, if the groups were predefined, the groups can be selected by group index
+or group name. 
+
+    SoluteGroup(atoms::Vector{PDBTools.Atom})
+    SolventGroup(atoms::Vector{PDBTools.Atom})
+
+    SoluteGroup(atom_indices::Vector{Int})
+    SolventGroup(atom_indices::Vector{Int})
+
+    SoluteGroup(group_name::String) 
+    SoluteGroup(group_index::Int) 
+
+    SolventGroup(group_name::String)
+    SolventGroup(group_index::Int)
+
+""" SoluteGroup
+@doc (@doc SoluteGroup) SolventGroup
+
+struct SoluteGroup{
+    I<:Union{Int,Nothing},
+    S<:Union{String,Nothing},
+    V<:Union{Vector{Int},Nothing}
+}
+    group_index::I
+    group_name::S
+    atom_indices::V
+end
+
+struct SolventGroup{
+    I<:Union{Int,Nothing},
+    S<:Union{String,Nothing},
+    V<:Union{Vector{Int},Nothing}
+}
+    group_index::I
+    group_name::S
+    atom_indices::V
+end
+
+SoluteGroup(atoms::Vector{PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms))
+SoluteGroup(atom_indices::Vector{Int}) = SoluteGroup(nothing, nothing, atom_indices)
+SoluteGroup(group_name::String) = SoluteGroup(nothing, group_name, nothing)
+SoluteGroup(group_index::Int) = SoluteGroup(group_index, nothing, nothing)
+
+SolventGroup(atoms::Vector{PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms))
+SolventGroup(atom_indices::Vector{Int}) = SolventGroup(nothing, nothing, atom_indices)
+SolventGroup(group_name::String) = SolventGroup(nothing, group_name, nothing)
+SolventGroup(group_index::Int) = SolventGroup(group_index, nothing, nothing)
+
+@testitem "SoluteGroup and SolventGroup" begin
+    using PDBTools: readPDB, select
+    using ComplexMixtures.Testing: pdbfile
+    pdb = readPDB(pdbfile)
+    @test fieldnames(SoluteGroup) == fieldnames(SolventGroup)
+    sg = SoluteGroup(select(pdb, "protein and residue 2"))
+    @test SoluteGroup(select(pdb, "protein and residue 2")).atom_indices == [12 + i for i = 1:11]
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    @test SoluteGroup([1,2,3]).atom_indices == [1,2,3]
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    @test SoluteGroup("N").group_name == "N"
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    sg = SolventGroup(select(pdb, "protein and residue 2"))
+    @test SoluteGroup(select(pdb, "protein and residue 2")).atom_indices == [12 + i for i = 1:11]
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    @test SoluteGroup([1,2,3]).atom_indices == [1,2,3]
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    @test SoluteGroup("N").group_name == "N"
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+end
+
+#group_contributions(SoluteGroup(result, select(atoms, "protein and acidic")))
+
+
