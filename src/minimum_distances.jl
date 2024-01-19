@@ -7,7 +7,7 @@ $(INTERNAL)
 # Extended help
 
 This structure contains the information, for each  molecule, of if it is within the 
-cutoff distance of the solute, the atom indexes of the associated minimum distance,
+cutoff distance of the solute, the atom indices of the associated minimum distance,
 the distance, and a label to mark if the reference atom of the molecule is within
 the cutoff distance of the solute.
 
@@ -84,7 +84,7 @@ mol_index(i, natomspermol) = (i - 1) ÷ natomspermol + 1
 #=
     update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
 
-Function that updates a list of minimum distances given the indexes of the atoms involved for one pair within cutoff,
+Function that updates a list of minimum distances given the indices of the atoms involved for one pair within cutoff,
 for autocorrelations (such that the identity of `isolute` is needed)
 
 =#
@@ -113,7 +113,7 @@ end
 #=
     update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
 
-Function that updates a list of minimum distances given the indexes of the atoms involved for one pair within cutoff.
+Function that updates a list of minimum distances given the indices of the atoms involved for one pair within cutoff.
 
 =#
 function update_list!(

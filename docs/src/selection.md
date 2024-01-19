@@ -60,8 +60,8 @@ using its capabilities.
 
 For example, the solute can be defined with: 
 ```julia
-indexes, names = VMDselect("./system.gro","protein",vmd="/usr/bin/vmd")
-solute = AtomSelection(indexes,names,nmols=1)
+indices, names = VMDselect("./system.gro","protein",vmd="/usr/bin/vmd")
+solute = AtomSelection(indices,names,nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and
@@ -122,7 +122,7 @@ AtomSelection
     Number of groups: 1463 
 ```
 
-In this example, then, the `solute` `AtomSelection` has two groups. The indexes of the atoms
+In this example, then, the `solute` `AtomSelection` has two groups. The indices of the atoms
 of the groups are stored in the `group_atom_indices` vector and the group names in the `group_names`
 vector. The `atom_group` auxiliary function is the most practical way to retrive the indices of the
 atoms of the group.

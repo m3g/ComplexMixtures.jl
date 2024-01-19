@@ -20,6 +20,7 @@ using Statistics: mean
 using TestItems: @testitem
 
 export AtomSelection, atom_group, atom_group_name, atom_group_names
+export SoluteGroup, SolventGroup
 
 #=
 export Trajectory, mddf, save, load, write, Options, Result

@@ -86,7 +86,7 @@ plot!(xlabel="Distance / Å",ylabel="MDDF")
 <img src="../figures/oh2.png" width="60%">
 ```
 
-## Selecting groups by atom names or indexes
+## Selecting groups by atom names or indices
 
 To plot the contributions of the hydrogen atoms of water to the total
 MDDF, we have to select the two atoms, named `H1` and `H2`. The
@@ -101,16 +101,16 @@ The `contributions` function receives three parameters:
 3. A selection of a group of atoms within the molecule of interest,
    provided as described below. 
 
-### Selecting by indexes within the molecule
+### Selecting by indices within the molecule
 
 To select simply by the index of the atoms of the molecules, just
-provide a list of indexes to the `contributions` function. For example,
+provide a list of indices to the `contributions` function. For example,
 to select the hydrogen atoms, which are the second and third atoms of the 
 water molecule, use:
 
 ```julia-repl
-julia> indexes = [ 2, 3 ]
-julia> h_contributions = contributions(solvent,R.solvent_atom,indexes)
+julia> indices = [ 2, 3 ]
+julia> h_contributions = contributions(solvent,R.solvent_atom,indices)
 500-element Array{Float64,1}:
  0.0
  0.0
@@ -129,7 +129,7 @@ results in:
 ### Selecting by atom name
 
 The exact same plot above could be obtained by providing lists of atom names
-instead of indexes to the `contributions` function:
+instead of indices to the `contributions` function:
 
 ```julia
 oxygen = ["OH2"]

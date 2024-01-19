@@ -4,7 +4,7 @@ Structure to carry temporary arrays needed
 
 We need temporary buffers for reading the coordinates, a buffer to store
 a temporary array of solvent coordinates (whose length is dependent on 
-autocorrelation or not), and the indexes of the solute molecules that will
+autocorrelation or not), and the indices of the solute molecules that will
 be used as reference states for ideal gas distributions
 
 =#
@@ -13,7 +13,7 @@ be used as reference states for ideal gas distributions
     solvent_read::Vector{SVector{3,Float64}}
     ref_solutes::Vector{Int}
     list::Vector{MinimumDistance}
-    indexes_in_bulk::Vector{Int}
+    indices_in_bulk::Vector{Int}
 end
 function Buffer(traj::Trajectory, R::Result)
     return Buffer(
@@ -21,7 +21,7 @@ function Buffer(traj::Trajectory, R::Result)
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(MinimumDistance), R.solvent.nmols),
-        indexes_in_bulk = fill(0, R.solvent.nmols),
+        indices_in_bulk = fill(0, R.solvent.nmols),
     )
 end
 
@@ -40,7 +40,7 @@ end
         solvent_read = similar(traj.x_solvent),
         ref_solutes = zeros(Int, R.options.n_random_samples),
         list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols),
-        indexes_in_bulk = fill(0, R.solvent.nmols),
+        indices_in_bulk = fill(0, R.solvent.nmols),
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
@@ -74,7 +74,7 @@ function randomize_solvent!(
     for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0
-            jmol = buff.indexes_in_bulk[rand(RNG, 1:n_solvent_in_bulk)]
+            jmol = buff.indices_in_bulk[rand(RNG, 1:n_solvent_in_bulk)]
         else
             jmol = rand(RNG, 1:R.solvent.nmols)
         end
@@ -287,13 +287,13 @@ function mddf_frame!(
             update_lists = true
             # Save coordinates and list
             buff.list .= system.list
-            # Annotate the indexes of the molecules that are in the bulk solution
+            # Annotate the indices of the molecules that are in the bulk solution
             n_solvent_in_bulk = 0
             for i in eachindex(system.list)
                 R.autocorrelation && i == isolute && continue
                 if inbulk(system.list[i], options)
                     n_solvent_in_bulk += 1
-                    buff.indexes_in_bulk[n_solvent_in_bulk] = i
+                    buff.indices_in_bulk[n_solvent_in_bulk] = i
                 end
             end
             for _ = 1:nrand

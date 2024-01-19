@@ -17,7 +17,7 @@ Otherwise, the coordination number can be computed directly with the second call
 
 `R` is the `Result` structure,
 
-and the last argument is the selection of atoms from the solute to be considered, given as a list of indexes, list of atom names, 
+and the last argument is the selection of atoms from the solute to be considered, given as a list of indices, list of atom names, 
 or a selection following the syntax of `PDBTools`, or vector of `PDBTools.Atom`s, or a `PDBTools.Residue`
 
 # Examples
