@@ -14,15 +14,15 @@ $(TYPEDFIELDS)
     # Groups of atoms: by default, the groups are the atoms themselves, but 
     # for very large molecules it is necessary to define groups of atoms 
     # in advance, to avoid memory issues. By default this vector is empty.
-    groups::Vector{Vector{Int}}
+    group_atom_indices::Vector{Vector{Int}}
     # Group (or atom) names.
-    names::Vector{String} 
+    group_names::Vector{String} 
 end
 
 # AtomSelection show functions
 function Base.show(io::IO, atsel::AtomSelection)
-    (; nmols, natomspermol, groups, names) = atsel 
-    ngroups = isempty(groups) ? natomspermol : length(groups)
+    (; nmols, natomspermol, group_atom_indices, group_names) = atsel 
+    ngroups = isempty(group_atom_indices) ? natomspermol : length(group_atom_indices)
     print(io, chomp(
     """
     AtomSelection 
@@ -43,7 +43,7 @@ Return the indices of the atoms that belong to a given group.
 ```jldoctest
 julia> using ComplexMixtures
 
-julia> atsel = AtomSelection([1,2,3], natomspermol=1, groups=[[1,2],[3]], names=["G1", "G2"])
+julia> atsel = AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]], group_names=["G1", "G2"])
 AtomSelection 
     3 atoms belonging to 3 molecule(s).
     Atoms per molecule: 1
@@ -63,8 +63,14 @@ julia> atom_group_name(atsel, 1)
 ```
 
 """
-atom_group(atsel::AtomSelection, i::Int) = atsel.groups[i]
-atom_group(atsel::AtomSelection, groupname::String) = atsel.groups[findfirst(x -> x == groupname, atsel.names)]
+atom_group(atsel::AtomSelection, i::Int) = atsel.group_atom_indices[i]
+function atom_group(atsel::AtomSelection, group_name::String) 
+    igroup = findfirst(==(group_name), atsel.group_names)
+    if isnothing(igroup)
+        error("Could not find group with name $group_name.")
+    end
+    return atsel.group_atom_indices[igroup]
+end
 
 """
     atom_group_name(atsel::AtomSelection, i::Int)
@@ -78,7 +84,7 @@ The `atom_group_names` function returns a vector with the names of all the group
 ```jldoctest
 julia> using ComplexMixtures
 
-julia> atsel = AtomSelection([1,2,3], natomspermol=1, groups=[[1,2],[3]], names=["G1", "G2"])
+julia> atsel = AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]], group_names=["G1", "G2"])
 AtomSelection 
     3 atoms belonging to 3 molecule(s).
     Atoms per molecule: 1
@@ -94,8 +100,8 @@ julia> atom_group_names(atsel)
 ```
 
 """
-atom_group_name(atsel::AtomSelection, i::Int) = atsel.names[i]
-@doc (@doc atom_group_name) atom_group_names(atsel) = atsel.names
+atom_group_name(atsel::AtomSelection, i::Int) = atsel.group_names[i]
+@doc (@doc atom_group_name) atom_group_names(atsel) = atsel.group_names
 
 """
 
@@ -111,8 +117,8 @@ The structure can be initialized in different ways:
         atoms::AbstractVector{<:PDBTools.Atom}; 
         nmols::Int = 0, 
         natomspermol::Int = 0,
-        groups::Vector{Vector{Int}} = Vector{Int}[],
-        names::Vector{String} = String[]
+        group_atom_indices::Vector{Vector{Int}} = Vector{Int}[],
+        group_names::Vector{String} = String[]
     ) 
 ```
 
@@ -122,7 +128,7 @@ system as that of the simulation.
 
 Either the number of molecules (`nmols`) **or** the number of atoms per molecule (`natomspermol`) must be provided.
 
-If the `groups` and `names` vectors are empty, the names of the groups
+If the `group_atom_indices` and `group_names` vectors are empty, the names of the groups
 will be retrieved from the atom names, and in the coordination numbers of each individual atom will be 
 stored.
 
@@ -158,8 +164,8 @@ julia> length(atom_group_names(atsel))
         indices::Vector{Int};
         nmols::Int = 0,
         natomspermol::Int = 0,
-        groups::Vector{Vector{Int}} = Vector{Int}[],
-        names::Vector{String} = String[]
+        group_atom_indices::Vector{Vector{Int}} = Vector{Int}[],
+        group_names::Vector{String} = String[]
     )
 ```
 
@@ -167,8 +173,8 @@ Construct an AtomSelection structure from the most low-level information: the in
 
 Either the number of molecules (`nmols`) or the number of atoms per molecule (`natomspermol`) must be provided.
 
-Groups of atoms can be defined by providing a vector of vectors of atom indices (`groups`), and a vector of group names (`names`).
-If the `groups` array is empty, the coordination numbers of each individual atoms wil be stored.
+Groups of atoms can be defined by providing a vector of vectors of atom indices (`group_atom_indices`), and a vector of group names (`group_names`).
+If the `group_atom_indices` array is empty, the coordination numbers of each individual atoms wil be stored.
 
 ## Examples
 
@@ -187,7 +193,7 @@ AtomSelection
     Atoms per molecule: 1
     Number of groups: 1
 
-julia> AtomSelection([1,2,3], natomspermol=1, groups=[[1,2],[3]], names=["G1", "G2"])
+julia> AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]], group_names=["G1", "G2"])
 AtomSelection 
     3 atoms belonging to 3 molecule(s).
     Atoms per molecule: 1
@@ -207,8 +213,8 @@ function AtomSelection(
     indices::Vector{Int};
     nmols::Int = 0,
     natomspermol::Int = 0,
-    groups::Vector{Vector{Int}} = Vector{Int}[],
-    names::Vector{String} = String[]
+    group_atom_indices::Vector{Vector{Int}} = Vector{Int}[],
+    group_names::Vector{String} = String[]
 
 )
     if nmols == 0 && natomspermol == 0
@@ -230,26 +236,26 @@ function AtomSelection(
         nmols = div(natoms, natomspermol)
     end
 
-    if isempty(groups) && !isempty(names)
-        if length(names) != natomspermol
+    if isempty(group_atom_indices) && !isempty(group_names)
+        if length(group_names) != natomspermol
             throw(ArgumentError(replace("""
-            The length of the names vector does not correspond to the number of atoms per molecule,
-             but not atom groups vector was provided. 
+            The length of the group_names vector does not correspond to the number of atoms per molecule,
+            but not atom groups vector was provided. 
             """, '\n' => "")))
         end
     end
 
-    if !isempty(groups)
-        if isempty(names)
+    if !isempty(group_atom_indices)
+        if isempty(group_names)
             @warn begin
                 """
-                Vector of groups was provided but vector of group names is empty. 
+                Vector of group atom indices was provided but vector of group names is empty. 
                 The group contributions will be only retrieved by the group indices.
                 """
             end _file=nothing _line=nothing
         else
-            if length(groups) != length(names)
-                throw(ArgumentError("The vector of groups has a different number of elements than the vector of group names."))
+            if length(group_atom_indices) != length(group_names)
+                throw(ArgumentError("The vector of group atom indices has a different number of elements than the vector of group names."))
             end
         end
     end
@@ -258,8 +264,8 @@ function AtomSelection(
         indices = indices,
         nmols = nmols,
         natomspermol = natomspermol,
-        groups = groups,
-        names = names,
+        group_atom_indices = group_atom_indices,
+        group_names = group_names,
     )
 end
 
@@ -284,14 +290,14 @@ end
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=2)
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, nmols=2)
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, nmols=2)
-    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, names=["A", "B"])
-    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, names=["A", "B", "C"])
+    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, group_names=["A", "B"])
+    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, group_names=["A", "B", "C"])
     
     @test_throws ArgumentError AtomSelection([1,2,3], ["A", "B", "C"])
     @test_throws MethodError AtomSelection([1,2,3]; abc = 1)
     @test_throws ArgumentError AtomSelection([1,2,3], ["A", "B", "C"]; nmols = 1)
 
-    @test_logs (:warn,) AtomSelection([1,2,3], natomspermol=1, groups=[[1,2],[3]])
+    @test_logs (:warn,) AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]])
 end
 
 #
@@ -301,19 +307,19 @@ function AtomSelection(
     atoms::AbstractVector{<:PDBTools.Atom}; 
     nmols::Int = 0, 
     natomspermol::Int = 0,
-    groups::Vector{Vector{Int}} = Vector{Int}[],
-    names::Vector{String} = String[]
+    group_atom_indices::Vector{Vector{Int}} = Vector{Int}[],
+    group_names::Vector{String} = String[]
 )
     indices = PDBTools.index.(atoms)
-    if isempty(groups) && isempty(names) 
-        names = PDBTools.name.(atoms[1:natomspermol])
+    if isempty(group_atom_indices) && isempty(group_names) 
+        group_names = PDBTools.name.(atoms[1:natomspermol])
     end
     return AtomSelection(
         indices;
-        names = names, 
         nmols = nmols, 
         natomspermol = natomspermol,
-        groups = groups
+        group_atom_indices = group_atom_indices,
+        group_names = group_names, 
     )
 end
 

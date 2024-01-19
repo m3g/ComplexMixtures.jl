@@ -88,6 +88,69 @@ selection with the custom `MYRES` name.
 
 ## Predefinition of atom groups
 
+Importantly, this should be only a concern for the solvation analysis of systems in which individual
+molecules are **very large**. This feature was introduced in version `2.0` of the package to support
+the study of small molecule distribution in virus structures, of millions of atoms.  
+
+By default, the contribution of each *type of* atom to the coordination number counts is stored, to allow
+the decomposition of the final MDDFs into any group contribution. However, when a structure, like a virus,
+has millions of atoms, storing the contribution of each atom becomes prohibitive in terms of memory.
+Thus, one may need to predefine the groups in which the contributions will be analyzed.
+
+Here, we illustrate this feature by presselecting the acidic and basic residues of a protein:
+
+```jldoctest
+julia> using ComplexMixtures, PDBTools
+
+julia> atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+
+julia> protein = select(atoms, "protein");
+
+julia> acidic_residues = select(atoms, "protein and acidic");
+
+julia> basic_residues = select(atoms, "protein and basic");
+
+julia> solute = AtomSelection(
+        protein, 
+        nmols=1,
+        group_atom_indices = [ index.(acidic_residues), index.(basic_residues) ],
+        group_names = [ "acidic residues", "basic residues" ]
+    )
+AtomSelection 
+    1463 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1463
+    Number of groups: 1463 
+```
+
+In this example, then, the `solute` `AtomSelection` has two groups. The indexes of the atoms
+of the groups are stored in the `group_atom_indices` vector and the group names in the `group_names`
+vector. The `atom_group` auxiliary function is the most practical way to retrive the indices of the
+atoms of the group.
+
+```julia-repl
+julia> atom_group(solute, "acidic residues")
+162-element Vector{Int64}:
+   24
+   25
+   26
+    ⋮
+ 1436
+ 1437
+```
+
+With these group selections predefined, the contributions of these groups to the MDDF or coordination numbers
+can be retrived directly from the result data structure with, for example:
+
+```julia-repl
+julia> result = mddf(trajectory, solute, solvent);
+
+julia> acidic_residue_contributions = atom_contributions(result, SoluteGroup("acidic residues"))
+```
+
+
+
+
+
 
 
 
