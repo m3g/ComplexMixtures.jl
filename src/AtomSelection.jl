@@ -347,11 +347,16 @@ or by providing directly the indices of teh atoms in the structure.
 Alternativelly, if the groups were predefined, the groups can be selected by group index
 or group name. 
 
+The possible constructors are:
+
     SoluteGroup(atoms::Vector{PDBTools.Atom})
     SolventGroup(atoms::Vector{PDBTools.Atom})
 
     SoluteGroup(atom_indices::Vector{Int})
     SolventGroup(atom_indices::Vector{Int})
+
+    SoluteGroup(atom_names::Vector{String})
+    SolventGroup(atom_names::Vector{String})
 
     SoluteGroup(group_name::String) 
     SoluteGroup(group_index::Int) 
@@ -359,60 +364,100 @@ or group name.
     SolventGroup(group_name::String)
     SolventGroup(group_index::Int)
 
+    SolventGroup(residue::PDBTools.Residue)
+    SolventGroup(residue::PDBTools.Residue)
+
 """ SoluteGroup
 @doc (@doc SoluteGroup) SolventGroup
 
 struct SoluteGroup{
     I<:Union{Int,Nothing},
     S<:Union{String,Nothing},
-    V<:Union{Vector{Int},Nothing}
+    VI<:Union{Vector{Int},Nothing},
+    VS<:Union{Vector{String},Nothing}
 }
     group_index::I
     group_name::S
-    atom_indices::V
+    atom_indices::VI
+    atom_names::VS
 end
 
 struct SolventGroup{
     I<:Union{Int,Nothing},
     S<:Union{String,Nothing},
-    V<:Union{Vector{Int},Nothing}
+    VI<:Union{Vector{Int},Nothing},
+    VS<:Union{Vector{String},Nothing}
 }
     group_index::I
     group_name::S
-    atom_indices::V
+    atom_indices::VI
+    atom_names::VS
 end
 
-SoluteGroup(atoms::Vector{PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms))
-SoluteGroup(atom_indices::Vector{Int}) = SoluteGroup(nothing, nothing, atom_indices)
-SoluteGroup(group_name::String) = SoluteGroup(nothing, group_name, nothing)
-SoluteGroup(group_index::Int) = SoluteGroup(group_index, nothing, nothing)
+function SoluteGroup(args...; kargs...)
+    throw(ArgumentError(chomp("""
+        No constructor for SoluteGroup with these arguments. Please check the documentation.
+    """)))
+end
+function SolventGroup(args...; kargs...)
+    throw(ArgumentError(chomp("""
+        No constructor for SoluteGroup with these arguments. Please check the documentation.
+    """)))
+end
 
-SolventGroup(atoms::Vector{PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms))
-SolventGroup(atom_indices::Vector{Int}) = SolventGroup(nothing, nothing, atom_indices)
-SolventGroup(group_name::String) = SolventGroup(nothing, group_name, nothing)
-SolventGroup(group_index::Int) = SolventGroup(group_index, nothing, nothing)
+SoluteGroup(atoms::Vector{PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
+SoluteGroup(atom_indices::Vector{Int}) = SoluteGroup(nothing, nothing, atom_indices, nothing)
+SoluteGroup(atom_names::Vector{String}) = SoluteGroup(nothing, nothing, nothing, atom_names)
+SoluteGroup(group_name::String) = SoluteGroup(nothing, group_name, nothing, nothing)
+SoluteGroup(group_index::Int) = SoluteGroup(group_index, nothing, nothing, nothing)
+SoluteGroup(residue::PDBTools.Residue) = SoluteGroup(nothing, nothing, PDBTools.index.(residue), nothing)
+
+SolventGroup(atoms::Vector{PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
+SolventGroup(atom_indices::Vector{Int}) = SolventGroup(nothing, nothing, atom_indices, nothing)
+SolventGroup(atom_names::Vector{String}) = SolventGroup(nothing, nothing, nothing, atom_names)
+SolventGroup(group_name::String) = SolventGroup(nothing, group_name, nothing, nothing)
+SolventGroup(group_index::Int) = SolventGroup(group_index, nothing, nothing, nothing)
+SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTools.index.(residue), nothing)
 
 @testitem "SoluteGroup and SolventGroup" begin
-    using PDBTools: readPDB, select
+    using PDBTools: readPDB, select, name, eachresidue
     using ComplexMixtures.Testing: pdbfile
     pdb = readPDB(pdbfile)
     @test fieldnames(SoluteGroup) == fieldnames(SolventGroup)
+
     sg = SoluteGroup(select(pdb, "protein and residue 2"))
-    @test SoluteGroup(select(pdb, "protein and residue 2")).atom_indices == [12 + i for i = 1:11]
+    @test sg.atom_indices == [12 + i for i = 1:11]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
     @test SoluteGroup([1,2,3]).atom_indices == [1,2,3]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
     @test SoluteGroup("N").group_name == "N"
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    @test SoluteGroup(2).group_index == 2
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    sg = SoluteGroup(name.(select(pdb, "protein and residue 2")))
+    @test sg.atom_names == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    sg = SoluteGroup(collect(eachresidue(pdb))[2])
+    @test sg.atom_indices == [12 + i for i = 1:11]
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+
     sg = SolventGroup(select(pdb, "protein and residue 2"))
-    @test SoluteGroup(select(pdb, "protein and residue 2")).atom_indices == [12 + i for i = 1:11]
+    @test sg.atom_indices == [12 + i for i = 1:11]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
-    @test SoluteGroup([1,2,3]).atom_indices == [1,2,3]
+    @test SoventGroup([1,2,3]).atom_indices == [1,2,3]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
-    @test SoluteGroup("N").group_name == "N"
+    @test SolventGroup("N").group_name == "N"
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    @test SolventGroup(2).group_index == 2
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    sg = SolventGroup(name.(select(pdb, "protein and residue 2")))
+    @test sg.atom_names == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
+    @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
+    sg = SolventGroup(collect(eachresidue(pdb))[2])
+    @test sg.atom_indices == [12 + i for i = 1:11]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
 end
 
-#group_contributions(SoluteGroup(result, select(atoms, "protein and acidic")))
+
 
 
