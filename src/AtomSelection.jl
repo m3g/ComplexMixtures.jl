@@ -270,18 +270,18 @@ function AtomSelection(
 end
 
 @testitem "AtomSelection - indices" begin
-    using PDBTools
+    using PDBTools: readPDB, index
     pdbfile = ComplexMixtures.Testing.pdbfile
     indices = index.(readPDB(pdbfile, "protein and residue 2"))
     s = AtomSelection(indices, nmols = 1, natomspermol = 11)
     @test s.indices == [12 + i for i = 1:11]
-    @test s.names == Int[]
+    @test s.group_names == String[]
     @test length(s.indices) == 11
     @test s.natomspermol == 11
     @test s.nmols == 1
-    @test s.names == String[]
-    s = AtomSelection(indices, names = fill("C", length(indices)), nmols = 1, natomspermol = 11)
-    @test s.names == fill("C", length(indices))
+    @test s.group_names == String[]
+    s = AtomSelection(indices, group_names = fill("C", length(indices)), nmols = 1, natomspermol = 11)
+    @test s.group_names == fill("C", length(indices))
 end
 
 @testitem "AtomSelection - argument errors" begin
@@ -444,7 +444,7 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
     sg = SolventGroup(select(pdb, "protein and residue 2"))
     @test sg.atom_indices == [12 + i for i = 1:11]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
-    @test SoventGroup([1,2,3]).atom_indices == [1,2,3]
+    @test SolventGroup([1,2,3]).atom_indices == [1,2,3]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
     @test SolventGroup("N").group_name == "N"
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
