@@ -118,10 +118,6 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     solute_group_count::Vector{Vector{Float64}}
     solvent_group_count::Vector{Vector{Float64}}
 
-    # Group or atom names
-    solute_group_names::Vector{String}
-    solvent_group_names::Vector{String}
-
     # Data to compute a RDF and the KB integral from this count
     rdf_count::Vector{Float64} = zeros(nbins)
     rdf_count_random::Vector{Float64} = zeros(nbins)
@@ -454,34 +450,6 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     R.md_count_random .= density_fix * R.md_count_random
     R.rdf_count_random .= density_fix * R.rdf_count_random
 
-#    voltar
-    function group_contribution(R::Result, s::Symbol, igroup::Int)
-        group_contribution = zeros(R.nbins)
-        for ibin in 1:R.nbins
-            R.md_count_random[ibin] == 0 && continue
-            if s == :solute 
-                for i in eachindex(R.solute_group_count)
-                    group_contribution[ibin] = R.solute_group_count[i][ibin] / R.md_count_random[ibin]
-                end
-            end
-            if s == :solvent
-                for i in eachindex(R.solvent_group_count)
-                    group_contribution[ibin] = R.solvent_group_count[i][ibin] / R.md_count_random[ibin]
-                end
-            end
-        end
-        return group_contribution
-    end
-
-    function group_contribution(R::Result, s::Symbol, indices::Vector{Int})
-    end
-
-    function group_contribution(R::Result, s::Symbol, selection::String)
-    end
-
-    function group_contribution(R::Result, s::Symbol, atoms::AbstractVector{<:PDBTools.Atom})
-    end
-
     #
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
@@ -493,7 +461,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
                 @warn begin
                     """
                     Ideal-gas histogram bins with zero samples. 
-                    Increase n_random_samples or trajectory length.
+                    Increase n_random_samples and/or number of trajectory frames.
                     """
                 end _file=nothing _line=nothing
                 warn = true
