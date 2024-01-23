@@ -55,12 +55,13 @@ AtomSelection
 [VMD](https://www.ks.uiuc.edu/Research/vmd/) is a very popular and
 powerful package for visualization of simulations. It contains a very
 versatile library to read topologies and trajectory files, and a
-powerful selection syntax. We provide here a wrapper to VMD which allows
-using its capabilities.  
+powerful selection syntax. The PDBTools.jl (v1.0 or greater) package provides a simple
+wrapper to VMD that allows using the same syntax at it supports.
 
 For example, the solute can be defined with: 
 ```julia
-indices, names = VMDselect("./system.gro","protein",vmd="/usr/bin/vmd")
+import PDBTools
+indices, names = select_with_vmd("./system.gro","protein",vmd="/usr/bin/vmd")
 solute = AtomSelection(indices,names,nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
@@ -72,7 +73,8 @@ which can be used to load custom scripts within `vmd` before setting
 the selection. This allows the definition of `tcl` scripts with custom selection
 macros, for instance. The usage would be: 
 ```julia
-sel = VMSelect("file.pdb", "resname MYRES"; srcload = [ "mymacros1.tcl", "mymacros2.tcl" ])
+import PDBTools
+sel = PDBTools.select_with_vmd("file.pdb", "resname MYRES"; srcload = [ "mymacros1.tcl", "mymacros2.tcl" ])
 ```
 Which corresponds to `source`ing each of the macro files in VMD before defining the 
 selection with the custom `MYRES` name.
