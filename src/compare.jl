@@ -5,7 +5,7 @@ $(INTERNAL)
 Union of types to define comparison operators.
 
 """
-const ComplexMixturesTypes = Union{Result,Density,Volume,SolSummary,Options,AtomSelection}
+const ComplexMixturesTypes = Union{Result,Density,Volume,AtomSelection,Options}
 
 """
     Base.isapprox(r1::T, r2::T; debug=false) where T <: CMTypes

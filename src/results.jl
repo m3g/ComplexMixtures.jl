@@ -55,30 +55,6 @@ end
 
 """
 
-$(INTERNAL)
-
-$(TYPEDEF)
-
-Structures to contain the details of a solute or solvent to store in the results of the MDDF calculation.
-
-$(TYPEDFIELDS)
-
-"""
-struct SolSummary
-    natoms::Int
-    nmols::Int
-    natomspermol::Int
-end
-SolSummary(s::AtomSelection) = SolSummary(s.natoms, s.nmols, s.natomspermol)
-
-function Base.show(io::IO, s::SolSummary)
-    println(io, "Number of atoms: ", s.natoms)
-    println(io, "Number of molecules: ", s.nmols)
-    print(io, "Number of atoms per molecule: ", s.natomspermol)
-end
-
-"""
-
 $(TYPEDEF)
 
 Structure to contain the results of the MDDF calculation.
@@ -104,13 +80,15 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     md_count_random::Vector{Float64} = zeros(nbins)
     coordination_number::Vector{Float64} = zeros(nbins)
     coordination_number_random::Vector{Float64} = zeros(nbins)
+
+    # The resulting MDDF and kb integrals
     mddf::Vector{Float64} = zeros(nbins)
     kb::Vector{Float64} = zeros(nbins)
 
     # Properties of the solute and solvent selections
     autocorrelation::Bool
-    solvent::SolSummary
-    solute::SolSummary
+    solvent::AtomSelection
+    solute::AtomSelection
 
     # Group (atomic type by default) contributions to 
     # the coordination number counts. These are used to
@@ -145,7 +123,7 @@ end
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-function Result(trajectory::Trajectory, options::Options; irefatom = -1)
+function Result(trajectory::Trajectory, options::Options = Options())
 
     # Check for simple input errors
     if options.stride < 1
@@ -189,19 +167,8 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
     if options.irefatom == -1
         nextframe!(trajectory)
         first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
-        # voltar
-        #irefatom = findmin(at -> norm(at - cm), first_mol)
-        # don't use findmin for compatibility with Julia 1.6
-        irefatom = 0
-        dmin = +Inf
         cm = mean(first_mol)
-        for (i, at) in pairs(first_mol)
-            d = norm(at - cm)
-            if d < dmin 
-                dmin = d
-                irefatom = i
-            end
-        end
+        irefatom = first(findmin(at -> norm(at - cm), first_mol))
     else
         irefatom = options.irefatom
     end
@@ -218,22 +185,16 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
 
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
-    solute_group_count = if isempty(options.solute_groups)
-        [ zeros(nbins) for _ in 1:solute.natomspermol ]
-    else
-        [ zeros(nbins) for _ in 1:length(options.solute_groups) ]
+    n_groups_solute = length(trajectory.solute.group_atom_indices)
+    n_groups_solvent = length(trajectory.solvent.group_atom_indices)
+    if n_groups_solute == 0
+        n_groups_solute = trajectory.solute.natomspermol
     end
-    solute_group_names = if isempty(options.solute_groups)
-        trajectory.solute.names
-    else
-        [ string(i) for i in 1:length(options.solute_groups) ]
+    if n_groups_solvent == 0
+        n_groups_solvent = trajectory.solvent.natomspermol
     end
-
-    solvent_group_count = if isempty(options.solvent_groups)
-        [ zeros(nbins) for _ in 1:solvent.natomspermol ]
-    else
-        [ zeros(nbins) for _ in 1:length(options.solvent_groups) ]
-    end
+    solute_group_count = [ zeros(nbins) for _ in 1:n_groups_solute ]
+    solvent_group_count = [ zeros(nbins) for _ in 1:n_groups_solvent ]
 
     return Result(
         options = options,
@@ -244,8 +205,8 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
         lastframe_read = lastframe_read,
         nframes_read = nframes_read,
         autocorrelation = isautocorrelation(trajectory),
-        solute = SolSummary(trajectory.solute),
-        solvent = SolSummary(trajectory.solvent),
+        solute = trajectory.solute,
+        solvent = trajectory.solvent,
         files = [trajectory.filename],
         weights = [1.0],
         solute_group_count = solute_group_count,
@@ -254,8 +215,9 @@ function Result(trajectory::Trajectory, options::Options; irefatom = -1)
 end
 
 @testitem "input: argument errors" begin
-    using PDBTools
+    using ComplexMixtures
     using ComplexMixtures: Testing
+    using PDBTools: readPDB, select
     atoms = readPDB("$(Testing.data_dir)/NAMD/structure.pdb")
     trajectory = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao, water)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
@@ -303,7 +265,7 @@ end
 isautocorrelation(solute_indices::Vector{Int}, solvent_indices::Vector{Int}) =
     solute_indices == solvent_indices ? true : false
 isautocorrelation(trajectory::Trajectory) =
-    isautocorrelation(trajectory.solute.index, trajectory.solvent.index)
+    isautocorrelation(trajectory.solute.indices, trajectory.solvent.indices)
 
 #
 # Functions to compute volumes of shells
@@ -711,8 +673,8 @@ end
     @test R.options == Options()
     @test length(R.rdf_count) == 500
     @test length(R.rdf_count_random) == 500
-    @test R.solute == ComplexMixtures.SolSummary(1463, 1, 1463)
-    @test R.solvent == ComplexMixtures.SolSummary(2534, 181, 14)
+    @test R.solute == ComplexMixtures.AtomSelection(1463, 1, 1463)
+    @test R.solvent == ComplexMixtures.AtomSelection(2534, 181, 14)
     @test size(R.solute_atom) == (500, 1463)
     @test size(R.solvent_atom) == (500, 14)
     @test length(R.coordination_number) == 500
@@ -725,7 +687,7 @@ end
 #
 # Functions to save the results to a file
 #
-StructTypes.StructType(::Type{SolSummary}) = StructTypes.Struct()
+StructTypes.StructType(::Type{AtomSelection}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Result{Vector{Float64}}}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Result{Matrix{Float64}}}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Density}) = StructTypes.Struct()

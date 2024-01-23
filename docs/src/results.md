@@ -152,8 +152,8 @@ The complete data available is:
 | `dbulk` | Distance from solute of bulk solution. | `Float64` |  |
 | `cutoff` | Maximum distance to be considered for histograms. | `Float64`  | | 
 | `autocorrelation` | The solute is the same as the solvent? | `Bool` | Automatically set if `solute == solvent`. |  
-| `solute` | Properties of the solute | `SolSummary` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solute. |
-| `solvent` | Properties of the solvent. | `SolSummary` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solvent. | 
+| `solute` | Properties of the solute | `AtomSelection` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solute. |
+| `solvent` | Properties of the solvent. | `AtomSelection` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solvent. | 
 | `irefatom` | This is a reference atom that is used to generate random rotations and translations internally. | `Int` | Counts of the distributions for this atom are performed automatically to obtain radial (or proximal) distribution functions. Can be used for testing purposes. |
 | `rdf_count` | This is the `md_count` minimum distance count of `irefatom`. | `Vector{Float64}` | This corresponds to the conventional radial distribution function if the solute contains only one atom. | 
 | `rdf_count_random` | Minimum distance of `irefatom` count for the random distribution. | `Vector{Float64}` | |

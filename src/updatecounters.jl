@@ -11,7 +11,7 @@ returns the type of the atom, that is, the index of this atom within the molecul
 itype(iatom::Int, natomspermol::Int) = mod1(iatom, natomspermol)
 
 # Calling using the structures of Solute and Solvent, to clear up the code above
-itype(iatom::Int, s::Union{SolSummary,AtomSelection}) = itype(iatom, s.natomspermol)
+itype(iatom::Int, s::AtomSelection) = itype(iatom, s.natomspermol)
 
 """
     updatecounters!(R::Result, system::AbstractPeriodicSystem)
