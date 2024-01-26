@@ -93,8 +93,11 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     # Group (atomic type by default) contributions to 
     # the coordination number counts. These are used to
     # compute group contributions to the MDDFs
+    # Note: These could be Matrix{Float64}, but for the convenience
+    # of using JSON3, we use Vector{Vector{Float64}}, which is 
+    # read directly.
     solute_group_count::Vector{Vector{Float64}}
-    solvent_group_count::Vector{Vector{Float64}}
+    solvent_group_count::Vector{Vector{Flaot64}}
 
     # Data to compute a RDF and the KB integral from this count
     rdf_count::Vector{Float64} = zeros(nbins)
@@ -185,13 +188,15 @@ function Result(trajectory::Trajectory, options::Options = Options())
 
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
-    n_groups_solute = length(trajectory.solute.group_atom_indices)
-    n_groups_solvent = length(trajectory.solvent.group_atom_indices)
-    if n_groups_solute == 0
-        n_groups_solute = trajectory.solute.natomspermol
+    n_groups_solute = if isnothing(trajectory.solute.group_atom_indices)
+        trajectory.solute.natomspermol
+    else
+        length(trajectory.solute.group_atom_indices)
     end
-    if n_groups_solvent == 0
-        n_groups_solvent = trajectory.solvent.natomspermol
+    n_groups_solvent = if isnothing(trajectory.solvent.group_atom_indices)
+        trajectory.solvent.natomspermol
+    else
+        length(trajectory.solvent.group_atom_indices)
     end
     solute_group_count = [ zeros(nbins) for _ in 1:n_groups_solute ]
     solvent_group_count = [ zeros(nbins) for _ in 1:n_groups_solvent ]

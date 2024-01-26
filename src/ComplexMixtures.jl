@@ -8,10 +8,10 @@ import PDBTools
 import PrecompileTools
 import Random
 import StructTypes
+import FortranFiles
 
 using .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
-using FortranFiles: FortranFile
 using LinearAlgebra: norm, cross, dot, diag
 using Printf: @sprintf
 using ProgressMeter: Progress, next!
@@ -22,7 +22,6 @@ using TestItems: @testitem
 export AtomSelection, atom_group, atom_group_name, atom_group_names
 export SoluteGroup, SolventGroup
 
-#=
 export Trajectory, mddf, save, load, write, Options, Result
 export merge
 export overview
@@ -31,6 +30,7 @@ export VMDselect
 # Tools
 export contributions, coordination_number, gr, grid3D
 
+#=
 # Message for internal doc strings
 const INTERNAL = "**Internal structure or function, interface may change.**"
 
@@ -50,11 +50,11 @@ include("./Options.jl")
 include("./VMDselect.jl")
 =#
 include("./AtomSelection.jl")
-#=
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
 
+#=
 # Some functions to deal with rigid body calculations
 include("./rigid_body.jl")
 

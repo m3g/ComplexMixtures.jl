@@ -124,7 +124,7 @@ function warning_nmols_types()
     """)
 end
 
-@testitem "solute position" begin
+@testitem "contributions" begin
     using ComplexMixtures
     using PDBTools
     using ComplexMixtures.Testing
@@ -142,23 +142,23 @@ end
     results = mddf(traj)
 
     # solute contributions fetching
-    N_contributions = contributions(solute, results.solute_atom, ["N"])
+    N_contributions = contributions(results, SoluteGroup("name N"))
     @test length(N_contributions) == 500
 
-    C1_contributions = contributions(solute, results.solute_atom, ["C1"])
+    C1_contributions = contributions(solute, SoluteGroup("name C1"))
     @test length(C1_contributions) == 500
 
-    H33_contributions = contributions(solute, results.solute_atom, ["H33"])
+    H33_contributions = contributions(solute, SoluteGroup("name H33"))
     @test length(H33_contributions) == 500
 
     # solvent contributions fetching
-    N_contributions = contributions(solvent, results.solvent_atom, ["N"])
+    N_contributions = contributions(solvent, SolventGroup("name N"))
     @test length(N_contributions) == 500
 
-    C1_contributions = contributions(solvent, results.solvent_atom, ["C1"])
+    C1_contributions = contributions(solvent, SolventGroup("name C1"))
     @test length(C1_contributions) == 500
 
-    H33_contributions = contributions(solvent, results.solvent_atom, ["H33"])
+    H33_contributions = contributions(solvent, SolventGroup("name H33"))
     @test length(H33_contributions) == 500
 
 end
