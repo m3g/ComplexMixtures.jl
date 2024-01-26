@@ -58,14 +58,15 @@ function NamdDCD(
 
     # Read header
     IntVec = Vector{Int32}(undef, 17)
-    _, _, IntVec[1:8], _, IntVec[9:17] = read(st, FortranFiles.FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
-    _, _ = read(st, Int32, FortranFiles.FString{80})
-    read_natoms = read(st, Int32)
+    _, _, IntVec[1:8], _, IntVec[9:17] = 
+        FortranFiles.read(st, FortranFiles.FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
+    _, _ = FortranFiles.read(st, Int32, FortranFiles.FString{80})
+    read_natoms = FortranFiles.read(st, Int32)
 
     # Check if dcd file contains unit cell information
     unitcell_in_dcd = false
     try
-        read(st, [Float64 for i = 1:7])
+        FortranFiles.read(st, [Float64 for i = 1:7])
     catch err
         unitcell_in_dcd = true
     end
@@ -78,7 +79,7 @@ function NamdDCD(
 
     # Read the unitcell in the first frame
     unitcell_read = zeros(Float64, 6)
-    read(st, unitcell_read)
+    FortranFiles.read(st, unitcell_read)
     firstframe!(st)
 
     nframes = getnframes(st)
@@ -137,12 +138,12 @@ function nextframe!(trajectory::NamdDCD{T}) where {T}
 
     st = stream(trajectory)
 
-    read(st, trajectory.unitcell_read)
+    FortranFiles.read(st, trajectory.unitcell_read)
 
     # Read the coordinates  
-    read(st, trajectory.x_read)
-    read(st, trajectory.y_read)
-    read(st, trajectory.z_read)
+    FortranFiles.read(st, trajectory.x_read)
+    FortranFiles.read(st, trajectory.y_read)
+    FortranFiles.read(st, trajectory.z_read)
 
     # Save coordinates of solute and solvent in trajectory arrays
     for i = eachindex(trajectory.x_solute)
@@ -189,9 +190,9 @@ function firstframe!(st::FortranFiles.FortranFile)
     # rewind
     FortranFiles.rewind(st)
     # skip header
-    read(st)
-    read(st)
-    read(st)
+    FortranFiles.read(st)
+    FortranFiles.read(st)
+    FortranFiles.read(st)
 end
 firstframe!(trajectory::NamdDCD) = firstframe!(stream(trajectory))
 
@@ -208,10 +209,10 @@ function getnframes(st::FortranFiles.FortranFile)
     nframes = 0
     while true
         try
-            read(st, Float64) # pbc data
-            read(st, Float32) # x
-            read(st, Float32) # y
-            read(st, Float32) # z
+            FortranFiles.read(st, Float64) # pbc data
+            FortranFiles.read(st, Float32) # x
+            FortranFiles.read(st, Float32) # y
+            FortranFiles.read(st, Float32) # z
             nframes = nframes + 1
         catch
             firstframe!(st)
