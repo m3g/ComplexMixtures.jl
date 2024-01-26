@@ -30,15 +30,11 @@ export VMDselect
 # Tools
 export contributions, coordination_number, gr, grid3D
 
-#=
 # Message for internal doc strings
 const INTERNAL = "**Internal structure or function, interface may change.**"
 
 # Module for testing
-=#
 include("./Testing.jl")
-#=
-
 
 # Input and Output data structures
 include("./io.jl")
@@ -47,12 +43,16 @@ include("./io.jl")
 include("./Options.jl")
 
 # Structures and functions to deal with the solute and solvent selections
-include("./VMDselect.jl")
-=#
 include("./AtomSelection.jl")
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
+
+struct Result end
+struct Density end
+struct Volume end
+# Comparison operators for ComplexMixtures types
+include("./compare.jl")
 
 #=
 # Some functions to deal with rigid body calculations
@@ -72,9 +72,6 @@ include("./updatecounters.jl")
 
 # Main function
 include("./mddf.jl")
-
-# Comparison operators for ComplexMixtures types
-include("./compare.jl")
 
 # Tools
 include("./tools/contributions.jl")

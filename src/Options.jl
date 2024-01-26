@@ -75,10 +75,6 @@ function Base.show(io::IO, o::Options)
             )
         length of weights vector = $(length(o.frame_weights))
    
-    Groups to compute contributions are pre-defined: 
-        For solute: $(isempty(o.solute_groups) ? "no" : "$(length(o.solute_groups)) group(s)")
-        For solvent: $(isempty(o.solvent_groups) ? "no" : "$(length(o.solvent_groups)) group(s)")
-
     Computation details: 
         Reference atom for random rotations: irefatom = $(o.irefatom)
         Number of random samples per frame: n_random_samples = $(o.n_random_samples)
@@ -117,8 +113,6 @@ function copy(o::Options)
         nthreads = o.nthreads,
         silent = o.silent,
         frame_weights = copy(o.frame_weights),
-        solute_groups = Vector{Int}[ copy(g) for g in o.solute_groups ],
-        solvent_groups = Vector{Int}[ copy(g) for g in o.solvent_groups ],
     )
 end
 
@@ -127,8 +121,6 @@ end
 #
 function Base.merge(O::Vector{Options})
     local options
-    empty_solute_groups = false
-    empty_solvent_groups = false
     empty_frame_weights = false
     # Check if frame weights were provided to none, all, or some trajectories
     # If there are weights for some trajectories, but not all, issue a warning
@@ -151,85 +143,22 @@ function Base.merge(O::Vector{Options})
         if !empty_frame_weights
             append!(options.frame_weights, O[i].frame_weights)
         end
-        # The group definitions must be the same for all results
-        if !empty_solute_groups && !isequal(options.solute_groups, O[i].solute_groups)
-            @warn begin
-                """
-                Groups for solute are not the same for all results. 
-                The merged solute_groups will be empty and won't be meaningful.
-                """
-            end _file=nothing _line=nothing
-            empty_solute_groups = true
-        end
-        if !empty_solvent_groups && !isequal(options.solvent_groups, O[i].solvent_groups)
-            @warn begin
-                """
-                Groups for solvent are not the same for all results. 
-                The merged solvent_groups will be empty and won't be meaningful.
-                """
-            end _file=nothing _line=nothing
-            empty_solvent_groups = true
-        end
+
     end
     empty_frame_weights && (empty!(options.frame_weights))
-    empty_solute_groups && (empty!(options.solute_groups))
-    empty_solvent_groups && (empty!(options.solvent_groups))
     return options
 end
 
 @testitem "copy/merge Options" begin
-
     o1 = Options()
     o2 = copy(o1)
-    @test o1 == o2
+    @test isequal(o1,o2)
     o2 = Options()
     om = merge([o1, o2])
-    @test om == o1
+    @test isequal(om,o1)
     o2 = Options(frame_weights=[1.0, 2.0])
     @test @test_logs (:warn,) merge([o1, o2]).frame_weights == Float64[]
     o1 = Options(frame_weights=[0.5, 1.0])
     om = merge([o1, o2])
     @test om.frame_weights == [0.5, 1.0, 1.0, 2.0] 
-
-    o1 = Options(solute_groups=[[1,2,3]])
-    @test o1.solute_groups == [[1,2,3]]
-    @test o1.solvent_groups == Vector{Int}[]
-    o2 = Options(solute_groups=[[1,2,3]])
-    om = merge([o1, o2])
-    @test om.solute_groups == [[1,2,3]]
-    @test om.solvent_groups == Vector{Int}[]
-    o2 = Options(solute_groups=[[1,2,3], [4,5,6]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solute_groups == Vector{Int}[]
-    @test om.solvent_groups == Vector{Int}[]
-    o1 = Options(solute_groups=[[1,2,3], [4,5,6]])
-    o2 = Options(solute_groups=[[1,2,3]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solute_groups == Vector{Int}[]
-    @test om.solvent_groups == Vector{Int}[]
-
-    o1 = Options(solvent_groups=[[1,2,3]])
-    @test o1.solvent_groups == [[1,2,3]]
-    @test o1.solute_groups == Vector{Int}[]
-    o2 = Options(solvent_groups=[[1,2,3]])
-    om = merge([o1, o2])
-    @test om.solvent_groups == [[1,2,3]]
-    @test om.solute_groups == Vector{Int}[]
-    o1 = Options(solvent_groups=[[1,2,3]])
-    o2 = Options(solvent_groups=[[1,2,3], [4,5,6]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solvent_groups == Vector{Int}[]
-    @test om.solute_groups == Vector{Int}[]
-    o1 = Options(solvent_groups=[[1,2,3], [4,5,6]])
-    o2 = Options(solvent_groups=[[1,2,3]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solvent_groups == Vector{Int}[]
-    @test om.solute_groups == Vector{Int}[]
-
-    o1 = Options(solvent_groups=[[1,2,3]], solute_groups=[[4,5,6]])
-    o2 = Options(solvent_groups=[[1,2,3]], solute_groups=[[4,5,6]])
-    om = merge([o1, o2])
-    @test om.solvent_groups == [[1,2,3]]
-    @test om.solute_groups == [[4,5,6]]
-
 end
