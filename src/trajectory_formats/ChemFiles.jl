@@ -29,8 +29,8 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     solvent::AtomSelection
 
     # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
-    x_solute::Vector{T}  # solute.natoms vectors of length 3 (preferentially static vectors)
-    x_solvent::Vector{T} # solvent.natoms vectors of lenght 3 (preferentially static vectors)
+    x_solute::Vector{T}  # natoms(solute) vectors of length 3 (preferentially static vectors)
+    x_solvent::Vector{T} # natoms(solvent) vectors of lenght 3 (preferentially static vectors)
 
     # unitcell
     unitcell::MMatrix{3,3,Float64,9}
@@ -80,8 +80,8 @@ function ChemFile(
         nframes,
         solute,
         solvent,
-        zeros(T, solute.natoms),
-        zeros(T, solvent.natoms),
+        zeros(T, ComplexMixtures.natoms(solute)),
+        zeros(T, ComplexMixtures.natoms(solvent)),
         unitcell,
         natoms, # Total number of atoms
     )
@@ -114,18 +114,18 @@ function nextframe!(trajectory::ChemFile{T}) where {T}
 
     # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
     # but the code in general is more clear aftwerwards by doing this)
-    for i = 1:trajectory.solute.natoms
+    for i in eachindex(trajectory.x_solute)
         trajectory.x_solute[i] = T(
-            positions[1, trajectory.solute.index[i]],
-            positions[2, trajectory.solute.index[i]],
-            positions[3, trajectory.solute.index[i]],
+            positions[1, trajectory.solute.indices[i]],
+            positions[2, trajectory.solute.indices[i]],
+            positions[3, trajectory.solute.indices[i]],
         )
     end
-    for i = 1:trajectory.solvent.natoms
+    for i in eachindex(trajectory.x_solvent)
         trajectory.x_solvent[i] = T(
-            positions[1, trajectory.solvent.index[i]],
-            positions[2, trajectory.solvent.index[i]],
-            positions[3, trajectory.solvent.index[i]],
+            positions[1, trajectory.solvent.indices[i]],
+            positions[2, trajectory.solvent.indices[i]],
+            positions[3, trajectory.solvent.indices[i]],
         )
     end
 

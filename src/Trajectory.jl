@@ -100,8 +100,8 @@ end
         tmao,
         format = "PDBTraj",
     )
-    @test traj.solute.natoms == 1463
-    @test traj.solvent.natoms == 2534
+    @test ComplexMixtures.natoms(traj.solute) == 1463
+    @test ComplexMixtures.natoms(traj.solvent) == 2534
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.47962951660156, 84.47962951660156, 84.47962951660156)
 
     # Chemfiles with NAMD
@@ -113,8 +113,8 @@ end
     )
     @test traj.nframes == 20
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
-    @test traj.solute.natoms == 1463
-    @test traj.solvent.natoms == 2534
+    @test ComplexMixtures.natoms(traj.solute) == 1463
+    @test ComplexMixtures.natoms(traj.solvent) == 2534
 
     # Chemfiles with Gromacs
     atoms = readPDB("$(Testing.data_dir)/Gromacs/system.pdb")
@@ -123,7 +123,7 @@ end
     traj = Trajectory("$(Testing.data_dir)/Gromacs/trajectory.xtc", protein, emi)
     @test traj.nframes == 26
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
-    @test traj.solute.natoms == 1231
-    @test traj.solvent.natoms == 5080
+    @test ComplexMixtures.natoms(traj.solute) == 1231
+    @test ComplexMixtures.natoms(traj.solvent) == 5080
 
 end

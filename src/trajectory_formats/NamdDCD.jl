@@ -16,7 +16,7 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    stream::Stream{<:FortranFile} # special type of stream required for reading DCD files
+    stream::Stream{<:FortranFiles.FortranFile} # special type of stream required for reading DCD files
     nframes::Int64
 
     # Data structures of the solute and solvent 
@@ -54,12 +54,12 @@ function NamdDCD(
     T::Type = SVector{3,Float64},
 )
 
-    st = FortranFile(filename)
+    st = FortranFiles.FortranFile(filename)
 
     # Read header
     IntVec = Vector{Int32}(undef, 17)
-    _, _, IntVec[1:8], _, IntVec[9:17] = read(st, FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
-    _, _ = read(st, Int32, FString{80})
+    _, _, IntVec[1:8], _, IntVec[9:17] = read(st, FortranFiles.FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
+    _, _ = read(st, Int32, FortranFiles.FString{80})
     read_natoms = read(st, Int32)
 
     # Check if dcd file contains unit cell information
@@ -82,7 +82,7 @@ function NamdDCD(
     firstframe!(st)
 
     nframes = getnframes(st)
-    lastatom = max(maximum(solute.index), maximum(solvent.index))
+    lastatom = max(maximum(solute.indices), maximum(solvent.indices))
 
     # setup the trajectory struct that contains the stream
     stream = Stream(st)
@@ -96,8 +96,8 @@ function NamdDCD(
         nframes,
         solute,
         solvent,
-        zeros(T, solute.natoms), # solute atom coordinates
-        zeros(T, solvent.natoms), # solvent atom coordinates
+        zeros(T, ComplexMixtures.natoms(solute)), # solute atom coordinates
+        zeros(T, ComplexMixtures.natoms(solvent)), # solvent atom coordinates
         lastatom,
         unitcell_read, # auxiliary vector to read unitcell data
         zeros(Float32, lastatom), # auxiliary x
@@ -118,7 +118,7 @@ end
 #
 # Function that opens the trajectory stream
 #
-opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.filename))
+opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFiles.FortranFile(trajectory.filename))
 
 #
 # Function that closes the IO Stream of the trajectory
@@ -145,18 +145,18 @@ function nextframe!(trajectory::NamdDCD{T}) where {T}
     read(st, trajectory.z_read)
 
     # Save coordinates of solute and solvent in trajectory arrays
-    for i = 1:trajectory.solute.natoms
+    for i = eachindex(trajectory.x_solute)
         trajectory.x_solute[i] = T(
-            trajectory.x_read[trajectory.solute.index[i]],
-            trajectory.y_read[trajectory.solute.index[i]],
-            trajectory.z_read[trajectory.solute.index[i]],
+            trajectory.x_read[trajectory.solute.indices[i]],
+            trajectory.y_read[trajectory.solute.indices[i]],
+            trajectory.z_read[trajectory.solute.indices[i]],
         )
     end
-    for i = 1:trajectory.solvent.natoms
+    for i = eachindex(trajectory.x_solvent)
         trajectory.x_solvent[i] = T(
-            trajectory.x_read[trajectory.solvent.index[i]],
-            trajectory.y_read[trajectory.solvent.index[i]],
-            trajectory.z_read[trajectory.solvent.index[i]],
+            trajectory.x_read[trajectory.solvent.indices[i]],
+            trajectory.y_read[trajectory.solvent.indices[i]],
+            trajectory.z_read[trajectory.solvent.indices[i]],
         )
     end
 
@@ -185,9 +185,9 @@ end
 #
 # Leave DCD file in position to read the first frame: DCD files have a header
 #
-function firstframe!(st::FortranFile)
+function firstframe!(st::FortranFiles.FortranFile)
     # rewind
-    rewind(st)
+    FortranFiles.rewind(st)
     # skip header
     read(st)
     read(st)
@@ -203,7 +203,7 @@ firstframe!(trajectory::NamdDCD) = firstframe!(stream(trajectory))
 # Sometimes the DCD files contains a wrong number of frames in the header, so to
 # get the actual number of frames, it is better to read it
 #
-function getnframes(st::FortranFile)
+function getnframes(st::FortranFiles.FortranFile)
     firstframe!(st)
     nframes = 0
     while true
