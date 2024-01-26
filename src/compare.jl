@@ -18,8 +18,7 @@ Function to test if two runs offered similar results. Mostly used in the package
 Base.isapprox(x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} =
     _compare(isapprox, x, y; debug = debug)
 
-import Base: ==
-==(x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} = _compare(==, x, y; debug = debug)
+Base.isequal(x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} = _compare(==, x, y; debug = debug)
 
 function _compare(_similar::F, x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} where {F<:Function}
     check = true
