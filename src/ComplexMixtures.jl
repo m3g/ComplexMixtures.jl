@@ -12,7 +12,7 @@ import StructTypes
 using .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using LinearAlgebra: norm, cross, dot, diag
-using FortranFiles: FortranFile, rewind, FString
+using FortranFiles: FortranFile, rewind, FString, read, close
 using Printf: @sprintf
 using ProgressMeter: Progress, next!
 using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
