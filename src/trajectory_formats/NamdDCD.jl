@@ -16,7 +16,7 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    stream::Stream{<:FortranFiles.FortranFile} # special type of stream required for reading DCD files
+    stream::Stream{<:FortranFile} # special type of stream required for reading DCD files
     nframes::Int64
 
     # Data structures of the solute and solvent 
@@ -54,19 +54,18 @@ function NamdDCD(
     T::Type = SVector{3,Float64},
 )
 
-    st = FortranFiles.FortranFile(filename)
+    st = FortranFile(filename)
 
     # Read header
     IntVec = Vector{Int32}(undef, 17)
-    _, _, IntVec[1:8], _, IntVec[9:17] = 
-        FortranFiles.read(st, FortranFiles.FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
-    _, _ = FortranFiles.read(st, Int32, FortranFiles.FString{80})
-    read_natoms = FortranFiles.read(st, Int32)
+    _, _, IntVec[1:8], _, IntVec[9:17] = read(st, FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
+    _, _ = read(st, Int32, FString{80})
+    read_natoms = read(st, Int32)
 
     # Check if dcd file contains unit cell information
     unitcell_in_dcd = false
     try
-        FortranFiles.read(st, [Float64 for i = 1:7])
+        read(st, [Float64 for i = 1:7])
     catch err
         unitcell_in_dcd = true
     end
@@ -79,7 +78,7 @@ function NamdDCD(
 
     # Read the unitcell in the first frame
     unitcell_read = zeros(Float64, 6)
-    FortranFiles.read(st, unitcell_read)
+    read(st, unitcell_read)
     firstframe!(st)
 
     nframes = getnframes(st)
@@ -89,7 +88,7 @@ function NamdDCD(
     stream = Stream(st)
 
     # Return the stream closed, it is opened and closed within the mddf routine
-    FortranFiles.close(st)
+    close(st)
 
     return NamdDCD(
         filename,
@@ -119,12 +118,12 @@ end
 #
 # Function that opens the trajectory stream
 #
-opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFiles.FortranFile(trajectory.filename))
+opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.filename))
 
 #
 # Function that closes the IO Stream of the trajectory
 #
-closetraj!(trajectory::NamdDCD) = FortranFiles.close(stream(trajectory))
+closetraj!(trajectory::NamdDCD) = close(stream(trajectory))
 
 #
 # Function that reads the coordinates of the solute and solvent atoms from
@@ -138,12 +137,12 @@ function nextframe!(trajectory::NamdDCD{T}) where {T}
 
     st = stream(trajectory)
 
-    FortranFiles.read(st, trajectory.unitcell_read)
+    read(st, trajectory.unitcell_read)
 
     # Read the coordinates  
-    FortranFiles.read(st, trajectory.x_read)
-    FortranFiles.read(st, trajectory.y_read)
-    FortranFiles.read(st, trajectory.z_read)
+    read(st, trajectory.x_read)
+    read(st, trajectory.y_read)
+    read(st, trajectory.z_read)
 
     # Save coordinates of solute and solvent in trajectory arrays
     for i = eachindex(trajectory.x_solute)
@@ -186,13 +185,13 @@ end
 #
 # Leave DCD file in position to read the first frame: DCD files have a header
 #
-function firstframe!(st::FortranFiles.FortranFile)
+function firstframe!(st::FortranFile)
     # rewind
-    FortranFiles.rewind(st)
+    rewind(st)
     # skip header
-    FortranFiles.read(st)
-    FortranFiles.read(st)
-    FortranFiles.read(st)
+    read(st)
+    read(st)
+    read(st)
 end
 firstframe!(trajectory::NamdDCD) = firstframe!(stream(trajectory))
 
@@ -204,15 +203,15 @@ firstframe!(trajectory::NamdDCD) = firstframe!(stream(trajectory))
 # Sometimes the DCD files contains a wrong number of frames in the header, so to
 # get the actual number of frames, it is better to read it
 #
-function getnframes(st::FortranFiles.FortranFile)
+function getnframes(st::FortranFile)
     firstframe!(st)
     nframes = 0
     while true
         try
-            FortranFiles.read(st, Float64) # pbc data
-            FortranFiles.read(st, Float32) # x
-            FortranFiles.read(st, Float32) # y
-            FortranFiles.read(st, Float32) # z
+            read(st, Float64) # pbc data
+            read(st, Float32) # x
+            read(st, Float32) # y
+            read(st, Float32) # z
             nframes = nframes + 1
         catch
             firstframe!(st)

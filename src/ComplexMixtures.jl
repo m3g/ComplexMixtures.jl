@@ -8,11 +8,11 @@ import PDBTools
 import PrecompileTools
 import Random
 import StructTypes
-import FortranFiles
 
 using .CellListMap.PeriodicSystems: AbstractPeriodicSystem
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using LinearAlgebra: norm, cross, dot, diag
+using FortranFiles: FortranFile, rewind, FString
 using Printf: @sprintf
 using ProgressMeter: Progress, next!
 using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
