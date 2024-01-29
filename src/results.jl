@@ -58,7 +58,7 @@ $(TYPEDFIELDS)
 The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
 
 """
-@kwdef mutable struct Result{T<:VecOrMat{Float64}}
+@kwdef mutable struct Result
 
     # ComplexMixtures version that generated this results
     Version::VersionNumber = pkgversion(@__MODULE__)
@@ -81,8 +81,8 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
 
     # Properties of the solute and solvent selections
     autocorrelation::Bool
-    solvent::AtomSelection
     solute::AtomSelection
+    solvent::AtomSelection
 
     # Group (atomic type by default) contributions to 
     # the coordination number counts. These are used to
@@ -152,8 +152,8 @@ function Result(trajectory::Trajectory, options::Options = Options())
     end
     nbins = setbin(cutoff, options.binstep)
 
-    if options.irefatom > trajectory.solvent.natoms
-        throw(ArgumentError("in MDDF options: Reference atom index", options.irefatom, " is greater than number of atoms of the solvent molecule. "))
+    if options.irefatom > trajectory.solvent.natomspermol
+        throw(ArgumentError("in MDDF options: Reference atom index $(options.irefatom) is greater than number of atoms of the solvent molecule. "))
     end
 
     # Open trajectory to read some data
@@ -165,7 +165,7 @@ function Result(trajectory::Trajectory, options::Options = Options())
         nextframe!(trajectory)
         first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
         cm = mean(first_mol)
-        irefatom = first(findmin(at -> norm(at - cm), first_mol))
+        irefatom = last(findmin(at -> norm(at - cm), first_mol))
     else
         irefatom = options.irefatom
     end
@@ -177,13 +177,16 @@ function Result(trajectory::Trajectory, options::Options = Options())
         lastframe_read = options.lastframe
     end
 
+    # Actual number of frames that are read considering lastframe and stride
+    nframes_read = (lastframe_read - options.firstframe + 1) ÷ options.stride
+
     # Close trajecotory
     closetraj!(trajectory)
 
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
     n_groups_solute = if isnothing(trajectory.solute.group_atom_indices)
-        trajectory.solute.natomspermol
+        natoms(trajectory.solute)
     else
         length(trajectory.solute.group_atom_indices)
     end
@@ -218,9 +221,9 @@ end
     using ComplexMixtures: Testing
     using PDBTools: readPDB, select
     atoms = readPDB("$(Testing.data_dir)/NAMD/structure.pdb")
-    trajectory = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao, water)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     water = AtomSelection(select(atoms, "water"), natomspermol = 3)
+    trajectory = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao, water)
     @test_throws ArgumentError mddf(trajectory, Options(stride = 0))
     @test_throws ArgumentError mddf(trajectory, Options(firstframe = 2, lastframe = 1))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
@@ -679,8 +682,7 @@ end
 # Functions to save the results to a file
 #
 StructTypes.StructType(::Type{AtomSelection}) = StructTypes.Struct()
-StructTypes.StructType(::Type{Result{Vector{Float64}}}) = StructTypes.Struct()
-StructTypes.StructType(::Type{Result{Matrix{Float64}}}) = StructTypes.Struct()
+StructTypes.StructType(::Type{Result}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
@@ -805,7 +807,7 @@ function which_types(s::AtomSelection, indices::Vector{Int}; warning = true)
     selected_types = Vector{Int}(undef, 0)
     ntypes = 0
     for i in indices
-        isel = findfirst(ind -> ind == i, s.index)
+        isel = findfirst(ind -> ind == i, s.indices)
         if isnothing(isel)
             error(" Atom in input list is not part of solvent (or solute).")
         else
@@ -860,8 +862,8 @@ function title(R::Result, solute::AtomSelection, solvent::AtomSelection)
         $(bars)
         Starting MDDF calculation:
         $(R.nframes_read) frames will be considered.
-        Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-        Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols))
+        Solute: $(atoms_str(natoms(solute))) belonging to $(mol_str(solute.nmols)).
+        Solvent: $(atoms_str(natoms(natoms))) belonging to $(mol_str(solvent.nmols))
         """)
 end
 function title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
@@ -871,8 +873,8 @@ function title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn:
         Starting MDDF calculation in parallel:
         $(R.nframes_read) frames will be considered.
         Number of calculation threads: $(nspawn)
-        Solute: $(atoms_str(solute.natoms)) belonging to $(mol_str(solute.nmols)).
-        Solvent: $(atoms_str(solvent.natoms)) belonging to $(mol_str(solvent.nmols)).
+        Solute: $(atoms_str(natoms(solute))) belonging to $(mol_str(solute.nmols)).
+        Solvent: $(atoms_str(natoms(solvent))) belonging to $(mol_str(solvent.nmols)).
         """)
 end
 

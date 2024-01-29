@@ -134,12 +134,12 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
                 y = parse(Float64, record[39:46])
                 z = parse(Float64, record[47:54])
                 if i_solute < ComplexMixtures.natoms(solute) &&
-                   iatom == trajectory.solute.index[i_solute+1]
+                   iatom == trajectory.solute.indices[i_solute+1]
                     i_solute += 1
                     trajectory.x_solute[i_solute] = T(x, y, z)
                 end
                 if i_solvent < ComplexMixtures.natoms(solvent) &&
-                   iatom == trajectory.solvent.index[i_solvent+1]
+                   iatom == trajectory.solvent.indices[i_solvent+1]
                     i_solvent += 1
                     trajectory.x_solvent[i_solvent] = T(x, y, z)
                 end
