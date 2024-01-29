@@ -16,7 +16,7 @@ using FortranFiles: FortranFile, rewind, FString, read, close
 using Printf: @sprintf
 using ProgressMeter: Progress, next!
 using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
-using Statistics: mean
+using Statistics: mean, std
 using TestItems: @testitem
 
 
@@ -62,7 +62,6 @@ include("./compare.jl")
 
 # Functions to compute distances
 include("./minimum_distances.jl")
-#=
 
 # Update counters routines
 include("./updatecounters.jl")
@@ -70,6 +69,7 @@ include("./updatecounters.jl")
 # Main function
 include("./mddf.jl")
 
+#=
 # Tools
 include("./tools/contributions.jl")
 include("./tools/coordination_number.jl")
