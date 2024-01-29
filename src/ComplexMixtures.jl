@@ -9,7 +9,8 @@ import PrecompileTools
 import Random
 import StructTypes
 
-using .CellListMap.PeriodicSystems: AbstractPeriodicSystem
+using .CellListMap.PeriodicSystems: AbstractPeriodicSystem, PeriodicSystem, 
+    update_unitcell!, map_pairwise!
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using LinearAlgebra: norm, cross, dot, diag
 using FortranFiles: FortranFile, rewind, FString, read, close
