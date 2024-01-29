@@ -1,14 +1,8 @@
-"""
-
-$(INTERNAL)
-
-$(TYPEDEF)
+#=
 
 Unit conversions.
 
-$(TYPEDFIELDS)
-
-"""
+=#
 @kwdef struct Units{T}
     mole::T = 6.022140857e23
     Angs3tocm3::T = 1e24
@@ -34,14 +28,12 @@ mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
     @test CM.mol_str(2) == "2 molecules"
 end
 
-"""
+#=
     writexyz(x::Vector{T}, file::String) where T <: AbstractVector
-
-$(INTERNAL)
 
 Print test xyz file.
 
-"""
+=#
 function writexyz(x::Vector{T}, file::String) where {T<:AbstractVector}
     f = open(file, "w")
     nx = length(x)

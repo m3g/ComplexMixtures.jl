@@ -19,19 +19,19 @@ using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
 using Statistics: mean
 using TestItems: @testitem
 
-export AtomSelection, atom_group, atom_group_name, atom_group_names
-export SoluteGroup, SolventGroup
 
-export Trajectory, mddf, save, load, write, Options, Result
-export merge
+# Data types
+export Trajectory, Options, Result 
+export AtomSelection, SoluteGroup, SolventGroup
+
+# Functions
+export mddf
 export overview
-export VMDselect
+export save, load, write, merge
+export atom_group, atom_group_name, atom_group_names
 
 # Tools
 export contributions, coordination_number, gr, grid3D
-
-# Message for internal doc strings
-const INTERNAL = "**Internal structure or function, interface may change.**"
 
 # Module for testing
 include("./Testing.jl")
@@ -48,22 +48,19 @@ include("./AtomSelection.jl")
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
 
-struct Result end
-struct Density end
-struct Volume end
-# Comparison operators for ComplexMixtures types
-include("./compare.jl")
-
-#=
 # Some functions to deal with rigid body calculations
 include("./rigid_body.jl")
-
-# Structures and functions to store and report results
-include("./results.jl")
 
 # Functions to construct histograms
 include("./viewmol.jl")
 
+# Structures and functions to store and report results
+include("./results.jl")
+
+# Comparison operators for ComplexMixtures types
+include("./compare.jl")
+
+#=
 # Functions to compute distances
 include("./minimum_distances.jl")
 

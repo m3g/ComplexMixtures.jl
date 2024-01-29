@@ -56,14 +56,12 @@ inbulk(md::MinimumDistance, options::Options) =
     options.usecutoff ? (md.within_cutoff && md.dmin_mol > options.dbulk) :
     !md.within_cutoff
 
-"""
+#=
     randomize_solvent!(system, buff, n_solvent_in_bulk, options, RNG)
-
-$(INTERNAL)
 
 Generate a random solvent distribution from the bulk molecules of a solvent
 
-"""
+=#
 function randomize_solvent!(
     system::AbstractPeriodicSystem,
     buff::Buffer,
@@ -231,14 +229,12 @@ end
 cell_volume(system::AbstractPeriodicSystem) =
     @views dot(cross(system.unitcell[:, 1], system.unitcell[:, 2]), system.unitcell[:, 3])
 
-"""
+#=
     mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, frame_weight, RNG)
-
-$(INTERNAL)
 
 Computes the MDDF for a single frame. Modifies the data in the `R` (type `Result`) structure.
 
-"""
+=#
 function mddf_frame!(
     R::Result,
     system::AbstractPeriodicSystem,
@@ -502,14 +498,12 @@ end
     
 end
 
-"""
+#=
     coordination_number_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, frame_weight)
-
-$(INTERNAL)
 
 Computes the coordination numbers for a single frame. Modifies the data in the `R` (type `Result`) structure.
 
-"""
+=#
 function coordination_number_frame!(
     R::Result,
     system::AbstractPeriodicSystem,

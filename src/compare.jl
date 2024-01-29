@@ -1,20 +1,16 @@
-"""
-
-$(INTERNAL)
+#=
 
 Union of types to define comparison operators.
 
-"""
+=#
 const ComplexMixturesTypes = Union{Result,Density,Volume,AtomSelection,Options}
 
-"""
+#=
     Base.isapprox(r1::T, r2::T; debug=false) where T <: CMTypes
-
-$(INTERNAL)
 
 Function to test if two runs offered similar results. Mostly used in the package testing routines.
 
-"""
+=#
 Base.isapprox(x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} =
     _compare(isapprox, x, y; debug = debug)
 

@@ -19,25 +19,19 @@ function Base.show(io::IO, d::Density)
     print(io, "Density of solvent in bulk: ", d.solvent_bulk)
 end
 
-"""
+#=
     setbin(d,step)
-
-$(INTERNAL)
 
 Function that sets to which histogram bin a data point pertains simple, but important to keep consistency over all calls.
 
-"""
+=#
 setbin(d, step) = max(1, ceil(Int, d / step))
 
-"""
-
-$(TYPEDEF)
+#=
 
 Structures to contain the volumes obtained from calculations.
 
-$(TYPEDFIELDS)
-
-"""
+=#
 @kwdef mutable struct Volume
     total::Float64
     bulk::Float64
@@ -97,7 +91,7 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     # of using JSON3, we use Vector{Vector{Float64}}, which is 
     # read directly.
     solute_group_count::Vector{Vector{Float64}}
-    solvent_group_count::Vector{Vector{Flaot64}}
+    solvent_group_count::Vector{Vector{Float64}}
 
     # Data to compute a RDF and the KB integral from this count
     rdf_count::Vector{Float64} = zeros(nbins)
@@ -275,14 +269,12 @@ isautocorrelation(trajectory::Trajectory) =
 #
 # Functions to compute volumes of shells
 #
-"""
+#=
     sphericalshellvolume(i,step)
-
-$(INTERNAL)
 
 Computes the volume of the spherical shell defined within [(i-1)*step,i*step].
 
-"""
+=#
 function sphericalshellvolume(i, step)
     rmin = (i - 1) * step
     return (4 * pi / 3) * ((rmin + step)^3 - rmin^3)
@@ -294,14 +286,12 @@ end
     @test sphericalshellvolume(3, 1.0) ≈ 4 * pi / 3 * (27 - 8)
 end
 
-"""
+#=
     shellradius(i,step)
-
-$(INTERNAL)
 
 Compute the point in which the radius comprises half of the volume of the shell.
 
-"""
+=#
 function shellradius(i, step)
     rmin = (i - 1) * step
     return (0.5 * ((rmin + step)^3 + rmin^3))^(1 / 3)
@@ -312,14 +302,12 @@ end
     @test shellradius(5, 0.3) ≈ 1.3664650373440481
 end
 
-"""
+#=
     sphereradiusfromshellvolume(volume,step)
-
-$(INTERNAL)
 
 Computes the radius that corresponds to a spherical shell of a given volume.
 
-"""
+=#
 function sphereradiusfromshellvolume(volume, step)
     fourthirdsofpi = 4 * pi / 3
     if 3 * step * volume - pi * step^4 <= 0.0
@@ -352,10 +340,8 @@ function sum_frame_weights(R::Result)
     return Q
 end
 
-"""
+#=
     finalresults!(R::Result, options::Options, trajectory::Trajectory)
-
-$(INTERNAL)
 
 Function that computes the final results of all the data computed by averaging according to the sampling of each type of data, and converts to common units.
 
@@ -363,7 +349,7 @@ Computes also the final distribution functions and KB integrals.
 
 This function modified the values contained in the R data structure.
 
-"""
+=#
 function finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
     # Sampling scheme depending on the type of calculation
@@ -796,10 +782,8 @@ end
 end
 
 
-"""
+#=
     which_types(s::AtomSelection, indices::Vector{Int})
-
-$(INTERNAL)
 
 Function that returns the list of the indices of the types of the atoms in a
 selection. For example, if a selection corresponds to a solvent of water molecules:
@@ -816,7 +800,7 @@ It is not possible to compute the contribution of *one* individual water molecul
 if the distribution function was computed for all molecules. Thus, the necessity
 to identify the types of atoms involved in a selection.   
 
-"""
+=#
 function which_types(s::AtomSelection, indices::Vector{Int}; warning = true)
     selected_types = Vector{Int}(undef, 0)
     ntypes = 0
@@ -841,14 +825,12 @@ function which_types(s::AtomSelection, indices::Vector{Int}; warning = true)
     return selected_types
 end
 
-"""
+#=
     sum!(R1::Result, R2::Result)
-
-$(INTERNAL)
 
 Sum the counts of two Results structures, adding the result to the first structure as in R1 = R1 + R2.
 
-"""
+=#
 function sum!(R1::Result, R2::Result)
 
     @. R1.md_count += R2.md_count
@@ -865,15 +847,13 @@ function sum!(R1::Result, R2::Result)
     return R1
 end
 
-"""
+#=
     title(R::Result, solute::AtomSelection, solvent::AtomSelection)
     title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
 
-$(INTERNAL)
-
 Print some information about the run.
 
-"""
+=#
 function title(R::Result, solute::AtomSelection, solvent::AtomSelection)
     print(
         """
@@ -899,17 +879,11 @@ end
 #
 # Print overview of the results in the REPL
 #
-"""
-
-$(INTERNAL)
-
-$(TYPEDEF)
+#=
 
 Structure that is used to dispatch the show of a overview.
 
-$(TYPEDFIELDS)
-
-"""
+=#
 @kwdef mutable struct Overview
     R::Result
     domain_molar_volume::Float64 = 0.0
@@ -986,8 +960,7 @@ function overview(R::Result)
     ov.density.solvent = R.density.solvent * units.SitesperAngs3tomolperL
     ov.density.solvent_bulk = R.density.solvent_bulk * units.SitesperAngs3tomolperL
 
-    # Solvent molar volume
-    ov.solvent_molar_volume = 1000 / ov.density.solvent
+    # Solvent molar volume ov.solvent_molar_volume = 1000 / ov.density.solvent
     ov.solvent_molar_volume_bulk = 1000 / ov.density.solvent_bulk
 
     # Solute molar volume computed from solvent density in bulk

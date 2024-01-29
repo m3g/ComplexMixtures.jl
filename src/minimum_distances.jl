@@ -2,8 +2,6 @@
 
 $(TYPEDEF)
 
-$(INTERNAL)
-
 # Extended help
 
 This structure contains the information, for each  molecule, of if it is within the 
@@ -30,8 +28,6 @@ zero(::Type{MinimumDistance}) = MinimumDistance(false, 0, 0, +Inf, false, +Inf)
 
 #=
     update_md(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T}
-
-$(INTERNAL)
 
 Function that returns the updated minimum distance structure after comparing two structures
 associated with the same molecule.
@@ -136,8 +132,6 @@ end
 #=
     minimum_distances!(system::CellListMap.PeriodicSystem, R::Result)
 
-$(INTERNAL)
-
 Function that computes the list of distances of solvent molecules to a solute molecule. 
 It updates the lists of minimum distances. 
 
@@ -170,8 +164,6 @@ end
 
 #=
     setup_PeriodicSystem(trajectory::Trajectory, options::Options)
-
-$(INTERNAL)
 
 Setup the periodic system from CellListMap, to compute minimimum distances. The system
 will be setup such that `xpositions` corresponds to one molecule of the solute, and 

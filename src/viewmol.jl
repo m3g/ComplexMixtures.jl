@@ -14,8 +14,6 @@ end
 #=
     viewmol(i::Int, x::Vector{T}, n::Int) where T
 
-$(INTERNAL)
-
 Returns a view of a coordinate vector corresponding to the atoms of a molecule with index i. n is the number of atoms of the molecule.
 
 =#
