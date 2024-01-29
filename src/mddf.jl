@@ -339,7 +339,7 @@ end
 
     # Self correlation
     atoms = readPDB("$(Testing.data_dir)/toy/self_monoatomic.pdb")
-    atom = Selection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
+    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
     traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
 
     # without atoms in the bulk
@@ -440,8 +440,8 @@ end
 
     options = Options(seed = 1, stride = 1, StableRNG = true, nthreads = 1, silent = true)
     atoms = readPDB(Testing.pdbfile)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # Test actual system: cross correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
