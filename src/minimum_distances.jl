@@ -90,7 +90,7 @@ function update_list!(
     jmol = mol_index(j, j_natoms_per_molecule)
     if jmol != isolute
         d = sqrt(d2)
-        ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
+        ref_atom_within_cutoff = (atom_type(j, j_natoms_per_molecule) == jref_atom)
         dref = ref_atom_within_cutoff ? d : +Inf
         list[jmol] = update_md(
             list[jmol],
@@ -116,7 +116,7 @@ function update_list!(
 )
     d = sqrt(d2)
     jmol = mol_index(j, j_natoms_per_molecule)
-    ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
+    ref_atom_within_cutoff = (atom_type(j, j_natoms_per_molecule) == jref_atom)
     dref = ref_atom_within_cutoff ? d : +Inf
     list[jmol] =
         update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))

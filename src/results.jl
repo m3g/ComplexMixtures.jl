@@ -811,7 +811,7 @@ function which_types(s::AtomSelection, indices::Vector{Int}; warning = true)
         if isnothing(isel)
             error(" Atom in input list is not part of solvent (or solute).")
         else
-            it = itype(isel, s.natomspermol)
+            it = atom_type(isel, s.natomspermol)
             if !(it in selected_types)
                 push!(selected_types, it)
                 ntypes += 1
