@@ -1,9 +1,5 @@
 #=
 
-$(TYPEDEF)
-
-# Extended help
-
 This structure contains the information, for each  molecule, of if it is within the 
 cutoff distance of the solute, the atom indices of the associated minimum distance,
 the distance, and a label to mark if the reference atom of the molecule is within
@@ -11,8 +7,6 @@ the cutoff distance of the solute.
 
 The lists of minimum-distances are stored in arrays of type `Vector{MinimumDistance}`. The index
 of this vector corresponds to the index of the molecule in the original array.
-
-$(TYPEDFIELDS)
 
 =#
 struct MinimumDistance

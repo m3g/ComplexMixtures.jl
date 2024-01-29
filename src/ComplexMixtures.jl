@@ -60,9 +60,9 @@ include("./results.jl")
 # Comparison operators for ComplexMixtures types
 include("./compare.jl")
 
-#=
 # Functions to compute distances
 include("./minimum_distances.jl")
+#=
 
 # Update counters routines
 include("./updatecounters.jl")
