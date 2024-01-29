@@ -178,7 +178,7 @@ function Result(trajectory::Trajectory, options::Options = Options())
     end
 
     # Actual number of frames that are read considering lastframe and stride
-    nframes_read = (lastframe_read - options.firstframe + 1) ÷ options.stride
+    nframes_read = length(options.firstframe:options.stride:lastframe_read)
 
     # Close trajecotory
     closetraj!(trajectory)
@@ -284,6 +284,7 @@ function sphericalshellvolume(i, step)
 end
 
 @testitem "sphericalshellvolume" begin
+    using ComplexMixtures: sphericalshellvolume
     @test sphericalshellvolume(1, 1.0) ≈ 4 * pi / 3
     @test sphericalshellvolume(2, 1.0) ≈ 4 * pi / 3 * (8 - 1)
     @test sphericalshellvolume(3, 1.0) ≈ 4 * pi / 3 * (27 - 8)
@@ -301,28 +302,9 @@ function shellradius(i, step)
 end
 
 @testitem "shellradius" begin
+    using ComplexMixtures: shellradius
     @test shellradius(1, 0.1) ≈ 0.07937005259840998
     @test shellradius(5, 0.3) ≈ 1.3664650373440481
-end
-
-#=
-    sphereradiusfromshellvolume(volume,step)
-
-Computes the radius that corresponds to a spherical shell of a given volume.
-
-=#
-function sphereradiusfromshellvolume(volume, step)
-    fourthirdsofpi = 4 * pi / 3
-    if 3 * step * volume - pi * step^4 <= 0.0
-        return 0.0
-    end
-    rmin = (sqrt(3 * pi) * sqrt(3 * step * volume - pi * step^4) - 3 * pi * step^2) / (6 * pi * step)
-    return (0.5 * (volume / fourthirdsofpi + 2 * rmin^3))^(1 / 3)
-end
-
-@testitem "sphereradiusfromshellvolume" begin
-    @test sphereradiusfromshellvolume(1.0, 0.2) ≈ 0.03351032163829113
-    @test sphereradiusfromshellvolume(100.0, 0.1) ≈ 124.4112578723602
 end
 
 #
@@ -338,7 +320,7 @@ function sum_frame_weights(R::Result)
         sum(R.options.frame_weights[i] for i in i:s:l)
     else
         # number of frames that were read from the file
-        round(Int, (l - i + 1) / s)
+        length(i:s:l)
     end
     return Q
 end
@@ -510,6 +492,8 @@ function Base.merge(r::Vector{<:Result})
         autocorrelation = r[1].autocorrelation,
         solute = r[1].solute,
         solvent = r[1].solvent,
+        solute_group_count = r[1].solute_group_count,
+        solvent_group_count = r[1].solvent_group_count,
         files = files,
         weights = weights,
     )
@@ -531,8 +515,12 @@ function Base.merge(r::Vector{<:Result})
         @. R.md_count_random += w * r[ir].md_count_random
         @. R.coordination_number += w * r[ir].coordination_number
         @. R.coordination_number_random += w * r[ir].coordination_number_random
-        @. R.solute_atom += w * r[ir].solute_atom
-        @. R.solvent_atom += w * r[ir].solvent_atom
+        for i in eachindex(R.solute_group_count)
+            @. R.solute_group_count[i] += w * r[ir].solute_group_count
+        end
+        for i in eachindex(R.solvent_group_count)
+            @. R.solvent_group_count[i] += w * r[ir].solvent_group_count
+        end
         @. R.rdf_count += w * r[ir].rdf_count
         @. R.rdf_count_random += w * r[ir].rdf_count_random
         @. R.sum_rdf_count += w * r[ir].sum_rdf_count
@@ -598,7 +586,7 @@ end
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     water = AtomSelection(select(atoms, "water"), natomspermol = 3)
 
-    #save(R,"$dir/merged.json")
+    save(R,"$dir/merged.json")
     R_save = load("$dir/merged.json")
 
     options = Options(
@@ -733,7 +721,16 @@ function load(filename::String; legacy_warning = true)
         """)
     end
     # Load directly if within the output compatibility threshold 
-    if json_version > v"1.3.4"
+    if json_version >= v"2.0.0"
+        R = open(filename, "r") do io
+            JSON3.read(io, Result)
+        end
+    end
+    #
+    # Load legacy results
+    json_version_str = json_version >= v"1.3.5" ? json_version : "<= 1.3.4"
+    # voltar: load v1.4.0 results: convert to new legacy file
+    if v"1.4.0" <= json_version < v"2.0.0"
         R = open(filename, "r") do io
             JSON3.read(io, Result{Vector{Float64}})
         end
@@ -749,8 +746,6 @@ function load(filename::String; legacy_warning = true)
             end...,
         )
     end
-    # Load legacy results
-    json_version_str = json_version >= v"1.3.5" ? json_version : "<= 1.3.4"
     if legacy_warning
         @warn begin 
             """\n
