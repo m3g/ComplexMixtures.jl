@@ -163,51 +163,63 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
         progress = Progress(R.nframes_read; dt = 1)
     end
 
+
     # Loop over the trajectory
+    trajectory_range = options.firstframe:options.stride:R.lastframe_read
     read_lock = ReentrantLock()
-    Threads.@threads for (frame_range, ichunk) in
-                         ChunkSplitters.chunks(1:R.nframes_read, nchunks)
+    Threads.@threads for (ichunk, frame_range) in 
+        enumerate(ChunkSplitters.chunks(options.firstframe:R.lastframe_read; n = nchunks))
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].nframes_read = 0
         for _ in frame_range
-            local frame_weight # to indicate that this will be used in the scope
+            # variables used in this scope
+            local compute
+            local frame_weight
             # Read frame coordinates
             lock(read_lock) do
-                # skip frames if stride > 1
-                while (iframe - options.firstframe + 1) % options.stride != 0
+                compute = false
+                while iframe < R.lastframe_read && !compute
                     nextframe!(trajectory)
                     iframe += 1
+                    if iframe in trajectory_range
+                        compute = true
+                    end
                 end
-                # Read frame for computing 
-                nextframe!(trajectory)
-                iframe += 1
-                # The solute coordinates must be read in intermediate arrays, because the 
-                # solute molecules will be considered one at a time in the computation of the
-                # minimum distances
-                @. buff[ichunk].solute_read = trajectory.x_solute
-                @. buff[ichunk].solvent_read = trajectory.x_solvent
-                unitcell = convert_unitcell(getunitcell(trajectory))
-                update_unitcell!(system[ichunk], unitcell)
-                # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
-                if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
-                    GC.gc()
-                end
-                # Read weight of this frame. 
-                if isempty(options.frame_weights)
-                    frame_weight = 1.0
-                else
-                    frame_weight = options.frame_weights[iframe]
-                end
-                # Display progress bar
-                options.silent || next!(progress)
+                if compute
+                    # Read frame for computing 
+                    # The solute coordinates must be read in intermediate arrays, because the 
+                    # solute molecules will be considered one at a time in the computation of the
+                    # minimum distances
+                    @. buff[ichunk].solute_read = trajectory.x_solute
+                    @. buff[ichunk].solvent_read = trajectory.x_solvent
+                    unitcell = convert_unitcell(getunitcell(trajectory))
+                    update_unitcell!(system[ichunk], unitcell)
+                    # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
+                    if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+                        GC.gc()
+                    end
+                    # Read weight of this frame. 
+                    if isempty(options.frame_weights)
+                        frame_weight = 1.0
+                    else
+                        frame_weight = options.frame_weights[iframe]
+                    end
+                    # Display progress bar
+                    options.silent || next!(progress)
+                end # compute if
             end # release reading lock
-            R_chunk[ichunk].nframes_read += 1
-            # Compute distances in this frame and update results
-            if !coordination_number_only
-                mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, frame_weight, RNG)
-            else
-                coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], frame_weight)
-            end
+            #
+            # Perform MDDF computation
+            #
+            if compute
+                R_chunk[ichunk].nframes_read += 1
+                # Compute distances in this frame and update results
+                if !coordination_number_only
+                    mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, frame_weight, RNG)
+                else
+                    coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], frame_weight)
+                end
+            end # compute if
         end # frame range for this chunk
     end
     closetraj!(trajectory)
