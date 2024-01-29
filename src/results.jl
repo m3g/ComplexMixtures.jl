@@ -838,8 +838,12 @@ function sum!(R1::Result, R2::Result)
     @. R1.md_count += R2.md_count
     @. R1.md_count_random += R2.md_count_random
 
-    @. R1.solute_atom += R2.solute_atom
-    @. R1.solvent_atom += R2.solvent_atom
+    for i in eachindex(R1.solute_group_count)
+        @. R1.solute_group_count[i] += R2.solute_group_count[i]
+    end
+    for i in eachindex(R1.solvent_group_count)
+        @. R1.solvent_group_count[i] += R2.solvent_group_count[i]
+    end
 
     @. R1.rdf_count += R2.rdf_count
     @. R1.rdf_count_random += R2.rdf_count_random

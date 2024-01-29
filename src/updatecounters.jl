@@ -1,11 +1,11 @@
 #
-#    atom_type(iatom::Int, s::AtomSelection)
+#    atom_type(iatom::Int, natomspermol::Int)
 #
 # Given the index of the atom in the vector of coordinates of the solute or the solvent,
 # returns the type of the atom, that is, the index of this atom within the molecule
 # (goes from 1 to natomspermol)
 #
-atom_type(iatom::Int, s::AtomSelection) = mod1(iatom, s.natomspermol)
+atom_type(iatom::Int, natomspermol::Int) = mod1(iatom, natomspermol)
 
 @testitem "atom_type" begin
     using ComplexMixtures: atom_type
@@ -18,7 +18,7 @@ end
 # Function that updates the MD counters of the groups (or atoms) of the solute
 # and solvent
 function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSelection)
-    itype = atom_type(iatom, sol)
+    itype = atom_type(iatom, sol.natomspermol)
     if isnothing(sol.group_atom_indices)
         group_count[itype][ibin] += frame_weight
     else
