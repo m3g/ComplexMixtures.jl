@@ -328,7 +328,11 @@ function AtomSelection(
     indices = PDBTools.index.(atoms)
     custom_groups = !isempty(group_atom_indices)
     if !custom_groups && isempty(group_names) 
-        group_names = PDBTools.name.(atoms[1:natomspermol])
+        if nmols == 1
+            group_names = PDBTools.name.(atoms)
+        else
+            group_names = PDBTools.name.(atoms[1:natomspermol])
+        end
     end
     return AtomSelection(
         indices;
