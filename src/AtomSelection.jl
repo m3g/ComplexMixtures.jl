@@ -1,3 +1,29 @@
+#
+# Set both nmols and natomspermol given the length of the indices vector (number of atoms)
+# and one of the other two parameters
+#
+function set_nmols_natomspermol(indices, nmols, natomspermol)
+    natoms = length(indices)
+    if natoms == 0
+        throw(ArgumentError("Vector of atom indices is empty."))
+    end
+    if nmols == 0 && natomspermol == 0
+        throw(ArgumentError("Set nmols or natomspermol when defining a selection."))
+    end
+    if nmols != 0
+        if natoms % nmols != 0
+            throw(ArgumentError("Number of atoms in selection must be a multiple of nmols."))
+        end
+        natomspermol = div(natoms, nmols)
+    else
+        if natoms % natomspermol != 0
+            throw(ArgumentError(" Number of atoms in selection must be a multiple of natomspermols."))
+        end
+        nmols = div(natoms, natomspermol)
+    end
+    return nmols, natomspermol
+end
+
 """
 
 $(TYPEDEF)
@@ -224,28 +250,9 @@ function AtomSelection(
     group_names::Vector{String} = String[]
 
 )
-    if nmols == 0 && natomspermol == 0
-        throw(ArgumentError("Set nmols or natomspermol when defining a selection."))
-    end
-    natoms = length(indices)
-    if natoms == 0
-        throw(ArgumentError("Vector of atom indices is empty."))
-    end
-    if nmols != 0
-        if natoms % nmols != 0
-            throw(ArgumentError("Number of atoms in selection must be a multiple of nmols."))
-        end
-        natomspermol = div(natoms, nmols)
-    else
-        if natoms % natomspermol != 0
-            throw(ArgumentError(" Number of atoms in selection must be a multiple of natomspermols."))
-        end
-        nmols = div(natoms, natomspermol)
-    end
-
+    nmols, natomspermol = set_nmols_natomspermol(indices, nmols, natomspermol)
     # If the group_atom_indices is not empty, there are custom groups defined.
     custom_groups = !isempty(group_atom_indices)
-
     if !custom_groups && !isempty(group_names)
         if length(group_names) != natomspermol
             throw(ArgumentError(replace("""
@@ -325,8 +332,9 @@ function AtomSelection(
     group_atom_indices::Vector{Vector{Int}} = Vector{Int}[],
     group_names::Vector{String} = String[]
 )
-    indices = PDBTools.index.(atoms)
     custom_groups = !isempty(group_atom_indices)
+    indices = PDBTools.index.(atoms)
+    nmols, natomspermol = set_nmols_natomspermol(indices, nmols, natomspermol)
     if !custom_groups && isempty(group_names) 
         if nmols == 1
             group_names = PDBTools.name.(atoms)
