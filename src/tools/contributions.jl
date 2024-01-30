@@ -39,7 +39,7 @@ function contributions(
         igroup = if !isnothing(group.group_index)  
            group.group_index
         elseif !isnothing(group.group_name) 
-           findfirst(isequal(group_name), struct_data.group_names)
+           findfirst(==(group_name), struct_data.group_names)
         end
         if isnothing(igroup) || igroup > size(contrib_data, 2)
             throw(ArgumentError("Group $igroup not found in the contribution matrix."))
@@ -67,13 +67,13 @@ function contributions(
     if !isnothing(group.atom_names) 
         if struct_data.nmols == 1 
             for name in group.atom_names
-                i = findfirst(isequal(name), struct_data.names)
+                i = findfirst(==(name), struct_data.names)
                 (isnothing(i) || i > size(contrib_data, 2)) && _error_contrib_name(name)
                 c .+= @view(contrib_data[:, i])
             end
         else
             for name in group.atom_names
-                i = findfirst(isequal(name), struct_data.names)
+                i = findfirst(==(name), struct_data.names)
                 itype = (i - 1) ÷ struct_data.natomspermol + 1
                 (isnothing(i) || itype > size(contrib_data, 2)) && _error_contrib_name(name)
                 c .+= @view(contrib_data[:, itype])
