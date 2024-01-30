@@ -380,22 +380,52 @@ or group name.
 The possible constructors are:
 
     SoluteGroup(atoms::Vector{PDBTools.Atom})
-    SolventGroup(atoms::Vector{PDBTools.Atom})
-
     SoluteGroup(atom_indices::Vector{Int})
-    SolventGroup(atom_indices::Vector{Int})
-
     SoluteGroup(atom_names::Vector{String})
-    SolventGroup(atom_names::Vector{String})
+    SoluteGroup(group_name::String)
+    SoluteGroup(residue::PDBTools.Residue)
 
-    SoluteGroup(group_name::String) 
-    SoluteGroup(group_index::Int) 
+above, each constructor can be replaced by SolventGroup. The resulting data structures 
+are used as input parameters for the `contributions` function:
 
-    SolventGroup(group_name::String)
-    SolventGroup(group_index::Int)
+    contributions(results::Result, group::Union{SoluteGroup, SolventGroup}; type=:mddf)
 
-    SolventGroup(residue::PDBTools.Residue)
-    SolventGroup(residue::PDBTools.Residue)
+See the `contributions` help entry for additional information.
+
+# Examples
+
+## Defining solute groups with different input types:
+
+```jldoctest
+julia> using ComplexMixtures, PDBTools
+
+julia> atoms = PDBTools.readPDB(ComplexMixtures.Testing.pdbfile, "protein"); 
+
+julia> SoluteGroup(atoms) # vector of PDBTools.Atom(s)
+SoluteGroup defined by:
+    atom_indices: [ 1, 2, ..., 1462, 1463 ] - 1463 atoms
+
+julia> SoluteGroup(PDBTools.index.(atoms)) # vector of atom indices
+SoluteGroup defined by:
+    atom_indices: [ 1, 2, ..., 1462, 1463 ] - 1463 atoms
+
+julia> SoluteGroup(PDBTools.name.(atoms)) # vector of atom names
+SoluteGroup defined by:
+    atom_names: [ N, HT1, ..., HG22, HG23 ] - 1463 atoms
+ 
+julia> SoluteGroup("acidic residues") # predefined group name
+SoluteGroup defined by:
+    group_name: "acidic residues"
+
+julia> SoluteGroup(1) # predefined group index
+SoluteGroup defined by:
+    group_index: 1
+
+julia> SoluteGroup(collect(eachresidue(atoms))[2]) # PDBTools.Residue(s)
+SoluteGroup defined by:
+    atom_indices: [ 13, 14, ..., 22, 23 ] - 11 atoms
+
+```
 
 """ SoluteGroup
 @doc (@doc SoluteGroup) SolventGroup
@@ -422,6 +452,35 @@ struct SolventGroup{
     group_name::S
     atom_indices::VI
     atom_names::VS
+end
+
+#
+# Functions for printing solvent and solute groups 
+#
+_round(T, x::Real; digits=2) = round(x; digits=digits)
+_round(T, x::Int; digits=nothing) = x
+_round(T, x::String; digits=nothing) = x
+@views function print_vector_summary(x::AbstractVector{T}; digits=2) where T
+    if length(x) <= 4
+        return "[ "*join(_round.(T, x;digits), ", ")*" ]"
+    end
+    return "[ "*join(_round.(T, x[begin:begin+1];digits), ", ")*
+              ", ..., " *  
+            join(_round.(T, x[end-1:end];digits), ", ")*" ]"
+end
+
+function Base.show(io::IO, sg::Union{SoluteGroup, SolventGroup}) 
+    type = sg isa SoluteGroup ? "Solute" : "Solvent"
+    println(io, "$(type)Group defined by:")
+    if !isnothing(sg.group_index)
+        print(io, "    group_index: $(sg.group_index)")
+    elseif !isnothing(sg.group_name)
+        print(io, "    group_name: \"$(sg.group_name)\"")
+    elseif !isnothing(sg.atom_indices)
+        print(io, "    atom_indices: $(print_vector_summary(sg.atom_indices)) - $(length(sg.atom_indices)) atoms")
+    elseif !isnothing(sg.atom_names)
+        print(io, "    atom_names: $(print_vector_summary(sg.atom_names)) - $(length(sg.atom_names)) atoms")
+    end
 end
 
 function SoluteGroup(args...; kargs...)
