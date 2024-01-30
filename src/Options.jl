@@ -152,10 +152,10 @@ end
 @testitem "copy/merge Options" begin
     o1 = Options()
     o2 = copy(o1)
-    @test isequal(o1,o2)
+    @test o1 == o2
     o2 = Options()
     om = merge([o1, o2])
-    @test isequal(om,o1)
+    @test om == o1
     o2 = Options(frame_weights=[1.0, 2.0])
     @test @test_logs (:warn,) merge([o1, o2]).frame_weights == Float64[]
     o1 = Options(frame_weights=[0.5, 1.0])
