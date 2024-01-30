@@ -19,7 +19,7 @@ end
 # and solvent
 function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSelection)
     itype = atom_type(iatom, sol.natomspermol)
-    if isnothing(sol.group_atom_indices)
+    if !sol.custom_groups
         group_count[itype][ibin] += frame_weight
     else
         for (igroup, group) in enumerate(sol.group_atom_indices)
@@ -29,13 +29,6 @@ function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSe
         end
     end
     return group_count
-end
-
-@testitem "update_group_count!" begin
-    using ComplexMixtures: update_group_count!
-    solute = AtomSelection(1:6, 3, nothing)
-    solvent = AtomSelection(7:12, 3, nothing)
-    R = Result(solute, solvent)
 end
 
 #
