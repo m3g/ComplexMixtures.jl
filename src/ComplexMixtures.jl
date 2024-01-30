@@ -70,7 +70,6 @@ include("./updatecounters.jl")
 # Main function
 include("./mddf.jl")
 
-#=
 # Tools
 include("./tools/contributions.jl")
 include("./tools/coordination_number.jl")
@@ -81,7 +80,6 @@ include("./tools/grid3D.jl")
 include("./legacy/legacy.jl")
 
 # Precompilation directives
-include("precompile.jl")
-=#
+#include("precompile.jl")
 
 end # module ComplexMixtures
