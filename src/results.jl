@@ -185,12 +185,12 @@ function Result(trajectory::Trajectory, options::Options = Options())
 
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
-    n_groups_solute = if isnothing(trajectory.solute.group_atom_indices)
+    n_groups_solute = if !trajectory.solute.custom_groups 
         natoms(trajectory.solute)
     else
         length(trajectory.solute.group_atom_indices)
     end
-    n_groups_solvent = if isnothing(trajectory.solvent.group_atom_indices)
+    n_groups_solvent = if !trajectory.solute.custom_groups
         trajectory.solvent.natomspermol
     else
         length(trajectory.solvent.group_atom_indices)
@@ -629,11 +629,13 @@ end
 @testitem "Result - empty" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
-    using PDBTools
+    using PDBTools: readPDB, select, name
     atoms = readPDB(Testing.pdbfile)
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    protein = select(atoms, "protein")
+    tmao = select(atoms, "resname TMAO")
+    solute = AtomSelection(protein, nmols = 1)
+    solvent = AtomSelection(tmao, natomspermol = 14)
+    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", solute, solvent)
     options = Options()
     # At this point we can only test an empty Result struct
     R = Result(traj, options)
@@ -655,10 +657,12 @@ end
     @test R.options == Options()
     @test length(R.rdf_count) == 500
     @test length(R.rdf_count_random) == 500
-    @test R.solute == ComplexMixtures.AtomSelection(1463, 1, 1463)
-    @test R.solvent == ComplexMixtures.AtomSelection(2534, 181, 14)
-    @test size(R.solute_atom) == (500, 1463)
-    @test size(R.solvent_atom) == (500, 14)
+    @test R.solute == AtomSelection(collect(1:1463), nmols=1, natomspermol=1463, group_names=name.(protein))
+    @test R.solvent == AtomSelection(collect(1479:4012), nmols=181, natomspermol=14, group_names=name.(tmao[1:14]))
+    @test length(R.solute_group_count) == 1463
+    @test all(length.(R.solute_group_count) .== 500)
+    @test length(R.solvent_group_count) == 14
+    @test all(length.(R.solvent_group_count) .== 500)
     @test length(R.coordination_number) == 500
     @test length(R.coordination_number_random) == 500
     @test length(R.sum_rdf_count_random) == 500
