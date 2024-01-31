@@ -3,6 +3,43 @@
 
 Returns the contributions of the atoms of the solute or solvent to the MDDF, coordiantion number or MD count.
 
+# Arguments
+
+- `R::Result`: The result of a calculation.
+- `group::Union{SoluteGroup,SolventGroup}`: The group of atoms to consider.
+- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number` or `:md_count`.
+
+# Examples
+
+```jldoctes
+julia> using ComplexMixtures, PDBTools
+
+julia> dir = ComplexMixtures.Testing.data_dir*"/Gromacs";
+
+julia> atoms = readPDB(dir*"/system.pdb");
+
+julia> protein = select(atoms, "protein");
+
+julia> emim = select(atoms, "resname EMI"); 
+
+julia> solute = AtomSelection(protein, nmols = 1)
+AtomSelection 
+    1231 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1231
+    Number of groups: 1231
+
+julia> solvent = AtomSelection(emim, natomspermol = 20)
+AtomSelection 
+    5080 atoms belonging to 254 molecule(s).
+    Atoms per molecule: 20
+    Number of groups: 20
+
+julia> results = load(dir*"/protein_EMI.json"); # load pre-calculated results
+
+julia> contributions(results, SoluteGroup(["CA", "CB"])) # contribution of CA and CB atoms to the MDDF
+
+```
+
 """
 function contributions(
     R::Result, 
@@ -17,6 +54,23 @@ function contributions(
         group_count = R.solvent_group_count
     end
 
+    # If custom groups were provided, we cannot retrieve general group contributions from
+    # the group_count array.
+    if sol.custom_groups
+        if isnothing(group.group_index) && isnothing(group.group_name)
+            throw(ArgumentError("""\n
+                Custom groups are defined. Cannot retrieve general group contributions. Please provide a group name or index.
+                For example, use SoluteGroup(1) or SoluteGroup("name of group 1")
+            """)) 
+        end
+    else
+        if isnothing(group.atom_indices) && isnothing(group.atom_names)
+            throw(ArgumentError("""\n
+                No custom groups are defined. Please provide vectors of *atomic* indices or names.
+                For example, to get the contribution of atoms 1, 2 and 3, use SoluteGroup([1,2,3]). 
+            """))
+        end
+    end
     sel_count = zeros(length(group_count[1]))
 
     # If the index of the groups was provided
@@ -100,40 +154,37 @@ function warning_nmols_types()
 end
 
 @testitem "contributions" begin
-    using ComplexMixtures
-    using PDBTools
-    using ComplexMixtures.Testing
-
-    dir = "$(Testing.data_dir)/PDB"
-    atoms = readPDB("$dir/trajectory.pdb", "model 1")
-
-    solute = AtomSelection(select(atoms, "resname TMAO and resnum 1"), nmols = 1)
-    solvent = AtomSelection(
-        select(atoms, "resname TMAO and resnum 2 or resname TMAO and resnum 3"),
-        nmols = 2,
+    using ComplexMixtures: AtomSelection, contributions
+    using PDBTools: select
+    using ComplexMixtures.Testing: data_dir
+    atoms = readPDB("$data_dir/PDB/trajectory.pdb", "model 1")
+    protein = select(atoms, "protein")
+    tmao = select(atoms, "resname TMAO")
+    solute = AtomSelection(
+        protein, nmols = 1;
+        group_names = [ "acidic", "basic", "polar", "nonpolar" ],
+        group_atom_indices = [ 
+            selindex(protein, "acidic"),
+            selindex(protein, "basic"),
+            selindex(protein, "polar"),
+            selindex(protein, "nonpolar")
+        ]
     )
-
-    traj = Trajectory("$dir/trajectory.pdb", solute, solvent, format = "PDBTraj")
+    solvent = AtomSelection(tmao, natomspermol = 14)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format = "PDBTraj")
     results = mddf(traj)
 
-    # fetch contribution by atom name 
-    @test contributions(results, SoluteGroup("N")) == zeros(500)
-    @test contributions(results, SoluteGroup("N")) == zeros(500)
+    @test sum(contributions(results, SoluteGroup("acidic"); type = :md_count)) ≈ 4.4
+    @test sum(contributions(results, SoluteGroup("basic"); type = :md_count)) ≈ 2.4
+    @test sum(contributions(results, SoluteGroup("polar"); type = :md_count)) ≈ 20.0
+    @test sum(contributions(results, SoluteGroup("nonpolar"); type = :md_count)) ≈ 9.4
+    
+    @test sum(contributions(results, SolventGroup(solvent); type = :md_count)) ≈ 5321.4
+    @test sum(contributions(results, SolventGroup(tmao); type = :md_count)) ≈ 5321.4
+    @test sum(contributions(results, SolventGroup(selindex(atoms, "resname TMAO and resnum 1")); type = :md_count)) ≈ 29.4
 
-    C1_contributions = contributions(solute, SoluteGroup("name C1"))
-    @test length(C1_contributions) == 500
-
-    H33_contributions = contributions(solute, SoluteGroup("name H33"))
-    @test length(H33_contributions) == 500
-
-    # solvent contributions fetching
-    N_contributions = contributions(solvent, SolventGroup("name N"))
-    @test length(N_contributions) == 500
-
-    C1_contributions = contributions(solvent, SolventGroup("name C1"))
-    @test length(C1_contributions) == 500
-
-    H33_contributions = contributions(solvent, SolventGroup("name H33"))
-    @test length(H33_contributions) == 500
-
+    @test_throws ArgumentError contributions(results, SoluteGroup([1,2,3]))
+    @test_throws ArgumentError contributions(results, SoluteGroup(["N", "CA"]))
+    @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
+    @test_throws ArgumentError contributions(results, SolventGroup(1))
 end
