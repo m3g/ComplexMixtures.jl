@@ -1,13 +1,12 @@
 @testitem "Gromacs" begin
-    using ComplexMixtures, PDBTools
-    using ComplexMixtures.Testing
-    const CM = ComplexMixtures
+    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
+    using PDBTools: readPDB, select
+    using ComplexMixtures.Testing: data_dir
 
     #
     # Tests with Gromacs-XSC trajectory
     #
-
-    dir = "$(Testing.data_dir)/Gromacs"
+    dir = "$data_dir/Gromacs"
     atoms = readPDB("$dir/system.pdb")
     options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
 
