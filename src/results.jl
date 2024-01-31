@@ -186,11 +186,11 @@ function Result(trajectory::Trajectory, options::Options = Options())
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
     n_groups_solute = if !trajectory.solute.custom_groups 
-        natoms(trajectory.solute)
+        trajectory.solute.natomspermol
     else
         length(trajectory.solute.group_atom_indices)
     end
-    n_groups_solvent = if !trajectory.solute.custom_groups
+    n_groups_solvent = if !trajectory.solvent.custom_groups
         trajectory.solvent.natomspermol
     else
         length(trajectory.solvent.group_atom_indices)
@@ -729,6 +729,7 @@ function load(filename::String; legacy_warning = true)
         R = open(filename, "r") do io
             JSON3.read(io, Result)
         end
+        return R
     end
     #
     # Load legacy results
