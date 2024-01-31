@@ -5,6 +5,11 @@ Union of types to define comparison operators.
 =#
 const ComplexMixturesTypes = Union{Result,Density,Volume,AtomSelection,Options}
 
+_isapprox(x, y) = isapprox(x, y)
+_isapprox(x::Vector{<:String}, y::Vector{<:String}) = all(x .== y)
+_isapprox(x::String, y::String) = x == y    
+_isapprox(x::Vector{<:Vector{<:Real}}, y::Vector{<:Vector{<:Real}}) = all(x .≈ y)
+
 #=
     Base.isapprox(r1::T, r2::T; debug=false) where T <: CMTypes
 
@@ -12,7 +17,7 @@ Function to test if two runs offered similar results. Mostly used in the package
 
 =#
 Base.isapprox(x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} =
-    _compare(isapprox, x, y; debug = debug)
+    _compare(_isapprox, x, y; debug = debug)
 
 # Compare two ComplexMixtures types
 import Base.==
@@ -22,7 +27,7 @@ function _compare(_similar::F, x::T, y::T; debug = true) where {T<:ComplexMixtur
     check = true
     diff_list = Symbol[]
     for field in fieldnames(T)
-        if field in [ :files, :Version ]
+        if field in (:files, :Version)
             continue
         end
         xf = getfield(x, field)
