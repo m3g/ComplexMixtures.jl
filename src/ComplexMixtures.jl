@@ -76,9 +76,6 @@ include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 
-# Legacy interfaces
-include("./legacy/legacy.jl")
-
 # Precompilation directives
 #include("precompile.jl")
 
