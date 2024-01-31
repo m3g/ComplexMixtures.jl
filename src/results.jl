@@ -724,59 +724,16 @@ function load(filename::String; legacy_warning = true)
             Please update ComplexMixtures and try again.
         """)
     end
-    # Load directly if within the output compatibility threshold 
-    if json_version >= v"2.0.0"
-        R = open(filename, "r") do io
-            JSON3.read(io, Result)
-        end
-        return R
+    R = open(filename, "r") do io
+        JSON3.read(io, Result)
     end
-    #
-    # Load legacy results
-    json_version_str = json_version >= v"1.3.5" ? json_version : "<= 1.3.4"
-    # voltar: load v1.4.0 results: convert to new legacy file
-    if v"1.4.0" <= json_version < v"2.0.0"
-        R = open(filename, "r") do io
-            JSON3.read(io, Result{Vector{Float64}})
-        end
-        # Need to reshape the solute and solvent atom contributions, because the data is read in a single column
-        solute_atom = reshape(R.solute_atom, R.nbins, :)
-        solvent_atom = reshape(R.solvent_atom, R.nbins, :)
-        r_names = fieldnames(Result)
-        # Return the Result{Matrix{Float64}} type with the appropriate fields 
-        return Result{Matrix{Float64}}(
-            ntuple(length(r_names)) do i
-                r_names[i] == :solute_atom ? solute_atom :
-                r_names[i] == :solvent_atom ? solvent_atom : getfield(R, r_names[i])
-            end...,
-        )
-    end
-    if legacy_warning
-        @warn begin 
-            """\n
-            LOADING RESULT JSON FILE IN LEGACY FORMAT. 
-    
-            Current version of ComplexMixtures: $current_version
-            Version used to create the json file: $json_version_str
-    
-            If the current version overwrites the json file, it may not be readable
-            with the older version of ComplexMixtures used to originally create it. 
-    
-            Note: Output files generated with versions older than 1.0.0 will error.
-    
-            You can disable this warning by using `load(filename; legacy_warning = false)`
-    
-            """
-        end _file=nothing _line=nothing
-    end
-    results_updated = load_legacy_json(filename, json_version) 
-    return results_updated
+    return R
 end
 
 @testitem "Result - load/save" begin
-    using ComplexMixtures
-    using ComplexMixtures.Testing
-    r1 = load("$(Testing.data_dir)/NAMD/protein_tmao.json", legacy_warning = false)
+    using ComplexMixtures: load
+    using ComplexMixtures.Testing: data_dir
+    r1 = load("$data_dir/NAMD/protein_tmao.json")
     tmp = tempname()
     save(r1, tmp)
     r2 = load(tmp)
