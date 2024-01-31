@@ -924,6 +924,7 @@ function overview(R::Result)
     ov.density.solvent_bulk = R.density.solvent_bulk * units.SitesperAngs3tomolperL
 
     # Solvent molar volume ov.solvent_molar_volume = 1000 / ov.density.solvent
+    ov.solvent_molar_volume = 1000 / ov.density.solvent
     ov.solvent_molar_volume_bulk = 1000 / ov.density.solvent_bulk
 
     # Solute molar volume computed from solvent density in bulk
