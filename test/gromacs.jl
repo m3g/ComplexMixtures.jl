@@ -11,7 +11,6 @@
     options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
 
     # Example 1: protein-EMIM
-
     # save(R,"$dir/protein_EMI.json")
     R_save = load("$dir/protein_EMI.json"; legacy_warning = false)
     protein = AtomSelection(select(atoms, "protein"), nmols = 1)
@@ -20,8 +19,7 @@
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug = true)
 
-    # Example 1: EMIM-DCA
-
+    # Example 2: EMIM-DCA
     # save(R,"$dir/EMI_DCA.json")
     R_save = load("$dir/EMI_DCA.json"; legacy_warning = false)
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol = 20)
@@ -30,8 +28,7 @@
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug = true)
 
-    # Example 1: EMIM-EMIM
-
+    # Example 3: EMIM-EMIM
     # save(R,"$dir/EMI_EMI.json")
     R_save = load("$dir/EMI_EMI.json"; legacy_warning = false)
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol = 20)
