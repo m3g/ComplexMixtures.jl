@@ -490,6 +490,12 @@ function Base.merge(results::Vector{<:Result})
                 )
                 cannot_merge = true
             end
+            if (results[ir].solute != results[jr].solute) || (results[ir].solvent != results[jr].solvent)
+                println(
+                    "ERROR: To merge Results, the solute and solvent selections of both sets must be the same.",
+                )
+                cannot_merge = true
+            end
         end
     end
     if cannot_merge
@@ -588,7 +594,7 @@ end
 
 @testitem "merge" begin
     using ComplexMixtures: mddf, merge
-    using PDBTools: readPDB, select
+    using PDBTools: readPDB, select, selindex
     using ComplexMixtures.Testing: data_dir
 
     # Test simple three-molecule system
@@ -658,6 +664,20 @@ end
     @test sum(sum.(R2.solvent_group_count)) == 0
     @test sum(sum.(R.solute_group_count)) == 2/3
     @test sum(sum.(R.solvent_group_count)) == 2/3
+
+    # Test throwing merging incompatible results
+    protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
+    R1 = mddf(traj, options)
+    protein = AtomSelection(
+        select(atoms, "protein and model 1"), nmols = 1, 
+        group_names = ["acidic"],
+        group_atom_indices = [selindex(atoms, "protein and acidic")]
+    )
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
+    R2 = mddf(traj, options)
+
+
 end
 
 @testitem "Result - empty" begin
