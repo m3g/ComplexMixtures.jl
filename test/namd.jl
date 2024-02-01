@@ -1,19 +1,18 @@
 
 @testitem "NAMD" begin
-    using ComplexMixtures, PDBTools
-    using ComplexMixtures.Testing
-    const CM = ComplexMixtures
+    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load
+    using PDBTools: readPDB, select
+    using ComplexMixtures.Testing: data_dir
 
     #
     # Tests with NAMD-DCD trajectory
     #
 
-    dir = "$(Testing.data_dir)/NAMD"
+    dir = "$data_dir/NAMD"
     atoms = readPDB("$dir/structure.pdb")
     options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
 
     # Example 1: protein-tmao
-
     # save(R,"$dir/protein_tmao.json")
     R_save = load("$dir/protein_tmao.json"; legacy_warning = false)
     protein = AtomSelection(select(atoms, "protein"), nmols = 1)
@@ -29,7 +28,6 @@
     @test R_load ≈ R_save
 
     # Example 2: water-tmao
-
     # save(R,"$dir/water_tmao.json")
     R_save = load("$dir/water_tmao.json"; legacy_warning = false)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
@@ -39,7 +37,6 @@
     @test isapprox(R, R_save, debug = true)
 
     # Example 3: tmao-tmao
-
     # save(R,"$dir/tmao_tmao.json")
     R_save = load("$dir/tmao_tmao.json"; legacy_warning = false)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
@@ -48,7 +45,6 @@
     @test isapprox(R, R_save, debug = true)
 
     # Example 3: water-water
-
     # save(R,"$dir/water_water.json")
     R_save = load("$dir/water_water.json"; legacy_warning = false)
     water = AtomSelection(select(atoms, "water"), natomspermol = 3)
