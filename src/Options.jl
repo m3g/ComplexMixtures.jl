@@ -69,9 +69,7 @@ function Base.show(io::IO, o::Options)
         Number of threads to use (0 is all): nthreads = $(o.nthreads)
         Silent output: $(o.silent)
     $bars
-    """
-    ))
-    return nothing
+    """))
 end
 
 #=
@@ -89,4 +87,30 @@ the Results data structure, particularly when the results are merged from multip
     # Statistical weights of each frame of each file in the trajectory. An empty vector
     # means that all frames have the same statistical weight
     const frame_weights::Vector{Float64}
+end
+
+function Base.show(io::IO, o::TrajectoryFileOptions)
+    bars82 = repeat("-", 82)
+    print(io,chomp("""
+    $bars82
+    Trajectory file: 
+        $(o.filename)
+
+    $(o.options)
+    $bars82
+    Reference atom for random rotations: irefatom = $(o.irefatom)
+    Last frame read: lastframe_read = $(o.lastframe_read)
+    Number of frames read: nframes_read = $(o.nframes_read)
+    Statistical weights of each frame: frame_weights = $(print_vector_summary(o.frame_weights))
+    $bars82
+    """))
+    return nothing
+end
+
+function Base.show(io::IO, ::MIME"text/plain", vec::Vector{TrajectoryFileOptions})
+    print(io, chomp("""
+        Vector{ComplexMixtures.TrajectoryFileOptions}
+            Number of files: $(length(vec))
+            Total number of frames: $(sum(o.nframes_read for o in vec))
+        """))
 end

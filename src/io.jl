@@ -16,7 +16,7 @@ const units = Units{Float64}()
 #
 # Decoration and title
 #
-const bars = "-------------------------------------------------------------------------------"
+const bars = repeat("-", 80)
 atoms_str(n) = "$n $(n == 1 ? "atom" : "atoms")"
 mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
 

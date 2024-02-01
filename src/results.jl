@@ -941,19 +941,6 @@ function Base.show(io::IO, ov::Overview)
    )
 end
 
-#voltar
-#        frame_weights = $(
-#            isempty(o.frame_weights) ? 1.0 : 
-#                if length(o.frame_weights) > 4
-#                    "["*join(round.(o.frame_weights[begin:begin+1],digits=2), ", ")*
-#                    ", ... ,"*
-#                    join(round.(o.frame_weights[end-1:end], digits=2), ", ")*" ]"
-#                else
-#                   o.frame_weights 
-#                end
-#            )
-#        length of weights vector = $(length(o.frame_weights))
-
 """
     overview(R::Result)
 
