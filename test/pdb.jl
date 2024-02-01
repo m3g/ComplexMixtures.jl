@@ -21,7 +21,7 @@
 
     # Example 2: tmao-tmao
     # save(R,"$dir/tmao_tmao.json")
-    R_save = load("$dir/tmao_tmao.json"; legacy_warning = false)
+    R_save = load("$dir/tmao_tmao.json")
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     traj = Trajectory("$dir/trajectory.pdb", tmao, format = "PDBTraj")
     R = mddf(traj, options)
