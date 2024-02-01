@@ -65,8 +65,8 @@ function write(
         println(output, @sprintf("# Number of atoms solute: %i8", size(R.solute_atom, 2)))
         println(output, @sprintf("# Number of atoms of the solvent: %i8", size(R.solvent_atom, 2)))
         println(output, @sprintf("#"))
-        if R.options.usecutoff
-            ibulk = setbin(R.options.dbulk, R.options.binstep)
+        if R.files[1].options.usecutoff
+            ibulk = setbin(R.files[1].options.dbulk, R.files[1].options.binstep)
             bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
             sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
             println(output, "#")

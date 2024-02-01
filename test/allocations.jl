@@ -20,7 +20,6 @@
         StableRNG = true,
         nthreads = 1,
         silent = true,
-        frame_weights = $(Float64[]),
     ) samples = 1 evals = 1
     @test t.allocs == 0
 

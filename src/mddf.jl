@@ -19,7 +19,7 @@ function Buffer(traj::Trajectory, R::Result)
     return Buffer(
         solute_read = similar(traj.x_solute),
         solvent_read = similar(traj.x_solvent),
-        ref_solutes = zeros(Int, R.options.n_random_samples),
+        ref_solutes = zeros(Int, R.files[1].options.n_random_samples),
         list = fill(zero(MinimumDistance), R.solvent.nmols),
         indices_in_bulk = fill(0, R.solvent.nmols),
     )
@@ -38,7 +38,7 @@ end
     b0 = ComplexMixtures.Buffer(
         solute_read = similar(traj.x_solute),
         solvent_read = similar(traj.x_solvent),
-        ref_solutes = zeros(Int, R.options.n_random_samples),
+        ref_solutes = zeros(Int, R.files[1].options.n_random_samples),
         list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols),
         indices_in_bulk = fill(0, R.solvent.nmols),
     )
@@ -81,12 +81,12 @@ function randomize_solvent!(
         # Copy the coordinates of the random solvent molecule chosen
         y_new .= viewmol(jmol, buff.solvent_read, R.solvent)
         # Randomize rotations and translation for this molecule 
-        random_move!(y_new, R.irefatom, system, RNG)
+        random_move!(y_new, R.files[1].irefatom, system, RNG)
     end
 end
 
 """     
-    mddf(trajectory::Trajectory, options::Options)
+    mddf(trajectory::Trajectory, options::Options; frame_weights = Float64[], coordination_number_only = false)
 
 Function that computes the minimum-distance distribution function, atomic contributions, and 
 KB integrals, given the `Trajectory` structure of the simulation and, optionally, parameters
@@ -110,7 +110,15 @@ julia> results = mddf(trajectory,options);
 ```
 
 """
-function mddf(trajectory::Trajectory, options::Options = Options(); coordination_number_only = false)
+function mddf(trajectory::Trajectory; frame_weights = Float64[], coordination_number_only = false)
+    return mddf(trajectory, Options(); frame_weights, coordination_number_only)
+end
+
+function mddf(
+    trajectory::Trajectory, options::Options; 
+    frame_weights = Float64[],
+    coordination_number_only = false
+)
 
     # Set random number generator
     RNG = init_random(options)
@@ -122,24 +130,10 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
     end
 
     # Structure in which the final results will be stored
-    R = Result(trajectory, options)
-
-    # If frame weights are provided, the length of the weights vector has to at least
-    # of the of number of the last frame to be read
-    if !isempty(options.frame_weights)
-        if length(options.frame_weights) < R.lastframe_read
-            throw(ArgumentError(chomp("""\n
-            The length of the frame_weights vector provided must at least the number of frames to be read.
-            
-                Input given: length(options.frame_weights) = $(length(options.frame_weights))
-                             last frame to be read: $(R.lastframe_read)
-            
-            """)))
-        end
-    end
+    R = Result(trajectory, options, frame_weights)
 
     # Initializing the structure that carries the result per thread
-    R_chunk = [Result(trajectory, options) for _ = 1:nchunks]
+    R_chunk = [Result(trajectory, options, frame_weights) for _ = 1:nchunks]
 
     # Create data structures required for multithreading: needed to read coordinates in each
     # frame independently, and compute the minimum-distance list 
@@ -160,17 +154,16 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
     # Print some information about this run
     if !options.silent
         title(R, trajectory.solute, trajectory.solvent, nchunks)
-        progress = Progress(R.nframes_read; dt = 1)
+        progress = Progress(R.files[1].nframes_read; dt = 1)
     end
 
-
     # Loop over the trajectory
-    trajectory_range = options.firstframe:options.stride:R.lastframe_read
+    trajectory_range = options.firstframe:options.stride:R.files[1].lastframe_read
     read_lock = ReentrantLock()
     Threads.@threads for (ichunk, frame_range) in 
-        enumerate(ChunkSplitters.chunks(options.firstframe:R.lastframe_read; n = nchunks))
+        enumerate(ChunkSplitters.chunks(options.firstframe:R.files[1].lastframe_read; n = nchunks))
         # Reset the number of frames read by each chunk
-        R_chunk[ichunk].nframes_read = 0
+        R_chunk[ichunk].files[1].nframes_read = 0
         for _ in frame_range
             # variables used in this scope
             local compute
@@ -178,7 +171,7 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
             # Read frame coordinates
             lock(read_lock) do
                 compute = false
-                while iframe < R.lastframe_read && !compute
+                while iframe < R.files[1].lastframe_read && !compute
                     nextframe!(trajectory)
                     iframe += 1
                     if iframe in trajectory_range
@@ -199,11 +192,7 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
                         GC.gc()
                     end
                     # Read weight of this frame. 
-                    if isempty(options.frame_weights)
-                        frame_weight = 1.0
-                    else
-                        frame_weight = options.frame_weights[iframe]
-                    end
+                    frame_weight = R_chunk[ichunk].files[1].frame_weights[iframe]
                     # Display progress bar
                     options.silent || next!(progress)
                 end # compute if
@@ -212,7 +201,7 @@ function mddf(trajectory::Trajectory, options::Options = Options(); coordination
             # Perform MDDF computation
             #
             if compute
-                R_chunk[ichunk].nframes_read += 1
+                R_chunk[ichunk].files[1].nframes_read += 1
                 # Compute distances in this frame and update results
                 if !coordination_number_only
                     mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, frame_weight, RNG)
@@ -318,15 +307,15 @@ function mddf_frame!(
 end
 
 @testitem "mddf - toy system" begin
-    using ComplexMixtures
-    using PDBTools
-    using ComplexMixtures.Testing
+    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
+    using PDBTools: readPDB, select
+    using ComplexMixtures.Testing: data_dir
 
     # Test simple three-molecule system: cross correlation
-    atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
+    atoms = readPDB("$data_dir/toy/cross.pdb")
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
-    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
 
     for lastframe in [1, 2]
         options = Options(
@@ -347,12 +336,12 @@ end
     end
 
     # Test wrong frame_weights input
-    @test_throws ArgumentError mddf(traj, Options(frame_weights = [1.0]))
+    @test_throws ArgumentError mddf(traj, Options(), frame_weights = [1.0])
 
     # Self correlation
-    atoms = readPDB("$(Testing.data_dir)/toy/self_monoatomic.pdb")
+    atoms = readPDB("$data_dir/toy/self_monoatomic.pdb")
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
-    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
+    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
 
     # without atoms in the bulk
     options = Options(
@@ -377,37 +366,34 @@ end
     # Read only first frame
     options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, lastframe = 1)
     R1 = mddf(traj, options)
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [1.0, 0.0])
-    R2 = mddf(traj, options)
+    R2 = mddf(traj, options; frame_weights = [1.0, 0.0])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Read only last frame
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 2, lastframe = 2)
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 2)
     R1 = mddf(traj, options)
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [0.0, 1.0])
-    R2 = mddf(traj, options)
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    R2 = mddf(traj, options; frame_weights = [0.0, 1.0])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Use equal weights
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 1, lastframe = 2)
     R1 = mddf(traj, options)
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [0.3, 0.3])
-    R2 = mddf(traj, options)
+    R2 = mddf(traj, options; frame_weights = [0.3, 0.3])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Check with the duplicated-first-frame trajectory 
-    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic_duplicated_first_frame.pdb", atom, format = "PDBTraj")
+    traj = Trajectory("$data_dir/toy/self_monoatomic_duplicated_first_frame.pdb", atom, format = "PDBTraj")
     options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 1, lastframe = 3)
     R1 = mddf(traj, options)
-    traj = Trajectory("$(Testing.data_dir)/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = [2.0, 1.0])
-    R2 = mddf(traj, options)
+    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
+    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    R2 = mddf(traj, options; frame_weights = [2.0, 1.0])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Test some different weights
-    R2 = mddf(traj, Options(silent = true, frame_weights = [2.0, 1.0]))
+    R2 = mddf(traj, Options(silent = true), frame_weights = [2.0, 1.0])
     @test sum(R2.md_count) ≈ 2/3
-    R2 = mddf(traj, Options(silent = true, frame_weights = [1.0, 2.0]))
+    R2 = mddf(traj, Options(silent = true), frame_weights = [1.0, 2.0])
     @test sum(R2.md_count) ≈ 1/3
 
     # only with atoms in the bulk
@@ -497,18 +483,18 @@ end
     traj1 = Trajectory("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao)
     R1 = mddf(traj1, Options())
     traj2 = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
-    R2 = mddf(traj2, Options(lastframe=2, frame_weights=[2.0, 1.0]))
+    R2 = mddf(traj2, Options(lastframe=2), frame_weights=[2.0, 1.0])
     @test R2.md_count ≈ R1.md_count
     @test all(R2.solute_group_count == R1.solute_group_count)
     @test all(R2.solvent_group_count == R1.solvent_group_count)
-    R2 = mddf(traj2, Options(lastframe=2, frame_weights=[0.5, 0.25]))
+    R2 = mddf(traj2, Options(lastframe=2), frame_weights=[0.5, 0.25])
     @test R2.md_count ≈ R1.md_count
     @test all(R2.solute_group_count == R1.solute_group_count)
     @test all(R2.solvent_group_count == R1.solvent_group_count)
     @test R2.volume.total ≈ R1.volume.total
     # Varying weights with stride
     R1 = mddf(traj1, Options(firstframe=2, lastframe=3))
-    R2 = mddf(traj1, Options(lastframe=3, stride=2, frame_weights=[1.0, 100.0, 1.0]))
+    R2 = mddf(traj1, Options(lastframe=3, stride=2), frame_weights=[1.0, 100.0, 1.0])
     @test R2.md_count ≈ R1.md_count
     @test all(R2.solute_group_count == R1.solute_group_count)
     @test all(R2.solvent_group_count == R1.solvent_group_count)

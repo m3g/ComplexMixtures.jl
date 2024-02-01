@@ -105,22 +105,21 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     density::Density = Density()
     volume::Volume = Volume(nbins)
 
-    # Options of the calculation
-    options::Options
-    irefatom::Int
-    lastframe_read::Int
-    nframes_read::Int
-
-    # File name(s) of the trajectories in this results 
-    files::Vector{String}
+    #
+    # If multiple files, the following vector defines the weight of each file
+    # in the final merged results. It is proportional to the number of frames
+    # and weights provided for the frames in each file. 
+    #
+    files::Vector{TrajectoryFileOptions}
     weights::Vector{Float64}
+
 end
 
 #
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-function Result(trajectory::Trajectory, options::Options = Options())
+function Result(trajectory::Trajectory, options::Options, frame_weights::Vector{Float64} = Float64[])
 
     # Check for simple input errors
     if options.stride < 1
@@ -183,6 +182,22 @@ function Result(trajectory::Trajectory, options::Options = Options())
     # Close trajecotory
     closetraj!(trajectory)
 
+    # If frame weights are provided, the length of the weights vector has to at least
+    # of the of number of the last frame to be read
+    if !isempty(frame_weights)
+        if length(frame_weights) < lastframe_read
+            throw(ArgumentError(chomp("""\n
+            The length of the frame_weights vector provided must at least the number of frames to be read.
+            
+                Input given: length(frame_weights) = $(length(frame_weights))
+                             last frame to be read: $(lastframe_read)
+            
+            """)))
+        end
+    else
+        frame_weights = ones(lastframe_read)
+    end
+
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
     n_groups_solute = if !trajectory.solute.custom_groups 
@@ -199,31 +214,36 @@ function Result(trajectory::Trajectory, options::Options = Options())
     solvent_group_count = [ zeros(nbins) for _ in 1:n_groups_solvent ]
 
     return Result(
-        options = options,
         nbins = nbins,
         dbulk = options.dbulk,
         cutoff = cutoff,
-        irefatom = irefatom,
-        lastframe_read = lastframe_read,
-        nframes_read = nframes_read,
         autocorrelation = isautocorrelation(trajectory),
         solute = trajectory.solute,
         solvent = trajectory.solvent,
-        files = [trajectory.filename],
-        weights = [1.0],
         solute_group_count = solute_group_count,
         solvent_group_count = solvent_group_count, 
+        files = [
+            TrajectoryFileOptions(
+                filename = trajectory.filename,
+                options = options,
+                irefatom = irefatom, 
+                lastframe_read = lastframe_read,
+                nframes_read = nframes_read,
+                frame_weights = frame_weights,
+            )
+        ],
+        weights = [1.0],
     )
 end
 
 @testitem "input: argument errors" begin
-    using ComplexMixtures
-    using ComplexMixtures: Testing
+    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
+    using ComplexMixtures.Testing: data_dir
     using PDBTools: readPDB, select
-    atoms = readPDB("$(Testing.data_dir)/NAMD/structure.pdb")
+    atoms = readPDB("$data_dir/NAMD/structure.pdb")
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     water = AtomSelection(select(atoms, "water"), natomspermol = 3)
-    trajectory = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao, water)
+    trajectory = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao, water)
     @test_throws ArgumentError mddf(trajectory, Options(stride = 0))
     @test_throws ArgumentError mddf(trajectory, Options(firstframe = 2, lastframe = 1))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
@@ -232,6 +252,7 @@ end
     @test_throws ArgumentError mddf(trajectory, Options(dbulk = 6.0, cutoff = 10.0, binstep = 0.3, usecutoff = true))
     @test_throws ArgumentError mddf(trajectory, Options(dbulk = 8.0, cutoff = 10.0, binstep = 0.3, usecutoff = true))
     @test_throws ArgumentError mddf(trajectory, Options(irefatom = 1000))
+    @test_throws ArgumentError mddf(trajectory, Options(lastframe = 5), frame_weights = [1.0, 1.0, 1.0])
 end
 
 #
@@ -256,9 +277,9 @@ to the correct weight relative to the random sample.
 =#
 function set_samples(R::Result)
     if R.autocorrelation
-        samples = (solvent_nmols = R.solvent.nmols - 1, random = R.options.n_random_samples)
+        samples = (solvent_nmols = R.solvent.nmols - 1, random = R.files[1].options.n_random_samples)
     else
-        samples = (solvent_nmols = R.solvent.nmols, random = R.options.n_random_samples)
+        samples = (solvent_nmols = R.solvent.nmols, random = R.files[1].options.n_random_samples)
     end
     return samples
 end
@@ -313,14 +334,12 @@ end
 # that frame weights were not provided
 #
 function sum_frame_weights(R::Result)
-    i = R.options.firstframe
-    s = R.options.stride
-    l = R.lastframe_read
-    Q = if !isempty(R.options.frame_weights)
-        sum(R.options.frame_weights[i] for i in i:s:l)
-    else
-        # number of frames that were read from the file
-        length(i:s:l)
+    Q = 0.0
+    for file in R.files
+        i = file.options.firstframe
+        s = file.options.stride
+        l = file.lastframe_read
+        Q += sum(file.frame_weights[i] for i in i:s:l)
     end
     return Q
 end
@@ -361,14 +380,14 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
 
     # Solute domain volume
-    ibulk = setbin(R.dbulk + 0.5 * R.options.binstep, R.options.binstep)
+    ibulk = setbin(R.dbulk + 0.5 * R.files[1].options.binstep, R.files[1].options.binstep)
     R.volume.domain = sum(@view(R.volume.shell[1:ibulk-1]))
 
     # Bulk volume and density properties: either the bulk is considered everything
     # that is not the domain, or the bulk is the region between d_bulk and cutoff,
-    # if R.options.usecutoff is true (meaning that there is a cutoff different from
+    # if R.files[1].options.usecutoff is true (meaning that there is a cutoff different from
     # that of the bulk distance)
-    if !R.options.usecutoff
+    if !R.files[1].options.usecutoff
         R.volume.bulk = R.volume.total - R.volume.domain
         n_solvent_in_bulk = samples.solvent_nmols - sum(R.rdf_count)
     else
@@ -451,106 +470,132 @@ a Result structure of the same type, with all the functions and counters represe
 of the set provided weighted by the number of frames read in each Result set.
 
 """
-function Base.merge(r::Vector{<:Result})
-    nr = length(r)
-    nframes_read = r[1].nframes_read
-    error = false
-    for ir = 2:nr
-        nframes_read += r[ir].nframes_read
-        if r[ir].nbins != r[1].nbins
-            println(
-                "ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.",
-            )
+function Base.merge(results::Vector{<:Result})
+    cannot_merge = false
+    nframes_read = 0
+    for ir in eachindex(results)
+        for file in results[ir].files
+            nframes_read += file.nframes_read
         end
-        if !(r[ir].cutoff ≈ r[1].cutoff)
-            println(
-                "ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.",
-            )
+        for jr in ir+1:lastindex(results)
+            if results[ir].nbins != results[jr].nbins
+                println(
+                    "ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.",
+                )
+                cannot_merge = true
+            end
+            if !(results[ir].cutoff ≈ results[ir].cutoff)
+                println(
+                    "ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.",
+                )
+                cannot_merge = true
+            end
         end
     end
-    if error
-        error(" Incompatible set of results to merge. ")
+    if cannot_merge
+        throw(ArgumentError(" Incompatible set of results to merge. "))
     end
 
-    # List of files and weights
-    nfiles = sum(length(R.files) for R in r)
-    files = Vector{String}(undef, nfiles)
-    weights = Vector{Float64}(undef, nfiles)
+    # Total number of frames of all results, and total weight of frames
+    nfiles = 0
+    ntot_frames = 0
+    tot_frame_weight = 0.0
+    for result in results
+        nfiles += length(result.files)
+        ntot_frames += sum(file.nframes_read for file in result.files)
+        tot_frame_weight += sum_frame_weights(result)
+    end
 
-    # First, merge the options
-    options = merge(getfield.(r, :options))
+    # Compute weight of each file, given the number frames. Also compute 
+    # the weight of the data of each file, given the weights of the frames
+    weights = zeros(nfiles)
+    ifile = 0
+    for result in results
+        for file in result.files
+            ifile += 1
+            weights[ifile] = file.nframes_read / ntot_frames
+        end
+    end
+
+    # Append all TrajectoryFileOptions to single vector
+    files = TrajectoryFileOptions[]
+    for result in results
+        for file in result.files
+            push!(files, file)
+        end
+    end
+
+    # Initialize group counts
+    solute_group_count = [ zeros(results[1].nbins) for _ in 1:length(results[1].solute_group_count) ]
+    solvent_group_count = [ zeros(results[1].nbins) for _ in 1:length(results[1].solvent_group_count) ] 
 
     # Structure for merged results
     R = Result(
-        options = options,
-        nbins = r[1].nbins,
-        dbulk = r[1].dbulk,
-        cutoff = r[1].cutoff,
-        irefatom = r[1].irefatom,
-        lastframe_read = r[nr].lastframe_read,
-        nframes_read = nframes_read,
-        autocorrelation = r[1].autocorrelation,
-        solute = r[1].solute,
-        solvent = r[1].solvent,
-        solute_group_count = r[1].solute_group_count,
-        solvent_group_count = r[1].solvent_group_count,
+        nbins = results[1].nbins,
+        dbulk = results[1].dbulk,
+        cutoff = results[1].cutoff,
+        autocorrelation = results[1].autocorrelation,
+        solute = results[1].solute,
+        solvent = results[1].solvent,
+        solute_group_count = solute_group_count,
+        solvent_group_count = solvent_group_count,
         files = files,
         weights = weights,
     )
 
-    # Total normalization factor: sum of the number of frame reads,
-    # or the sum of frame weights
-    Q = sum_frame_weights(R)
-
     # Average results weighting the data considering the weights of the frames of each data set
-    @. R.d = r[1].d
-    ifile = 0
-    for ir = 1:nr
-        w = sum_frame_weights(r[ir]) / Q
-        @. R.mddf += w * r[ir].mddf
-        @. R.kb += w * r[ir].kb
-        @. R.rdf += w * r[ir].rdf
-        @. R.kb_rdf += w * r[ir].kb_rdf
-        @. R.md_count += w * r[ir].md_count
-        @. R.md_count_random += w * r[ir].md_count_random
-        @. R.coordination_number += w * r[ir].coordination_number
-        @. R.coordination_number_random += w * r[ir].coordination_number_random
-        for i in eachindex(R.solute_group_count)
-            @. R.solute_group_count[i] += w * r[ir].solute_group_count
+    warn = false
+    @. R.d = results[1].d
+    for ifile in eachindex(results)
+        result = results[ifile]
+        w = sum_frame_weights(result) / tot_frame_weight
+        if !(w ≈ R.weights[ifile]) && !warn
+            warn = true
+            @warn begin 
+                """
+                Frame weights and file weights differ, because crustom frame weights were provided.
+                """ 
+             end _file=nothing _line=nothing
         end
-        for i in eachindex(R.solvent_group_count)
-            @. R.solvent_group_count[i] += w * r[ir].solvent_group_count
+        @. R.mddf += w * result.mddf
+        @. R.kb += w * result.kb
+        @. R.rdf += w * result.rdf
+        @. R.kb_rdf += w * result.kb_rdf
+        @. R.md_count += w * result.md_count
+        @. R.md_count_random += w * result.md_count_random
+        @. R.coordination_number += w * result.coordination_number
+        @. R.coordination_number_random += w * result.coordination_number_random
+        for i in eachindex(R.solute_group_count, result.solute_group_count)
+            @. R.solute_group_count[i] += w * result.solute_group_count[i]
         end
-        @. R.rdf_count += w * r[ir].rdf_count
-        @. R.rdf_count_random += w * r[ir].rdf_count_random
-        @. R.sum_rdf_count += w * r[ir].sum_rdf_count
-        @. R.sum_rdf_count_random += w * r[ir].sum_rdf_count_random
-        R.density.solute += w * r[ir].density.solute
-        R.density.solvent += w * r[ir].density.solvent
-        R.density.solvent_bulk += w * r[ir].density.solvent_bulk
-        R.volume.total += w * r[ir].volume.total
-        R.volume.bulk += w * r[ir].volume.bulk
-        R.volume.domain += w * r[ir].volume.domain
-        R.volume.shell += w * r[ir].volume.shell
-        for j = 1:length(r[ir].files)
-            ifile += 1
-            R.files[ifile] = normpath(r[ir].files[j])
-            R.weights[ifile] = w * r[ir].weights[j]
+        for i in eachindex(R.solvent_group_count, result.solvent_group_count)
+            @. R.solvent_group_count[i] += w * result.solvent_group_count[i]
         end
+        @. R.rdf_count += w * result.rdf_count
+        @. R.rdf_count_random += w * result.rdf_count_random
+        @. R.sum_rdf_count += w * result.sum_rdf_count
+        @. R.sum_rdf_count_random += w * result.sum_rdf_count_random
+        R.density.solute += w * result.density.solute
+        R.density.solvent += w * result.density.solvent
+        R.density.solvent_bulk += w * result.density.solvent_bulk
+        R.volume.total += w * result.volume.total
+        R.volume.bulk += w * result.volume.bulk
+        R.volume.domain += w * result.volume.domain
+        R.volume.shell += w * result.volume.shell
     end
     return R
 end
 
 @testitem "merge" begin
-    using ComplexMixtures
-    using PDBTools
-    using ComplexMixtures.Testing
+    using ComplexMixtures: mddf, merge
+    using PDBTools: readPDB, select
+    using ComplexMixtures.Testing: data_dir
 
     # Test simple three-molecule system
-    atoms = readPDB("$(Testing.data_dir)/toy/cross.pdb")
+    atoms = readPDB("$data_dir/toy/cross.pdb")
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
-    traj = Trajectory("$(Testing.data_dir)/toy/cross.pdb", protein, water, format = "PDBTraj")
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
 
     options = Options(
         seed = 321,
@@ -579,63 +624,52 @@ end
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+    @test R.weights == [0.5, 0.5]
 
     # Test loading a saved merged file
-    dir = "$(Testing.data_dir)/NAMD"
-    atoms = readPDB("$dir/structure.pdb")
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
-    water = AtomSelection(select(atoms, "water"), natomspermol = 3)
-
+    dir = mktempdir()
     save(R,"$dir/merged.json")
     R_save = load("$dir/merged.json")
-
-    options = Options(
-        firstframe = 1,
-        lastframe = 2,
-        seed = 321,
-        StableRNG = true,
-        nthreads = 1,
-        silent = true,
-    )
-    traj = Trajectory("$dir/trajectory.dcd", tmao, water)
-    R1 = mddf(traj, options)
-
-    options = Options(
-        firstframe = 3,
-        lastframe = 6,
-        seed = 321,
-        StableRNG = true,
-        nthreads = 1,
-        silent = true,
-    )
-    traj = Trajectory("$dir/trajectory.dcd", tmao, water)
-    R2 = mddf(traj, options)
-
-    R = merge([R1, R2])
     @test isapprox(R, R_save, debug = true)
 
     # Test merging files for which weights are provided for the frames
-    traj = Trajectory("$dir/trajectory.dcd", tmao, water)
-    options = Options(firstframe = 1, lastframe = 2, seed = 321, StableRNG = true, nthreads = 1, silent = true, frame_weights = fill(0.3, 20))
-    R1 = mddf(traj, options)
+    R2 = mddf(traj, options, frame_weights = [0.0, 2.0])
+    @test R.weights == [0.5, 0.5]
+    @test length(R.files) == 2
 
-    # First lets test the error message, in case the frame_weights are not provided for all frames
-    options = Options(firstframe = 1, lastframe = 2, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    R2 = mddf(traj, options)
-    @test_throws ArgumentError merge([R1, R2])
-
+    # Two-atom system
+    at1 = AtomSelection([1], nmols=1)
+    at2 = AtomSelection([2], nmols=1)
+    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", at1, at2, format = "PDBTraj")
+    R1 = mddf(traj, Options(lastframe=1))
+    @test sum(R1.md_count) == 1
+    R2 = mddf(traj, Options(firstframe=2))
+    @test sum(R2.md_count) == 0
+    R = merge([R1, R2])
+    @test R.weights == [0.5, 0.5]
+    @test sum(R.md_count) == 0.5
+    R1 = mddf(traj, Options(lastframe=1), frame_weights=[2.0])
+    @test sum(R1.md_count) == 1
+    R = merge([R1, R2])
+    @test sum(R.md_count) == 2/3
+    @test sum(sum.(R1.solute_group_count)) == 1
+    @test sum(sum.(R1.solvent_group_count)) == 1
+    @test sum(sum.(R2.solute_group_count)) == 0
+    @test sum(sum.(R2.solvent_group_count)) == 0
+    @test sum(sum.(R.solute_group_count)) == 2/3
+    @test sum(sum.(R.solvent_group_count)) == 2/3
 end
 
 @testitem "Result - empty" begin
-    using ComplexMixtures
-    using ComplexMixtures.Testing
+    using ComplexMixtures: Result, Trajectory, Options, AtomSelection
+    using ComplexMixtures.Testing: data_dir, pdbfile
     using PDBTools: readPDB, select, name
-    atoms = readPDB(Testing.pdbfile)
+    atoms = readPDB(pdbfile)
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
     solute = AtomSelection(protein, nmols = 1)
     solvent = AtomSelection(tmao, natomspermol = 14)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", solute, solvent)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", solute, solvent)
     options = Options()
     # At this point we can only test an empty Result struct
     R = Result(traj, options)
@@ -644,17 +678,17 @@ end
     @test length(R.d) == 500
     @test R.dbulk == 10.0
     @test (R.density.solute, R.density.solvent, R.density.solvent_bulk) == (0.0, 0.0, 0.0)
-    @test normpath(R.files[1]) == normpath("$(Testing.data_dir)/NAMD/trajectory.dcd")
-    @test R.irefatom == 1
+    @test normpath(R.files[1].filename) == normpath("$data_dir/NAMD/trajectory.dcd")
+    @test R.files[1].irefatom == 1
     @test length(R.kb) == 500
     @test length(R.kb_rdf) == 500
-    @test R.lastframe_read == 20
+    @test R.files[1].lastframe_read == 20
     @test length(R.md_count) == 500
     @test length(R.md_count_random) == 500
     @test length(R.mddf) == 500
     @test R.nbins == 500
-    @test R.nframes_read == 20
-    @test R.options == Options()
+    @test R.files[1].nframes_read == 20
+    @test R.files[1].options == Options()
     @test length(R.rdf_count) == 500
     @test length(R.rdf_count_random) == 500
     @test R.solute == AtomSelection(collect(1:1463), nmols=1, natomspermol=1463, group_names=name.(protein))
@@ -678,6 +712,7 @@ StructTypes.StructType(::Type{Result}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
+StructTypes.StructType(::Type{TrajectoryFileOptions}) = StructTypes.Struct()
 
 """
     save(R::Result, filename::String)
@@ -822,7 +857,7 @@ function title(R::Result, solute::AtomSelection, solvent::AtomSelection)
         """
         $(bars)
         Starting MDDF calculation:
-        $(R.nframes_read) frames will be considered.
+        $(R.files[1].nframes_read) frames will be considered.
         Solute: $(atoms_str(natoms(solute))) belonging to $(mol_str(solute.nmols)).
         Solvent: $(atoms_str(natoms(natoms))) belonging to $(mol_str(solvent.nmols))
         """)
@@ -832,7 +867,7 @@ function title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn:
         """ 
         $(bars)
         Starting MDDF calculation in parallel:
-        $(R.nframes_read) frames will be considered.
+        $(R.files[1].nframes_read) frames will be considered.
         Number of calculation threads: $(nspawn)
         Solute: $(atoms_str(natoms(solute))) belonging to $(mol_str(solute.nmols)).
         Solvent: $(atoms_str(natoms(solvent))) belonging to $(mol_str(solvent.nmols)).
@@ -887,10 +922,10 @@ function Base.show(io::IO, ov::Overview)
  Trajectory files and weights:
  """
     )
-    for i = 1:length(ov.R.files)
-        println(io, "   $(normpath(ov.R.files[i])) - w = $(ov.R.weights[i])")
+    for i in eachindex(ov.R.files)
+        println(io, "   $(normpath(ov.R.files[i].filename)) - w = $(ov.R.weights[i])")
     end
-    ifar = trunc(Int, ov.R.nbins - 1.0 / ov.R.options.binstep)
+    ifar = trunc(Int, ov.R.nbins - 1.0 / ov.R.files[1].options.binstep)
     long_range_mean = mean(ov.R.mddf[ifar:ov.R.nbins])
     long_range_std = std(ov.R.mddf[ifar:ov.R.nbins])
     long_range_mean_rdf = mean(ov.R.rdf[ifar:ov.R.nbins])
@@ -905,6 +940,19 @@ function Base.show(io::IO, ov::Overview)
    $bars"""
    )
 end
+
+#voltar
+#        frame_weights = $(
+#            isempty(o.frame_weights) ? 1.0 : 
+#                if length(o.frame_weights) > 4
+#                    "["*join(round.(o.frame_weights[begin:begin+1],digits=2), ", ")*
+#                    ", ... ,"*
+#                    join(round.(o.frame_weights[end-1:end], digits=2), ", ")*" ]"
+#                else
+#                   o.frame_weights 
+#                end
+#            )
+#        length of weights vector = $(length(o.frame_weights))
 
 """
     overview(R::Result)

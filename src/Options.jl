@@ -40,10 +40,6 @@ $(TYPEDFIELDS)
     # Do not show any output on the screen on execution of mddf routines
     silent::Bool = false
 
-    # Statistical weights of each frame in the trajectory. An empty vector
-    # means that all frames have the same statistical weight
-    frame_weights::Vector{Float64} = Float64[]
-
 end
 
 function Base.show(io::IO, o::Options)
@@ -61,19 +57,6 @@ function Base.show(io::IO, o::Options)
         Bulk distance: dbulk = $(o.dbulk)
         Use cutoff diffrent from dbulk: usecuoff = $(o.usecutoff)
         Cutoff: cutoff = $(o.cutoff)
-
-    Statistical weight of frames:
-        frame_weights = $(
-            isempty(o.frame_weights) ? 1.0 : 
-                if length(o.frame_weights) > 4
-                    "["*join(round.(o.frame_weights[begin:begin+1],digits=2), ", ")*
-                    ", ... ,"*
-                    join(round.(o.frame_weights[end-1:end], digits=2), ", ")*" ]"
-                else
-                   o.frame_weights 
-                end
-            )
-        length of weights vector = $(length(o.frame_weights))
    
     Computation details: 
         Reference atom for random rotations: irefatom = $(o.irefatom)
@@ -91,74 +74,19 @@ function Base.show(io::IO, o::Options)
     return nothing
 end
 
-# A copy function is needed for the merge function. Could be deepcopy,
-# but feels safer to control the copy here: need to copy the mutable
-# fields explicitly
-import Base: copy
-function copy(o::Options)
-    return Options(
-        firstframe = o.firstframe,
-        lastframe = o.lastframe,
-        stride = o.stride,
-        n_random_samples = o.n_random_samples,
-        binstep = o.binstep,
-        dbulk = o.dbulk,
-        cutoff = o.cutoff,
-        usecutoff = o.usecutoff,
-        lcell = o.lcell,
-        GC = o.GC,
-        GC_threshold = o.GC_threshold,
-        seed = o.seed,
-        StableRNG = o.StableRNG,
-        nthreads = o.nthreads,
-        silent = o.silent,
-        frame_weights = copy(o.frame_weights),
-    )
-end
+#=
 
-#
-# Merge function for options
-#
-function Base.merge(O::Vector{Options})
-    local options
-    empty_frame_weights = false
-    # Check if frame weights were provided to none, all, or some trajectories
-    # If there are weights for some trajectories, but not all, issue a warning
-    # and fill the empty weights with 1.0
-    nframeweights = count(isempty, o.frame_weights for o in O)
-    if nframeweights != 0 && nframeweights != length(O)
-        @warn begin 
-            """
-            Frame weights provided only for some results. 
-            The frame weights will be empty and should be provided manually or not used for further analysis.
-            """ 
-        end _file=nothing _line=nothing
-        empty_frame_weights = true
-    end
-    for i in eachindex(O)
-        if i == firstindex(O) 
-            options = copy(O[i])
-            continue
-        end
-        if !empty_frame_weights
-            append!(options.frame_weights, O[i].frame_weights)
-        end
+Structure that contains data that is trajectory file-specific, to be used within
+the Results data structure, particularly when the results are merged from multiple files.
 
-    end
-    empty_frame_weights && (empty!(options.frame_weights))
-    return options
-end
-
-@testitem "copy/merge Options" begin
-    o1 = Options()
-    o2 = copy(o1)
-    @test o1 == o2
-    o2 = Options()
-    om = merge([o1, o2])
-    @test om == o1
-    o2 = Options(frame_weights=[1.0, 2.0])
-    @test @test_logs (:warn,) merge([o1, o2]).frame_weights == Float64[]
-    o1 = Options(frame_weights=[0.5, 1.0])
-    om = merge([o1, o2])
-    @test om.frame_weights == [0.5, 1.0, 1.0, 2.0] 
+=#
+@kwdef mutable struct TrajectoryFileOptions
+    const filename::String
+    const options::Options
+    const irefatom::Int
+    const lastframe_read::Int
+    nframes_read::Int
+    # Statistical weights of each frame of each file in the trajectory. An empty vector
+    # means that all frames have the same statistical weight
+    const frame_weights::Vector{Float64}
 end

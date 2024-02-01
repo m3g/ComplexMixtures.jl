@@ -136,7 +136,7 @@ function minimum_distances!(
     isolute::Int;
     update_lists::Bool,
 )
-    jref_atom = R.irefatom
+    jref_atom = R.files[1].irefatom
     jnatomspermol = R.solvent.natomspermol
     if R.autocorrelation
         map_pairwise!(

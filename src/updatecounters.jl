@@ -39,12 +39,12 @@ end
 function updatecounters!(R::Result, system::AbstractPeriodicSystem, frame_weight::Float64)
     for md in system.list
         !md.within_cutoff && continue
-        ibin = setbin(md.d, R.options.binstep)
+        ibin = setbin(md.d, R.files[1].options.binstep)
         R.md_count[ibin] += frame_weight
         update_group_count!(R.solute_group_count, ibin, md.i, frame_weight, R.solute)
         update_group_count!(R.solvent_group_count, ibin, md.j, frame_weight, R.solvent)
         if md.ref_atom_within_cutoff
-            ibin = setbin(md.d_ref_atom, R.options.binstep)
+            ibin = setbin(md.d_ref_atom, R.files[1].options.binstep)
             R.rdf_count[ibin] += frame_weight
         end
     end
@@ -54,10 +54,10 @@ end
 function updatecounters!(R::Result, system::AbstractPeriodicSystem, frame_weight::Float64, ::Val{:random})
     for md in system.list
         !md.within_cutoff && continue
-        ibin = setbin(md.d, R.options.binstep)
+        ibin = setbin(md.d, R.files[1].options.binstep)
         R.md_count_random[ibin] += frame_weight
         if md.ref_atom_within_cutoff
-            ibin = setbin(md.d_ref_atom, R.options.binstep)
+            ibin = setbin(md.d_ref_atom, R.files[1].options.binstep)
             R.rdf_count_random[ibin] += frame_weight
         end
     end
