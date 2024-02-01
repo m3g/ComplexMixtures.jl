@@ -77,6 +77,6 @@ include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 
 # Precompilation directives
-#include("precompile.jl")
+include("precompile.jl")
 
 end # module ComplexMixtures
