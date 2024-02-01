@@ -1,5 +1,5 @@
 using TestItemRunner
-@run_package_tests filter = ti -> occursin("AtomSelection.jl", ti.filename)
+@run_package_tests 
 
 @testitem "Aqua.test_all" begin
     import Aqua
