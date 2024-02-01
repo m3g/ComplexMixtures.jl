@@ -21,9 +21,9 @@ Base.isapprox(x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} =
 
 # Compare two ComplexMixtures types
 import Base.==
-==(x::T, y::T; debug = true) where {T<:ComplexMixturesTypes} = _compare(==, x, y; debug = debug)
+==(x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} = _compare(==, x, y; debug = debug)
 
-function _compare(_similar::F, x::T, y::T; debug = true) where {T<:ComplexMixturesTypes} where {F<:Function}
+function _compare(_similar::F, x::T, y::T; debug = false) where {T<:ComplexMixturesTypes} where {F<:Function}
     check = true
     diff_list = Symbol[]
     for field in fieldnames(T)
