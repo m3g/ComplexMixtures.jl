@@ -30,124 +30,58 @@ results = mddf(trajectory)
 
 The `results` data structure contains the decomposition of the MDDF into
 the contributions of every type of atom of the solute and the solvent.
-These data is available at the `results.solute_atom` and
-`results.solvent_atom` arrays: 
+These contributions can be retrieved using the `contributions` function,
+with the `SoluteGroup` and `SolventGroup` selectors.
 
-```julia-repl
-julia> results.solute_atom
-50×1463 Array{Float64,2}:
- 0.0  0.0      0.0  …  0.0  0.0  0.0
- 0.0  0.0      0.0  …  0.0  0.0  0.0
- ...
- 0.0  0.14245  0.0  …  0.0  0.0  0.0
- 0.0  0.0      0.0  …  0.0  0.0  0.0
+For example, if the MDDF of water (solvent) relative to a solute was computed,
+and water has atom names `OH2, H1, H2`, one can retrieve the contributions
+of the oxygen atom with:
 
-julia> results.solvent_atom 
-50×3 Array{Float64,2}:
- 0.0        0.0        0.0 
- 0.0        0.0        0.0 
- ...
- 0.26087    0.26087    0.173913
- 0.25641    0.0854701  0.170940
+```julia
+OH2 = contributions(results, SolventGroup(["OH2"]))
+```
+or with, if `OH2` is the first atom in the molecule,
+```julia
+OH2 = contributions(results, SolventGroup([1]))
 ```
 
-Here, `50` is the number of bins of the histogram, whose distances are
-available at the `results.d` vector.
-
-It is expected that for a protein most of the atoms do not contribute to
-the MDDF, and that all values are zero at very short distances, smaller
-than the radii of the atoms.
-
-The three columns of the `results.solvent_atom` array correspond to the
-thee atoms of the water molecule in this example. The sequence of atoms
-correspond to that of the PDB file, but can be retrieved with:
-
-```julia-repl
-julia> solvent.names
-3-element Array{String,1}:
- "OH2"
- "H1"
- "H2"
+The contributions of the hydrogen atoms can be obtained, similarly, with:
+```julia
+H = contributions(results, SolventGroup(["H1", "H2"]))
 ```
+or with, if `OH2` is the first atom in the molecule,
+```julia
+H = contributions(results, SolventGroup([2, 3]))
+```
+Each of these calls will return a vector of the constributions of these
+atoms to the total MDDF. 
 
-Therefore, if the first column of the `results.solvent_atom` vector is
-plotted as a function of the distances, one gets the contributions to
-the MDDF of the Oxygen atom of water. For example, here we plot the
-total MDDF and the Oxygen contributions: 
+For example, here we plot the total MDDF and the Oxygen contributions: 
 
 ```julia
 using Plots
-plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
-plot!(results.d,results.solvent_atom[:,1],label="OH2",linewidth=2)
-plot!(xlabel="Distance / Å",ylabel="MDDF")
+plot(results.d, results.mddf, label=["Total MDDF"], linewidth=2)
+plot!(results.d, contributions(results, SolventGroup(["OH2"])), label=["OH2"], linewidth=2)
+plot!(xlabel="Distance / Å", ylabel="MDDF")
 ```
 
 ```@raw html
 <img src="../figures/oh2.png" width="60%">
 ```
+## Using PDBTools
 
-## Selecting groups by atom names or indices
-
-To plot the contributions of the hydrogen atoms of water to the total
-MDDF, we have to select the two atoms, named `H1` and `H2`. The
-`contributions` function provides several practical ways of doing that,
-with or without the use of `PDBTools`. 
-
-The `contributions` function receives three parameters: 
-
-1. The `solute` or `solvent` data structure, created with `AtomSelection`. 
-2. The array of atomic contributions (here `results.solute_atom` or
-   `results.solvent_atom`), corresponding to the selection in 1.
-3. A selection of a group of atoms within the molecule of interest,
-   provided as described below. 
-
-### Selecting by indices within the molecule
-
-To select simply by the index of the atoms of the molecules, just
-provide a list of indices to the `contributions` function. For example,
-to select the hydrogen atoms, which are the second and third atoms of the 
-water molecule, use:
-
-```julia-repl
-julia> indices = [ 2, 3 ]
-julia> h_contributions = contributions(solvent,R.solvent_atom,indices)
-500-element Array{Float64,1}:
- 0.0
- 0.0
- ⋮
- 0.7742706465861815
- 0.8084139794974875
-```
-
-Plotting both the oxygen (`index = 1`) and hydrogen contributions
-results in:
-
-```@raw html
-<img src="../figures/h_and_oh2.png" width="60%">
-```
-
-### Selecting by atom name
-
-The exact same plot above could be obtained by providing lists of atom names
-instead of indices to the `contributions` function:
-
+If the solute is a protein, or other complex molecule, selections defined
+with `PDBTools` can be used. For example, this will retrieve the contribution
+of the acidic residues of a protein to total MDDF:
 ```julia
-oxygen = ["OH2"]
-o_contributions = contributions(solvent,R.solvent_atom,oxygen) 
-hydrogens = ["H1","H2"]
-h_contributions = contributions(solvent,R.solvent_atom,hydrogens)
+using PDBTools
+atoms = readPDB("system.pdb")
+acidic_residues = select(atoms, "acidic")
+acidic_contributions = contributions(results, SoluteGroup(acidic_residues))
 ```
-
-The above plot can be obtained with:
-```julia
-using Plots
-plot(results.d,results.mddf,label="Total MDDF",linewidth=2)
-plot!(results.d,o_contributions,label="OH2",linewidth=2)
-plot!(results.d,h_contributions,label="Hydrogen atoms",linewidth=2)
-plot!(xlabel="Distance / Å",ylabel="MDDF")
-```
-
-## General selections using PDBTools
+It is expected that for a protein most of the atoms do not contribute to
+the MDDF, and that all values are zero at very short distances, smaller
+than the radii of the atoms.
 
 More interesting and general is to select atoms of a complex
 molecule, like a protein, using residue names, types, etc. Here we
@@ -161,13 +95,13 @@ code. Here, `solute` refers to the protein.
 
 ```julia
 charged_residues = PDBTools.select(atoms,"charged")
-charged_contributions = contributions(solute,R.solute_atom,charged_residues)
+charged_contributions = contributions(results, SoluteGroup(charged_residues))
 
 neutral_residues = PDBTools.select(atoms,"neutral")
-neutral_contributions = contributions(solute,R.solute_atom,neutral_residues)
+neutral_contributions = contributions(atoms, SoluteGroup(neutral_residues))
 ```
 
-The `charged` and `neutral` outputs are vectors containing the
+The `charged_contributions` and `neutral_contributions` outputs are vectors containing the
 contributions of these residues to the total MDDF. The corresponding
 plot is:   
 

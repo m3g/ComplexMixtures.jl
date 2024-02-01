@@ -40,7 +40,7 @@ without ambiguity.
 
 Now, we define the solvent of the system as the water molecules:
 
-```jldoctest
+```julia-repl
 julia> water = select(atoms, "water"); 
 
 julia> solvent = AtomSelection(water, natomspermol=3)
@@ -60,9 +60,11 @@ wrapper to VMD that allows using the same syntax at it supports.
 
 For example, the solute can be defined with: 
 ```julia
-import PDBTools
-indices, names = select_with_vmd("./system.gro","protein",vmd="/usr/bin/vmd")
-solute = AtomSelection(indices,names,nmols=1)
+using ComplexMixtures, PDBTools
+
+indices, names = select_with_vmd("./system.gro", "protein", vmd="/usr/bin/vmd")
+
+solute = AtomSelection(indices, names, nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and
@@ -73,8 +75,9 @@ which can be used to load custom scripts within `vmd` before setting
 the selection. This allows the definition of `tcl` scripts with custom selection
 macros, for instance. The usage would be: 
 ```julia
-import PDBTools
-sel = PDBTools.select_with_vmd("file.pdb", "resname MYRES"; srcload = [ "mymacros1.tcl", "mymacros2.tcl" ])
+using PDBTools
+
+sel = select_with_vmd("file.pdb", "resname MYRES"; srcload = [ "mymacros1.tcl", "mymacros2.tcl" ])
 ```
 Which corresponds to `source`ing each of the macro files in VMD before defining the 
 selection with the custom `MYRES` name.
@@ -101,7 +104,7 @@ Thus, one may need to predefine the groups in which the contributions will be an
 
 Here, we illustrate this feature by presselecting the acidic and basic residues of a protein:
 
-```jldoctest
+```julia
 julia> using ComplexMixtures, PDBTools
 
 julia> atoms = readPDB(ComplexMixtures.Testing.pdbfile);
@@ -146,7 +149,7 @@ can be retrived directly from the result data structure with, for example:
 ```julia-repl
 julia> result = mddf(trajectory, solute, solvent);
 
-julia> acidic_residue_contributions = atom_contributions(result, SoluteGroup("acidic residues"))
+julia> acidic_residue_contributions = contributions(result, SoluteGroup("acidic residues"))
 ```
 
 
