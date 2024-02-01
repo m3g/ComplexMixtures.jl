@@ -32,11 +32,15 @@ function _compare(_similar::F, x::T, y::T; debug = true) where {T<:ComplexMixtur
         end
         xf = getfield(x, field)
         yf = getfield(y, field)
-        if !(_similar(xf, yf))
-            check = false
-            if debug
-                push!(diff_list, field)
+        try 
+            if !(_similar(xf, yf))
+                check = false
+                if debug
+                    push!(diff_list, field)
+                end
             end
+        catch
+            error("Error comparing `$field` field of type $T.")
         end
     end
     if debug
