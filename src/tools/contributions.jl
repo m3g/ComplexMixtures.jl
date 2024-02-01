@@ -117,10 +117,10 @@ function contributions(
             throw(ArgumentError("Group selection is empty"))
         end
         for name in group.atom_names
-            itype = findfirst(==(name), sol.names)
+            itype = findfirst(==(name), sol.group_names)
             isnothing(itype) && throw(ArgumentError("Atom name $name not found in group data."))
             if sol.nmols > 1
-                itype = atom_type(i, sol.natomspermol)
+                itype = atom_type(itype, sol.natomspermol)
             end
             sel_count .+= group_count[itype]
         end
@@ -155,7 +155,7 @@ end
 
 @testitem "contributions" begin
     using ComplexMixtures: AtomSelection, contributions
-    using PDBTools: select
+    using PDBTools: select, readPDB, selindex
     using ComplexMixtures.Testing: data_dir
     atoms = readPDB("$data_dir/PDB/trajectory.pdb", "model 1")
     protein = select(atoms, "protein")
