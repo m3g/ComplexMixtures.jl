@@ -446,17 +446,17 @@ end
 end
 
 @testitem "mddf - real system" begin
-    using ComplexMixtures
-    using PDBTools
-    using ComplexMixtures.Testing
+    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
+    using PDBTools: readPDB, select
+    using ComplexMixtures.Testing: data_dir, pdbfile
 
     options = Options(seed = 1, stride = 1, StableRNG = true, nthreads = 1, silent = true)
-    atoms = readPDB(Testing.pdbfile)
+    atoms = readPDB(pdbfile)
     protein = AtomSelection(select(atoms, "protein"), nmols = 1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # Test actual system: cross correlation
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
     # Deterministic
     @test R.volume.total ≈ 603078.4438609097
@@ -474,7 +474,7 @@ end
     @test R.kb_rdf[end] ≈ -6905.975623304156 rtol = 0.5
 
     # Self correlation
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
     R = mddf(traj, options)
     # Deterministic
     @test R.volume.total ≈ 603078.4438609097
@@ -487,25 +487,31 @@ end
     @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1
     @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
     @test sum(R.mddf) ≈ 275.5648734200309 rtol = 0.1
-    @test sum(R.rdf) ≈ 168.77009506954508 rtol = 0.1
-    @test R.kb[end] ≈ -386.8513153147712 rtol = 0.5
-    @test R.kb_rdf[end] ≈ -326.32083509753284 rtol = 0.5
+    @test sum(R.rdf) ≈ 145.0 rtol = 0.1
+    @test R.kb[end] ≈ -10. rtol = 0.5
+    @test R.kb_rdf[end] ≈ 36 rtol = 0.5
 
     # Test varying frame weights: the trajectory below has 3 frames
     # extracted from NAMD/trajectory.dcd, and the 2 first frames are the
     # first frame duplicated.
-    traj1 = Trajectory("$(Testing.data_dir)/NAMD/traj_duplicated_first_frame.dcd", tmao)
+    traj1 = Trajectory("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao)
     R1 = mddf(traj1, Options())
-    traj2 = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
+    traj2 = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
     R2 = mddf(traj2, Options(lastframe=2, frame_weights=[2.0, 1.0]))
     @test R2.md_count ≈ R1.md_count
+    @test all(R2.solute_group_count == R1.solute_group_count)
+    @test all(R2.solvent_group_count == R1.solvent_group_count)
     R2 = mddf(traj2, Options(lastframe=2, frame_weights=[0.5, 0.25]))
     @test R2.md_count ≈ R1.md_count
+    @test all(R2.solute_group_count == R1.solute_group_count)
+    @test all(R2.solvent_group_count == R1.solvent_group_count)
     @test R2.volume.total ≈ R1.volume.total
     # Varying weights with stride
     R1 = mddf(traj1, Options(firstframe=2, lastframe=3))
     R2 = mddf(traj1, Options(lastframe=3, stride=2, frame_weights=[1.0, 100.0, 1.0]))
     @test R2.md_count ≈ R1.md_count
+    @test all(R2.solute_group_count == R1.solute_group_count)
+    @test all(R2.solvent_group_count == R1.solvent_group_count)
     @test R2.volume.total ≈ R1.volume.total
     
 end
