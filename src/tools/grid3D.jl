@@ -1,35 +1,31 @@
 """
-    grid3D(solute,solute_atoms,mddf_result,output_file; dmin=1.5, ddax=5.0, step=0.5)
+    grid3D(
+        result::Result, atoms, output_file::Union{Nothing,String} = nothing; 
+        dmin=1.5, ddax=5.0, step=0.5
+    )
 
 This function builds the grid of the 3D density function and fills an array of
 mutable structures of type Atom, containing the position of the atoms of 
 grid, the closest atom to that position, and distance. 
 
-`solute` is a `ComplexMixtuers.AtomSelection`, defining the solute. `solute_atoms` is the corresponding
-vector of `PDBTools.Atom`s, and `mddf_result` is the result of a `mddf_result` calculation with 
-the correspondign solute. 
+`result` is a `ComplexMixtures.Result` object 
+`atoms` is a vector of `PDBTools.Atom`s with all the atoms of the system. 
+`output_file` is the name of the file where the grid will be written. If `nothing`, the grid is only returned as a matrix. 
 
 `dmin` and `dmax` define the range of distance where the density grid will be built, and `step`
 defines how fine the grid must be. Be aware that fine grids involve usually a very large (hundreds
 of thousands points).
-
-All parameters can be provides as keyword parameters.
 
 ### Example
 
 ```julia-repl
 julia> using ComplexMixtures, PDBTools
 
-julia> pdb = readPDB("./system.pdb");
+julia> atoms = readPDB("./system.pdb");
 
 julia> R = ComplexMixtures.load("./results.json");
 
-julia> protein = select(pdb,"protein");
-
-julia> solute = ComplexMixtures.AtomSelection(protein,nmols=1);
-
-julia> grid = ComplexMixtures.grid3D(solute=solute, solute_atoms=protein, mddf_result=R, output_file="grid.pdb");
-
+julia> grid = grid3D(R, atoms, "grid.pdb");
 ```
 
 `grid` will contain a vector of `Atom`s with the information of the MDDF at each grid point, and the
@@ -38,45 +34,15 @@ in the `beta` field the contribution of each protein residue to the MDDF at each
 protein, and in the `occupancy` field the distance to the protein. Examples of how this information can be
 visualized are provided in the user guide of `ComplexMixtures`. 
 
-
 """
-grid3D(;
-    solute = nothing,
-    solute_atoms = nothing,
-    mddf_result = nothing,
-    output_file = nothing,
-    dmin = 1.5,
-    dmax = 5.0,
-    step = 0.5,
-) = grid3D(
-    solute,
-    solute_atoms,
-    mddf_result,
-    output_file,
-    dmin = dmin,
-    dmax = dmax,
-    step = step,
-)
-
-function grid3D(
-    solute,
-    solute_atoms,
-    mddf_result,
-    output_file;
-    dmin = 1.5,
-    dmax = 5.0,
-    step = 0.5,
-)
-
-    if nothing in (solute, solute_atoms, mddf_result)
-        error("grid3D requires `solute`, `solute_atoms` and `mddf_result` definitions.")
-    end
+function grid3D(result::Result, atoms, output_file::Union{Nothing,String} = nothing; dmin=1.5, dmax=5.0, step=0.5)
 
     # Simple function to interpolate data
     interpolate(x₁, x₂, y₁, y₂, xₙ) = y₁ + (y₂ - y₁) / (x₂ - x₁) * (xₙ - x₁)
 
     # Maximum and minimum coordinates of the solute
-    lims = maxmin(solute_atoms)
+    solute_atoms = PDBTools.select(atoms, by = at -> at.index in result.solute.indices)
+    lims = PDBTools.maxmin(solute_atoms)
     n = @. ceil(Int, (lims.xlength + 2 * dmax) / step + 1)
 
     # Building the grid with the nearest solute atom information
@@ -92,23 +58,19 @@ function grid3D(
             if rgrid < 0 || r < rgrid
                 at = solute_atoms[iat]
                 # Get contribution of this atom to the MDDF
-                c = ComplexMixtures.contributions(
-                    solute,
-                    mddf_result.solute_atom,
-                    [at.index_pdb],
-                )
+                c = contributions(result, SoluteGroup([at.index_pdb]))
                 # Interpolate c at the current distance
-                iright = findfirst(d -> d > r, mddf_result.d)
+                iright = findfirst(d -> d > r, result.d)
                 ileft = iright - 1
                 cᵣ = interpolate(
-                    mddf_result.d[ileft],
-                    mddf_result.d[iright],
+                    result.d[ileft],
+                    result.d[iright],
                     c[ileft],
                     c[iright],
                     r,
                 )
                 if cᵣ > 0
-                    gridpoint = Atom(
+                    gridpoint = PDBTools.Atom(
                         index = at.index,
                         index_pdb = at.index_pdb,
                         name = at.name,
@@ -147,7 +109,7 @@ function grid3D(
     end
 
     if !isnothing(output_file)
-        writePDB(grid, output_file)
+        PDBTools.writePDB(grid, output_file)
     end
     return grid
 end
