@@ -6,7 +6,6 @@
 - [Polyacrylamide in DMDF](@ref)
 - [POPC membrane in water/ethanol](@ref)
 - [Glycerol/water mixture](@ref)
-- [Protein in water/glycerol](@ref)
 
 ## How to run these examples
 

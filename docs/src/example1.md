@@ -11,18 +11,37 @@ Image of the system of the example: a protein solvated by a mixture of glycreol 
 
 ### Index
 
-- [Data](@ref data-example1)
-- [MDDF, KB integrals, and group contributions](@ref)
-- [2D density map](@ref)
-- [3D density map](@ref)
+- [Data and packages](@ref data-example1)
+- [MDDF, KB integrals, and group contributions](@ref mddf-example1)
+- [2D density map](@ref 2D-map-example1)
+- [3D density map](@ref 3D-map-example1)
 
-## [Data](@id data-example1)
+## [Data and execution](@id data-example1)
 
-The [repository data](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol/Data) directory contains the a pdb file of the system (`system.pdb`) and a sample from the trajectory (`glyc50.dcd`), with a few frames. It also contains the result of running the `mddf` calculation on the complete trajectory, `results_glyc50.json`. :w
+The files required to run this example are:
 
-The sample trajectory is provided so that the first example can be run, yet do not expect that the results are the same, as the sampling is much lower in this case. The complete trajectory can be retrieved from [this link](https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing) (3GB file). 
+- [system.pdb](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Protein_in_Glycerol/Data/system.pdb): The PDB file of the complete system.
+- [glyc50_traj.dcd](https://www.dropbox.com/scl/fi/zfq4o21dkttobg2pqd41m/glyc50_traj.dcd?rlkey=el3k6t0fx6w5yiqktyx96gzg6&dl=0): Trajectory file. This is a 1GB file, necessary for running from scratch the calculations.
 
-## MDDF, KB integrals, and group contributions
+To run the scripts, we suggest the following procedure:
+
+1. Create a directory, for example `example1`.
+2. Copy the required data files above to this directory.
+3. Launch `julia` in that directory: activate the directory environment, and install the required packages. This launching Julia and executing:
+   ```julia
+   import Pkg 
+   Pkg.activate(".")
+   Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings"])
+   exit()
+   ```
+4. Copy the code of each script in to a file, and execute with:
+   ```julia
+   julia -t auto script.jl
+   ```
+   Alternativelly (and perhaps preferrably), copy line by line the content of the script into
+   the Julia REPL, to follow each step of the calculation.
+
+## [MDDF, KB integrals, and group contributions](@id mddf-example1)
 
 Here we compute the minimum-distance distribution function, the Kirkwood-Buff integral, and the atomic contributions of the solvent to the density.
 This example illustrates the regular usage of `ComplexMixtures`, to compute the minimum distance distribution function, KB-integrals and group contributions. 
@@ -43,8 +62,8 @@ using PDBTools
 using Plots, Plots.Measures
 using LaTeXStrings
 
-# The complete trajectory file can be downloaded from (3Gb):
-# https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing
+# The complete trajectory file can be downloaded from (1Gb):
+# https://www.dropbox.com/scl/fi/zfq4o21dkttobg2pqd41m/glyc50_traj.dcd?rlkey=el3k6t0fx6w5yiqktyx96gzg6&dl=0
 
 # The example output file is available at:
 # 
@@ -60,19 +79,12 @@ solute = AtomSelection(protein, nmols=1)
 solvent = AtomSelection(glyc, natomspermol=14)
 
 # Path to the trajectory file
-trajectory_file = "./glyc50_complete.dcd" 
+trajectory_file = "./glyc50_traj.dcd" 
 
-# If the trajectory file is available, set run_mddf to "true" to 
-# run the calculation from scratch
-run_mddf = false
-if run_mddf
-    trajectory = Trajectory(trajectory_file, solute, solvent)
-    results = mddf(trajectory)
-    save(results, "glyc50_results.json")
-else
-    example_output = "./glyc50_results.json"
-    results = load(example_output)
-end
+# Run mddf calculation, and save results
+trajectory = Trajectory(trajectory_file, solute, solvent)
+results = mddf(trajectory)
+save(results, "glyc50_results.json")
 
 #
 # Produce plots
@@ -156,7 +168,7 @@ and the same distribution function, decomposed into the contributions of the hyd
     ```
     The complete set of options available is described [here](@ref options).
 
-## 2D density map
+## [2D density map](@id 2D-map-example1)
 
 In this followup from the example aboave, we compute group contributions of the solute (the protein) to the MDDFs,
 split into the contributions each protein residue. This allows the observation of the penetration of the solvent
@@ -179,16 +191,13 @@ using PDBTools
 using Plots, Plots.Measures
 using LaTeXStrings
 
-# Directory of the current script
-script_dir = @__DIR__
-
 # The complete trajectory file can be downloaded from (3Gb):
 # https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing
 
 # The example output file is available at:
 # 
 # Load PDB file of the system
-atoms = readPDB("$script_dir/../Data/system.pdb")
+atoms = readPDB("./system.pdb")
 
 # Select the protein and the GLYC molecules
 protein = select(atoms, "protein")
@@ -225,6 +234,7 @@ xticks = PDBTools.residue_ticks(protein, first=70, last=110)
 
 # Plot a contour courves with the density at each distance from
 # each residue
+Plots.default(fontfamily="Computer Modern")
 contourf(irange, results.d[idmin:idmax], rescontrib[idmin:idmax, irange],
   color=cgrad(:tempo), linewidth=1, linecolor=:black,
   colorbar=:none, levels=5,
@@ -252,7 +262,7 @@ surface of the protein.
 </center>
 ```
 
-## 3D density map
+## [3D density map](@id 3D-map-example1)
 
 In this example we compute three-dimensional representations of the density map of Glycerol in the vicinity of a set of residues of a protein, from the minimum-distance distribution function. 
 
@@ -276,14 +286,7 @@ solute = AtomSelection(protein, nmols=1)
 
 # Compute the 3D density grid and output it to the PDB file
 # here we use dmax=3.5 such that the the output file is not too large
-grid = grid3D(
-    solute=solute,
-    solute_atoms=protein,
-    mddf_result=results,
-    output_file="./grid.pdb",
-    dmin=1.5,
-    dmax=3.5
-)
+grid = grid3D(results, atoms, "./grid.pdb"; dmin=1.5, dmax=3.5)
 ```
 ```@raw html
 </details><br>
