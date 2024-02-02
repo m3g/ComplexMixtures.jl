@@ -5,7 +5,7 @@ Of course, follow the [installation](@ref Installation) instructions first.
 A complete working example is shown below, and in the section that follows each 
 command is described in detail.
 
-## Complete example
+## Basic example
 
 Here we show the input file required for the study of the solvation of a protein
 by the `TMAO` solvent, which is a molecule 4 atoms. The protein is assumed to be
@@ -26,33 +26,32 @@ using Plots
 atoms = readPDB("./system.pdb")
 
 # Select the protein and the TMAO molecules
-protein = select(atoms,"protein")
+protein = select(atoms, "protein")
 tmao = select(atoms,"resname TMAO")
 
 # Setup solute and solvent structures
-solute = AtomSelection(protein,nmols=1)
-solvent = AtomSelection(tmao,natomspermol=14)
+solute = AtomSelection(protein, nmols=1)
+solvent = AtomSelection(tmao, natomspermol=14)
 
 # Setup the Trajectory structure
-trajectory = Trajectory("./trajectory.dcd",solute,solvent)
+trajectory = Trajectory("./trajectory.dcd", solute, solvent)
 
 # Run the calculation and get results
 results = mddf(trajectory)
 
 # Save the results to recover them later if required
-save(results,"./results.json")
+save(results, "./results.json")
 
 # Plot the some of the most important results 
-plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
+plot(results.d, results.mddf, xlabel="d", ylabel="MDDF") # plot the MDDF
 savefig("./mddf.pdf")
-plot(results.d,results.kb,xlabel="d",ylabel="KB") # plot the KB 
+plot(results.d, results.kb, xlabel="d", ylabel="KB") # plot the KB 
 savefig("./kb.pdf")
 ```
 
 ## Running the example
 
-Given that this code is saved into a file named `example.jl`, 
-it can be run within the Julia REPL with:
+Given that this code is saved into a file named `example.jl`, it can be run within the Julia REPL with:
 ```julia
 julia> include("example.jl")
 ```
@@ -112,12 +111,12 @@ atoms = readPDB("./system.pdb")
 ```
 Then, let us select the protein atoms (here we are using the `PDBTools.select` function):
 ```julia
-protein = select(atoms,"protein")
+protein = select(atoms, "protein")
 ```
 And, finally, let us use the `AtomSelection` function to setup the
 structure required by the MDDF calculation:
 ```julia
-solute = AtomSelection(protein,nmols=1)
+solute = AtomSelection(protein, nmols=1)
 ```
 
 !!! note
@@ -132,8 +131,8 @@ solute = AtomSelection(protein,nmols=1)
 
 Equivalently, the solvent is set up with:
 ```julia
-tmao = select(atoms,"resname TMAO")
-solvent = AtomSelection(tmao,natomspermol=14)
+tmao = select(atoms, "resname TMAO")
+solvent = AtomSelection(tmao, natomspermol=14)
 
 ```
 
@@ -148,7 +147,7 @@ The `solute` and `solvent` data structures are then fed into the
 `Trajectory` data structure, together with the trajectory file name,
 with:
 ```julia
-trajectory = Trajectory("trajectory.dcd",solute,solvent)
+trajectory = Trajectory("trajectory.dcd", solute, solvent)
 ```
 In the case, the trajectory is of NAMD "dcd" format. All formats
 supported by [Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) 
@@ -177,7 +176,7 @@ function at each distance.
 
 That means, for example, that 
 ```julia
-plot(results.d,results.mddf,xlabel="d / \AA",ylabel="MDDF") 
+plot(results.d, results.mddf, xlabel="d", ylabel="MDDF") 
 
 ```
 results in the expected plot of the MDDF of TMAO as a function of the
@@ -194,7 +193,7 @@ provided in the `results.kb` vector, and can be also directly plotted
 with   
 
 ```julia
-plot(results.d,results.kb,xlabel="d / \AA",ylabel="MDDF") 
+plot(results.d, results.kb, xlabel="d", ylabel="MDDF") 
 ```
 to obtain:
 
@@ -213,7 +212,7 @@ solvent, each type of residue of the protein, etc.
 
 The results can be saved into a file (with JSON format) with:
 ```julia
-save(results,"./results.json")
+save(results, "./results.json")
 ```
 And these results can be loaded afterwards with:
 ```julia

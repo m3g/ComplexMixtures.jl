@@ -53,7 +53,7 @@ julia> import Pkg; Pkg.activate("/home/user/Documents/MyNewPaper")
 and add to this environment the packages that your analyses will require:
 
 ```julia-repl
-julia> Pkg.add(["ComplexMixtures","PDBTools","Plots"])
+julia> import Pkg; Pkg.add(["ComplexMixtures","PDBTools","Plots"])
 ```
 
 That's it. Close Julia. Note that this created the files `Manifest.toml` and `Project.toml` in the `MyNewPaper` directory, which contain the information of packages and exact package versions you are using now on in this environment. Saving these files may be relevant for the future exact reproduction of your analyses. 

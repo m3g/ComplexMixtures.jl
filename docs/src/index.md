@@ -30,6 +30,12 @@ compute Kirkwood-Buff integrals to connect the accumulation or depletion
 of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
+!!! compat
+    Important: This manual refers to version 2 of ComplexMixtures.jl. There
+    are syntax changes relative to the 1.X series, and analysis scripts 
+    written for the previous versions won't work. The list of changes
+    necessary to updated the scripts is described [here](#updating_scripts).
+
 ## Features
 
 Check out our [examples repository](https://github.com/m3g/ComplexMixturesExamples), featuring the analysis of solvation structures for proteins, polymers, membrane, and complex solutions! The examples are also described in our [featured article](https://doi.org/10.1016/j.molliq.2021.117945).
