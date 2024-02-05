@@ -64,71 +64,13 @@ This example illustrates the regular usage of `ComplexMixtures`, to compute the 
 ```@raw html
 <details><summary>Complete example code: click here!</summary>
 ```
-```julia
-import Pkg; Pkg.activate(".")
-
-using PDBTools
-using ComplexMixtures
-using Plots
-using LaTeXStrings
-using EasyFit: moveavg
-
-# The full trajectory file is available at: 
-# https://www.dropbox.com/scl/fi/jwafhgxaxuzsybw3y8txd/traj_Polyacry.dcd?rlkey=p4bn65m0pkuebpfm0hf158cdm&dl=0 
-trajectory_file = "./traj_Polyacry.dcd"
-
-# Load a PDB file of the system
-system = readPDB("./equilibrated.pdb")
-
-# Select the atoms corresponding DMF molecules
-dmf = select(system, "resname DMF")
-
-# Select the atoms corresponding to the Poly-acrylamide
-acr = select(system, "resname FACR or resname ACR or resname LACR")
-
-# Set the solute and the solvent selections for ComplexMixtures
-solute = AtomSelection(acr, nmols=1)
-solvent = AtomSelection(dmf, natomspermol=12)
-
-# Set the trajectory structure
-trajectory = Trajectory(trajectory_file, solute, solvent)
-
-# Use a large dbulk distance for better KB convergence
-options = Options(dbulk=20.)
-
-# Compute the mddf and associated properties
-results = mddf(trajectory, options)
-
-# Save results to file for later use
-save(results, "./mddf.json")
-println("Results saved to ./mddf.json file")
-
-# Plot the MDDF and KB integrals
-plot_font = "Computer Modern"
-default(
-    fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
-    grid=false,
-    palette=:tab10
-)
-scalefontsizes(); scalefontsizes(1.3)
-
-# Plot the MDDF of DMF relative to PolyACR and its corresponding KB integral
-mddf_smoothed = movavg(results.mddf,n=10).x # Smooth example with a running average
-plot(layout=(2,1))
-plot!(results.d, mddf_smoothed, ylabel="MDDF", subplot=1, xlims=(0,20))
-
-smoothed_kb = movavg(results.kb,n=10).x # smooth kb
-plot!(results.d, smoothed_kb, 
-    xlabel=L"\textrm{Distance / \AA}",
-    ylabel=L"\textrm{KB~/~cm^3~mol^{-1}}",
-    xlim=(0,20),
-    subplot=2
-)
-savefig("./mddf_kb.png")
-println("Plot saved to mddf_kb.png")
+```@eval
+using Markdown
+code = Markdown.parse("""
+\`\`\`julia
+$(read("./assets/scripts/example2/script1.jl", String))
+\`\`\`
+""")
 ```
 ```@raw html
 </details><br>
@@ -144,22 +86,67 @@ The KB integral in a bicomponent mixture converges to the (negative of the) appa
 
 ## [Group contributions](@id groups-example2)
 
-voltar
+The MDDF can be decomposed into the contributions of the DMF chemical groups, and on the polyacrylamide chemical groups. In the first panel below we show the contributions of the DMF chemical groups to the distribution function.
+
+```@raw html
+<details><summary>Complete example code: click here!</summary>
+```
+```@eval
+using Markdown
+code = Markdown.parse("""
+\`\`\`julia
+$(read("./assets/scripts/example2/script2.jl", String))
+\`\`\`
+""")
+```
+```@raw html
+</details><br>
+```
 
 #### Output 
+
+The decomposition reveals that specific interactions peaking at distances slightly smaller than 2$\AA$ exist between the polymer and the carbonyl group of DMF. Thus, there hydrogen bonds between the polymer and this group, which dominate the interactions between the solute and the solvent at short distances. The non-specific interactions peak at 2.5Angs and are composed of contributions of all DMF chemical groups, but particularly of the methyl groups.
+
+![](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/results/mddf_groups.png)
+
+The decomposition of the same MDDF in the contributions of the chemical groups of the polymer is clearly associated to the DMF contributions. The specific, hydrogen-bonding, interactions, are associated to the polymer amine groups. The amine groups also contribute to the non-specific interactions at greater distances, but these are a sum of the contributions of all polymer groups, polar or aliphatic.
 
 ## [2D density map](@id 2Dmap-example2)
 
-voltar
+We can decompose the MDDF into the contributions of each portion of the polymer chain. The map below displays the contributions of each chemical group of the polymer, now split into the mers of the polymer, to the MDDF.
+
+```@raw html
+<details><summary>Complete example code: click here!</summary>
+```
+```@eval
+using Markdown
+code = Markdown.parse("""
+\`\`\`julia
+$(read("./assets/scripts/example2/script3.jl", String))
+\`\`\`
+""")
+```
+```@raw html
+</details><br>
+```
 
 #### Output 
 
-The code above will produce the following plot, which contains, for each residue, the contributions
-of each residue to the distribution function of glycerol, within 1.5 to 3.5 $\mathrm{\AA}$ of the
-surface of the protein.
+The terminal methyl groups interact strongly with DMF, and strong local density augmentations are visible in particular on the amine groups. These occur at less than 2.0Angs and are characteristic of hydrogen-bond interactions. Interestingly, the DMF molecules are excluded from the aliphatic and carbonyl groups of the polymer, relative to the other groups.
+
+Finally, it is noticeable that the central mer is more weakly solvated by DMF than the mers approaching the extremes of the polymer chain. This is likely a result of the partial folding of the polymer, that protects that central mers from the solvent in a fraction of the polymer configurations.
 
 ```@raw html
 <center>
 <img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
 </center>
 ```
+
+### References
+
+Molecules built with JSME: B. Bienfait and P. Ertl, JSME: a free molecule editor in JavaScript, Journal of Cheminformatics 5:24 (2013)
+[http://biomodel.uah.es/en/DIY/JSME/draw.en.htm](http://biomodel.uah.es/en/DIY/JSME/draw.en.htm)
+
+The system was built with [Packmol](http://m3g.iqm.unicamp.br/packmol).
+
+The simulations were perfomed with [NAMD](https://www.ks.uiuc.edu/Research/namd/), with [CHARMM36](https://www.charmm.org) parameters. 
