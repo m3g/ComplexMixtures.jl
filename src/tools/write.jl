@@ -32,10 +32,11 @@ function Base.write(
 
     open(filename, "w") do output
         println(output, @sprintf("#"))
-        println(output, @sprintf("# Output of ComplexMixtures - MDDF"))
+        println(output, "# Output of ComplexMixtures - MDDF - Version: $(VERSION)")
+        println(output, @sprintf("#"))
         println(output, @sprintf("# Trajectory files and weights:"))
-        for i = 0:length(R.files)
-            println(output, "#  $(normpath(R.files[i])) - w = $(R.weights[i])")
+        for i in eachindex(R.files)
+            println(output, "#  $(normpath(R.files[i].filename)) - w = $(R.weights[i])")
         end
         println(output, @sprintf("#"))
         println(output, @sprintf("# Density of solvent in simulation box (sites/A^2): %15.8f", R.density.solvent))
@@ -68,7 +69,7 @@ function Base.write(
     #       7  Volume of the shell of distance dmin and width binstep.
     #
     #   0-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL""")
-        for i = 0:R.nbins
+        for i in eachindex(R.d)
             line = "  " * format(R.d[i])                                   #  0-DISTANCE
             line = line * "  " * format(R.mddf[i])                         #  1-GMD
             line = line * "  " * format(R.kb[i])                           #  2-KB INT
@@ -86,13 +87,13 @@ function Base.write(
     OUTPUT FILES:
 
     Wrote total MDDF to output file: $filename
-
     """)
 
     # Solute and solvent contribution files
-    write_group_contributions(R, filename, :solute, solute_group_names) 
-    write_group_contributions(R, filename, :solvent, solvent_group_names)
+    solute_file = write_group_contributions(R, filename, :solute, solute_group_names) 
+    solvent_file = write_group_contributions(R, filename, :solvent, solvent_group_names)
 
+    return filename, solute_file, solvent_file
 end
 
 # Format numbers depending on their size
@@ -111,7 +112,7 @@ function set_group_names(R::Result, group_names::Union{Nothing,Vector{String}}, 
             throw(ArgumentError("$atsel_str group names are not defined in R or as argument"))
         end
     else
-        ngroups = isempty(atsel.group_atom_indices) ? natoms(atsel): length(atsel.group_atom_indices)
+        ngroups = isempty(atsel.group_atom_indices) ? natoms(atsel) : length(atsel.group_atom_indices)
         if ngroups != length(group_names)
             throw(ArgumentError("The number of $atsel_str group names is different from the number of groups."))
         end
@@ -141,20 +142,28 @@ function write_group_contributions(
     end
 
     # Names of output files containing atomic contibutions
-    group_contributions_output = normpath(
-        filename[1:findlast(==('.'), filename)-1] *
-        "-GROUP_CONTRIBUTIONS_$(uppercase(atsel_str))." *
-        split(filename, '.')[end]
+    iext = findlast(==('.'), filename)
+    if isnothing(iext)
+        iext = length(filename) + 1
+        extension = ".dat"
+    else
+        extension = filename[iext:end]
+    end
+    group_contributions_output = normpath(filename[1:iext-1] *
+        "-GROUP_CONTRIBUTIONS_$(uppercase(atsel_str))" *
+        extension
     )
     open(group_contributions_output, "w") do output
         println(output,
-            """
+            chomp("""
             # $(atsel_str) atomic contributions to total MDDF.
             #
-            # Trajectory files: $(R.files)
+            # Trajectory files: 
+            # $(join((file.filename for file in R.files), ",\n# "))
             #
             # Groups: 
-            """)
+            #
+            """))
         for (i, name) in enumerate(group_names)
             println(output, @sprintf("# %8i %5s", i, name))
         end
@@ -184,5 +193,38 @@ function write_group_contributions(
 
     println("Wrote solute group MDDF contributions to file: $group_contributions_output")
 
-    return nothing
+    return group_contributions_output
+end
+
+@testitem "write" begin
+    using DelimitedFiles
+    using ComplexMixtures: load, write
+    using ComplexMixtures.Testing: data_dir
+    r = load("$data_dir/NAMD/protein_tmao.json")
+    tmpfile = tempname()
+    out1, out2, out3 = write(r, tmpfile)
+    r_read = readdlm(out1, comments=true, comment_char='#')
+    # Main output file
+    @test r.d ≈ r_read[:,1]
+    @test r.mddf ≈ r_read[:,2]
+    @test r.kb ≈ r_read[:,3] rtol = 1e-5
+    @test r.md_count ≈ r_read[:,4] 
+    @test r.md_count_random ≈ r_read[:,5] rtol = 1e-5
+    @test r.coordination_number ≈ r_read[:,6] rtol = 1e-5
+    @test r.coordination_number_random ≈ r_read[:,7] rtol = 1e-5
+    @test r.volume.shell ≈ r_read[:,8] rtol = 1e-5
+    # Solute contributions
+    r_read = readdlm(out2, comments=true, comment_char='#')
+    @test r.d ≈ r_read[:,1]
+    @test r.mddf ≈ r_read[:,2] 
+    for i in eachindex(r.solute.group_names)
+        @test contributions(r, SoluteGroup([i])) ≈ r_read[:,i+2] rtol = 1e-5
+    end
+    # Solvent contributions
+    r_read = readdlm(out3, comments=true, comment_char='#')
+    @test r.d ≈ r_read[:,1]
+    @test r.mddf ≈ r_read[:,2] 
+    for (i, name) in enumerate(atom_group_names(r.solvent))
+        @test contributions(r, SolventGroup([name])) ≈ r_read[:,i+2] rtol = 1e-5
+    end
 end
