@@ -2,12 +2,12 @@
     write(
         R::Result, filename::String;
         solute_group_names::Vector{String} = R.solute.group_names,
-        solvent_group_names::Vector{String} = R.solvent.group_names
+        solvent_group_names::Vector{String} = R.solvent.group_names,
     )
-    
+
 Function to write the final results to output files as simple tables that are human-readable and easy to analyze with other software
 
-If the solute and solvent group names are defined in `R`, the `solute_group_names` and `solvent_group_names` arguments are not necessary. 
+If the solute and solvent group names are defined in `R`, the `solute_group_names` and `solvent_group_names` arguments are not necessary.
 If they are not defined, the user can pass the names of the groups as strings in the `solute_group_names` and `solvent_group_names` arguments.
 
 """
