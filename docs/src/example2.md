@@ -62,7 +62,7 @@ Here we compute the minimum-distance distribution function, the Kirkwood-Buff in
 This example illustrates the regular usage of `ComplexMixtures`, to compute the minimum distance distribution function, KB-integrals and group contributions. 
 
 ```@raw html
-<details><summary>Complete example code: click here!</summary>
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
 ```
 ```@eval
 using Markdown
@@ -89,7 +89,7 @@ The KB integral in a bicomponent mixture converges to the (negative of the) appa
 The MDDF can be decomposed into the contributions of the DMF chemical groups, and on the polyacrylamide chemical groups. In the first panel below we show the contributions of the DMF chemical groups to the distribution function.
 
 ```@raw html
-<details><summary>Complete example code: click here!</summary>
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
 ```
 ```@eval
 using Markdown
@@ -116,7 +116,7 @@ The decomposition of the same MDDF in the contributions of the chemical groups o
 We can decompose the MDDF into the contributions of each portion of the polymer chain. The map below displays the contributions of each chemical group of the polymer, now split into the mers of the polymer, to the MDDF.
 
 ```@raw html
-<details><summary>Complete example code: click here!</summary>
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
 ```
 ```@eval
 using Markdown

@@ -27,11 +27,12 @@ To run the scripts, we suggest the following procedure:
 
 1. Create a directory, for example `example1`.
 2. Copy the required data files above to this directory.
-3. Launch `julia` in that directory: activate the directory environment, and install the required packages. This launching Julia and executing:
+3. Launch `julia` in that directory, activate the directory environment, and install the required packages. 
+   This is done by launching Julia and executing:
    ```julia
    import Pkg 
    Pkg.activate(".")
-   Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings"])
+   Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings, EasyFit"])
    exit()
    ```
 4. Copy the code of each script in to a file, and execute with:
@@ -39,7 +40,9 @@ To run the scripts, we suggest the following procedure:
    julia -t auto script.jl
    ```
    Alternativelly (and perhaps preferrably), copy line by line the content of the script into
-   the Julia REPL, to follow each step of the calculation.
+   the Julia REPL, to follow each step of the calculation. For a more advanced Julia usage,
+   we suggest the [VSCode IDE](https://code.visualstudio.com/) with the 
+   [Julia Language Support](https://www.julia-vscode.org/docs/dev/gettingstarted/) extension. 
 
 ## [MDDF, KB integrals, and group contributions](@id mddf-example1)
 
@@ -47,7 +50,7 @@ Here we compute the minimum-distance distribution function, the Kirkwood-Buff in
 This example illustrates the regular usage of `ComplexMixtures`, to compute the minimum distance distribution function, KB-integrals and group contributions. 
 
 ```@raw html
-<details><summary>Complete example code: click here!</summary>
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
 ```
 ```@eval
 using Markdown
@@ -96,7 +99,7 @@ on the structure, and the strength of the interaction of the solvent, or cossolv
 in the structure.
 
 ```@raw html
-<details><summary>Complete example code: click here!</summary>
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
 ```
 ```@eval
 using Markdown
@@ -127,7 +130,7 @@ surface of the protein.
 In this example we compute three-dimensional representations of the density map of Glycerol in the vicinity of a set of residues of a protein, from the minimum-distance distribution function. 
 
 ```@raw html
-<details><summary>Complete example code: click here!</summary>
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
 ```
 ```@eval
 using Markdown

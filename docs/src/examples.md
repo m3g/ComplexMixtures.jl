@@ -9,23 +9,26 @@
 
 ## How to run these examples
 
-- Download and install [Julia](https://julialang.org)
+1 Download and install [Julia](https://julialang.org)
 
-- Install the required packages. Within Julia, do:
-```julia-repl
-julia> import Pkg
+To run the scripts, we suggest the following procedure:
 
-julia> Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings", "Formatting"])
-```
+2. Create a directory, for example `example1`.
+3. Copy the required data files, indicated in each example.
+4. Launch `julia` in that directory, activate the directory environment, and install the required packages. 
+   This is done by launching Julia and executing:
+   ```julia
+   import Pkg 
+   Pkg.activate(".")
+   Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings, EasyFit"])
+   exit()
+   ```
+5. Copy the code of each script in to a file, and execute with:
+   ```julia
+   julia -t auto script.jl
+   ```
+   Alternativelly (and perhaps preferrably), copy line by line the content of the script into
+   the Julia REPL, to follow each step of the calculation. For a more advanced Julia usage,
+   we suggest the [VSCode IDE](https://code.visualstudio.com/) with the 
+   [Julia Language Support](https://www.julia-vscode.org/docs/dev/gettingstarted/) extension. 
 
-- Get the files:
-```bash
-git clone https://github.com/m3g/ComplexMixturesExamples
-```
-The files associated to the following examples are distributed at [this page](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol). 
-
-## Data
-
-The [Data](https://github.com/m3g/ComplexMixturesExamples/tree/main/Protein_in_Glycerol/Data) directory contains the a pdb file of the system (`system.pdb`) and a sample from the trajectory (`glyc50.dcd`), with a few frames. It also contains the result of running the `mddf` calculation on the complete trajectory, `results_glyc50.json`. This last file was produced by `ComplexMixtures`, as indicated in the following examples. 
-
-The sample trajectory is provided so that the first example can be run, yet do not expect that the results are the same, as the sampling is much lower in this case. The complete trajectory can be retrieved from [this link](https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing) (3GB file). 
