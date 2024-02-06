@@ -47,16 +47,16 @@ function contributions(
     type = :mddf, 
 )
     if group isa SoluteGroup
-        sol = R.solute
+        atsel = R.solute
         group_count = R.solute_group_count
     elseif group isa SolventGroup
-        sol = R.solvent
+        atsel = R.solvent
         group_count = R.solvent_group_count
     end
 
     # If custom groups were provided, we cannot retrieve general group contributions from
     # the group_count array.
-    if sol.custom_groups
+    if atsel.custom_groups
         if isnothing(group.group_index) && isnothing(group.group_name)
             throw(ArgumentError("""\n
                 Custom groups are defined. Cannot retrieve general group contributions. Please provide a group name or index.
@@ -84,7 +84,7 @@ function contributions(
 
     # If the name of the group was provided
     if !isnothing(group.group_name)
-        igroup = findfirst(==(group.group_name), sol.group_names)
+        igroup = findfirst(==(group.group_name), atsel.group_names)
         if isnothing(igroup) || igroup > length(group_count)
             throw(ArgumentError("Group $igroup not found in the group contribution count array."))
         end
@@ -101,13 +101,21 @@ function contributions(
         if isempty(group.atom_indices)
             throw(ArgumentError("Group selection is empty"))
         end
+        # Check consistency of input indexes
         for i in group.atom_indices
-            itype = findfirst(==(i), sol.indices)
+            itype = findfirst(==(i), atsel.indices)
             isnothing(itype) && throw(ArgumentError("Atom index $i not found in group data."))
-            if sol.nmols > 1
-                itype = atom_type(i, sol.natomspermol)
+        end
+        # Now run over the types, and sum the contributions. If the selection of 
+        # indices have repeated types, the contributions are then *not* summed. 
+        for itype in eachindex(atsel.group_names)
+            iatom = findfirst(
+                iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, 
+                group.atom_indices
+            )
+            if !isnothing(iatom)
+                sel_count .+= group_count[itype]
             end
-            sel_count .+= group_count[itype]
         end
     end
 
@@ -116,13 +124,18 @@ function contributions(
         if isempty(group.atom_names)
             throw(ArgumentError("Group selection is empty"))
         end
+        # Check consistency of input names
         for name in group.atom_names
-            itype = findfirst(==(name), sol.group_names)
-            isnothing(itype) && throw(ArgumentError("Atom name $name not found in group data."))
-            if sol.nmols > 1
-                itype = atom_type(itype, sol.natomspermol)
+            itype = findfirst(==(name), atsel.group_names)
+            isnothing(itype) && throw(ArgumentError("Atom (group) name $name not found in group name data."))
+        end
+        # Now run over the names, and sum the contributions. If the selection of
+        # names have repeated types, the contributions are then *not* summed.
+        for (itype, name) in enumerate(atsel.group_names)
+            iatom = findfirst(==(name), group.atom_names)
+            if !isnothing(iatom)
+                sel_count .+= group_count[itype]
             end
-            sel_count .+= group_count[itype]
         end
     end
 
@@ -154,8 +167,8 @@ function warning_nmols_types()
 end
 
 @testitem "contributions" begin
-    using ComplexMixtures: AtomSelection, contributions
-    using PDBTools: select, readPDB, selindex
+    using ComplexMixtures: AtomSelection, contributions, Trajectory, mddf, SoluteGroup, SolventGroup
+    using PDBTools: select, readPDB, Select
     using ComplexMixtures.Testing: data_dir
     atoms = readPDB("$data_dir/PDB/trajectory.pdb", "model 1")
     protein = select(atoms, "protein")
@@ -164,10 +177,10 @@ end
         protein, nmols = 1;
         group_names = [ "acidic", "basic", "polar", "nonpolar" ],
         group_atom_indices = [ 
-            selindex(protein, "acidic"),
-            selindex(protein, "basic"),
-            selindex(protein, "polar"),
-            selindex(protein, "nonpolar")
+            findall(Select("acidic"), protein),
+            findall(Select("basic"), protein),
+            findall(Select("polar"), protein),
+            findall(Select("nonpolar"), protein),
         ]
     )
     solvent = AtomSelection(tmao, natomspermol = 14)
@@ -179,9 +192,9 @@ end
     @test sum(contributions(results, SoluteGroup("polar"); type = :md_count)) ≈ 20.0
     @test sum(contributions(results, SoluteGroup("nonpolar"); type = :md_count)) ≈ 9.4
     
-    @test sum(contributions(results, SolventGroup(solvent); type = :md_count)) ≈ 5321.4
-    @test sum(contributions(results, SolventGroup(tmao); type = :md_count)) ≈ 5321.4
-    @test sum(contributions(results, SolventGroup(selindex(atoms, "resname TMAO and resnum 1")); type = :md_count)) ≈ 29.4
+    @test sum(contributions(results, SolventGroup(solvent); type = :md_count)) ≈ 29.4
+    @test sum(contributions(results, SolventGroup(tmao); type = :md_count)) ≈ 29.4
+    @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type = :md_count)) ≈ 29.4
 
     @test_throws ArgumentError contributions(results, SoluteGroup([1,2,3]))
     @test_throws ArgumentError contributions(results, SoluteGroup(["N", "CA"]))
