@@ -1,11 +1,12 @@
 #
-#    atom_type(iatom::Int, natomspermol::Int)
+#    atom_type(iatom::Int, natomspermol::Int; first = 1)
 #
 # Given the index of the atom in the vector of coordinates of the solute or the solvent,
 # returns the type of the atom, that is, the index of this atom within the molecule
-# (goes from 1 to natomspermol)
+# (goes from 1 to natomspermol). The `first` argument is the index of the first Atom
+# in the molecule. The default value is 1.
 #
-atom_type(iatom::Int, natomspermol::Int) = mod1(iatom, natomspermol)
+atom_type(iatom::Int, natomspermol::Int; first::Int = 1) = mod1(iatom - first + 1, natomspermol)
 
 @testitem "atom_type" begin
     using ComplexMixtures: atom_type
