@@ -1,48 +1,29 @@
-# Format numbers depending on their size
-format(x) = abs(x) < 998 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
-
-import Base.write
 """
-    write(R::ComplexMixtures.Result, filename::String, solute::AtomSelection, solvent::AtomSelection)
-
+    write(
+        R::Result, filename::String;
+        solute_group_names::Vector{String} = R.solute.group_names,
+        solvent_group_names::Vector{String} = R.solvent.group_names
+    )
+    
 Function to write the final results to output files as simple tables that are human-readable and easy to analyze with other software
 
-If the solute and solvent selections are provides, pass on the atom names.
+If the solute and solvent group names are defined in `R`, the `solute_group_names` and `solvent_group_names` arguments are not necessary. 
+If they are not defined, the user can pass the names of the groups as strings in the `solute_group_names` and `solvent_group_names` arguments.
 
 """
-write(R::Result, filename::String, solute::AtomSelection, solvent::AtomSelection) =
-    write(R, filename, solute_names = solute.names, solvent_names = solvent.names)
-
-
-"""
-    write(R::ComplexMixtures.Result, filename::String; 
-          solute_names::Vector{String} = ["nothing"], 
-          solvent_names::Vector{String} = ["nothing"])
-
-Optional passing of atom names.
-
-"""
-function write(
-    R::Result,
-    filename::String;
-    solute_names::Vector{String} = ["nothing"],
-    solvent_names::Vector{String} = ["nothing"],
+function Base.write(
+    R::Result, filename::String;
+    solute_group_names::Union{Nothing,Vector{String}} = nothing,
+    solvent_group_names::Union{Nothing,Vector{String}} = nothing,
 )
 
-    # Names of output files containing atomic contibutions
-    atom_contributions_solvent = normpath(
-        filename[1:findlast(==('.'), filename)-1] *
-        "-ATOM_CONTRIBUTIONS_SOLVENT." *
-        split(filename, '.')[end]
-    )
-    atom_contributions_solute = normpath(
-        filename[1:findlast(==('.'), filename)-1] *
-        "-ATOM_CONTRIBUTIONS_SOLUTE." *
-        split(filename, '.')[end]
-    )
+    # Set names of groups of solute and solvent (typically the atom names, but can
+    # be any other name that the user wants to use, if custom groups were defined).
+    solute_group_names = set_group_names(R, solute_group_names, :solute)
+    solvent_group_names = set_group_names(R, solvent_group_names, :solvent)
 
     #
-    # GMD computed with minimum distance
+    # Total MDDF 
     #
 
     # Conversion factor for volumes (as KB integrals), from A^2 to cm^3/mol
@@ -62,8 +43,8 @@ function write(
         println(output, @sprintf("# Molar volume of solvent in simulation (cc/mol): %14.8f", convert / R.density.solvent))
         println(output, @sprintf("# Molar volume of solvent in bulk (estimated) (cc/mol): %14.8f", convert / R.density.solvent_bulk))
         println(output, @sprintf("#"))
-        println(output, @sprintf("# Number of atoms solute: %i8", size(R.solute_atom, 2)))
-        println(output, @sprintf("# Number of atoms of the solvent: %i8", size(R.solvent_atom, 2)))
+        println(output, @sprintf("# Number of atoms solute: %i8", natoms(R.solute)))
+        println(output, @sprintf("# Number of atoms of the solvent: %i8", natoms(R.solvent)))
         println(output, @sprintf("#"))
         if R.files[1].options.usecutoff
             ibulk = setbin(R.files[1].options.dbulk, R.files[1].options.binstep)
@@ -78,11 +59,11 @@ function write(
     #
     # COLUMNS CORRESPOND TO:
     #       0  Minimum distance to solute (dmin)
-    #       1  GMD distribution (md count normalized by md count of random-solute distribution
+    #       1  MDDF (md count normalized by md count of random-solute distribution)
     #       2  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
     #       3  Minimum distance site count for each dmin.
     #       4  Minimum distance site count for each dmin for random solute distribution.
-    #       5  Cumulative number of molecules within dmin in the simulation.
+    #       5  Cumulative number of molecules within dmin in the simulation (coordination number)
     #       6  Cumulative number of molecules within dmin for random solute distribution.
     #       7  Volume of the shell of distance dmin and width binstep.
     #
@@ -100,82 +81,108 @@ function write(
         end
     end # file writting
 
-    # Writting gmd per atom contributions for the solvent
-
-    open(atom_contributions_solvent, "w") do output
-        println(output,
-            """
-            # Solvent atomic contributions to total MDDF.
-            #
-            # Trajectory files: $(R.files)
-            #
-            # Atoms: 
-            """)
-        for i = 0:size(R.solvent_atom, 2)
-            if solvent_names[0] == "nothing"
-                println(output, @sprintf("# %8i", i))
-            else
-                println(output, @sprintf("# %8i %5s", i, solvent_names[i]))
-            end
-        end
-        println(output, "#")
-        string = "#   DISTANCE     GMD TOTAL"
-        for i = 0:size(R.solvent_atom, 2)
-            string = string * @sprintf("  %11i", i)
-        end
-        println(output, string)
-        for i = 0:R.nbins
-            string = format(R.d[i])
-            string = string * "  " * format(R.mddf[i])
-            for j = 0:size(R.solvent_atom, 2)
-                string = string * "  " * format(R.solvent_atom[i, j])
-            end
-            println(output, string)
-        end
-    end # file writting
-
-    # Writting gmd per atom contributions for the solute
-    open(atom_contributions_solute, "w") do output
-        println(output,
-            """
-            #
-            # Solute atomic contributions to total MDDF.
-            #
-            # Trajectory files: $(R.files)
-            #
-            # Atoms
-            """)
-        for i = 0:size(R.solute_atom, 2)
-            if solute_names[0] == "nothing"
-                println(output, @sprintf("# %8i", i))
-            else
-                println(output, @sprintf("# %8i %5s", i, solute_names[i]))
-            end
-        end
-        println(output, "#")
-        string = "#   DISTANCE      GMD TOTAL"
-        for i = 0:size(R.solute_atom, 2)
-            string = string * @sprintf("  %11i", i)
-        end
-        println(output, string)
-        for i = 0:R.nbins
-            string = format(R.d[i]) * "  " * format(R.mddf[i])
-            for j = 0:size(R.solute_atom, 2)
-                string = string * "  " * format(R.solute_atom[i, j])
-            end
-            println(output, string)
-        end
-    end # file writting
-
-    # Write final messages with names of output files and their content
     println("""
+
     OUTPUT FILES:
 
-    Wrote solvent atomic GMD contributions to file: $atom_contributions_solvent
-    Wrote solute atomic GMD contributions to file: $atom_contributions_solute
+    Wrote total MDDF to output file: $filename
 
-    Wrote main output file: $filename
     """)
 
-    return "Results written to file: $filename"
+    # Solute and solvent contribution files
+    write_group_contributions(R, filename, :solute, solute_group_names) 
+    write_group_contributions(R, filename, :solvent, solvent_group_names)
+
+end
+
+# Format numbers depending on their size
+format(x) = abs(x) < 998 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
+
+#
+# Function that set the group names, given the optional input parameters of the write function
+#
+function set_group_names(R::Result, group_names::Union{Nothing,Vector{String}}, type::Symbol)
+    atsel = getfield(R, type)
+    atsel_str = type == :solute ? "Solute" : "Solvent"
+    if isnothing(group_names)
+        if !isempty(atsel.group_names)
+            group_names = atsel.group_names
+        else
+            throw(ArgumentError("$atsel_str group names are not defined in R or as argument"))
+        end
+    else
+        ngroups = isempty(atsel.group_atom_indices) ? natoms(atsel): length(atsel.group_atom_indices)
+        if ngroups != length(group_names)
+            throw(ArgumentError("The number of $atsel_str group names is different from the number of groups."))
+        end
+    end
+    return group_names
+end
+
+#
+# Writting gmd per atom contributions for the solvent
+#
+function write_group_contributions(
+    R::Result, 
+    filename::String, 
+    type::Symbol,
+    group_names::Vector{String},
+)
+    if type == :solute
+        atsel_str = "Solute"
+        atsel = getfield(R, :solute)
+        atsel_group_count = R.solute_group_count
+    elseif type == :solvent
+        atsel_str = "Solvent"
+        atsel = getfield(R, :solvent)
+        atsel_group_count = R.solvent_group_count
+    else
+        throw(ArgumentError("type must be either :solute or :solvent"))
+    end
+
+    # Names of output files containing atomic contibutions
+    group_contributions_output = normpath(
+        filename[1:findlast(==('.'), filename)-1] *
+        "-GROUP_CONTRIBUTIONS_$(uppercase(atsel_str))." *
+        split(filename, '.')[end]
+    )
+    open(group_contributions_output, "w") do output
+        println(output,
+            """
+            # $(atsel_str) atomic contributions to total MDDF.
+            #
+            # Trajectory files: $(R.files)
+            #
+            # Groups: 
+            """)
+        for (i, name) in enumerate(group_names)
+            println(output, @sprintf("# %8i %5s", i, name))
+        end
+        println(output, "#")
+        # The first line of the table
+        string = "#   DISTANCE    MDDF TOTAL"
+        for i in eachindex(group_names)
+            string = string * @sprintf("  %11i", i)
+        end
+        println(output, string)
+        # The list of contributions
+        for i in 1:R.nbins
+            string = format(R.d[i])
+            string = string * "  " * format(R.mddf[i]) # total mddf 
+            if R.md_count_random[i] == 0
+                string = string * "  " * repeat(format(0.0), length(group_names))
+            else
+                for group_count in atsel_group_count
+                    contrib = group_count[i]
+                    contrib = contrib / R.md_count_random[i]
+                    string = string * "  " * format(contrib)
+                end
+            end
+            println(output, string)
+        end
+    end # file writting
+
+    println("Wrote solute group MDDF contributions to file: $group_contributions_output")
+
+    return nothing
 end
