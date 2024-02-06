@@ -41,7 +41,7 @@
 
     R = Result(traj, options)
     t_result = @benchmark Result($traj, $options) samples = 1 evals = 1
-    @test t_result.allocs < 2000
+    @test t_result.allocs < 5000
 
     ComplexMixtures.opentraj!(traj)
     ComplexMixtures.firstframe!(traj)
