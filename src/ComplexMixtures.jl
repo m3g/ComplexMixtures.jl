@@ -75,6 +75,7 @@ include("./tools/contributions.jl")
 include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
+include("./tools/write.jl")
 
 # Precompilation directives
 include("precompile.jl")
