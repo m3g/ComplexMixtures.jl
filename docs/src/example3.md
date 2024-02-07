@@ -15,10 +15,9 @@ System image: a POPC membrane (center) solvated by a mixture of water (purple) a
 - [Data, packages, and execution](@ref data-example3)
 - [MDDF and KB integrals](@ref mddf-example3)
 - [Group contributions](@ref groups1-example3)
-- [Interaction of POPC groups with water](@id groups2-example3)
-- [Interaction of POPC groups with ethanol](@id groups3-example3)
-- [Density map on POPC chains](@id map-example3)
-- [2D density map](@ref 2Dmap-example3)
+- [Interaction of POPC groups with water](@ref groups2-example3)
+- [Interaction of POPC groups with ethanol](@ref groups3-example3)
+- [Density map on POPC chains](@ref map-example3)
 
 ## [Data, packages, and execution](@id data-example3)
 
@@ -101,6 +100,8 @@ As expected, the MDDF at hydrogen-bonding distances is composed by contributions
 
 ## [Interaction of POPC groups with water](@id groups2-example3)
 
+The MDDF can also be decomposed into the contributions of the solute atoms and chemical groups. First, we show the contributions of the POPC chemical groups to the water-POPC distribution.
+
 ```@raw html
 <details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
 ```
@@ -116,7 +117,13 @@ $(read("./assets/scripts/example3/script3.jl", String))
 </details><br>
 ```
 
+![https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_water_groups.png](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_water_groups.png)
+
+Not surprisingly, water interactions occur majoritarily with the Phosphate and Choline groups of POPC molecules, that is, with the polar head of the lipid. The interactions at hydrogen-bonding distances are dominated by the phosphate group, and non-specific interaction occur mostly with the choline group. Some water molecules penetrate the membrane and interact with the glycerol and aliphatic chains of POPC, but these contributions are clearly secondary.
+
 ## [Interaction of POPC groups with ethanol](@id groups3-example3)
+
+The interactions of ethanol molecules with the membrane are more interesting, because ethanol penetrates the membrane. Here we decompose the ethanol-POPC distribution function into the contributions of the POPC chemical groups.
 
 ```@raw html
 <details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
@@ -133,7 +140,15 @@ $(read("./assets/scripts/example3/script4.jl", String))
 </details><br>
 ```
 
+![https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_ethanol_groups.png](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_ethanol_groups.png)
+
+Ethanol molecules interact with the choline and phosphate groups of POPC molecules, as do water molecules. The contributions to the MDDF at hydrogen-bonding distances come essentially from ethanol-phosphate interactions.
+
+However, ethanol molecules interact frequently with the glycerol and aliphatic chains of POPC. Interactions with the Oleoyl chain are slightly stronger than with the Palmitoyl chain. This means that ethanol penetrates the hydrophobic core of the membrane, displaying non-specific interactions with the lipids and with the glycerol group. These interactions are probably associated to the destabilizing role of ethanol in the membrane structure.
+
 ## [Density map on POPC chains](@id map-example3)
+
+The MDDFs can be decomposed at more granular level, in which each chemical group of the aliphatic chains of the POPC molecules are considered independently. This allows the study of the penetration of the ethanol molecules in the membrane. In the figure below, the carbonyl following the glycerol group of the POPC molecules is represented in the left, and going to the right the aliphatic chain groups are sequentially shown.
 
 ```@raw html
 <details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
@@ -149,3 +164,24 @@ $(read("./assets/scripts/example3/script5.jl", String))
 ```@raw html
 </details><br>
 ```
+
+![./assets/scripts/example3/POPC_ethanol_chains.png](./assets/scripts/example3/POPC_ethanol_chains.png)
+
+Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.
+
+The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:
+
+![./assets/scripts/example3/POPC_water_chains.png](./assets/scripts/example3/POPC_water_chains.png)
+
+### References
+
+Membrane built with the [VMD](https://www.ks.uiuc.edu/Research/vmd/) membrane plugin. 
+
+Water and ethanol layers added with [Packmol](http://m3g.iqm.unicamp.br/packmol).
+
+The simulations were performed with [NAMD](https://www.ks.uiuc.edu/Research/namd/), with [CHARMM36](https://www.charmm.org) parameters. 
+
+Density of the ethanol-water mixture from: [https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/](https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/)
+
+
+

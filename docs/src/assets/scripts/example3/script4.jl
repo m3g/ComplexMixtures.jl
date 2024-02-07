@@ -22,8 +22,8 @@ scalefontsizes(1.3);
 # Read system PDB file
 system = readPDB("equilibrated.pdb")
 
-# Load the pre-calculated MDDF of water
-mddf_water_POPC = load("mddf_water_POPC.json")
+# Load the pre-calculated MDDF of ethanol
+mddf_ethanol_POPC = load("mddf_ethanol_POPC.json")
 
 #
 # Here we define the POPC groups, from the atom names. Each group
@@ -49,23 +49,23 @@ groups = Dict(
 #
 # plot the total mddf and the contributions of the groups
 #
-x = mddf_water_POPC.d
+x = mddf_ethanol_POPC.d
 plot(
     x,
-    movavg(mddf_water_POPC.mddf, n=10).x,
-    label="Total water-POPC MDDF"
+    movavg(mddf_ethanol_POPC.mddf, n=10).x,
+    label="Total ethanol-POPC MDDF"
 )
 for (group_name, group_atoms) in pairs(groups)
-    cont = contributions(mddf_water_POPC, SoluteGroup(group_atoms))
+    cont = contributions(mddf_ethanol_POPC, SoluteGroup(group_atoms))
     y = movavg(cont, n=10).x
     plot!(x, y, label=group_name)
 end
 # Plot settings
 plot!(
-    xlim=(1, 5),
+    xlim=(1.3, 5),
+    ylim=(0, 1.8),
     xlabel=L"\textrm{Distance / \AA}",
     ylabel="MDDF"
 )
-savefig("./mddf_POPC_water_groups.png")
-println("The plot was saved as mddf_POPC_water_groups.png")
-
+savefig("./mddf_POPC_ethanol_groups.png")
+println("The plot was saved as mddf_POPC_ethanol_groups.png")
