@@ -7,6 +7,8 @@
 #
 # Author: L. Martinez / IQ-Unicamp, 2023.
 #
+# This script is adapted to version 2.0 of ComplexMixtures.jl
+#
 import sys
 
 #
@@ -49,6 +51,8 @@ select = jl.pdb.select
 # From ComplexMixtures
 AtomSelection = jl.cm.AtomSelection
 Trajectory = jl.cm.Trajectory
+SoluteGroup = jl.cm.SoluteGroup
+SolventGroup = jl.cm.SolventGroup
 Options = jl.cm.Options
 save = jl.cm.save
 load = jl.cm.load
