@@ -1,15 +1,15 @@
 #
 # Structure to contain DCD trajectories produces with Namd. 
 #
-"""
-
-$(TYPEDEF)
-
-Structure to contain the data of a trajectory in NAMD/DCD format.
-
-$(TYPEDFIELDS)
-
-"""
+#"""
+#
+#$(TYPEDEF)
+#
+#Structure to contain the data of a trajectory in NAMD/DCD format.
+#
+#$(TYPEDFIELDS)
+#
+#"""
 struct NamdDCD{T<:AbstractVector} <: Trajectory
 
     #
@@ -41,12 +41,12 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
 
 end
 
-"""
-    NamdDCD(filename::String, solute::AtomSelection, solvent::AtomSelection;T::Type = SVector{3,Float64})
-
-This function initializes the structure above, returning the data and the vectors with appropriate lengths.
-
-"""
+#"""
+#    NamdDCD(filename::String, solute::AtomSelection, solvent::AtomSelection;T::Type = SVector{3,Float64})
+#
+#This function initializes the structure above, returning the data and the vectors with appropriate lengths.
+#
+#"""
 function NamdDCD(
     filename::String,
     solute::AtomSelection,

@@ -165,8 +165,12 @@ The complete data available is:
 |    |     |    |   | 
 
 
+## Reference functions
 
-
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["results.jl"]
+```
 
 
 

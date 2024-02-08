@@ -68,7 +68,7 @@ solute = AtomSelection(indices, names, nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and
-it takes a few seconds to be excuted.
+it takes a few seconds to be executed.
 
 The `VMDSelect` function also accepts an optional keyword parameter `srcload`,
 which can be used to load custom scripts within `vmd` before setting
@@ -77,13 +77,14 @@ macros, for instance. The usage would be:
 ```julia
 using PDBTools
 
-sel = select_with_vmd("file.pdb", "resname MYRES"; srcload = [ "mymacros1.tcl", "mymacros2.tcl" ])
+sel = select_with_vmd(
+    "file.pdb", 
+    "resname MYRES"; 
+    srcload = [ "mymacros1.tcl", "mymacros2.tcl" ]
+)
 ```
 Which corresponds to `source`ing each of the macro files in VMD before defining the 
 selection with the custom `MYRES` name.
-
-!!! compat
-    Custom script source loading in VMDSelect was introduced in ComplexMixtures version 1.3.0.
 
 !!! warning
     VMD uses 0-based indexing and `VMDselect` adjusts that. However, if
@@ -91,7 +92,7 @@ selection with the custom `MYRES` name.
     select the second atom, and the output will be `[2]`. AtomSelections by
     type, name, segment, residue name, etc, won't be a problem.
 
-## Predefinition of atom groups
+## [Predefinition of atom groups](@id predefinition-of-groups)
 
 Importantly, this should be only a concern for the solvation analysis of systems in which individual
 molecules are **very large**. This feature was introduced in version `2.0` of the package to support
@@ -150,6 +151,13 @@ can be retrived directly from the result data structure with, for example:
 julia> result = mddf(trajectory, solute, solvent);
 
 julia> acidic_residue_contributions = contributions(result, SoluteGroup("acidic residues"))
+```
+
+## Reference functions
+
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["AtomSelection.jl"]
 ```
 
 

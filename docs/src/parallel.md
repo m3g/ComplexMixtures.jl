@@ -8,7 +8,8 @@ to use `8` parallel processes, use:
 ```
 julia -t 8 example.jl
 ```
-The computation will use a number of parallel processes equal to `N`. 
+The computation will use a number of parallel processes equal to `N`. Use `-t auto` to automatically
+pick the number of threads available in your computer. 
 
 !!! note
     The number of threads used for computation of the MDDF is the number of threads available to Julia. 
@@ -34,4 +35,7 @@ The computation will use a number of parallel processes equal to `N`.
     The `GC_threshold=0.5` indicates that if the free memory is smaller than 50%
     of the total memory of the machine, a garbage-collection run will occur. The  
     default parameters are `GC=true` and `GC_threshold=0.3`.  
+
+    Read the [predefinition of atom groups](@ref predefinition-of-groups) section if you are experiencing
+    memory issues.
 

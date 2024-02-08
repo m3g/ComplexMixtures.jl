@@ -1,15 +1,15 @@
-"""
-
-$(TYPEDEF)
-
-Structure to contain PDB trajectories. Frames must be separated by "END", and with periodic cell sizes
-in the "CRYST1" field, for each frame.
-
-This structure and functions can be used as a template to implement the reading of other trajectory formats. 
-
-$(TYPEDFIELDS)
-
-"""
+#"""
+#
+#$(TYPEDEF)
+#
+#Structure to contain PDB trajectories. Frames must be separated by "END", and with periodic cell sizes
+#in the "CRYST1" field, for each frame.
+#
+#This structure and functions can be used as a template to implement the reading of other trajectory formats. 
+#
+#$(TYPEDFIELDS)
+#
+#"""
 struct PDBTraj{T<:AbstractVector} <: Trajectory
 
     #
@@ -32,17 +32,17 @@ struct PDBTraj{T<:AbstractVector} <: Trajectory
 
 end
 
-"""
-    PDBTraj(pdbfile::String, solute::AtomSelection, solvent::AtomSelection;T::Type = SVector{3,Float64})
-
-Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required 
-
-"""
+#"""
+#    PDBTraj(pdbfile::String, solute::AtomSelection, solvent::AtomSelection;T::Type = SVector{3,Float64})
+#
+#Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required 
+#
+#"""
 function PDBTraj(
     pdbfile::String,
     solute::AtomSelection,
     solvent::AtomSelection;
-    T::Type = SVector{3,Float64},
+    T::Type=SVector{3,Float64},
 )
 
     st = open(pdbfile, "r")
@@ -55,7 +55,7 @@ function PDBTraj(
         isempty(line) && continue
         line_data = split(line)
         if line_data[1] == "CRYST1"
-            unitcell .= pdb_readunitcell(line_data) 
+            unitcell .= pdb_readunitcell(line_data)
         end
         if line_data[1] == "END"
             nframes = nframes + 1
@@ -97,13 +97,13 @@ end
 
 function Base.show(io::IO, trajectory::PDBTraj)
     (; solute, solvent) = trajectory
-    print(io,strip(""" 
-          Trajectory in PDB format with:
-              $(trajectory.nframes) frames.
-              Solute contains $(ComplexMixtures.natoms(solute)) atoms.
-              Solvent contains $(ComplexMixtures.natoms(solvent)) atoms.
-              Unit cell in current frame: $(print_unitcell(trajectory))
-          """))
+    print(io, strip(""" 
+           Trajectory in PDB format with:
+               $(trajectory.nframes) frames.
+               Solute contains $(ComplexMixtures.natoms(solute)) atoms.
+               Solvent contains $(ComplexMixtures.natoms(solvent)) atoms.
+               Unit cell in current frame: $(print_unitcell(trajectory))
+           """))
 end
 
 #
@@ -125,7 +125,7 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
         if length(record) >= 6
             # Read unit cell
             if record[1:6] == "CRYST1"
-                trajectory.unitcell .= pdb_readunitcell(split(record)) 
+                trajectory.unitcell .= pdb_readunitcell(split(record))
             end
             # Read atom coordinates into the solute and solvent arrays
             if record[1:4] == "ATOM" || record[1:6] == "HETATM"

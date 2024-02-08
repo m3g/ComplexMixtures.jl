@@ -39,3 +39,9 @@ results = mddf(trajectory,options)
 See the [Options](@ref options) section for further details and other options
 to set.
 
+## Reference functions
+
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["mddf.jl"]
+```

@@ -38,7 +38,7 @@ structural stability, solubility, and others.
 
 ## Features
 
-Check out our [examples repository](https://github.com/m3g/ComplexMixturesExamples), featuring the analysis of solvation structures for proteins, polymers, membrane, and complex solutions! The examples are also described in our [featured article](https://doi.org/10.1016/j.molliq.2021.117945).
+Check out our [examples](@ref examples), featuring the analysis of solvation structures for proteins, polymers, membrane, and complex solutions! The examples are also described in our [featured article](https://doi.org/10.1016/j.molliq.2021.117945).
 
 ### 1. Minimum-distance distribution functions: understanding solvation at a molecular level
 

@@ -27,7 +27,6 @@ makedocs(
         "Options" => "options.md",
         "Tools" => "tools.md",
         "From Python" => "python.md",
-        "Help entries" => "help.md",
         "Updating scripts" => "updating_scripts.md",
         "References" => "references.md",
     ],

@@ -88,7 +88,7 @@ of the total memory available, a GC run occurs.
 ## Frame statistical reweighing  
 
 !!! compat
-    Frame reweighing is available in ComplexMixtures 1.4.0 or greater.
+    Frame reweighing is available in ComplexMixtures 2.0.0 or greater.
 
 Most times the weights of each frame of the trajectory are the same, resulting
 from some standard MD simulation. If, for some reason, the frames have 
@@ -97,12 +97,10 @@ optional parameter `frame_weights`.
 
 For example:
 ```julia-repl
-julia> using ComplexMixtures
-
-julia> options = Options(frame_weights=[0.2, 0.2, 0.4])
+julia> results = mddf(trajectory, options; frame_weights=[0.0, 1.0, 2.0])
 ```
 The code above will assign a larger weight to the third frame of the trajectory.
-These weights are relative (meaning that `[1.0, 1.0, 2.0]` would produce 
+These weights are relative (meaning that `[0.0, 1.0, 2.0]` would produce 
 the same result). What will happen under the hood is that the distance counts
 of the frames will be multiplied by each frame weight, and normalized for the
 sum of the weights.
@@ -116,4 +114,26 @@ the length of `frame_weights` must be at least `lastframe` (it can be greater,
 and further values will be ignored). Importantly, the indices of the elements
 in `frame_weights` are assumed to correspond to the indices of the frames
 in the original trajectory file.
+
+## Compute coordination number only
+
+For some systems, it may be impossible, or to expensive, to compute the normalization
+of the minimum-distance distribution function. Nevertheless, the coordination
+number may still be an interesting information to be retrieved from the 
+simulations. To run the computation to compute coordination numbers only, do:
+
+```julia-repl
+julia> results = mddf(trajectory, options; coordination_number_only = true)
+```
+
+!!! note    
+    With `coordination_number_only` set to `true`, the arrays associated to
+    MDDFs and KB integrals will be empty in the output data structure. 
+
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["Options.jl"]
+```
+
+
 

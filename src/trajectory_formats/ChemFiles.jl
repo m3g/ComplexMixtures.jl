@@ -5,15 +5,15 @@
 #
 import Chemfiles
 
-"""
-
-$(TYPEDEF)
-
-Structure to contain a trajectory as read by Chemfiles.jl
-
-$(TYPEDFIELDS)
-
-"""
+#"""
+#
+#$(TYPEDEF)
+#
+#Structure to contain a trajectory as read by Chemfiles.jl
+#
+#$(TYPEDFIELDS)
+#
+#"""
 struct ChemFile{T<:AbstractVector} <: Trajectory
 
     #
@@ -42,12 +42,12 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
 
 end
 
-"""
-    ChemFile(filename::String, solute::AtomSelection, solvent::AtomSelection;format="" , T::Type = SVector{3,Float64})
-
-Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required.
-
-"""
+#"""
+#    ChemFile(filename::String, solute::AtomSelection, solvent::AtomSelection;format="" , T::Type = SVector{3,Float64})
+#
+#Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required.
+#
+#"""
 function ChemFile(
     filename::String,
     solute::AtomSelection,

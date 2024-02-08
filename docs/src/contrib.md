@@ -121,3 +121,10 @@ Note here how charged residues contribute strongly to the peak at
 hydrogen-bonding distances, but much less in general. Of course all
 selection options could be used, to obtain the contributions of specific
 types of residues, atoms, the backbone, the side-chains, etc. 
+
+## Reference functions
+
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["contributions.jl"]
+```

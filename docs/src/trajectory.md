@@ -21,3 +21,10 @@ produced with NAMD, Gromacs, LAMMPS, Amber, etc.
     ```julia
     trajectory = Trajectory("trajectory.xtc",solute,solvent,format="xtc")
     ```
+
+## Reference functions
+
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["Trajectory.jl"]
+```
