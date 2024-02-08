@@ -11,12 +11,12 @@ Image of the system of the example: a protein solvated by a mixture of glycreol 
 
 ### Index
 
-- [Data and packages](@ref data-example1)
+- [Data, packages, and execution](@ref data-example1)
 - [MDDF, KB integrals, and group contributions](@ref mddf-example1)
 - [2D density map](@ref 2D-map-example1)
 - [3D density map](@ref 3D-map-example1)
 
-## [Data and execution](@id data-example1)
+## [Data, packages, and execution](@id data-example1)
 
 The files required to run this example are:
 

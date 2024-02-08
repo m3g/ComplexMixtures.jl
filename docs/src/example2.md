@@ -31,7 +31,7 @@ The structures of DMF and of the polyacrylamide segment are:
 - [Group contributions](@ref groups-example2)
 - [2D density map](@ref 2Dmap-example2)
 
-## [Data and execution](@id data-example2)
+## [Data, packages, and execution](@id data-example2)
 
 The files required to run this example are:
 
