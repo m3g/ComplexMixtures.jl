@@ -57,13 +57,13 @@ The files required to run this example are:
 - [system.pdb](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Protein_in_Glycerol/Data/system.pdb): The PDB file of the complete system.
 - [glyc50_sample.dcd](https://www.dropbox.com/scl/fi/n3gtyotavo00jtz8bajti/glyc50_sample.dcd?rlkey=5ax8t4w7e0dr5w0n5g797p02j&dl=0): A 30Mb sample trajectory file. The [full trajectory](https://www.dropbox.com/scl/fi/zfq4o21dkttobg2pqd41m/glyc50_traj.dcd?rlkey=el3k6t0fx6w5yiqktyx96gzg6&dl=0) can also be used, but it is a 1GB file.
 
-To start, create a directory and copy the [`ComplexMixtures.py`](./assets/ComplexMixtures.py) file to it. Navigate into this directory, and, to start, set the number of threads that Julia will use, to run the calculations in parallel. Typicall, in `bash`, this means defining teh following environment variable:
+To start, create a directory and copy the [`ComplexMixtures.py`](./assets/ComplexMixtures.py) file to it. Navigate into this directory, and, to start, set the number of threads that Julia will use, to run the calculations in parallel. Typically, in `bash`, this means defining teh following environment variable:
 ```bash
 export JULIA_NUM_THREADS=8
 ```
 where `8` is the number of CPU cores available in your computer. For further information about Julia multi-threading, and on setting this environment variable in other systems, please read [this section](https://docs.julialang.org/en/v1/manual/multi-threading/#Starting-Julia-with-multiple-threads) of the Julia manual.
 
-Finall, each script can be executed with, for example:
+Finally, each script can be executed with, for example:
 ```bash
 python3 script.py
 ```
@@ -123,7 +123,7 @@ $(read("./assets/scripts/python/script2.py", String))
 ![](./assets/scripts/python/mddf_kb.png)
 
 In the top plot, we see that glycerol and water display clear solvation shells around the protein,
-with glycerol having a gerater peak. This accumulation leads to a greater (less negative) KB integral for glycerol than water, as shown in the second plot. This indicates that the proteni is preferentially solvated by glycerol in this system (assuming that sampling is adequate in this small
+with glycerol having a greater peak. This accumulation leads to a greater (less negative) KB integral for glycerol than water, as shown in the second plot. This indicates that the protein is preferentially solvated by glycerol in this system (assuming that sampling is adequate in this small
 trajectory).
 
 ### [Atomic contributions to the MDDF](@id python-plotting2)

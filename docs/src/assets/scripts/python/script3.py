@@ -7,7 +7,7 @@ atoms = cm.readPDB("./system.pdb")
 protein = cm.select(atoms, "protein")
 glyc = cm.select(atoms, "resname GLYC")
 
-# load previusly computed MDDF results
+# load previously computed MDDF results
 results = cm.load("./glyc50.json")
 
 # Select atoms by name

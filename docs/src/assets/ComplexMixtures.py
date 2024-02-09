@@ -1,7 +1,7 @@
 #
 # ComplexMixtures.py
 #
-# A Python module to provide an inferface for the Julia ComplexMixtures.jl package.
+# A Python module to provide an interface for the Julia ComplexMixtures.jl package.
 # 
 # See: https://m3g.github.com/ComplexMixtures.jl
 #

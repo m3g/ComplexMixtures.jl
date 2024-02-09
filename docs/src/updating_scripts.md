@@ -17,7 +17,7 @@ water = AtomSelection(water; natomspermol=3)
 
 ## Group contributions syntax
 
-The syntax to computing group contributions is improved. Previusly, the `contrib` or
+The syntax to computing group contributions is improved. Previously, the `contrib` or
 `contributions` functions required three somewhat redundant parameters. 
 - Before:
 The call to `contributions` required 3 parameters: the `Selection` structure,
