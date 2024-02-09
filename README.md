@@ -13,7 +13,7 @@ The documentation is available at: https://m3g.github.io/ComplexMixtures.jl
 
 ### Examples
 
-A series of examples of applications can be found at: https://m3g.github.io/ComplexMixtures.jl/examples
+A series of examples of applications can be found at: https://m3g.github.io/ComplexMixtures.jl/stable/examples
 
 ## Overview
 
