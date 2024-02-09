@@ -120,6 +120,9 @@ function mddf(
     coordination_number_only = false
 )
 
+    options.silent || println(bars)
+    options.silent || println("Initializing memory buffers ...")
+
     # Set random number generator
     RNG = init_random(options)
 
@@ -137,10 +140,12 @@ function mddf(
 
     # Create data structures required for multithreading: needed to read coordinates in each
     # frame independently, and compute the minimum-distance list 
+    options.silent || println("Setting up system for fast cell list computation ...")
     system = [setup_PeriodicSystem(trajectory, options) for _ = 1:nchunks]
     buff = [Buffer(trajectory, R) for _ = 1:nchunks]
 
     # Open the trajectory stream and go to first frame
+    options.silent || println("Open trajectory and read first frame ...")
     opentraj!(trajectory)
     firstframe!(trajectory)
 
