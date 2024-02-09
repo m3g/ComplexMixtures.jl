@@ -769,7 +769,7 @@ function load(filename::String; legacy_warning = true)
     current_version = pkgversion(@__MODULE__)
     # Error if the json file is from a newer version than the current one
     if json_version > current_version
-        error("""
+        throw(ArgumentError("""\n
             Trying to load a json result file created with a newer version of ComplexMixtures. 
             This can cause unpredictable errors. 
 
@@ -777,7 +777,25 @@ function load(filename::String; legacy_warning = true)
             Version used to create the output .json file: $json_version
 
             Please update ComplexMixtures and try again.
-        """)
+
+        """))
+    end
+    if json_version < v"2.0.0"
+        throw(ArgumentError("""\n
+            Trying to load a json result created with an older, and incompatible, version of ComplexMixtures.
+
+            Current version of ComplexMixtures: $current_version
+            Version used to create the output .json file: $json_version
+
+            To load this file, install an older version of ComplexMixtures, with, for example:
+            
+            julia> import Pkg; Pkg.pkg"add ComplexMixtures@$json_version"
+
+            You can pin the version of ComplexMixtures to the one you installed with:
+
+            julia> import Pkg; Pkg.pkg"pin ComplexMixtures@$json_version"
+        
+        """))
     end
     R = open(filename, "r") do io
         JSON3.read(io, Result)
@@ -793,6 +811,10 @@ end
     save(r1, tmp)
     r2 = load(tmp)
     @test r1 == r2
+    # Test throwing an error incompatible versions of ComplexMixtures
+    @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_new.json")
+    @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_old.json")
+
 end
 
 
