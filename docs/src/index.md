@@ -34,7 +34,7 @@ structural stability, solubility, and others.
     Important: This manual refers to version 2 of ComplexMixtures.jl. There
     are syntax changes relative to the 1.X series, and analysis scripts 
     written for the previous versions won't work. The list of changes
-    necessary to updated the scripts is described [here](#updating_scripts).
+    necessary to updated the scripts is described [here](@ref updating-scripts).
 
 ## Features
 

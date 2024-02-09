@@ -1,4 +1,4 @@
-# Updating scripts v1 to v2
+# [Updating scripts from v1 to v2](@id updating-scripts)
 
 The syntax chances necessary to update script from version `1.X` to `2.X` of 
 the package are:
