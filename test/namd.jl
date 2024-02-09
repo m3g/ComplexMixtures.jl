@@ -1,7 +1,7 @@
 
 @testitem "NAMD" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load
-    using PDBTools: readPDB, select
+    using PDBTools: readPDB, select, Select
     using ComplexMixtures.Testing: data_dir
 
     #
