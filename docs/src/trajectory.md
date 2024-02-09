@@ -4,7 +4,7 @@ To initialize a trajectory file for computation, use the command
 ```julia
 trajectory = Trajectory("trajectory.xtc",solute,solvent)
 ```
-where `solute` and `solvent` are defined with the `Selection` function 
+where `solute` and `solvent` are defined with the `AtomSelection` function 
 described [before](@ref selections). This function opens the stream for
 reading frames, which are read once a time when the coordinates are
 required for computing the MDDF.
@@ -21,3 +21,10 @@ produced with NAMD, Gromacs, LAMMPS, Amber, etc.
     ```julia
     trajectory = Trajectory("trajectory.xtc",solute,solvent,format="xtc")
     ```
+
+## Reference functions
+
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["Trajectory.jl"]
+```

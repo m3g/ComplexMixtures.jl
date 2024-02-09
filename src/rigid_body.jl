@@ -18,10 +18,8 @@ function init_random(options)
     return RNG
 end
 
-"""
+#=
     eulermat(beta, gamma, theta, deg::String)
-
-$(INTERNAL)
 
 This routine was added because it defines the rotation in the "human" way, an is thus used
 to set the position of the fixed molecules. `deg` can only be `"degree"`, in which
@@ -33,7 +31,7 @@ That means: `beta` is a counterclockwise rotation around `x` axis.
             `theta` is a counterclockwise rotation around `z` axis.
 
 
-"""
+=#
 function eulermat(beta, gamma, theta, deg::String)
     if deg != "degree"
         error("ERROR: to use radians just omit the last parameter")
@@ -66,14 +64,12 @@ end
     @test ComplexMixtures.eulermat(0.0, 0.0, π) ≈ [-1 0 0; 0 -1 0; 0 0 1]
 end
 
-"""
+#=
     move!(x::AbstractVector, newcm::AbstractVector,beta, gamma, theta)
-
-$(INTERNAL)
 
 Translates and rotates a molecule according to the desired input center of coordinates and Euler rotations modifyies the vector x.
 
-"""
+=#
 function move!(x::AbstractVector{T}, newcm::T, beta, gamma, theta) where {T<:SVector}
     cm = mean(x)
     A = eulermat(beta, gamma, theta)
@@ -99,19 +95,17 @@ end
           SVector{3,Float64}[[-0.5, 0.0, 0.0], [0.5, 0.0, 0.0]]
 end
 
-"""
+#=
     random_move!(x_ref::AbstractVector{T}, 
                  irefatom::Int,
                  system::AbstractPeriodicSystem,
                  x_new::AbstractVector{T}, RNG) where {T<:SVector}
 
-$(INTERNAL)
-
 Function that generates a new random position for a molecule.
 
 The new position is returned in `x_new`, a previously allocated array.
 
-"""
+=#
 function random_move!(
     x::AbstractVector{<:SVector{3}},
     irefatom::Int,

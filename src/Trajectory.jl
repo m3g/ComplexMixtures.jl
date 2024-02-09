@@ -1,5 +1,5 @@
 """
-    Trajectory(filename::String, solute::Selection, solvent::Selection; format::String = "", chemfiles = false)
+    Trajectory(filename::String, solute::AtomSelection, solvent::AtomSelection; format::String = "", chemfiles = false)
 
 Trajectory constructor data type. 
 
@@ -28,10 +28,11 @@ include("./trajectory_formats/PDBTraj.jl")
 
 function Trajectory(
     filename::String,
-    solute::Selection,
-    solvent::Selection;
+    solute::AtomSelection,
+    solvent::AtomSelection;
     format::String = "",
     chemfiles = false,
+
 )
     if !chemfiles && (format == "dcd" || split(filename, '.')[end] == "dcd")
         trajectory = NamdDCD(filename, solute, solvent)
@@ -44,7 +45,7 @@ function Trajectory(
 end
 
 # If only one selection is provided, assume that the solute and the solvent are the same
-Trajectory(filename::String, solvent::Selection; format::String = "", chemfiles = false) =
+Trajectory(filename::String, solvent::AtomSelection; format::String = "", chemfiles = false) =
     Trajectory(filename, solvent, solvent, format = format, chemfiles = chemfiles)
 
 #=
@@ -83,8 +84,8 @@ end
     using StaticArrays
 
     atoms = readPDB(Testing.pdbfile)
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # NAMD DCD file
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
@@ -99,8 +100,8 @@ end
         tmao,
         format = "PDBTraj",
     )
-    @test traj.solute.natoms == 1463
-    @test traj.solvent.natoms == 2534
+    @test ComplexMixtures.natoms(traj.solute) == 1463
+    @test ComplexMixtures.natoms(traj.solvent) == 2534
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.47962951660156, 84.47962951660156, 84.47962951660156)
 
     # Chemfiles with NAMD
@@ -112,17 +113,17 @@ end
     )
     @test traj.nframes == 20
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
-    @test traj.solute.natoms == 1463
-    @test traj.solvent.natoms == 2534
+    @test ComplexMixtures.natoms(traj.solute) == 1463
+    @test ComplexMixtures.natoms(traj.solvent) == 2534
 
     # Chemfiles with Gromacs
     atoms = readPDB("$(Testing.data_dir)/Gromacs/system.pdb")
-    protein = Selection(select(atoms, "protein"), nmols = 1)
-    emi = Selection(select(atoms, "resname EMI"), natomspermol = 20)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    emi = AtomSelection(select(atoms, "resname EMI"), natomspermol = 20)
     traj = Trajectory("$(Testing.data_dir)/Gromacs/trajectory.xtc", protein, emi)
     @test traj.nframes == 26
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
-    @test traj.solute.natoms == 1231
-    @test traj.solvent.natoms == 5080
+    @test ComplexMixtures.natoms(traj.solute) == 1231
+    @test ComplexMixtures.natoms(traj.solvent) == 5080
 
 end

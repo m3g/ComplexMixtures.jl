@@ -1,108 +1,162 @@
 """
-    contributions(s::Selection, atom_contributions::Matrix{Float64}, selection)
+    contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf)
 
-Extract the contribution of a given atom type selection from the solute or solvent atomic contributions to the MDDF.
+Returns the contributions of the atoms of the solute or solvent to the MDDF, coordiantion number or MD count.
 
-`s` here is the solute or solvent selection (type `ComplexMixtures.Selection`)
-`atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure,
-and the last argument is the selection of atoms from the solute to be considered, given as a list 
-of indexes, list of atom names, vector of `PDBTools.Atom`s, or a `PDBTools.Residue`. 
+# Arguments
 
-## Extended help
+- `R::Result`: The result of a calculation.
+- `group::Union{SoluteGroup,SolventGroup}`: The group of atoms to consider.
+- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number` or `:md_count`.
 
-For selections of one molecule, the function has an additional keyword option `first_atom_is_ref` that is `false` by default. 
-If set to `true`, the index first atom of the selection is considered as a reference atom. For example if a solute has 100 atoms,
-but its first atom in the PDB file is number 901, the selection of indexes `[1, 2, 3]` will refer to atoms
-with indexes `[901, 902, 903]`.
+# Examples
+
+```jldoctes
+julia> using ComplexMixtures, PDBTools
+
+julia> dir = ComplexMixtures.Testing.data_dir*"/Gromacs";
+
+julia> atoms = readPDB(dir*"/system.pdb");
+
+julia> protein = select(atoms, "protein");
+
+julia> emim = select(atoms, "resname EMI"); 
+
+julia> solute = AtomSelection(protein, nmols = 1)
+AtomSelection 
+    1231 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1231
+    Number of groups: 1231
+
+julia> solvent = AtomSelection(emim, natomspermol = 20)
+AtomSelection 
+    5080 atoms belonging to 254 molecule(s).
+    Atoms per molecule: 20
+    Number of groups: 20
+
+julia> results = load(dir*"/protein_EMI.json"); # load pre-calculated results
+
+julia> contributions(results, SoluteGroup(["CA", "CB"])) # contribution of CA and CB atoms to the MDDF
+
+```
 
 """
 function contributions(
-    s::Selection,
-    atom_contributions::Matrix{Float64},
-    indexes::Vector{Int};
-    first_atom_is_ref = false,
+    R::Result, 
+    group::Union{SoluteGroup,SolventGroup};
+    type = :mddf, 
 )
-    nbins = size(atom_contributions, 1)
-    c = zeros(nbins)
-    # If the selection is a single molecule, the indexes can be anything (as they are the numbers printed
-    # in the PDB file)
-    if s.nmols == 1
-        # If the first atom is a reference atom, the indexes are shifted by the index of the first atom
-        if first_atom_is_ref
-            first_index = first(s.index) - 1
-        else
-            first_index = 0
+    if group isa SoluteGroup
+        atsel = R.solute
+        group_count = R.solute_group_count
+    elseif group isa SolventGroup
+        atsel = R.solvent
+        group_count = R.solvent_group_count
+    end
+
+    # If custom groups were provided, we cannot retrieve general group contributions from
+    # the group_count array.
+    if atsel.custom_groups
+        if isnothing(group.group_index) && isnothing(group.group_name)
+            throw(ArgumentError("""\n
+                Custom groups are defined. Cannot retrieve general group contributions. Please provide a group name or index.
+                For example, use SoluteGroup(1) or SoluteGroup("name of group 1")
+            """)) 
         end
-        for it in indexes
-            ind = findfirst(isequal(first_index + it), s.index)
-            if isnothing(ind)
-                error("Index $it of input list not found in selection indexes list.")
-            end
-            c += @view(atom_contributions[:, ind])
-        end
-    # If more than one molecule, the index must correspond to an atom within one molecule
     else
-        for it in indexes
-            if it > s.natomspermol
-                error(
-                    "The index list contains atoms with indexes greater than the number of atoms of one molecule.",
-                )
+        if isnothing(group.atom_indices) && isnothing(group.atom_names)
+            throw(ArgumentError("""\n
+                No custom groups are defined. Please provide vectors of *atomic* indices or names.
+                For example, to get the contribution of atoms 1, 2 and 3, use SoluteGroup([1,2,3]). 
+            """))
+        end
+    end
+    sel_count = zeros(length(group_count[1]))
+
+    # If the index of the groups was provided
+    if !isnothing(group.group_index)
+        igroup = group.group_index
+        if igroup > length(group_count)
+            throw(ArgumentError("Group $igroup not found in the group contribution count array."))
+        end
+        sel_count .= group_count[igroup]
+    end
+
+    # If the name of the group was provided
+    if !isnothing(group.group_name)
+        igroup = findfirst(==(group.group_name), atsel.group_names)
+        if isnothing(igroup) || igroup > length(group_count)
+            throw(ArgumentError("Group $igroup not found in the group contribution count array."))
+        end
+        sel_count .= group_count[igroup]
+    end
+
+    # If, instead, atom indices or names were provided, sum over the contributions of the atoms.
+    # This sum is different if the structure contanis one or more than one molecule.
+    # If the structure has more than one molecule, than the indices are indices of 
+    # the atoms *within* the molecule. 
+
+    # Given atom inidices, sum over the contributions of the atoms
+    if !isnothing(group.atom_indices) 
+        if isempty(group.atom_indices)
+            throw(ArgumentError("Group selection is empty"))
+        end
+        # Check consistency of input indexes
+        for i in group.atom_indices
+            itype = findfirst(==(i), atsel.indices)
+            isnothing(itype) && throw(ArgumentError("Atom index $i not found in group data."))
+        end
+        # Now run over the types, and sum the contributions. If the selection of 
+        # indices have repeated types, the contributions are then *not* summed. 
+        for itype in eachindex(atsel.group_names)
+            iatom = findfirst(
+                iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, 
+                group.atom_indices
+            )
+            if !isnothing(iatom)
+                sel_count .+= group_count[itype]
             end
-            c += @view(atom_contributions[:, it])
         end
     end
-    return c
-end
 
-#
-# If a list of atom names is provided
-#
-function contributions(
-    s::Selection,
-    atom_contributions::Matrix{Float64},
-    names::Vector{String},
-)
-    indexes = Vector{Int}(undef, 0)
-    for name in names
-        index = findall(isequal(name), s.names)
-        if length(index) == 0
-            error(" Atom in input list is not part of solvent (or solute): $name")
+    # Given atom names, sum over the contributions of the atoms
+    if !isnothing(group.atom_names) 
+        if isempty(group.atom_names)
+            throw(ArgumentError("Group selection is empty"))
         end
-        append!(indexes, index)
+        # Check consistency of input names
+        for name in group.atom_names
+            itype = findfirst(==(name), atsel.group_names)
+            isnothing(itype) && throw(ArgumentError("Atom (group) name $name not found in group name data."))
+        end
+        # Now run over the names, and sum the contributions. If the selection of
+        # names have repeated types, the contributions are then *not* summed.
+        for (itype, name) in enumerate(atsel.group_names)
+            iatom = findfirst(==(name), group.atom_names)
+            if !isnothing(iatom)
+                sel_count .+= group_count[itype]
+            end
+        end
     end
-    return contributions(s, atom_contributions, indexes; first_atom_is_ref = true)
-end
 
-#
-# If a list of atoms of PDBTools.Atom is provided
-#
-function contributions(
-    s::Selection,
-    atom_contributions::Matrix{Float64},
-    atoms::Vector{PDBTools.Atom};
-    warning = true,
-)
-    (warning && s.nmols > 1) && warning_nmols_types()
-    indexes = PDBTools.index.(atoms)
-    # Check which types of atoms belong to this selection
-    selected_types = which_types(s, indexes, warning = warning)
-    return contributions(s, atom_contributions, selected_types)
-end
+    # Convert to the desired type
+    if type == :mddf
+        for i in eachindex(R.md_count_random, sel_count)
+            if R.md_count_random[i] == 0.0
+                sel_count[i] = 0.0
+            else
+                sel_count[i] /= R.md_count_random[i]
+            end
+        end
+    elseif type == :coordination_number
+        sel_count .= cumsum(sel_count)
+    elseif type == :md_count
+        # do nothign, already md_count
+    else
+        throw(ArgumentError("type must be :mddf (default), :coordination_number or :md_count"))
+    end
 
-#
-# If a residue of type PDBTools.Residue is provided
-#
-function contributions(
-    s::Selection,
-    atom_contributions::Matrix{Float64},
-    residue::Residue;
-    warning = true,
-)
-    (warning && s.nmols > 1) && warning_nmols_types()
-    indexes = collect(residue.range)
-    # Check which types of atoms belong to this selection
-    selected_types = which_types(s, indexes, warning = warning)
-    return contributions(s, atom_contributions, selected_types)
+    return sel_count
 end
 
 function warning_nmols_types()
@@ -112,41 +166,38 @@ function warning_nmols_types()
     """)
 end
 
-@testitem "solute position" begin
-    using ComplexMixtures
-    using PDBTools
-    using ComplexMixtures.Testing
-
-    dir = "$(Testing.data_dir)/PDB"
-    atoms = readPDB("$dir/trajectory.pdb", "model 1")
-
-    solute = Selection(select(atoms, "resname TMAO and resnum 1"), nmols = 1)
-    solvent = Selection(
-        select(atoms, "resname TMAO and resnum 2 or resname TMAO and resnum 3"),
-        nmols = 2,
+@testitem "contributions" begin
+    using ComplexMixtures: AtomSelection, contributions, Trajectory, mddf, SoluteGroup, SolventGroup
+    using PDBTools: select, readPDB, Select
+    using ComplexMixtures.Testing: data_dir
+    atoms = readPDB("$data_dir/PDB/trajectory.pdb", "model 1")
+    protein = select(atoms, "protein")
+    tmao = select(atoms, "resname TMAO")
+    solute = AtomSelection(
+        protein, nmols = 1;
+        group_names = [ "acidic", "basic", "polar", "nonpolar" ],
+        group_atom_indices = [ 
+            findall(Select("acidic"), protein),
+            findall(Select("basic"), protein),
+            findall(Select("polar"), protein),
+            findall(Select("nonpolar"), protein),
+        ]
     )
-
-    traj = Trajectory("$dir/trajectory.pdb", solute, solvent, format = "PDBTraj")
+    solvent = AtomSelection(tmao, natomspermol = 14)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format = "PDBTraj")
     results = mddf(traj)
 
-    # solute contributions fetching
-    N_contributions = contributions(solute, results.solute_atom, ["N"])
-    @test length(N_contributions) == 500
+    @test sum(contributions(results, SoluteGroup("acidic"); type = :md_count)) ≈ 4.4
+    @test sum(contributions(results, SoluteGroup("basic"); type = :md_count)) ≈ 2.4
+    @test sum(contributions(results, SoluteGroup("polar"); type = :md_count)) ≈ 20.0
+    @test sum(contributions(results, SoluteGroup("nonpolar"); type = :md_count)) ≈ 9.4
+    
+    @test sum(contributions(results, SolventGroup(solvent); type = :md_count)) ≈ 29.4
+    @test sum(contributions(results, SolventGroup(tmao); type = :md_count)) ≈ 29.4
+    @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type = :md_count)) ≈ 29.4
 
-    C1_contributions = contributions(solute, results.solute_atom, ["C1"])
-    @test length(C1_contributions) == 500
-
-    H33_contributions = contributions(solute, results.solute_atom, ["H33"])
-    @test length(H33_contributions) == 500
-
-    # solvent contributions fetching
-    N_contributions = contributions(solvent, results.solvent_atom, ["N"])
-    @test length(N_contributions) == 500
-
-    C1_contributions = contributions(solvent, results.solvent_atom, ["C1"])
-    @test length(C1_contributions) == 500
-
-    H33_contributions = contributions(solvent, results.solvent_atom, ["H33"])
-    @test length(H33_contributions) == 500
-
+    @test_throws ArgumentError contributions(results, SoluteGroup([1,2,3]))
+    @test_throws ArgumentError contributions(results, SoluteGroup(["N", "CA"]))
+    @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
+    @test_throws ArgumentError contributions(results, SolventGroup(1))
 end

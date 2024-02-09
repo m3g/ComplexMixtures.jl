@@ -5,7 +5,7 @@ Of course, follow the [installation](@ref Installation) instructions first.
 A complete working example is shown below, and in the section that follows each 
 command is described in detail.
 
-## Complete example
+## Basic example
 
 Here we show the input file required for the study of the solvation of a protein
 by the `TMAO` solvent, which is a molecule 4 atoms. The protein is assumed to be
@@ -13,52 +13,35 @@ at infinite dilution in the simulation. The trajectory of the simulation is in `
 format in this example, which is the default output of `NAMD` and `CHARMM` simulation
 packages.
 
-```julia
-# Activate environment (see the Installation -> Recommended Workflow manual section)
-import Pkg; Pkg.activate("/home/user/MyNewPaper")
+### Input files
 
-# Load packages
-using PDBTools
-using ComplexMixtures 
-using Plots
+The files necessary to run this would be:
 
-# Load PDB file of the system
-atoms = readPDB("./system.pdb")
+- `system.pdb`: a PDB file of the complete simulated system.
+- `trajectory.dcd`: the simulation trajectory, here exemplified in the DCD format.
+- `script.jl`: the Julia script, described below.
 
-# Select the protein and the TMAO molecules
-protein = select(atoms,"protein")
-tmao = select(atoms,"resname TMAO")
+These files are not provided for this example. For complete running examples, please
+check our [examples](@ref examples) section.
 
-# Setup solute and solvent structures
-solute = Selection(protein,nmols=1)
-solvent = Selection(tmao,natomspermol=14)
+### The Julia script
 
-# Setup the Trajectory structure
-trajectory = Trajectory("./trajectory.dcd",solute,solvent)
-
-# Run the calculation and get results
-results = mddf(trajectory)
-
-# Save the results to recover them later if required
-save(results,"./results.json")
-
-# Plot the some of the most important results 
-plot(results.d,results.mddf,xlabel="d",ylabel="MDDF") # plot the MDDF
-savefig("./mddf.pdf")
-plot(results.d,results.kb,xlabel="d",ylabel="KB") # plot the KB 
-savefig("./kb.pdf")
+```@eval
+using Markdown
+code = Markdown.parse("""
+\`\`\`julia
+$(read("./assets/scripts/basic/script.jl", String))
+\`\`\`
+""")
 ```
 
-## Running the example
-
-Given that this code is saved into a file named `example.jl`, 
-it can be run within the Julia REPL with:
+Given that this code is saved into a file named `script.jl`, it can be run within the Julia REPL with:
 ```julia
-julia> include("example.jl")
+julia> include("script.jl")
 ```
 or directly with:
 ```
-julia -t auto example.jl
+julia -t auto script.jl
 ```
 where `-t auto` will launch `julia` with multi-threading. It is highly recommended to use multi-threading!
 
@@ -112,12 +95,12 @@ atoms = readPDB("./system.pdb")
 ```
 Then, let us select the protein atoms (here we are using the `PDBTools.select` function):
 ```julia
-protein = select(atoms,"protein")
+protein = select(atoms, "protein")
 ```
-And, finally, let us use the `Selection` function to setup the
+And, finally, let us use the `AtomSelection` function to setup the
 structure required by the MDDF calculation:
 ```julia
-solute = Selection(protein,nmols=1)
+solute = AtomSelection(protein, nmols=1)
 ```
 
 !!! note
@@ -132,11 +115,9 @@ solute = Selection(protein,nmols=1)
 
 Equivalently, the solvent is set up with:
 ```julia
-tmao = select(atoms,"resname TMAO")
-solvent = Selection(tmao,natomspermol=14)
-
+tmao = select(atoms, "resname TMAO")
+solvent = AtomSelection(tmao, natomspermol=14)
 ```
-
 !!! note
     Here we opted to provide the number of atoms of a TMAO molecules (with the
     `natomspermol` keyword). This is generally more practical for small
@@ -148,9 +129,9 @@ The `solute` and `solvent` data structures are then fed into the
 `Trajectory` data structure, together with the trajectory file name,
 with:
 ```julia
-trajectory = Trajectory("trajectory.dcd",solute,solvent)
+trajectory = Trajectory("trajectory.dcd", solute, solvent)
 ```
-In the case, the trajectory is of NAMD "dcd" format. All formats
+In the case, the trajectory is of NAMD "`DCD`" format. All formats
 supported by [Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) 
 are automatically recognized. 
 
@@ -163,7 +144,11 @@ results = mddf(trajectory)
 
 ```
 Some optional parameters for the computation are available in the
-[Options](@ref options) section.
+[Options](@ref options) section. Depending on the number of atoms
+and trajectory length, this can take a while. Computing a MDDF
+is much more expensive than computing a regular radial distribution
+function, because the normalization requires the generation of an
+ideal distribution of the molecules in the system.  
 
 ### The `results` data structure obtained
 
@@ -177,7 +162,7 @@ function at each distance.
 
 That means, for example, that 
 ```julia
-plot(results.d,results.mddf,xlabel="d / \AA",ylabel="MDDF") 
+plot(results.d, results.mddf, xlabel="d / Å", ylabel="mddf(d)") 
 
 ```
 results in the expected plot of the MDDF of TMAO as a function of the
@@ -194,7 +179,7 @@ provided in the `results.kb` vector, and can be also directly plotted
 with   
 
 ```julia
-plot(results.d,results.kb,xlabel="d / \AA",ylabel="MDDF") 
+plot(results.d, results.kb, xlabel="d / Å", ylabel="KB(d) / L / mol") 
 ```
 to obtain:
 
@@ -213,7 +198,7 @@ solvent, each type of residue of the protein, etc.
 
 The results can be saved into a file (with JSON format) with:
 ```julia
-save(results,"./results.json")
+save(results, "./results.json")
 ```
 And these results can be loaded afterwards with:
 ```julia

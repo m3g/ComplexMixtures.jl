@@ -1,22 +1,14 @@
-"""
-
-$(TYPEDEF)
-
-$(INTERNAL)
-
-# Extended help
+#=
 
 This structure contains the information, for each  molecule, of if it is within the 
-cutoff distance of the solute, the atom indexes of the associated minimum distance,
+cutoff distance of the solute, the atom indices of the associated minimum distance,
 the distance, and a label to mark if the reference atom of the molecule is within
 the cutoff distance of the solute.
 
 The lists of minimum-distances are stored in arrays of type `Vector{MinimumDistance}`. The index
 of this vector corresponds to the index of the molecule in the original array.
 
-$(TYPEDFIELDS)
-
-"""
+=#
 struct MinimumDistance
     within_cutoff::Bool
     i::Int
@@ -28,15 +20,13 @@ end
 import Base: zero
 zero(::Type{MinimumDistance}) = MinimumDistance(false, 0, 0, +Inf, false, +Inf)
 
-"""
+#=
     update_md(md1::MinimumDistance{T}, md2::MinimumDistance{T}) where {T}
-
-$(INTERNAL)
 
 Function that returns the updated minimum distance structure after comparing two structures
 associated with the same molecule.
 
-"""
+=#
 function update_md(md1::MinimumDistance, md2::MinimumDistance)
     ref_atom_within_cutoff = md1.ref_atom_within_cutoff || md2.ref_atom_within_cutoff
     dref = ref_atom_within_cutoff ? min(md1.d_ref_atom, md2.d_ref_atom) : +Inf
@@ -70,28 +60,24 @@ copy_output(md::MinimumDistance) = MinimumDistance(
 reset_output!(::MinimumDistance) = MinimumDistance(false, 0, 0, +Inf, false, +Inf)
 reducer(md1::MinimumDistance, md2::MinimumDistance) = update_md(md1, md2)
 
-"""
+#=
     mol_index(i_atom, natomspermol) = (i_atom-1) ÷ natomspermol + 1
-
-$(INTERNAL)
 
 # Extended help
 
 Sets the index of the molecule of an atom in the simples situation, in which all 
 molecules have the same number of atoms. 
 
-"""
+=#
 mol_index(i, natomspermol) = (i - 1) ÷ natomspermol + 1
 
-"""
-    update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, isolute::Int, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
+#=
+    update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
 
-$(INTERNAL)
-
-Function that updates a list of minimum distances given the indexes of the atoms involved for one pair within cutoff,
+Function that updates a list of minimum distances given the indices of the atoms involved for one pair within cutoff,
 for autocorrelations (such that the identity of `isolute` is needed)
 
-"""
+=#
 function update_list!(
     i,
     j,
@@ -104,7 +90,7 @@ function update_list!(
     jmol = mol_index(j, j_natoms_per_molecule)
     if jmol != isolute
         d = sqrt(d2)
-        ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
+        ref_atom_within_cutoff = (atom_type(j, j_natoms_per_molecule) == jref_atom)
         dref = ref_atom_within_cutoff ? d : +Inf
         list[jmol] = update_md(
             list[jmol],
@@ -114,14 +100,12 @@ function update_list!(
     return list
 end
 
-"""
-    update_list!(i, j, d2, iref_atom::Int, mol_index_i::F, list::Vector{MinimumDistance{T}}) where {F<:Function, T}
+#=
+    update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
 
-$(INTERNAL)
+Function that updates a list of minimum distances given the indices of the atoms involved for one pair within cutoff.
 
-Function that updates a list of minimum distances given the indexes of the atoms involved for one pair within cutoff.
-
-"""
+=#
 function update_list!(
     i,
     j,
@@ -132,29 +116,27 @@ function update_list!(
 )
     d = sqrt(d2)
     jmol = mol_index(j, j_natoms_per_molecule)
-    ref_atom_within_cutoff = (itype(j, j_natoms_per_molecule) == jref_atom)
+    ref_atom_within_cutoff = (atom_type(j, j_natoms_per_molecule) == jref_atom)
     dref = ref_atom_within_cutoff ? d : +Inf
     list[jmol] =
         update_md(list[jmol], MinimumDistance(true, i, j, d, ref_atom_within_cutoff, dref))
     return list
 end
 
-"""
+#=
     minimum_distances!(system::CellListMap.PeriodicSystem, R::Result)
-
-$(INTERNAL)
 
 Function that computes the list of distances of solvent molecules to a solute molecule. 
 It updates the lists of minimum distances. 
 
-"""
+=#
 function minimum_distances!(
     system::AbstractPeriodicSystem,
     R::Result,
     isolute::Int;
     update_lists::Bool,
 )
-    jref_atom = R.irefatom
+    jref_atom = R.files[1].irefatom
     jnatomspermol = R.solvent.natomspermol
     if R.autocorrelation
         map_pairwise!(
@@ -174,16 +156,14 @@ function minimum_distances!(
     return system.list
 end
 
-"""
+#=
     setup_PeriodicSystem(trajectory::Trajectory, options::Options)
-
-$(INTERNAL)
 
 Setup the periodic system from CellListMap, to compute minimimum distances. The system
 will be setup such that `xpositions` corresponds to one molecule of the solute, and 
 `ypositions` contains all coordinates of all atoms of the solvent. 
 
-"""
+=#
 function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
     opentraj!(trajectory)
     firstframe!(trajectory)
@@ -216,10 +196,10 @@ end
 
     atoms = readPDB(Testing.pdbfile)
     options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
 
     # Cross-correlation
-    protein = Selection(select(atoms, "protein"), nmols = 1)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     system = ComplexMixtures.setup_PeriodicSystem(traj, options)
     @test system.cutoff == 10.0

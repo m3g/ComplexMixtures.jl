@@ -39,7 +39,10 @@ atom type of the solvent to the MDDF.
 `results-ATOM_CONTRIB_SOLUTE.dat`: contains the contribution of each
 atom type of the solute to the MDDF.
 
-
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["tools/write.jl"]
+```
 
 
 

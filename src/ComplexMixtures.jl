@@ -1,35 +1,38 @@
 module ComplexMixtures
 
-using PrecompileTools
-using Printf
-using ProgressMeter
-using Statistics
-using LinearAlgebra: norm, cross, dot, diag
-using FortranFiles
-using PDBTools
-using StructTypes
-using JSON3
-using StaticArrays
-using DocStringExtensions
-using TestItems
-
-import ChunkSplitters
 import CellListMap
-using .CellListMap.PeriodicSystems
-import .CellListMap.PeriodicSystems: AbstractPeriodicSystem
-
+import .CellListMap.PeriodicSystems
+import ChunkSplitters
+import JSON3
+import PDBTools
+import PrecompileTools
 import Random
+import StructTypes
 
-export Selection, Trajectory, mddf, save, load, write, Options, Result
-export merge
+using .CellListMap.PeriodicSystems: AbstractPeriodicSystem, PeriodicSystem, 
+    update_unitcell!, map_pairwise!
+using DocStringExtensions: TYPEDEF, TYPEDFIELDS
+using LinearAlgebra: norm, cross, dot, diag
+using FortranFiles: FortranFile, rewind, FString, read, close
+using Printf: @sprintf
+using ProgressMeter: Progress, next!
+using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
+using Statistics: mean, std
+using TestItems: @testitem
+
+
+# Data types
+export Trajectory, Options, Result 
+export AtomSelection, SoluteGroup, SolventGroup
+
+# Functions
+export mddf
 export overview
-export VMDselect
+export save, load, write, merge
+export atom_group, atom_group_name, atom_group_names
 
 # Tools
 export contributions, coordination_number, gr, grid3D
-
-# Message for internal doc strings
-const INTERNAL = "**Internal structure or function, interface may change.**"
 
 # Module for testing
 include("./Testing.jl")
@@ -41,8 +44,7 @@ include("./io.jl")
 include("./Options.jl")
 
 # Structures and functions to deal with the solute and solvent selections
-include("./VMDselect.jl")
-include("./Selection.jl")
+include("./AtomSelection.jl")
 
 # Structures and functions to read different types of trajectories
 include("./Trajectory.jl")
@@ -50,11 +52,14 @@ include("./Trajectory.jl")
 # Some functions to deal with rigid body calculations
 include("./rigid_body.jl")
 
+# Functions to construct histograms
+include("./viewmol.jl")
+
 # Structures and functions to store and report results
 include("./results.jl")
 
-# Functions to construct histograms
-include("./viewmol.jl")
+# Comparison operators for ComplexMixtures types
+include("./compare.jl")
 
 # Functions to compute distances
 include("./minimum_distances.jl")
@@ -65,17 +70,12 @@ include("./updatecounters.jl")
 # Main function
 include("./mddf.jl")
 
-# Comparison operators for ComplexMixtures types
-include("./compare.jl")
-
 # Tools
 include("./tools/contributions.jl")
 include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
-
-# Legacy interfaces
-include("./legacy/legacy.jl")
+include("./tools/write.jl")
 
 # Precompilation directives
 include("precompile.jl")

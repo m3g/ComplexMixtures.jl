@@ -1,15 +1,15 @@
 #
 # Structure to contain DCD trajectories produces with Namd. 
 #
-"""
-
-$(TYPEDEF)
-
-Structure to contain the data of a trajectory in NAMD/DCD format.
-
-$(TYPEDFIELDS)
-
-"""
+#"""
+#
+#$(TYPEDEF)
+#
+#Structure to contain the data of a trajectory in NAMD/DCD format.
+#
+#$(TYPEDFIELDS)
+#
+#"""
 struct NamdDCD{T<:AbstractVector} <: Trajectory
 
     #
@@ -20,8 +20,8 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
     nframes::Int64
 
     # Data structures of the solute and solvent 
-    solute::Selection
-    solvent::Selection
+    solute::AtomSelection
+    solvent::AtomSelection
 
     # Coordinates of the solute and solvent atoms in a frame (3,natoms) for each array:
     x_solute::Vector{T}
@@ -41,16 +41,16 @@ struct NamdDCD{T<:AbstractVector} <: Trajectory
 
 end
 
-"""
-    NamdDCD(filename::String, solute::Selection, solvent::Selection;T::Type = SVector{3,Float64})
-
-This function initializes the structure above, returning the data and the vectors with appropriate lengths.
-
-"""
+#"""
+#    NamdDCD(filename::String, solute::AtomSelection, solvent::AtomSelection;T::Type = SVector{3,Float64})
+#
+#This function initializes the structure above, returning the data and the vectors with appropriate lengths.
+#
+#"""
 function NamdDCD(
     filename::String,
-    solute::Selection,
-    solvent::Selection;
+    solute::AtomSelection,
+    solvent::AtomSelection;
     T::Type = SVector{3,Float64},
 )
 
@@ -82,13 +82,13 @@ function NamdDCD(
     firstframe!(st)
 
     nframes = getnframes(st)
-    lastatom = max(maximum(solute.index), maximum(solvent.index))
+    lastatom = max(maximum(solute.indices), maximum(solvent.indices))
 
     # setup the trajectory struct that contains the stream
     stream = Stream(st)
 
     # Return the stream closed, it is opened and closed within the mddf routine
-    FortranFiles.close(st)
+    close(st)
 
     return NamdDCD(
         filename,
@@ -96,8 +96,8 @@ function NamdDCD(
         nframes,
         solute,
         solvent,
-        zeros(T, solute.natoms), # solute atom coordinates
-        zeros(T, solvent.natoms), # solvent atom coordinates
+        zeros(T, ComplexMixtures.natoms(solute)), # solute atom coordinates
+        zeros(T, ComplexMixtures.natoms(solvent)), # solvent atom coordinates
         lastatom,
         unitcell_read, # auxiliary vector to read unitcell data
         zeros(Float32, lastatom), # auxiliary x
@@ -123,7 +123,7 @@ opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.
 #
 # Function that closes the IO Stream of the trajectory
 #
-closetraj!(trajectory::NamdDCD) = FortranFiles.close(stream(trajectory))
+closetraj!(trajectory::NamdDCD) = close(stream(trajectory))
 
 #
 # Function that reads the coordinates of the solute and solvent atoms from
@@ -145,18 +145,18 @@ function nextframe!(trajectory::NamdDCD{T}) where {T}
     read(st, trajectory.z_read)
 
     # Save coordinates of solute and solvent in trajectory arrays
-    for i = 1:trajectory.solute.natoms
+    for i = eachindex(trajectory.x_solute)
         trajectory.x_solute[i] = T(
-            trajectory.x_read[trajectory.solute.index[i]],
-            trajectory.y_read[trajectory.solute.index[i]],
-            trajectory.z_read[trajectory.solute.index[i]],
+            trajectory.x_read[trajectory.solute.indices[i]],
+            trajectory.y_read[trajectory.solute.indices[i]],
+            trajectory.z_read[trajectory.solute.indices[i]],
         )
     end
-    for i = 1:trajectory.solvent.natoms
+    for i = eachindex(trajectory.x_solvent)
         trajectory.x_solvent[i] = T(
-            trajectory.x_read[trajectory.solvent.index[i]],
-            trajectory.y_read[trajectory.solvent.index[i]],
-            trajectory.z_read[trajectory.solvent.index[i]],
+            trajectory.x_read[trajectory.solvent.indices[i]],
+            trajectory.y_read[trajectory.solvent.indices[i]],
+            trajectory.z_read[trajectory.solvent.indices[i]],
         )
     end
 

@@ -27,12 +27,12 @@ simple loop, such as
 
 ```julia
 atoms = PDBTools.readPDB("./system.pdb")
-solute = Selection(atoms,"protein",nmols=1)
-solvent = Selection(atoms,"resname TMAO",,natomspermol=14)
+solute = AtomSelection(atoms,"protein",nmols=1)
+solvent = AtomSelection(atoms,"resname TMAO",natomspermol=14)
 for file in trajectory_files
-  trajectory = Trajectory(file,solute,solvent)
-  # compute the MDDF data and push the result to the results array
-  push!(results, mddf(trajectory))
+    trajectory = Trajectory(file,solute,solvent)
+    # compute the MDDF data and push the result to the results array
+    push!(results, mddf(trajectory))
 end
 ```
 

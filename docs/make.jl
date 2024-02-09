@@ -1,8 +1,8 @@
 import Pkg
 Pkg.add("Documenter")
 using ComplexMixtures
+using PDBTools
 using Documenter
-using ComplexMixtures
 push!(LOAD_PATH, "../src/")
 makedocs(
     modules = [ComplexMixtures],
@@ -12,7 +12,11 @@ makedocs(
         "Installation" => "installation.md",
         "Parallel execution" => "parallel.md",
         "Quick Guide" => "quickguide.md",
-        "Full Example" => "examples.md",
+        "Examples:" => "examples.md",
+        " ◦ Protein in water/glycerol" => "example1.md",
+        " ◦ Polyacrylamide in DMF" => "example2.md",
+        " ◦ POPC membrane in water/ethanol" => "example3.md",
+        " ◦ Water/Glycerol mixture" => "example4.md",
         "Set solute and solvent" => "selection.md",
         "Loading the trajectory" => "trajectory.md",
         "Computing the MDDF" => "mddf.md",
@@ -23,7 +27,7 @@ makedocs(
         "Options" => "options.md",
         "Tools" => "tools.md",
         "From Python" => "python.md",
-        "Help entries" => "help.md",
+        "Updating scripts" => "updating_scripts.md",
         "References" => "references.md",
     ],
 )
