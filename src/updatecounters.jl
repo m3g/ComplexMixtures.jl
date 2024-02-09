@@ -19,12 +19,13 @@ end
 # Function that updates the MD counters of the groups (or atoms) of the solute
 # and solvent
 function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSelection)
-    itype = atom_type(iatom, sol.natomspermol)
     if !sol.custom_groups
+        itype = atom_type(iatom, sol.natomspermol)
         group_count[itype][ibin] += frame_weight
     else
-        for (igroup, group) in enumerate(sol.group_atom_indices)
-            if itype in group
+        itype = sol.indices[atom_type(iatom, sol.natomspermol)]
+        for (igroup, indices) in enumerate(sol.group_atom_indices)
+            if itype in indices
                 group_count[igroup][ibin] += frame_weight
             end
         end
