@@ -263,6 +263,12 @@ function AtomSelection(
     end
 
     if custom_groups
+        # Check if all group atoms indices belong to the current AtomSelection
+        for inds in group_atom_indices
+            if any(!(i in indices) for i in inds)
+                throw(ArgumentError("Some group atom indices not found in the the current AtomSelection atomic indices."))
+            end
+        end
         if isempty(group_names)
             @warn begin
                 """
@@ -307,7 +313,9 @@ end
 end
 
 @testitem "AtomSelection - argument errors" begin
-    using ComplexMixtures
+    import ComplexMixtures
+    using ComplexMixtures: AtomSelection
+    using PDBTools: select, readPDB, Select
     @test_throws ArgumentError AtomSelection([1,2,3])
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=2)
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, nmols=2)
@@ -320,6 +328,14 @@ end
     @test_throws ArgumentError AtomSelection([1,2,3], ["A", "B", "C"]; nmols = 1)
 
     @test_logs (:warn,) AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]])
+
+    pdb = readPDB(ComplexMixtures.Testing.pdbfile)
+    @test_throws ArgumentError AtomSelection(
+            select(pdb, "protein and name CA"),
+            nmols = 1,
+            group_atom_indices = [ findall(Select("protein and name N"), pdb) ]
+        )
+    
 end
 
 #
