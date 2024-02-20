@@ -184,12 +184,12 @@ using PDBTools
 # contributions of each mer of the polymer into its chemical groups
 
 # Chemical groups of the polymer monomers, defined by the atom types:
-groups = Dict(
-    L&quot;\textrm{CH_3}&quot; =&gt; [&quot;CF&quot;,&quot;HF1&quot;,&quot;HF2&quot;,&quot;HF3&quot;], # methyles
+groups = (
+    &quot;CH_3&quot; =&gt; [&quot;CF&quot;,&quot;HF1&quot;,&quot;HF2&quot;,&quot;HF3&quot;], # methyles
     &quot;CO&quot; =&gt; [&quot;OE1&quot;,&quot;CD&quot;], # carbonyl
-    L&quot;\textrm{NH_2}&quot; =&gt; [&quot;NE2&quot;,&quot;HE22&quot;,&quot;HE21&quot;], # amine 
-    L&quot;\textrm{CHCH_2}&quot; =&gt; [&quot;C&quot;,&quot;H2&quot;,&quot;H1&quot;,&quot;CA&quot;,&quot;HA&quot;], # backbone
-    L&quot;\textrm{CH_3}&quot; =&gt; [&quot;CL&quot;,&quot;HL1&quot;,&quot;HL2&quot;,&quot;HL3&quot;], # terminal methyles
+    &quot;NH_2&quot; =&gt; [&quot;NE2&quot;,&quot;HE22&quot;,&quot;HE21&quot;], # amine 
+    &quot;CHCH_2&quot; =&gt; [&quot;C&quot;,&quot;H2&quot;,&quot;H1&quot;,&quot;CA&quot;,&quot;HA&quot;], # backbone
+    &quot;CH_3&quot; =&gt; [&quot;CL&quot;,&quot;HL1&quot;,&quot;HL2&quot;,&quot;HL3&quot;], # terminal methyles
 )
 
 system = readPDB(&quot;./equilibrated.pdb&quot;)
@@ -199,15 +199,15 @@ results = load(&quot;./mddf.json&quot;)
 # Here we split the polymer in residues, to extract the contribution of 
 # each chemical group of each polymer mer independently
 group_contribs = Vector{Float64}[]
-labels = String[]
+labels = LaTeXString[]
 for (imer, mer) in enumerate(eachresidue(acr))
     for (group_label, group_atoms) in pairs(groups)
         # only first residue has a terminal CH3
-        if imer != 1 &amp;&amp; group_label == L&quot;\textrm{CH_3}&quot; 
+        if imer != 1 &amp;&amp; group_label == &quot;CH_3&quot; 
             continue
         end
         # only last residue has a terminal CH3
-        if imer != 5 &amp;&amp; group_label == L&quot;\textrm{CH_3}&quot; 
+        if imer != 5 &amp;&amp; group_label == &quot;CH_3&quot; 
             continue
         end
         # Filter the atoms of this mer that belong to the group
@@ -218,8 +218,8 @@ for (imer, mer) in enumerate(eachresidue(acr))
         atoms_contrib = movavg(atoms_contrib; n = 10).x
         # Add contributions to the group contributions list
         push!(group_contribs, atoms_contrib)
-        # Push label to label list
-        push!(labels,group_label)
+        # Push label to label list, using LaTeX formatting
+        push!(labels,latexstring(&quot;\\textrm{$group_label}&quot;))
     end
 end
 
@@ -245,4 +245,4 @@ contourf(
 savefig(&quot;./map2D_acr.png&quot;)
 println(&quot;Plot saved to map2D_acr.png&quot;)</code></pre></details><br><h4 id="Output-3"><a class="docs-heading-anchor" href="#Output-3">Output</a><a class="docs-heading-anchor-permalink" href="#Output-3" title="Permalink"></a></h4><p>The terminal methyl groups interact strongly with DMF, and strong local density augmentations are visible in particular on the amine groups. These occur at less than 2.0Angs and are characteristic of hydrogen-bond interactions. Interestingly, the DMF molecules are excluded from the aliphatic and carbonyl groups of the polymer, relative to the other groups.</p><p>Finally, it is noticeable that the central mer is more weakly solvated by DMF than the mers approaching the extremes of the polymer chain. This is likely a result of the partial folding of the polymer, that protects that central mers from the solvent in a fraction of the polymer configurations.</p><center>
 <img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
-</center><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Molecules built with JSME: B. Bienfait and P. Ertl, JSME: a free molecule editor in JavaScript, Journal of Cheminformatics 5:24 (2013) <a href="http://biomodel.uah.es/en/DIY/JSME/draw.en.htm">http://biomodel.uah.es/en/DIY/JSME/draw.en.htm</a></p><p>The system was built with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were perfomed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example1/">« ◦ Protein in water/glycerol</a><a class="docs-footer-nextpage" href="../example3/">◦ POPC membrane in water/ethanol »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Thursday 15 February 2024 12:23">Thursday 15 February 2024</span>. Using Julia version 1.10.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</center><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Molecules built with JSME: B. Bienfait and P. Ertl, JSME: a free molecule editor in JavaScript, Journal of Cheminformatics 5:24 (2013) <a href="http://biomodel.uah.es/en/DIY/JSME/draw.en.htm">http://biomodel.uah.es/en/DIY/JSME/draw.en.htm</a></p><p>The system was built with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were perfomed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example1/">« ◦ Protein in water/glycerol</a><a class="docs-footer-nextpage" href="../example3/">◦ POPC membrane in water/ethanol »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Tuesday 20 February 2024 19:30">Tuesday 20 February 2024</span>. Using Julia version 1.10.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
