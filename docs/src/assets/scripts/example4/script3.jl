@@ -21,14 +21,14 @@ mddf_glyc_water = load("./mddf_glyc_water.json")
 # 2D maps plot of group contributions
 
 # Glycerol groups
-groups = [
+groups = (
     "OH" => ["O1", "HO1"], # first hydroxyl
     "CH_2" => ["C1", "H11", "H12"], # first CH2
     "OH" => ["O2", "HO2"], # second hydroxyl
     "CH" => ["C2", "H2"], # CH
     "CH_2" => ["C3", "H31", "H32"], # second CH2
     "OH" => ["O3", "HO3"] # third hydroxyl
-]
+)
 labels = latexstring.("\\textrm{$name}" for (name, atoms) in groups)
 
 #
