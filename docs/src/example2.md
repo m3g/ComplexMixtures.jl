@@ -138,7 +138,7 @@ Finally, it is noticeable that the central mer is more weakly solvated by DMF th
 
 ```@raw html
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
+<img width=70% src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/results/map2D_acr.png">
 </center>
 ```
 
