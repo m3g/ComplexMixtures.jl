@@ -28,7 +28,7 @@ mddf_ethanol_POPC = load("mddf_ethanol_POPC.json")
 # Splitting the oleoyl chain into groups along the the chain. 
 # The labels `CH_2` etc stand for `CH₂`, for example, in LaTeX notation, 
 # for a nicer plot axis ticks formatting.
-oleoyl_groups = [
+oleoyl_groups = (
     "CO" => ["O22", "C21"],
     "CH_2" => ["H2R", "H2S", "C22"],
     "CH_2" => ["C23", "H3R", "H3S"],
@@ -47,7 +47,7 @@ oleoyl_groups = [
     "CH_2" => ["C216", "H16R", "H16S"],
     "CH_2" => ["C217", "H17R", "H17S"],
     "CH_3" => ["C218", "H18R", "H18S", "H18T"]
-]
+)
 
 # Format tick labels with LaTeX
 labels_o = [latexstring("\\textrm{$key}") for (key, val) in oleoyl_groups]
@@ -87,7 +87,7 @@ annotate!( 14, 2.7, text("Oleoyl", :left, 12, plot_font), subplot=1)
 #
 # Repeat procedure for the palmitoyl groups
 #
-palmitoyl_groups = [
+palmitoyl_groups = (
     "CO" => ["C31", "O32"],
     "CH_2" => ["C32", "H2X", "H2Y"],
     "CH_2" => ["C33", "H3X", "H3Y"],
@@ -104,7 +104,7 @@ palmitoyl_groups = [
     "CH_2" => ["C314", "H14X", "H14Y"],
     "CH_2" => ["C315", "H15X", "H15Y"],
     "CH_3" => ["C316", "H16X", "H16Y", "H16Z"],
-]
+)
 
 # Format tick labels with LaTeX
 labels_p = [latexstring("\\textrm{$key}") for (key, val) in palmitoyl_groups]

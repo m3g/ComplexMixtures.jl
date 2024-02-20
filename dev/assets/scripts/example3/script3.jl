@@ -29,7 +29,7 @@ mddf_water_POPC = load("mddf_water_POPC.json")
 # Here we define the POPC groups, from the atom names. Each group
 # is a vector of atom names, and the keys are the group names.
 #
-groups = Dict(
+groups = (
     "Choline" => ["N", "C12", "H12A", "H12B", "C13", "H13A", "H13B", "H13C", "C14",
         "H14A", "H14B", "H14C", "C15", "H15A", "H15B", "H15C", "C11", "H11A", "H11B"],
     "Phosphate" => ["P", "O13", "O14", "O12"],
@@ -55,7 +55,7 @@ plot(
     movavg(mddf_water_POPC.mddf, n=10).x,
     label="Total water-POPC MDDF"
 )
-for (group_name, group_atoms) in pairs(groups)
+for (group_name, group_atoms) in groups
     cont = contributions(mddf_water_POPC, SoluteGroup(group_atoms))
     y = movavg(cont, n=10).x
     plot!(x, y, label=group_name)

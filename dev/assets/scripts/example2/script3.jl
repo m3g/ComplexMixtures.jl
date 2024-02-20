@@ -27,7 +27,7 @@ results = load("./mddf.json")
 group_contribs = Vector{Float64}[]
 labels = LaTeXString[]
 for (imer, mer) in enumerate(eachresidue(acr))
-    for (group_label, group_atoms) in pairs(groups)
+    for (group_label, group_atoms) in groups
         # only first residue has a terminal CH3
         if imer != 1 && group_label == "CH_3" 
             continue

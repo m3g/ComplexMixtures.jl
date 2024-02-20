@@ -158,14 +158,14 @@ mddf_ethanol_POPC = load(&quot;mddf_ethanol_POPC.json&quot;)
 #
 # Define the groups using selections. Set a dict, in which the keys are the group names
 # and the values are the selections
-groups = Dict(
+groups = (
     &quot;Hydroxyl&quot; =&gt; select(ethanol, &quot;name O1 or name HO1&quot;),
     &quot;Aliphatic chain&quot; =&gt; select(ethanol, &quot;not name O1 and not name HO1&quot;),
 )
 # plot the total mddf and the contributions of the groups
 x = mddf_ethanol_POPC.d
 plot(x, movavg(mddf_ethanol_POPC.mddf, n=10).x, label=&quot;Total MDDF&quot;)
-for (group_name, group_atoms) in pairs(groups)
+for (group_name, group_atoms) in groups
     cont = contributions(mddf_ethanol_POPC, SolventGroup(group_atoms))
     y = movavg(cont, n=10).x
     plot!(x, y, label=group_name)
@@ -208,7 +208,7 @@ mddf_water_POPC = load(&quot;mddf_water_POPC.json&quot;)
 # Here we define the POPC groups, from the atom names. Each group
 # is a vector of atom names, and the keys are the group names.
 #
-groups = Dict(
+groups = (
     &quot;Choline&quot; =&gt; [&quot;N&quot;, &quot;C12&quot;, &quot;H12A&quot;, &quot;H12B&quot;, &quot;C13&quot;, &quot;H13A&quot;, &quot;H13B&quot;, &quot;H13C&quot;, &quot;C14&quot;,
         &quot;H14A&quot;, &quot;H14B&quot;, &quot;H14C&quot;, &quot;C15&quot;, &quot;H15A&quot;, &quot;H15B&quot;, &quot;H15C&quot;, &quot;C11&quot;, &quot;H11A&quot;, &quot;H11B&quot;],
     &quot;Phosphate&quot; =&gt; [&quot;P&quot;, &quot;O13&quot;, &quot;O14&quot;, &quot;O12&quot;],
@@ -234,7 +234,7 @@ plot(
     movavg(mddf_water_POPC.mddf, n=10).x,
     label=&quot;Total water-POPC MDDF&quot;
 )
-for (group_name, group_atoms) in pairs(groups)
+for (group_name, group_atoms) in groups
     cont = contributions(mddf_water_POPC, SoluteGroup(group_atoms))
     y = movavg(cont, n=10).x
     plot!(x, y, label=group_name)
@@ -279,7 +279,7 @@ mddf_ethanol_POPC = load(&quot;mddf_ethanol_POPC.json&quot;)
 # Here we define the POPC groups, from the atom names. Each group
 # is a vector of atom names, and the keys are the group names.
 #
-groups = Dict(
+groups = (
     &quot;Choline&quot; =&gt; [&quot;N&quot;, &quot;C12&quot;, &quot;H12A&quot;, &quot;H12B&quot;, &quot;C13&quot;, &quot;H13A&quot;, &quot;H13B&quot;, &quot;H13C&quot;, &quot;C14&quot;,
         &quot;H14A&quot;, &quot;H14B&quot;, &quot;H14C&quot;, &quot;C15&quot;, &quot;H15A&quot;, &quot;H15B&quot;, &quot;H15C&quot;, &quot;C11&quot;, &quot;H11A&quot;, &quot;H11B&quot;],
     &quot;Phosphate&quot; =&gt; [&quot;P&quot;, &quot;O13&quot;, &quot;O14&quot;, &quot;O12&quot;],
@@ -305,7 +305,7 @@ plot(
     movavg(mddf_ethanol_POPC.mddf, n=10).x,
     label=&quot;Total ethanol-POPC MDDF&quot;
 )
-for (group_name, group_atoms) in pairs(groups)
+for (group_name, group_atoms) in groups
     cont = contributions(mddf_ethanol_POPC, SoluteGroup(group_atoms))
     y = movavg(cont, n=10).x
     plot!(x, y, label=group_name)
@@ -349,7 +349,7 @@ mddf_ethanol_POPC = load(&quot;mddf_ethanol_POPC.json&quot;)
 # Splitting the oleoyl chain into groups along the the chain. 
 # The labels `CH_2` etc stand for `CH₂`, for example, in LaTeX notation, 
 # for a nicer plot axis ticks formatting.
-oleoyl_groups = [
+oleoyl_groups = (
     &quot;CO&quot; =&gt; [&quot;O22&quot;, &quot;C21&quot;],
     &quot;CH_2&quot; =&gt; [&quot;H2R&quot;, &quot;H2S&quot;, &quot;C22&quot;],
     &quot;CH_2&quot; =&gt; [&quot;C23&quot;, &quot;H3R&quot;, &quot;H3S&quot;],
@@ -368,7 +368,7 @@ oleoyl_groups = [
     &quot;CH_2&quot; =&gt; [&quot;C216&quot;, &quot;H16R&quot;, &quot;H16S&quot;],
     &quot;CH_2&quot; =&gt; [&quot;C217&quot;, &quot;H17R&quot;, &quot;H17S&quot;],
     &quot;CH_3&quot; =&gt; [&quot;C218&quot;, &quot;H18R&quot;, &quot;H18S&quot;, &quot;H18T&quot;]
-]
+)
 
 # Format tick labels with LaTeX
 labels_o = [latexstring(&quot;\\textrm{$key}&quot;) for (key, val) in oleoyl_groups]
@@ -408,7 +408,7 @@ annotate!( 14, 2.7, text(&quot;Oleoyl&quot;, :left, 12, plot_font), subplot=1)
 #
 # Repeat procedure for the palmitoyl groups
 #
-palmitoyl_groups = [
+palmitoyl_groups = (
     &quot;CO&quot; =&gt; [&quot;C31&quot;, &quot;O32&quot;],
     &quot;CH_2&quot; =&gt; [&quot;C32&quot;, &quot;H2X&quot;, &quot;H2Y&quot;],
     &quot;CH_2&quot; =&gt; [&quot;C33&quot;, &quot;H3X&quot;, &quot;H3Y&quot;],
@@ -425,7 +425,7 @@ palmitoyl_groups = [
     &quot;CH_2&quot; =&gt; [&quot;C314&quot;, &quot;H14X&quot;, &quot;H14Y&quot;],
     &quot;CH_2&quot; =&gt; [&quot;C315&quot;, &quot;H15X&quot;, &quot;H15Y&quot;],
     &quot;CH_3&quot; =&gt; [&quot;C316&quot;, &quot;H16X&quot;, &quot;H16Y&quot;, &quot;H16Z&quot;],
-]
+)
 
 # Format tick labels with LaTeX
 labels_p = [latexstring(&quot;\\textrm{$key}&quot;) for (key, val) in palmitoyl_groups]
@@ -510,4 +510,4 @@ contourf!(
 annotate!( 12, 2.7, text(&quot;Palmitoyl&quot;, :left, 12, plot_font), subplot=2)
 
 savefig(&quot;POPC_water_chains.png&quot;)
-println(&quot;The plot was saved as POPC_water_chains.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example3/POPC_ethanol_chains.png" alt="./assets/scripts/example3/POPC_ethanol_chains.png"/></p><p>Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.</p><p>The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:</p><p><img src="../assets/scripts/example3/POPC_water_chains.png" alt="./assets/scripts/example3/POPC_water_chains.png"/></p><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Membrane built with the <a href="https://www.ks.uiuc.edu/Research/vmd/">VMD</a> membrane plugin. </p><p>Water and ethanol layers added with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were performed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p><p>Density of the ethanol-water mixture from: <a href="https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/">https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example2/">« ◦ Polyacrylamide in DMF</a><a class="docs-footer-nextpage" href="../example4/">◦ Water/Glycerol mixture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Tuesday 20 February 2024 19:31">Tuesday 20 February 2024</span>. Using Julia version 1.10.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+println(&quot;The plot was saved as POPC_water_chains.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example3/POPC_ethanol_chains.png" alt="./assets/scripts/example3/POPC_ethanol_chains.png"/></p><p>Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.</p><p>The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:</p><p><img src="../assets/scripts/example3/POPC_water_chains.png" alt="./assets/scripts/example3/POPC_water_chains.png"/></p><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Membrane built with the <a href="https://www.ks.uiuc.edu/Research/vmd/">VMD</a> membrane plugin. </p><p>Water and ethanol layers added with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were performed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p><p>Density of the ethanol-water mixture from: <a href="https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/">https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example2/">« ◦ Polyacrylamide in DMF</a><a class="docs-footer-nextpage" href="../example4/">◦ Water/Glycerol mixture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Tuesday 20 February 2024 19:37">Tuesday 20 February 2024</span>. Using Julia version 1.10.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
