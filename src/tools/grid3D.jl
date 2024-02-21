@@ -1,7 +1,7 @@
 """
     grid3D(
         result::Result, atoms, output_file::Union{Nothing,String} = nothing; 
-        dmin=1.5, ddax=5.0, step=0.5
+        dmin=1.5, ddax=5.0, step=0.5, silent = false,
     )
 
 This function builds the grid of the 3D density function and fills an array of
@@ -15,6 +15,8 @@ grid, the closest atom to that position, and distance.
 `dmin` and `dmax` define the range of distance where the density grid will be built, and `step`
 defines how fine the grid must be. Be aware that fine grids involve usually a very large (hundreds
 of thousands points).
+
+`silent` is a boolean to suppress the progress bar.
 
 ### Example
 
@@ -35,7 +37,15 @@ protein, and in the `occupancy` field the distance to the protein. Examples of h
 visualized are provided in the user guide of `ComplexMixtures`. 
 
 """
-function grid3D(result::Result, atoms, output_file::Union{Nothing,String} = nothing; dmin=1.5, dmax=5.0, step=0.5)
+function grid3D(
+    result::Result, 
+    atoms, 
+    output_file::Union{Nothing,String} = nothing; 
+    dmin=1.5, 
+    dmax=5.0, 
+    step=0.5,
+    silent = false,
+)
 
     # Simple function to interpolate data
     interpolate(x₁, x₂, y₁, y₂, xₙ) = y₁ + (y₂ - y₁) / (x₂ - x₁) * (xₙ - x₁)
@@ -48,7 +58,9 @@ function grid3D(result::Result, atoms, output_file::Union{Nothing,String} = noth
     # Building the grid with the nearest solute atom information
     igrid = 0
     grid = PDBTools.Atom[]
+    silent || (p = Progress(prod(n), "Building grid..."))
     for ix = 1:n[1], iy = 1:n[2], iz = 1:n[3]
+        silent || next!(p)
         x = lims.xmin[1] - dmax + step * (ix - 1)
         y = lims.xmin[2] - dmax + step * (iy - 1)
         z = lims.xmin[3] - dmax + step * (iz - 1)
@@ -110,6 +122,7 @@ function grid3D(result::Result, atoms, output_file::Union{Nothing,String} = noth
 
     if !isnothing(output_file)
         PDBTools.writePDB(grid, output_file)
+        silent || println("Grid written to $output_file")
     end
     return grid
 end
