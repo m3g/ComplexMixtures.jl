@@ -1,13 +1,13 @@
 
 @testitem "NAMD" begin
-    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load
+    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load,
+        SoluteGroup, SolventGroup, contributions
     using PDBTools: readPDB, select, Select
     using ComplexMixtures.Testing: data_dir
 
     #
     # Tests with NAMD-DCD trajectory
     #
-
     dir = "$data_dir/NAMD"
     atoms = readPDB("$dir/structure.pdb")
     options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
@@ -98,4 +98,37 @@
           contributions(R, SoluteGroup("OH2")) ≈ 
           R.mddf
 
+    # Group contributions in autocorrelation computation
+    solute = AtomSelection(
+        select(atoms, "water and resnum <= 1000"), 
+        natomspermol = 3,
+        group_atom_indices = [
+            findall(Select("water and residue 301 and name H1"), atoms),
+            findall(Select("water and residue 301 and name H2"), atoms),
+            findall(Select("water and residue 301 and name OH2"), atoms)
+        ],
+        group_names = ["H1", "H2", "OH2"] 
+    )
+    traj = Trajectory("$dir/trajectory.dcd", solute)
+    R = mddf(traj, options)
+
+    @test !all(==(0), contributions(R, SoluteGroup("H1")))
+    @test !all(==(0), contributions(R, SoluteGroup("H2")))
+    @test !all(==(0), contributions(R, SoluteGroup("OH2")))
+
+    @test !all(==(0), contributions(R, SolventGroup("H1")))
+    @test !all(==(0), contributions(R, SolventGroup("H2")))
+    @test !all(==(0), contributions(R, SolventGroup("OH2")))
+
+    @test contributions(R, SoluteGroup("H1")) + 
+          contributions(R, SoluteGroup("H2")) + 
+          contributions(R, SoluteGroup("OH2")) ≈ 
+          contributions(R, SolventGroup("H1")) + 
+          contributions(R, SolventGroup("H2")) + 
+          contributions(R, SolventGroup("OH2"))
+
+    @test contributions(R, SoluteGroup("H1")) + 
+          contributions(R, SoluteGroup("H2")) + 
+          contributions(R, SoluteGroup("OH2")) ≈ 
+          R.mddf
 end
