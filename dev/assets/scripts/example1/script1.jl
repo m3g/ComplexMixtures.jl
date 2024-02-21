@@ -33,6 +33,7 @@ trajectory_file = "./glyc50_traj.dcd"
 trajectory = Trajectory(trajectory_file, solute, solvent)
 results = mddf(trajectory)
 save(results, "glyc50_results.json")
+println("Results saved to glyc50_results.json")
 
 #
 # Produce plots
@@ -66,6 +67,7 @@ plot!(results.d, results.kb / 1000, #to L/mol
 # size and margin
 plot!(size=(800, 300), margin=4mm)
 savefig("./mddf.png")
+println("Created plot mddf.png")
 
 #
 # Atomic contributions to the MDDF
@@ -84,3 +86,4 @@ plot!(results.d, hydr_contrib, label="Hydroxyls")
 plot!(results.d, aliph_contrib, label="Aliphatic chain")
 hline!([1], linestyle=:dash, linecolor=:gray)
 savefig("./mddf_atom_contrib.png")
+println("Created plot mddf_atom_contrib.png")

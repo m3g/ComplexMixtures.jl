@@ -64,3 +64,4 @@ contourf(irange, results.d[idmin:idmax], rescontrib[idmin:idmax, irange],
   margin=0.5Plots.PlotMeasures.cm
 )
 savefig("./density2D.png")
+println("Created plot density2D.png")
