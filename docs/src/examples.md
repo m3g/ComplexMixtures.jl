@@ -20,7 +20,7 @@ To run the scripts, we suggest the following procedure:
    ```julia
    import Pkg 
    Pkg.activate(".")
-   Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings, EasyFit"])
+   Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings", "EasyFit"])
    exit()
    ```
 5. Copy the code of each script in to a file, and execute with:
