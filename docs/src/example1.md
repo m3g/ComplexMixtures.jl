@@ -174,7 +174,7 @@ julia density3D.jl
 
 Alternatively, open Julia and copy/paste or the commands in `density3D.jl` or use `include("./density3D.jl")`. These options will allow you to remain on the Julia section with access to the `grid` data structure that was generated and corresponds to the output `grid.pdb` file. 
 
-This will create the `grid.pdb` file. [Here](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Protein_in_Glycerol/Density3D/grid.vmd) we provide a previously setup VMD session that contains the data with the visualization choices used to generate the figure above. Load it with:
+This will create the `grid.pdb` file. [Here](./assets/scripts/example1/grid.vmd) we provide a previously setup VMD session that contains the data with the visualization choices used to generate the figure above. Load it with:
 
 ```bash
 vmd -e grid.vmd
