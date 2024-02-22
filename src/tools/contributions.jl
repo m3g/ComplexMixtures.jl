@@ -201,3 +201,115 @@ end
     @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
     @test_throws ArgumentError contributions(results, SolventGroup(1))
 end
+
+@testitem "custom group contributions" begin
+    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load,
+        SoluteGroup, SolventGroup, contributions
+    using PDBTools: readPDB, select, Select, iswater, chain, resnum
+    using ComplexMixtures.Testing: data_dir
+
+    dir = "$data_dir/NAMD"
+    atoms = readPDB("$dir/structure.pdb")
+    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+
+    #
+    # Test computation of custom group counters
+    #
+    solute = AtomSelection(
+        select(atoms , "water and residue 301"), 
+        nmols = 1,
+        group_atom_indices = [
+            findall(Select("water and residue 301 and name H1"), atoms),
+            findall(Select("water and residue 301 and name H2"), atoms),
+            findall(Select("water and residue 301 and name OH2"), atoms)
+        ],
+        group_names = ["H1", "H2", "OH2"] 
+    )
+    solvent = AtomSelection(
+        select(atoms, "water and not residue 301"),
+        natomspermol = 3, 
+        group_atom_indices = [
+            findall(Select("water and name H1 and not residue 301"), atoms),
+            findall(Select("water and name H2 and not residue 301"), atoms),
+            findall(Select("water and name OH2 and not residue 301"), atoms)
+        ],
+        group_names = ["H1", "H2", "OH2"] 
+    )
+    traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
+    R = mddf(traj)
+
+    @test !all(==(0), contributions(R, SoluteGroup("H1")))
+    @test !all(==(0), contributions(R, SoluteGroup("H2")))
+    @test !all(==(0), contributions(R, SoluteGroup("OH2")))
+
+    @test !all(==(0), contributions(R, SolventGroup("H1")))
+    @test !all(==(0), contributions(R, SolventGroup("H2")))
+    @test !all(==(0), contributions(R, SolventGroup("OH2")))
+
+    @test contributions(R, SoluteGroup("H1")) + 
+          contributions(R, SoluteGroup("H2")) + 
+          contributions(R, SoluteGroup("OH2")) ≈ 
+          contributions(R, SolventGroup("H1")) + 
+          contributions(R, SolventGroup("H2")) + 
+          contributions(R, SolventGroup("OH2"))
+
+    @test contributions(R, SoluteGroup("H1")) + 
+          contributions(R, SoluteGroup("H2")) + 
+          contributions(R, SoluteGroup("OH2")) ≈ 
+          R.mddf
+
+    # Group contributions in autocorrelation computation
+    solute = AtomSelection(
+        select(atoms, "water and resnum <= 1000"), 
+        natomspermol = 3,
+        group_atom_indices = [
+            findall(Select("water and name H1 and resnum <= 1000"), atoms),
+            findall(Select("water and name H2 and resnum <= 1000"), atoms),
+            findall(Select("water and name OH2 and resnum <= 1000"), atoms)
+        ],
+        group_names = ["H1", "H2", "OH2"] 
+    )
+    traj = Trajectory("$dir/trajectory.dcd", solute)
+    R = mddf(traj, options)
+
+    @test !all(==(0), contributions(R, SoluteGroup("H1")))
+    @test !all(==(0), contributions(R, SoluteGroup("H2")))
+    @test !all(==(0), contributions(R, SoluteGroup("OH2")))
+
+    @test !all(==(0), contributions(R, SolventGroup("H1")))
+    @test !all(==(0), contributions(R, SolventGroup("H2")))
+    @test !all(==(0), contributions(R, SolventGroup("OH2")))
+
+    @test contributions(R, SoluteGroup("H1")) + 
+          contributions(R, SoluteGroup("H2")) + 
+          contributions(R, SoluteGroup("OH2")) ≈ 
+          contributions(R, SolventGroup("H1")) + 
+          contributions(R, SolventGroup("H2")) + 
+          contributions(R, SolventGroup("OH2"))
+
+    @test contributions(R, SoluteGroup("H1")) + 
+          contributions(R, SoluteGroup("H2")) + 
+          contributions(R, SoluteGroup("OH2")) ≈ 
+          R.mddf
+
+    # Group contributions in autocorrelation computation, with different chains
+    solute = AtomSelection(
+        filter(
+            at -> iswater(at) && (chain(at) == "B" || chain(at) == "C") && resnum(at) <= 1000, 
+            atoms
+        ),
+        natomspermol = 3, 
+        group_atom_indices = [
+            findall(Select("water and chain B and resnum <= 1000"), atoms),
+            findall(Select("water and chain C and resnum <= 1000"), atoms)
+        ],
+        group_names = ["B", "C"]
+    )
+    traj = Trajectory("$dir/trajectory.dcd", solute)
+    R = mddf(traj, options)
+    @test !all(==(0), contributions(R, SoluteGroup("B")))
+    @test !all(==(0), contributions(R, SoluteGroup("C")))
+    @test contributions(R, SolventGroup("B")) ≈ contributions(R, SoluteGroup("B"))
+    @test contributions(R, SolventGroup("C")) ≈ contributions(R, SoluteGroup("C"))
+    @test contributions(R, SoluteGroup("B")) + contributions(R, SoluteGroup("C")) ≈ R.mddf
+end

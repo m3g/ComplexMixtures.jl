@@ -370,7 +370,11 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     # Scale counters by number of samples and frames
     @. R.md_count = R.md_count / (R.solute.nmols * Q)
     @. R.solute_group_count = R.solute_group_count / (R.solute.nmols * Q)
-    @. R.solvent_group_count = R.solvent_group_count / (R.solute.nmols * Q)
+    if R.autocorrelation
+        R.solvent_group_count .= R.solute_group_count
+    else
+        @. R.solvent_group_count = R.solvent_group_count / (R.solute.nmols * Q)
+    end
     @. R.md_count_random = R.md_count_random / (samples.random * Q)
     @. R.rdf_count = R.rdf_count / (R.solute.nmols * Q)
     @. R.rdf_count_random = R.rdf_count_random / (samples.random * Q)

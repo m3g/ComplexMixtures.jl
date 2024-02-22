@@ -23,9 +23,9 @@ function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSe
         itype = atom_type(iatom, sol.natomspermol)
         group_count[itype][ibin] += frame_weight
     else
-        itype = sol.indices[atom_type(iatom, sol.natomspermol)]
+        iat = sol.indices[iatom] 
         for (igroup, indices) in enumerate(sol.group_atom_indices)
-            if itype in indices
+            if iat in indices
                 group_count[igroup][ibin] += frame_weight
             end
         end
@@ -43,8 +43,16 @@ function updatecounters!(R::Result, system::AbstractPeriodicSystem, frame_weight
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
         R.md_count[ibin] += frame_weight
-        update_group_count!(R.solute_group_count, ibin, md.i, frame_weight, R.solute)
-        update_group_count!(R.solvent_group_count, ibin, md.j, frame_weight, R.solvent)
+        if R.autocorrelation 
+            # the atoms belong to the same set, so their contributions must be halved,
+            # and contribute, both, to the solute count. The solute count is copied to the
+            # solvent count in the `finalresults!` function.
+            update_group_count!(R.solute_group_count, ibin, md.i, frame_weight / 2, R.solute)
+            update_group_count!(R.solute_group_count, ibin, md.j, frame_weight / 2, R.solute)
+        else
+            update_group_count!(R.solute_group_count, ibin, md.i, frame_weight, R.solute)
+            update_group_count!(R.solvent_group_count, ibin, md.j, frame_weight, R.solvent)
+        end
         if md.ref_atom_within_cutoff
             ibin = setbin(md.d_ref_atom, R.files[1].options.binstep)
             R.rdf_count[ibin] += frame_weight
