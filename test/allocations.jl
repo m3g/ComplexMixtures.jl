@@ -27,14 +27,16 @@
         ) samples = 1 evals = 1
         @test t.allocs == 0
 
-        protein = Selection(select(atoms, "protein"), nmols = 1)
+        protein_atoms = select(atoms, "protein")
+        protein = Selection(protein_atoms, nmols = 1)
         t_selection1 =
-            @benchmark Selection(select($atoms, "protein"), nmols = 1) samples = 1 evals = 1
+            @benchmark Selection(protein_atoms, nmols = 1) samples = 1 evals = 1
         @test t_selection1.allocs < 100 
 
-        tmao = Selection(select(atoms, "resname TMAO"), natomspermol = 14)
+        tmao_atoms = select(atoms, "resname TMAO")
+        tmao = Selection(tmao_atoms, natomspermol = 14)
         t_selection2 =
-            @benchmark Selection(select($atoms, "resname TMAO"), natomspermol = 14) samples =
+            @benchmark Selection(tmao_atoms, natomspermol = 14) samples =
                 1 evals = 1
         @test t_selection2.allocs < 200000
 
