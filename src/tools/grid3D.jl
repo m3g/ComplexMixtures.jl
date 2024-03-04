@@ -49,7 +49,8 @@ function grid3D(
 
     if result.solute.custom_groups
         throw(ArgumentError("""
-        
+
+
             The 3D grid can only be built if the contributions of all atoms of the solute are recorded.
             It is not compatible with predefined groups of atoms.
                 
@@ -135,3 +136,18 @@ function grid3D(
     end
     return grid
 end
+
+@testitem "grid3D" begin
+    using PDBTools
+    using ComplexMixtures
+    using ComplexMixtures.Testing: data_dir
+    dir = "$data_dir/NAMD"
+    atoms = readPDB("$dir/structure.pdb")
+    protein = AtomSelection(select(atoms, "protein"); group_atom_indices = [ findall(sel"resname ARG", atoms) ], nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
+    R = mddf(traj, options)
+    @test_throws ArgumentError grid3D(R, atoms, tempname())
+end
+
