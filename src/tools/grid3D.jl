@@ -47,6 +47,15 @@ function grid3D(
     silent = false,
 )
 
+    if result.solute.custom_groups
+        throw(ArgumentError("""
+        
+            The 3D grid can only be built if the contributions of all atoms of the solute are recorded.
+            It is not compatible with predefined groups of atoms.
+                
+        """))
+    end
+
     # Simple function to interpolate data
     interpolate(x₁, x₂, y₁, y₂, xₙ) = y₁ + (y₂ - y₁) / (x₂ - x₁) * (xₙ - x₁)
 
