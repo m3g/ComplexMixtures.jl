@@ -23,15 +23,17 @@
     ) samples = 1 evals = 1
     @test t.allocs == 0
 
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    prot_atoms = select(atoms, "protein")
+    protein = AtomSelection(prot_atoms, nmols = 1)
     t_selection1 =
-        @benchmark AtomSelection(select($atoms, "protein"), nmols = 1) samples = 1 evals = 1
+        @benchmark AtomSelection(prot_atoms, nmols = 1) samples = 1 evals = 1
     @test t_selection1.allocs < 100 
 
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    tmao_atoms = select(atoms, "resname TMAO")
+    tmao = AtomSelection(tmao_atoms, natomspermol = 14)
     t_selection2 =
-        @benchmark AtomSelection(select($atoms, "resname TMAO"), natomspermol = 14) samples = 1 evals = 1
-    @test t_selection2.allocs < 200000
+        @benchmark AtomSelection(tmao_atoms, natomspermol = 14) samples = 1 evals = 1
+    @test t_selection2.allocs < 100
 
     trajfile = "$dir/trajectory.dcd" # because of the interpolation of @benchmark
     traj = Trajectory(trajfile, protein, tmao)

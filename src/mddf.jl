@@ -53,7 +53,7 @@ end
 # Defines is a molecule is a bulk molecule
 #
 inbulk(md::MinimumDistance, options::Options) =
-    options.usecutoff ? (md.within_cutoff && md.dmin_mol > options.dbulk) :
+    options.usecutoff ? (md.within_cutoff && md.d > options.dbulk) :
     !md.within_cutoff
 
 #=
