@@ -62,13 +62,17 @@ For example, the solute can be defined with:
 ```julia
 using ComplexMixtures, PDBTools
 
-indices, names = select_with_vmd("./system.gro", "protein", vmd="/usr/bin/vmd")
+atoms = readPDB("system.pdb")
 
-solute = AtomSelection(indices, names, nmols=1)
+indices, names = select_with_vmd("./system.pdb", "protein", vmd="/usr/bin/vmd")
+
+protein = atoms[indices]
+
+solute = AtomSelection(protein, nmols=1)
 ```
 The main advantage here is that all the file types that VMD supports are
 supported. But VMD needs to be installed and is run in background, and
-it takes a few seconds to be executed.
+it takes a few seconds to be executed. 
 
 The `VMDSelect` function also accepts an optional keyword parameter `srcload`,
 which can be used to load custom scripts within `vmd` before setting
@@ -77,7 +81,7 @@ macros, for instance. The usage would be:
 ```julia
 using PDBTools
 
-sel = select_with_vmd(
+indices, names = select_with_vmd(
     "file.pdb", 
     "resname MYRES"; 
     srcload = [ "mymacros1.tcl", "mymacros2.tcl" ]
