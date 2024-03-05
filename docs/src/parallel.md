@@ -28,8 +28,8 @@ pick the number of threads available in your computer.
     running. One way to alleviate this problem is to force garbage collection,
     using
     ```julia
-    options = Options(GC=true,GC_threshold=0.5)
-    R = mddf(trajectory,options)
+    options = Options(GC=true, GC_threshold=0.5)
+    R = mddf(trajectory, options)
 
     ```     
     The `GC_threshold=0.5` indicates that if the free memory is smaller than 50%

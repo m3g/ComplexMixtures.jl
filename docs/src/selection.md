@@ -152,7 +152,9 @@ With these group selections predefined, the contributions of these groups to the
 can be retrived directly from the result data structure with, for example:
 
 ```julia-repl
-julia> result = mddf(trajectory, solute, solvent);
+julia> trajectory = Trajectory(trajectory_file, solute, solvent)
+
+julia> result = mddf(trajectory, Options(bulk_range=(8.0, 12.0)));
 
 julia> acidic_residue_contributions = contributions(result, SoluteGroup("acidic residues"))
 ```

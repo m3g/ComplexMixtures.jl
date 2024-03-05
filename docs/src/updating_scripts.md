@@ -40,7 +40,7 @@ they were defined in the `Options` data structure, and now they are passed
 to the `mddf` function.
 - Before:
 ```julia
-options = Options(frame_weights=[1.0, 2.0])
+options = Options(frame_weights=[1.0, 2.0], bulk_range=(8.0, 12.0))
 results = mddf(trajectory, options)
 ```
 - Now:

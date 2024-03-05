@@ -29,10 +29,11 @@ simple loop, such as
 atoms = PDBTools.readPDB("./system.pdb")
 solute = AtomSelection(atoms,"protein",nmols=1)
 solvent = AtomSelection(atoms,"resname TMAO",natomspermol=14)
+options = Options(bulk_range=(8.0, 12.0))
 for file in trajectory_files
     trajectory = Trajectory(file,solute,solvent)
     # compute the MDDF data and push the result to the results array
-    push!(results, mddf(trajectory))
+    push!(results, mddf(trajectory, options))
 end
 ```
 

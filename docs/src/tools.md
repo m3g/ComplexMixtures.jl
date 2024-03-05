@@ -166,7 +166,7 @@ where:
 Example:
 ```julia
 ...
-R = mddf(trajectory,options)
+R = mddf(trajectory, options)
 g, kb = ComplexMixtures.gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
 ```
 
@@ -183,41 +183,42 @@ using the `overview` function. Examples:
 
 ```julia-repl
 ...
-julia> results = mddf(trajectory)
+
+julia> results = mddf(trajectory, Options(bulk_range=(8.0, 12.0)))
 
 julia> results
+--------------------------------------------------------------------------------
+MDDF Overview - ComplexMixtures - Version 2.0.8
+--------------------------------------------------------------------------------
 
--------------------------------------------------------------------------------
+Solvent properties:
+-------------------
 
- MDDF Overview: 
+Simulation concentration: 0.49837225882780106 mol L⁻¹
+Molar volume: 2006.532230249041 cm³ mol⁻¹
 
- Solvent properties: 
- ------------------- 
+Concentration in bulk: 0.5182380507741433 mol L⁻¹
+Molar volume in bulk: 1929.6151614228274 cm³ mol⁻¹
 
- Simulation concentration: 1.5209006318095133 mol L⁻¹
- Molar volume: 657.5051512801567 cm³ mol⁻¹
+Solute properties:
+------------------
 
- Concentration in bulk: 1.4918842545752287 mol L⁻¹
- Molar volume in bulk: 670.2932864484995 cm³ mol⁻¹ 
+Simulation Concentration: 0.002753437894076249 mol L⁻¹
+Estimated solute partial molar volume: 13921.98945754469 cm³ mol⁻¹
 
- Solute properties: 
- ------------------ 
+Bulk range: 8.0 - 12.0 Å
+Molar volume of the solute domain: 34753.1382279134 cm³ mol⁻¹
 
- Simulation Concentration: 1.5209006318095133 mol L⁻¹
- Estimated solute partial molar volume: 657.5051512801567 cm³ mol⁻¹
+Auto-correlation: false
 
- Using dbulk = 20.0Å: 
- Molar volume of the solute domain: 30292.570006549242 cm³ mol⁻¹
+Trajectory files and weights:
 
- Auto-correlation: true
+   /home/user/NAMD/trajectory.dcd - w = 1.0
 
- Trajectory files and weights: 
-   ./vinicius.xtc - w = 1.0
+Long range MDDF mean (expected 1.0): 1.0378896753018338 ± 1.0920172247127446
+Long range RDF mean (expected 1.0): 1.2147429551790854 ± 1.2081838161780682
 
- Long range MDDF mean (expected 1.0): 1.1090804621839963 +/- 0.04298849642932878
- Long range RDF mean (expected 1.0): 1.15912932236198 +/- 0.05735018864444404
-
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 ```
 
 In this case, since solute and solvent are equivalent and the system is

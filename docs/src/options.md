@@ -5,8 +5,8 @@ to obtain the MDDF. These options can be defined by the user and passed to the
 `mddf` function, using, for example: 
 
 ```julia
-options = Options(lastframe=1000)
-results = mddf(trajectory,options)
+options = Options(lastframe=1000, bulk_range=(8.0, 12.0))
+results = mddf(trajectory, options)
 ```
 
 ## Frame ranges and histogram properties

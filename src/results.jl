@@ -907,6 +907,14 @@ Structure that is used to dispatch the show of a overview.
     solute_molar_volume::Float64 = 0.0
 end
 
+function _bulk_range_from_R(R)
+    if R.dbulk == R.cutoff
+        return ">= $(R.dbulk) Å"
+    else
+        return "$(R.dbulk) - $(R.cutoff) Å"
+    end
+end
+
 function Base.show(io::IO, ov::Overview)
     println(
         io,
@@ -930,7 +938,7 @@ function Base.show(io::IO, ov::Overview)
  Simulation Concentration: $(ov.density.solute) mol L⁻¹
  Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
 
- Using dbulk = $(ov.R.dbulk)Å:
+ Bulk range: $(_bulk_range_from_R(ov.R))
  Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
 
  Auto-correlation: $(ov.R.autocorrelation)
