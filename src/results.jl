@@ -121,39 +121,15 @@ end
 #
 function Result(trajectory::Trajectory, options::Options, frame_weights::Vector{Float64} = Float64[])
 
-    # Check for simple input errors
-    if options.stride < 1
-       throw(ArgumentError("in MDDF options: stride cannot be less than 1. "))
-    end
-    if options.lastframe > 0 && options.lastframe < options.firstframe
-        throw(ArgumentError("in MDDF options: lastframe must be greater or equal to firstframe. "))
+    if options.irefatom > trajectory.solvent.natomspermol
+        throw(ArgumentError("in MDDF options: Reference atom index $(options.irefatom) is greater than number of atoms of the solvent molecule. "))
     end
     if options.lastframe > trajectory.nframes
         throw(ArgumentError("in MDDF options: lastframe is greater than trajectory.nframes. "))
     end
 
-    # Check for problems in dbulk and cutoff definitions
-    cutoff = options.dbulk
-    if (options.dbulk / options.binstep) % 1 > 1.e-5
-        throw(ArgumentError("in MDDF options: dbulk must be a multiple of binstep."))
-    end
-    if options.usecutoff
-        if options.dbulk >= options.cutoff
-            throw(ArgumentError(" in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). "))
-        end
-        if (options.cutoff / options.binstep) % 1 > 1.e-5
-            throw(ArgumentError("in MDDF options: cutoff must be a multiple of binstep."))
-        end
-        if ((options.cutoff - options.dbulk) / options.binstep) % 1 > 1.e-5
-            throw(ArgumentError("in MDDF options: (cutoff-dbulk) must be a multiple of binstep. "))
-        end
-        cutoff = options.cutoff
-    end
-    nbins = setbin(cutoff, options.binstep)
-
-    if options.irefatom > trajectory.solvent.natomspermol
-        throw(ArgumentError("in MDDF options: Reference atom index $(options.irefatom) is greater than number of atoms of the solvent molecule. "))
-    end
+    # Number of bins of the histogram
+    nbins = setbin(options.cutoff, options.binstep)
 
     # Open trajectory to read some data
     opentraj!(trajectory)
@@ -216,7 +192,7 @@ function Result(trajectory::Trajectory, options::Options, frame_weights::Vector{
     return Result(
         nbins = nbins,
         dbulk = options.dbulk,
-        cutoff = cutoff,
+        cutoff = options.cutoff,
         autocorrelation = isautocorrelation(trajectory),
         solute = trajectory.solute,
         solvent = trajectory.solvent,
@@ -244,13 +220,7 @@ end
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
     water = AtomSelection(select(atoms, "water"), natomspermol = 3)
     trajectory = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao, water)
-    @test_throws ArgumentError mddf(trajectory, Options(stride = 0))
-    @test_throws ArgumentError mddf(trajectory, Options(firstframe = 2, lastframe = 1))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
-    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 10.0, binstep = 0.3))
-    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 10.0, cutoff = 10.0, usecutoff = true))
-    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 6.0, cutoff = 10.0, binstep = 0.3, usecutoff = true))
-    @test_throws ArgumentError mddf(trajectory, Options(dbulk = 8.0, cutoff = 10.0, binstep = 0.3, usecutoff = true))
     @test_throws ArgumentError mddf(trajectory, Options(irefatom = 1000))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 5), frame_weights = [1.0, 1.0, 1.0])
 end
