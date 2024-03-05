@@ -27,7 +27,7 @@ solvent = AtomSelection(dmf, natomspermol=12)
 trajectory = Trajectory(trajectory_file, solute, solvent)
 
 # Use a large dbulk distance for better KB convergence
-options = Options(dbulk=19.)
+options = Options(bulk_range=(20.0, 25.0))
 
 # Compute the mddf and associated properties
 results = mddf(trajectory, options)

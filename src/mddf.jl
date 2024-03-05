@@ -98,15 +98,15 @@ package.
 ```julia-repl
 julia> trajectory = Trajectory("./trajectory.dcd",solute,solvent);
 
-julia> results = mddf(trajectory);
+julia> results = mddf(trajectory, Options(bulk_range=(10.0, 15.0)));
 ```
 
-or, to set some custom optional parameter,
+or, to set some other custom optional parameters,
 
 ```julia-repl
-julia> options = Options(lastframe=1000);
+julia> options = Options(lastframe=1000, bulk_range=(10.0, 15.0));
 
-julia> results = mddf(trajectory,options);
+julia> results = mddf(trajectory, options);
 ```
 
 """
