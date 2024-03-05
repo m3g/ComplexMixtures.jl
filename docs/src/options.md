@@ -24,27 +24,38 @@ only one in five frames will be considered.
 `binstep`: Real, length of the bin step of the histograms, default =
 0.02 Angstroms.
 
-`dbulk`: Real, distance from which the solution is to be considered as a
-bulk solution, that is, where the presence of the solute does not affect
-the structure of the solution anymore. This parameter is important in
-particular for systems with a single solute molecule (a protein, for
-example), where the density of the solvent in the box is not the bulk
-density of the solvent, which must be computed independently. Default:
-10 Angstroms. 
+`bulk_range`: This parameter defines the range of distances from the 
+solute that will be considered as the `bulk` region of the solution.
+The density of the bulk solution is estimated by counting the number
+of molecules of the solvent in this region, and by performing a 
+numerical integration of its volume. Set this range to a region of the
+solution where the MDDF is converged to 1 for practical purposes. Tuning
+this parameter is crucial for a proper convergence of the MDDFs and
+KB integrals. 
 
-`cutoff`: Real, the maximum distance to be considered in the
-construction of histograms. Default: 10 Angstroms. 
-
-`usecutoff`: `true/false`: If true, the cutoff distance might be
-different from `dbulk` and the density of the solvent in bulk will be
-estimated from the density within `dbulk` and `cutoff`. If `false`, the
-density of the solvent is estimated from the density outside `dbulk` by
-exclusion. Default: `false`. 
+!!! compat
+    The `bulk_range` option was introduced in version 2.1.0.
 
 ## Lower level options
 
 These will probably never be set by the user, unless if dealing with 
 some special system (large very large, or very low density system).
+
+`dbulk`: Real, distance from which the solution is to be considered as a
+bulk solution, that is, where the presence of the solute does not affect
+the structure of the solution anymore. By default, all molecules at
+distances greater than 10.0 Angstroms are considered bulk molecules. 
+However, the definition of `bulk_range` is highly encouraged. 
+
+`cutoff`: Real, the maximum distance to be considered in the
+construction of histograms. Default: 10 Angstroms.
+
+`usecutoff`: `true/false`: If true, the cutoff distance might be
+different from `dbulk` and the density of the solvent in bulk will be
+estimated from the density within `dbulk` and `cutoff`. If `false`, the
+density of the solvent is estimated from the density outside `dbulk` by
+exclusion. Default: `false`. The definition of `bulk_range` instead
+is highly encouraged. 
 
 `irefatom`: Integer, index of the reference atom in the solvent molecule
 used to compute the shell volumes and domain volumes in the Monte-Carlo
