@@ -80,7 +80,7 @@ $(read("./assets/scripts/example2/script1.jl", String))
 
 The distribution of DMF molecules around polyacrylamide is shown below. There is a peak at ~2.5Angs, indicating favorable non-specific interactions between the solvent molecules and the polymer. The peak is followed by a dip and diffuse peaks at higher distances. Thus, the DMF molecules are structured around the polymer, but essentially only in the first solvation shell.  
 
-![](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/results/mddf_kb.png)
+![](./assets/scripts/example2/mddf_kb.png)
 
 The KB integral in a bicomponent mixture converges to the (negative of the) apparent molar volume of the solute. It is negative, indicating that the accumulation of DMF in the first solvation shell of the polymer is not enough to compensate the excluded volume of the solute. 
 
@@ -107,7 +107,7 @@ $(read("./assets/scripts/example2/script2.jl", String))
 
 The decomposition reveals that specific interactions peaking at distances slightly smaller than 2$\AA$ exist between the polymer and the carbonyl group of DMF. Thus, there hydrogen bonds between the polymer and this group, which dominate the interactions between the solute and the solvent at short distances. The non-specific interactions peak at 2.5Angs and are composed of contributions of all DMF chemical groups, but particularly of the methyl groups.
 
-![](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/results/mddf_groups.png)
+![](./assets/scripts/example2/mddf_groups.png)
 
 The decomposition of the same MDDF in the contributions of the chemical groups of the polymer is clearly associated to the DMF contributions. The specific, hydrogen-bonding, interactions, are associated to the polymer amine groups. The amine groups also contribute to the non-specific interactions at greater distances, but these are a sum of the contributions of all polymer groups, polar or aliphatic.
 
@@ -138,7 +138,7 @@ Finally, it is noticeable that the central mer is more weakly solvated by DMF th
 
 ```@raw html
 <center>
-<img width=70% src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/results/map2D_acr.png">
+<img width=70% src="../assets/scripts/example2/map2D_acr.png">
 </center>
 ```
 

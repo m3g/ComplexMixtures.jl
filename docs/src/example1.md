@@ -71,7 +71,7 @@ glycerol relative to the protein, and the corresponding KB integral:
 
 ```@raw html
 <center>
-<img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/MDDF/mddf.png">
+<img width=100% src="../assets/scripts/example1/mddf.png">
 </center>
 ```
 
@@ -79,7 +79,7 @@ and the same distribution function, decomposed into the contributions of the hyd
 
 ```@raw html
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/MDDF/mddf_atom_contrib.png">
+<img width=70% src="../assets/scripts/example1/mddf_atom_contrib.png">
 </center>
 ```
 
@@ -121,7 +121,7 @@ surface of the protein.
 
 ```@raw html
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
+<img width=70% src="../assets/scripts/example1/density2D.png">
 </center>
 ```
 

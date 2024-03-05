@@ -67,7 +67,7 @@ $(read("./assets/scripts/example3/script1.jl", String))
 
 The distribution functions are shown in the first panel of the figure below, and the KB integrals are shown in the second panel.
 
-![](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_kb.png)
+![](./assets/scripts/example3/popc_water_ethanol_mddf_kb.png)
 
 Clearly, both water and ethanol accumulate on the proximity of the membrane. The distribution functions suggest that ethanol displays a greater local density augmentation, reaching concentrations roughly 4 times higher than bulk concentrations. Water has a peak at hydrogen-bonding distances (~1.8$$\mathrm{\AA}$$) and a secondary peak at 2.5$$\mathrm{\AA}$$.
 
@@ -94,7 +94,7 @@ $(read("./assets/scripts/example3/script2.jl", String))
 
 In the figure below we show the contributions of the ethanol hydroxyl and aliphatic chain groups to the total MDDF.
 
-![https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_ethanol_groups.png](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_ethanol_groups.png)
+![](./assets/scripts/example3/mddf_ethanol_groups.png)
 
 As expected, the MDDF at hydrogen-bonding distances is composed by contributions of the ethanol hydroxyl group, and the non-specific interactions at ~2.5$$\mathrm{\AA}$$ have a greater contribution of the aliphatic chain of the solvent molecules. It is interesting to explore the chemical complexity of POPC in what concerns these interactions.
 
@@ -117,7 +117,7 @@ $(read("./assets/scripts/example3/script3.jl", String))
 </details><br>
 ```
 
-![https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_water_groups.png](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_water_groups.png)
+![](./assets/scripts/example3/mddf_POPC_water_groups.png)
 
 Not surprisingly, water interactions occur majoritarily with the Phosphate and Choline groups of POPC molecules, that is, with the polar head of the lipid. The interactions at hydrogen-bonding distances are dominated by the phosphate group, and non-specific interaction occur mostly with the choline group. Some water molecules penetrate the membrane and interact with the glycerol and aliphatic chains of POPC, but these contributions are clearly secondary.
 
@@ -140,7 +140,7 @@ $(read("./assets/scripts/example3/script4.jl", String))
 </details><br>
 ```
 
-![https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_ethanol_groups.png](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_ethanol_groups.png)
+![](./assets/scripts/example3/mddf_POPC_ethanol_groups.png)
 
 Ethanol molecules interact with the choline and phosphate groups of POPC molecules, as do water molecules. The contributions to the MDDF at hydrogen-bonding distances come essentially from ethanol-phosphate interactions.
 
@@ -165,13 +165,13 @@ $(read("./assets/scripts/example3/script5.jl", String))
 </details><br>
 ```
 
-![./assets/scripts/example3/POPC_ethanol_chains.png](./assets/scripts/example3/POPC_ethanol_chains.png)
+![](./assets/scripts/example3/POPC_ethanol_chains.png)
 
 Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.
 
 The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:
 
-![./assets/scripts/example3/POPC_water_chains.png](./assets/scripts/example3/POPC_water_chains.png)
+![](./assets/scripts/example3/POPC_water_chains.png)
 
 ### References
 
