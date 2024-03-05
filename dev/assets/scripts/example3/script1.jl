@@ -32,7 +32,7 @@ trajectory = Trajectory(trajectory_file, solute, solvent)
 # We want to get reasonably converged KB integrals, which usually
 # require large solute domains. Distribution functions converge 
 # rapidly (~10Angs or less), on the other side.
-options = Options(dbulk=20.0)
+options = Options(bulk_range=(20.0, 25.0))
 
 # Compute the mddf and associated properties
 mddf_water_POPC = mddf(trajectory, options)

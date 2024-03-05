@@ -24,7 +24,7 @@ trajectory = Trajectory(trajectory_file, solute) # solute and solvent are the sa
 
 # We define a large solute domain (large dbulk) to obtain a good convergence
 # for the KB integral. The mddf converges at much shorter distances.   
-options = Options(dbulk=20.0)
+options = Options(bulk_range=(20.0,25.0))
 mddf_glyc = mddf(trajectory, options)
 
 # Save results for later analysis
