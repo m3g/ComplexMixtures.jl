@@ -27,7 +27,7 @@ trajectory = Trajectory("./trajectory.dcd", solute, solvent)
 
 # Run the calculation and get results: this is the computationally
 # intensive part of the calculation.
-results = mddf(trajectory, Options(bulk_range=(10.0, 15.0)))
+results = mddf(trajectory, Options(bulk_range=(8.0, 12.0)))
 
 # Save the results to recover them later if required
 save(results, "./results.json")
