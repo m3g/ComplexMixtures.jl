@@ -701,12 +701,15 @@ end
 #
 # Functions to save the results to a file
 #
+# These definitions are probably not necessary for StructTypes >= 1.10.0
+# 
 StructTypes.StructType(::Type{AtomSelection}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Result}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
 StructTypes.StructType(::Type{TrajectoryFileOptions}) = StructTypes.Struct()
+StructTypes.StructType(::Type{VersionNumber}) = StructTypes.Struct()
 
 """
     save(R::Result, filename::String)
