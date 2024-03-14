@@ -266,7 +266,15 @@ function AtomSelection(
         # Check if all group atoms indices belong to the current AtomSelection
         for inds in group_atom_indices
             if any(!(i in indices) for i in inds)
-                throw(ArgumentError("Some group atom indices not found in the the current AtomSelection atomic indices."))
+                throw(ArgumentError("""\n
+
+                    Group atom indices not found in the the current AtomSelection main atomic indices.
+
+                    In other words, the group_atom_indices vector contains atom indices that are not present 
+                    in the main selection of the AtomSelection. All groups *must* be strictly a 
+                    subset of the main selection. Please check your group definitions.
+
+                """))
             end
         end
         if isempty(group_names)
