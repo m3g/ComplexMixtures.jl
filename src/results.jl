@@ -709,7 +709,6 @@ StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
 StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
 StructTypes.StructType(::Type{TrajectoryFileOptions}) = StructTypes.Struct()
-StructTypes.StructType(::Type{VersionNumber}) = StructTypes.Struct()
 
 """
     save(R::Result, filename::String)
