@@ -85,6 +85,27 @@ function randomize_solvent!(
     end
 end
 
+# 
+# Read trajectory until next frame to be read. In a function to try to 
+# improve the GC behavior, because there is a leakage in memory in the
+# reading of the coordinates by Chemfiles
+#
+function goto_nextframe!(iframe, R, trajectory, trajectory_range, options)
+    compute = false
+    while iframe < R.files[1].lastframe_read && !compute
+        nextframe!(trajectory)
+        iframe += 1
+        if iframe in trajectory_range
+            compute = true
+        end
+        # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
+        if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+            GC.gc()
+        end
+    end
+    return iframe, compute
+end
+
 """     
     mddf(trajectory::Trajectory, options::Options; frame_weights = Float64[], coordination_number_only = false)
 
@@ -175,14 +196,7 @@ function mddf(
             local frame_weight
             # Read frame coordinates
             lock(read_lock) do
-                compute = false
-                while iframe < R.files[1].lastframe_read && !compute
-                    nextframe!(trajectory)
-                    iframe += 1
-                    if iframe in trajectory_range
-                        compute = true
-                    end
-                end
+                iframe, compute = goto_nextframe!(iframe, R, trajectory, trajectory_range, options)
                 if compute
                     # Read frame for computing 
                     # The solute coordinates must be read in intermediate arrays, because the 
@@ -192,10 +206,6 @@ function mddf(
                     @. buff[ichunk].solvent_read = trajectory.x_solvent
                     unitcell = convert_unitcell(getunitcell(trajectory))
                     update_unitcell!(system[ichunk], unitcell)
-                    # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
-                    if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
-                        GC.gc()
-                    end
                     # Read weight of this frame. 
                     frame_weight = R_chunk[ichunk].files[1].frame_weights[iframe]
                     # Display progress bar
