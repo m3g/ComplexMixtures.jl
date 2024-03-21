@@ -17,11 +17,11 @@ be used as reference states for ideal gas distributions
 end
 function Buffer(traj::Trajectory, R::Result)
     return Buffer(
-        solute_read = similar(traj.x_solute),
-        solvent_read = similar(traj.x_solvent),
-        ref_solutes = zeros(Int, R.files[1].options.n_random_samples),
-        list = fill(zero(MinimumDistance), R.solvent.nmols),
-        indices_in_bulk = fill(0, R.solvent.nmols),
+        solute_read=similar(traj.x_solute),
+        solvent_read=similar(traj.x_solvent),
+        ref_solutes=zeros(Int, R.files[1].options.n_random_samples),
+        list=fill(zero(MinimumDistance), R.solvent.nmols),
+        indices_in_bulk=fill(0, R.solvent.nmols),
     )
 end
 
@@ -30,17 +30,17 @@ end
     using PDBTools
     using ComplexMixtures.Testing
     atoms = readPDB(Testing.pdbfile)
-    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     R = Result(traj, options)
     b0 = ComplexMixtures.Buffer(
-        solute_read = similar(traj.x_solute),
-        solvent_read = similar(traj.x_solvent),
-        ref_solutes = zeros(Int, R.files[1].options.n_random_samples),
-        list = fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols),
-        indices_in_bulk = fill(0, R.solvent.nmols),
+        solute_read=similar(traj.x_solute),
+        solvent_read=similar(traj.x_solvent),
+        ref_solutes=zeros(Int, R.files[1].options.n_random_samples),
+        list=fill(zero(ComplexMixtures.MinimumDistance), R.solvent.nmols),
+        indices_in_bulk=fill(0, R.solvent.nmols),
     )
     b1 = ComplexMixtures.Buffer(traj, R)
     for field in fieldnames(ComplexMixtures.Buffer)
@@ -131,14 +131,14 @@ julia> results = mddf(trajectory, options);
 ```
 
 """
-function mddf(trajectory::Trajectory; frame_weights = Float64[], coordination_number_only = false)
+function mddf(trajectory::Trajectory; frame_weights=Float64[], coordination_number_only=false)
     return mddf(trajectory, Options(); frame_weights, coordination_number_only)
 end
 
 function mddf(
-    trajectory::Trajectory, options::Options; 
-    frame_weights = Float64[],
-    coordination_number_only = false
+    trajectory::Trajectory, options::Options;
+    frame_weights=Float64[],
+    coordination_number_only=false
 )
 
     options.silent || println(bars)
@@ -180,14 +180,14 @@ function mddf(
     # Print some information about this run
     if !options.silent
         title(R, trajectory.solute, trajectory.solvent, nchunks)
-        progress = Progress(R.files[1].nframes_read; dt = 1)
+        progress = Progress(R.files[1].nframes_read; dt=1)
     end
 
     # Loop over the trajectory
     trajectory_range = options.firstframe:options.stride:R.files[1].lastframe_read
     read_lock = ReentrantLock()
-    Threads.@threads for (ichunk, frame_range) in 
-        enumerate(ChunkSplitters.chunks(options.firstframe:R.files[1].lastframe_read; n = nchunks))
+    Threads.@threads for (ichunk, frame_range) in
+                         enumerate(ChunkSplitters.chunks(options.firstframe:R.files[1].lastframe_read; n=nchunks))
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].files[1].nframes_read = 0
         for _ in frame_range
@@ -281,7 +281,7 @@ function mddf_frame!(
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
         # for the previous solute
-        minimum_distances!(system, R, isolute; update_lists = update_lists)
+        minimum_distances!(system, R, isolute; update_lists=update_lists)
         update_lists = false # avoid recomputation of the cell lists in the next iteration
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
@@ -310,7 +310,7 @@ function mddf_frame!(
             end
             for _ = 1:nrand
                 randomize_solvent!(system, buff, n_solvent_in_bulk, R, RNG)
-                minimum_distances!(system, R, isolute; update_lists = update_lists)
+                minimum_distances!(system, R, isolute; update_lists=update_lists)
                 updatecounters!(R, system, frame_weight, Val(:random))
             end
             system.ypositions .= buff.solvent_read
@@ -328,118 +328,118 @@ end
 
     # Test simple three-molecule system: cross correlation
     atoms = readPDB("$data_dir/toy/cross.pdb")
-    protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
-    water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
+    protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
+    water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
 
     for lastframe in [1, 2]
         options = Options(
-            seed = 321,
-            StableRNG = true,
-            nthreads = 1,
-            silent = true,
-            n_random_samples = 10^5,
-            lastframe = lastframe,
+            seed=321,
+            StableRNG=true,
+            nthreads=1,
+            silent=true,
+            n_random_samples=10^5,
+            lastframe=lastframe,
         )
         R = mddf(traj, options)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.01)
+        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
         @test R.density.solute ≈ 1 / R.volume.total
         @test R.density.solvent ≈ 3 / R.volume.total
         @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
     end
 
     # Test wrong frame_weights input
-    @test_throws ArgumentError mddf(traj, Options(), frame_weights = [1.0])
+    @test_throws ArgumentError mddf(traj, Options(), frame_weights=[1.0])
 
     # Self correlation
     atoms = readPDB("$data_dir/toy/self_monoatomic.pdb")
-    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 1)
-    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
+    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
+    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format="PDBTraj")
 
     # without atoms in the bulk
     options = Options(
-        seed = 321,
-        StableRNG = true,
-        nthreads = 1,
-        silent = true,
-        n_random_samples = 10^5,
-        lastframe = 1,
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
+        n_random_samples=10^5,
+        lastframe=1,
     )
     R = mddf(traj, options)
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.1)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test sum(R.md_count) ≈ 1.0
-    
+
     #
     # Test varying frame weights
     #
     # Read only first frame
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, lastframe = 1)
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, lastframe=1)
     R1 = mddf(traj, options)
-    R2 = mddf(traj, options; frame_weights = [1.0, 0.0])
+    R2 = mddf(traj, options; frame_weights=[1.0, 0.0])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Read only last frame
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 2)
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
     R1 = mddf(traj, options)
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    R2 = mddf(traj, options; frame_weights = [0.0, 1.0])
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+    R2 = mddf(traj, options; frame_weights=[0.0, 1.0])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Use equal weights
     R1 = mddf(traj, options)
-    R2 = mddf(traj, options; frame_weights = [0.3, 0.3])
+    R2 = mddf(traj, options; frame_weights=[0.3, 0.3])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Check with the duplicated-first-frame trajectory 
-    traj = Trajectory("$data_dir/toy/self_monoatomic_duplicated_first_frame.pdb", atom, format = "PDBTraj")
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true, firstframe = 1, lastframe = 3)
+    traj = Trajectory("$data_dir/toy/self_monoatomic_duplicated_first_frame.pdb", atom, format="PDBTraj")
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=1, lastframe=3)
     R1 = mddf(traj, options)
-    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format = "PDBTraj")
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    R2 = mddf(traj, options; frame_weights = [2.0, 1.0])
+    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format="PDBTraj")
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+    R2 = mddf(traj, options; frame_weights=[2.0, 1.0])
     @test R1.md_count == R2.md_count
     @test R1.rdf_count == R2.rdf_count
     # Test some different weights
-    R2 = mddf(traj, Options(silent = true), frame_weights = [2.0, 1.0])
-    @test sum(R2.md_count) ≈ 2/3
-    R2 = mddf(traj, Options(silent = true), frame_weights = [1.0, 2.0])
-    @test sum(R2.md_count) ≈ 1/3
+    R2 = mddf(traj, Options(silent=true), frame_weights=[2.0, 1.0])
+    @test sum(R2.md_count) ≈ 2 / 3
+    R2 = mddf(traj, Options(silent=true), frame_weights=[1.0, 2.0])
+    @test sum(R2.md_count) ≈ 1 / 3
 
     # only with atoms in the bulk
     options = Options(
-        seed = 321,
-        StableRNG = true,
-        nthreads = 1,
-        silent = true,
-        n_random_samples = 10^5,
-        firstframe = 2,
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
+        n_random_samples=10^5,
+        firstframe=2,
     )
     R = mddf(traj, options)
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.1)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test R.density.solvent_bulk ≈ 1 / R.volume.bulk
 
     # with both frames
     options = Options(
-        seed = 321,
-        StableRNG = true,
-        nthreads = 1,
-        silent = true,
-        n_random_samples = 10^5,
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
+        n_random_samples=10^5,
     )
     R = mddf(traj, options)
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.1)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
     @test R.density.solute ≈ 2 / R.volume.total
     @test R.density.solvent ≈ 2 / R.volume.total
     @test R.density.solvent_bulk ≈ 0.5 / R.volume.bulk
@@ -451,10 +451,10 @@ end
     using PDBTools: readPDB, select
     using ComplexMixtures.Testing: data_dir, pdbfile
 
-    options = Options(seed = 1, stride = 1, StableRNG = true, nthreads = 1, silent = true)
+    options = Options(seed=1, stride=1, StableRNG=true, nthreads=1, silent=true)
     atoms = readPDB(pdbfile)
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
     # Test actual system: cross correlation
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
@@ -489,7 +489,7 @@ end
     @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
     @test sum(R.mddf) ≈ 275.5648734200309 rtol = 0.1
     @test sum(R.rdf) ≈ 145.0 rtol = 0.1
-    @test R.kb[end] ≈ -10. rtol = 0.5
+    @test R.kb[end] ≈ -10.0 rtol = 0.5
     @test R.kb_rdf[end] ≈ 36 rtol = 0.5
 
     # Test varying frame weights: the trajectory below has 3 frames
@@ -514,7 +514,7 @@ end
     @test all(R2.solute_group_count == R1.solute_group_count)
     @test all(R2.solvent_group_count == R1.solvent_group_count)
     @test R2.volume.total ≈ R1.volume.total
-    
+
 end
 
 #=
@@ -546,9 +546,9 @@ function coordination_number_frame!(
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
         # for the previous solute
-        minimum_distances!(system, R, isolute; update_lists = update_lists)
+        minimum_distances!(system, R, isolute; update_lists=update_lists)
         update_lists = false # avoid recomputation of the cell lists in the next iteration
- 
+
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within updatecounters there are loops over solvent molecules, in such a way that
         # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
@@ -582,5 +582,5 @@ julia> coordination_numbers = coordination_number(trajectory);
 ```
 
 """
-coordination_number(trajectory::Trajectory, options::Options = Options()) =
-    mddf(trajectory, options; coordination_number_only = true)
+coordination_number(trajectory::Trajectory, options::Options=Options()) =
+    mddf(trajectory, options; coordination_number_only=true)
