@@ -193,8 +193,9 @@ function mddf(
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].files[1].nframes_read = 0
         for _ in frame_range
+            local compute, frame_weight
             # Read frame coordinates
-            compute, frame_weight = lock(read_lock) do
+            @lock read_lock begin
                 iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options) 
                 if compute
                     # Read frame for computing 
@@ -209,10 +210,7 @@ function mddf(
                     frame_weight = R_chunk[ichunk].files[1].frame_weights[iframe]
                     # Display progress bar
                     options.silent || next!(progress)
-                else
-                    frame_weight = 0.0
                 end
-                return compute, frame_weight
             end # release reading lock
             #
             # Perform MDDF computation
