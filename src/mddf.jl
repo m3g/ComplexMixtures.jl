@@ -90,12 +90,12 @@ end
 # improve the GC behavior, because there is a leakage in memory in the
 # reading of the coordinates by Chemfiles
 #
-function goto_nextframe!(iframe, R, trajectory, trajectory_range, options)
+function goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
     compute = false
     while iframe < R.files[1].lastframe_read && !compute
         nextframe!(trajectory)
         iframe += 1
-        if iframe in trajectory_range
+        if iframe in to_compute_frames
             compute = true
         end
         # Run GC if memory is getting full: this are issues with Chemfiles reading scheme
@@ -183,11 +183,13 @@ function mddf(
         progress = Progress(R.files[1].nframes_read; dt=1)
     end
 
+    # Frames to be read and frames for which the MDDF will be computed
+    to_read_frames = options.firstframe:R.files[1].lastframe_read
+    to_compute_frames = options.firstframe:options.stride:R.files[1].lastframe_read
+
     # Loop over the trajectory
-    trajectory_range = options.firstframe:options.stride:R.files[1].lastframe_read
     read_lock = ReentrantLock()
-    Threads.@threads for (ichunk, frame_range) in
-                         enumerate(ChunkSplitters.chunks(options.firstframe:R.files[1].lastframe_read; n=nchunks))
+    Threads.@threads for (ichunk, frame_range) in enumerate(ChunkSplitters.chunks(to_read_frames; n=nchunks))
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].files[1].nframes_read = 0
         for _ in frame_range
@@ -196,7 +198,7 @@ function mddf(
             local frame_weight
             # Read frame coordinates
             lock(read_lock) do
-                iframe, compute = goto_nextframe!(iframe, R, trajectory, trajectory_range, options)
+                iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
                 if compute
                     # Read frame for computing 
                     # The solute coordinates must be read in intermediate arrays, because the 
