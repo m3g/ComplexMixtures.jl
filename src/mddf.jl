@@ -193,12 +193,9 @@ function mddf(
         # Reset the number of frames read by each chunk
         R_chunk[ichunk].files[1].nframes_read = 0
         for _ in frame_range
-            # variables used in this scope
-            local compute
-            local frame_weight
             # Read frame coordinates
-            lock(read_lock) do
-                iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
+            compute, frame_weight = lock(read_lock) do
+                iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options) 
                 if compute
                     # Read frame for computing 
                     # The solute coordinates must be read in intermediate arrays, because the 
@@ -212,7 +209,10 @@ function mddf(
                     frame_weight = R_chunk[ichunk].files[1].frame_weights[iframe]
                     # Display progress bar
                     options.silent || next!(progress)
-                end # compute if
+                else
+                    frame_weight = 0.0
+                end
+                return compute, frame_weight
             end # release reading lock
             #
             # Perform MDDF computation
