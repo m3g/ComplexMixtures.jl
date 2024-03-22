@@ -315,6 +315,8 @@ function mddf_frame!(
                 minimum_distances!(system, R, isolute; update_lists=update_lists)
                 updatecounters!(R, system, frame_weight, Val(:random))
             end
+            # Restore positions and minimum distance list of system structure
+            system.list .= buff.list
             system.ypositions .= buff.solvent_read
         end
 
