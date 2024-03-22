@@ -147,6 +147,7 @@ function nextframe!(trajectory::PDBTraj{T}) where {T<:AbstractVector}
         end
         record = readline(st)
     end
+    return trajectory
 end
 
 #

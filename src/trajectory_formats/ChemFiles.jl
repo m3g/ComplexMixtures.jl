@@ -129,6 +129,7 @@ function nextframe!(trajectory::ChemFile{T}) where {T}
         )
     end
 
+    return trajectory
 end
 
 # Returns the unitcell of the current frame, as a 3x3 matrix (static in this case)

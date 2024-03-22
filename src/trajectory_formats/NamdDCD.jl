@@ -160,7 +160,7 @@ function nextframe!(trajectory::NamdDCD{T}) where {T}
         )
     end
 
-    return nothing
+    return trajectory
 end
 
 #
