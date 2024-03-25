@@ -205,7 +205,7 @@ function mddf(
                     # minimum distances
                     @. buff_chunk.solute_read = trajectory.x_solute
                     @. buff_chunk.solvent_read = trajectory.x_solvent
-                    unitcell = convert_unitcell(getunitcell(trajectory))
+                    unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
                     update_unitcell!(system_chunk, unitcell)
                     # Read weight of this frame. 
                     frame_weight = R_chunk.files[1].frame_weights[iframe]

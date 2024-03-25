@@ -59,7 +59,30 @@ function convert_unitcell(unitcell::AbstractMatrix; tol = 1e-10)
     size(unitcell) == (3,3) || error("Unit cell must be a 3x3 matrix.")
     s = minimum(diag(unitcell))
     is_diag = all(unitcell[i,j] < tol*s for i in 1:3, j in 1:3 if i != j)
-    return is_diag ?  SVector(diag(unitcell)) : SMatrix(unitcell)
+    return is_diag ?  SVector{3}(diag(unitcell)) : SMatrix{3,3}(unitcell)
+end
+
+# Version to ensure type stability when we know the type of the unit cell
+convert_unitcell(::SVector, unitcell::AbstractMatrix) = SVector{3}(unitcell[1,1], unitcell[2,2], unitcell[3,3])
+convert_unitcell(::SMatrix, unitcell::AbstractMatrix) = SMatrix{3,3}(unitcell)
+
+@testitem "convert_unitcell" begin
+    using ComplexMixtures: convert_unitcell
+    using StaticArrays: SVector, SMatrix
+    using BenchmarkTools: @benchmark
+    m = [1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]
+    @test convert_unitcell(m) isa SVector
+    s = SVector(1.0, 1.0, 1.0)
+    @test convert_unitcell(s, m) isa SVector
+    @test convert_unitcell(s, m) isa SVector
+    b = @benchmark convert_unitcell($s, $m) samples = 1 evals = 1
+    @test b.allocs == 0
+    m = [1.0 1.0 0.0; 0.0 1.0 0.0; 0.0 0.0 2.0]
+    @test convert_unitcell(m) isa SMatrix
+    m2 = SMatrix{3,3}(m)
+    @test convert_unitcell(m2, m) isa SMatrix
+    b = @benchmark convert_unitcell($m2, $m) samples = 1 evals = 1
+    @test b.allocs == 0
 end
 
 function print_unitcell(trajectory)
