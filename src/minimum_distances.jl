@@ -164,12 +164,7 @@ will be setup such that `xpositions` corresponds to one molecule of the solute, 
 `ypositions` contains all coordinates of all atoms of the solvent. 
 
 =#
-function setup_PeriodicSystem(trajectory::Trajectory, options::Options)
-    opentraj!(trajectory)
-    firstframe!(trajectory)
-    nextframe!(trajectory)
-    unitcell = convert_unitcell(getunitcell(trajectory)) # returns vector or matrix depending on the data
-    closetraj!(trajectory)
+function setup_PeriodicSystem(trajectory::Trajectory, unitcell, options::Options)
     system = PeriodicSystem(
         xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
         ypositions = zeros(
@@ -201,7 +196,8 @@ end
     # Cross-correlation
     protein = AtomSelection(select(atoms, "protein"), nmols = 1)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
-    system = ComplexMixtures.setup_PeriodicSystem(traj, options)
+    tmeta = ComplexMixtures.TrajectoryMetaData(traj, options) 
+    system = ComplexMixtures.setup_PeriodicSystem(traj, tmeta.unitcell, options)
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181)
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
@@ -216,7 +212,8 @@ end
 
     # Auto-correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
-    system = ComplexMixtures.setup_PeriodicSystem(traj, options)
+    tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
+    system = ComplexMixtures.setup_PeriodicSystem(traj, tmeta.unitcell, options)
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181) # one molecule less
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
