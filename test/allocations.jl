@@ -54,7 +54,8 @@
     t_RNG = @benchmark ComplexMixtures.init_random($options) samples = 1 evals = 1
     @test t_RNG.allocs < 5
 
-    system = ComplexMixtures.setup_PeriodicSystem(traj, options)
+    tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
+    system = ComplexMixtures.setup_PeriodicSystem(traj, tmeta.unitcell, options)
     buff = ComplexMixtures.Buffer(traj, R)
     @. buff.solute_read = traj.x_solute
     @. buff.solvent_read = traj.x_solvent
