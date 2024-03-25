@@ -129,7 +129,7 @@ julia> solute = AtomSelection(
 AtomSelection 
     1463 atoms belonging to 1 molecule(s).
     Atoms per molecule: 1463
-    Number of groups: 1463 
+    Number of groups: 2 
 ```
 
 In this example, then, the `solute` `AtomSelection` has two groups. The indices of the atoms
