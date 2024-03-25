@@ -75,8 +75,6 @@ function print_unitcell(trajectory)
     end
 end
 
-
-
 @testitem "Trajectory" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
@@ -126,4 +124,109 @@ end
     @test ComplexMixtures.natoms(traj.solute) == 1231
     @test ComplexMixtures.natoms(traj.solvent) == 5080
 
+end
+
+#
+# This structure and function are used to retrieve metadata from the trajectory
+# that is used to initialize the Result and PeriodicSystem structures, without
+# having to open the trajectory again. This allows the parallel initialization of
+# these data structures. 
+#
+@kwdef struct TrajectoryMetaData{UC}
+    irefatom::Int
+    lastframe_read::Int
+    nframes_read::Int
+    n_groups_solute::Int
+    n_groups_solvent::Int
+    unitcell::UC
+end
+
+function TrajectoryMetaData(trajectory::Trajectory, options::Options)
+
+    if options.irefatom > trajectory.solvent.natomspermol
+        throw(ArgumentError("in MDDF options: Reference atom index $(options.irefatom) is greater than number of atoms of the solvent molecule. "))
+    end
+    if options.lastframe > trajectory.nframes
+        throw(ArgumentError("in MDDF options: lastframe is greater than trajectory.nframes. "))
+    end
+
+    # Open trajectory to read some data
+    opentraj!(trajectory)
+    firstframe!(trajectory)
+
+    # Get unitcell from the trajectory: returns vector or matrix depending on the data
+    unitcell = convert_unitcell(getunitcell(trajectory)) 
+
+    # Set reference atom as the closest one to the center of coordinates of the molecule, as default
+    if options.irefatom == -1
+        nextframe!(trajectory)
+        first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
+        cm = mean(first_mol)
+        irefatom = last(findmin(at -> norm(at - cm), first_mol))
+    else
+        irefatom = options.irefatom
+    end
+
+    # Last frame to be considered
+    if options.lastframe == -1
+        lastframe_read = trajectory.nframes
+    else
+        lastframe_read = options.lastframe
+    end
+
+    # Actual number of frames that are read considering lastframe and stride
+    nframes_read = length(options.firstframe:options.stride:lastframe_read)
+
+    # Close trajecotory
+    closetraj!(trajectory)
+
+    # Initialize the arrays that contain groups counts, depending on wheter
+    # groups were defined or not in the input Options
+    n_groups_solute = if !trajectory.solute.custom_groups 
+        trajectory.solute.natomspermol
+    else
+        length(trajectory.solute.group_atom_indices)
+    end
+    n_groups_solvent = if !trajectory.solvent.custom_groups
+        trajectory.solvent.natomspermol
+    else
+        length(trajectory.solvent.group_atom_indices)
+    end
+
+    return TrajectoryMetaData(
+        irefatom = irefatom,
+        lastframe_read = lastframe_read,
+        nframes_read = nframes_read,
+        n_groups_solute = n_groups_solute,
+        n_groups_solvent = n_groups_solvent,
+        unitcell = unitcell,
+    )
+end
+
+@testitem "TrajectoryMetaData" begin
+    using ComplexMixtures
+    using ComplexMixtures.Testing
+    using PDBTools
+    atoms = readPDB(Testing.pdbfile)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+
+    options = Options()
+    tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
+    @test tmeta.irefatom == 1
+    @test tmeta.lastframe_read == 20 
+    @test tmeta.nframes_read == 20
+    @test tmeta.n_groups_solute == 1463
+    @test tmeta.n_groups_solvent == 14
+    @test tmeta.unitcell ≈ [84.42188262939453, 84.42188262939453, 84.42188262939453]
+
+    options = Options(;irefatom = 2, lastframe = 10, stride = 2)
+    tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
+    @test tmeta.irefatom == 2
+    @test tmeta.lastframe_read == 10
+    @test tmeta.nframes_read == 5
+    @test tmeta.n_groups_solute == 1463
+    @test tmeta.n_groups_solvent == 14
+    @test tmeta.unitcell ≈ [84.42188262939453, 84.42188262939453, 84.42188262939453]
 end
