@@ -119,75 +119,35 @@ end
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-function Result(trajectory::Trajectory, options::Options, frame_weights::Vector{Float64} = Float64[])
-
-    if options.irefatom > trajectory.solvent.natomspermol
-        throw(ArgumentError("in MDDF options: Reference atom index $(options.irefatom) is greater than number of atoms of the solvent molecule. "))
-    end
-    if options.lastframe > trajectory.nframes
-        throw(ArgumentError("in MDDF options: lastframe is greater than trajectory.nframes. "))
-    end
+function Result(
+    trajectory::Trajectory,
+    options::Options; 
+    trajectory_data::TrajectoryMetaData = TrajectoryMetaData(trajectory, options),
+    frame_weights::Vector{Float64} = Float64[]
+)
 
     # Number of bins of the histogram
     nbins = setbin(options.cutoff, options.binstep)
 
-    # Open trajectory to read some data
-    opentraj!(trajectory)
-    firstframe!(trajectory)
-
-    # Set reference atom as the closest one to the center of coordinates of the molecule, as default
-    if options.irefatom == -1
-        nextframe!(trajectory)
-        first_mol = viewmol(1, trajectory.x_solvent, trajectory.solvent)
-        cm = mean(first_mol)
-        irefatom = last(findmin(at -> norm(at - cm), first_mol))
-    else
-        irefatom = options.irefatom
-    end
-
-    # Last frame to be considered
-    if options.lastframe == -1
-        lastframe_read = trajectory.nframes
-    else
-        lastframe_read = options.lastframe
-    end
-
-    # Actual number of frames that are read considering lastframe and stride
-    nframes_read = length(options.firstframe:options.stride:lastframe_read)
-
-    # Close trajecotory
-    closetraj!(trajectory)
-
     # If frame weights are provided, the length of the weights vector has to at least
     # of the of number of the last frame to be read
     if !isempty(frame_weights)
-        if length(frame_weights) < lastframe_read
+        if length(frame_weights) < trajectory_data.lastframe_read
             throw(ArgumentError(chomp("""\n
             The length of the frame_weights vector provided must at least the number of frames to be read.
             
                 Input given: length(frame_weights) = $(length(frame_weights))
-                             last frame to be read: $(lastframe_read)
+                             last frame to be read: $(trajectory_data.lastframe_read)
             
             """)))
         end
     else
-        frame_weights = ones(lastframe_read)
+        frame_weights = ones(trajectory_data.lastframe_read)
     end
 
-    # Initialize the arrays that contain groups counts, depending on wheter
-    # groups were defined or not in the input Options
-    n_groups_solute = if !trajectory.solute.custom_groups 
-        trajectory.solute.natomspermol
-    else
-        length(trajectory.solute.group_atom_indices)
-    end
-    n_groups_solvent = if !trajectory.solvent.custom_groups
-        trajectory.solvent.natomspermol
-    else
-        length(trajectory.solvent.group_atom_indices)
-    end
-    solute_group_count = [ zeros(nbins) for _ in 1:n_groups_solute ]
-    solvent_group_count = [ zeros(nbins) for _ in 1:n_groups_solvent ]
+    # Initialize group count arrays
+    solute_group_count = [ zeros(nbins) for _ in 1:trajectory_data.n_groups_solute ]
+    solvent_group_count = [ zeros(nbins) for _ in 1:trajectory_data.n_groups_solvent ]
 
     return Result(
         nbins = nbins,
@@ -202,9 +162,9 @@ function Result(trajectory::Trajectory, options::Options, frame_weights::Vector{
             TrajectoryFileOptions(
                 filename = trajectory.filename,
                 options = options,
-                irefatom = irefatom, 
-                lastframe_read = lastframe_read,
-                nframes_read = nframes_read,
+                irefatom = trajectory_data.irefatom, 
+                lastframe_read = trajectory_data.lastframe_read,
+                nframes_read = trajectory_data.nframes_read,
                 frame_weights = frame_weights,
             )
         ],
@@ -1000,67 +960,3 @@ function overview(R::Result)
 
     return ov
 end
-
-
-#= 
-        # The group definitions must be the same for all results
-        if !empty_solute_groups && !isequal(options.solute_groups, O[i].solute_groups)
-            @warn begin
-                """
-                Groups for solute are not the same for all results. 
-                The merged solute_groups will be empty and won't be meaningful.
-                """
-            end _file=nothing _line=nothing
-            empty_solute_groups = true
-        end
-        if !empty_solvent_groups && !isequal(options.solvent_groups, O[i].solvent_groups)
-            @warn begin
-                """
-                Groups for solvent are not the same for all results. 
-                The merged solvent_groups will be empty and won't be meaningful.
-                """
-            end _file=nothing _line=nothing
-            empty_solvent_groups = true
-        end
-
-    o1 = Options(solute_groups=[[1,2,3]])
-    @test o1.solute_groups == [[1,2,3]]
-    @test o1.solvent_groups == Vector{Int}[]
-    o2 = Options(solute_groups=[[1,2,3]])
-    om = merge([o1, o2])
-    @test om.solute_groups == [[1,2,3]]
-    @test om.solvent_groups == Vector{Int}[]
-    o2 = Options(solute_groups=[[1,2,3], [4,5,6]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solute_groups == Vector{Int}[]
-    @test om.solvent_groups == Vector{Int}[]
-    o1 = Options(solute_groups=[[1,2,3], [4,5,6]])
-    o2 = Options(solute_groups=[[1,2,3]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solute_groups == Vector{Int}[]
-    @test om.solvent_groups == Vector{Int}[]
-    o1 = Options(solvent_groups=[[1,2,3]])
-    @test o1.solvent_groups == [[1,2,3]]
-    @test o1.solute_groups == Vector{Int}[]
-
-    o2 = Options(solvent_groups=[[1,2,3]])
-    om = merge([o1, o2])
-    @test om.solvent_groups == [[1,2,3]]
-    @test om.solute_groups == Vector{Int}[]
-    o1 = Options(solvent_groups=[[1,2,3]])
-    o2 = Options(solvent_groups=[[1,2,3], [4,5,6]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solvent_groups == Vector{Int}[]
-    @test om.solute_groups == Vector{Int}[]
-    o1 = Options(solvent_groups=[[1,2,3], [4,5,6]])
-    o2 = Options(solvent_groups=[[1,2,3]])
-    om = @test_logs (:warn, ) merge([o1, o2])
-    @test om.solvent_groups == Vector{Int}[]
-    @test om.solute_groups == Vector{Int}[]
-
-    o1 = Options(solvent_groups=[[1,2,3]], solute_groups=[[4,5,6]])
-    o2 = Options(solvent_groups=[[1,2,3]], solute_groups=[[4,5,6]])
-    om = merge([o1, o2])
-    @test om.solvent_groups == [[1,2,3]]
-    @test om.solute_groups == [[4,5,6]]
-=#
