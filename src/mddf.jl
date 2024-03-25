@@ -15,10 +15,10 @@ be used as reference states for ideal gas distributions
     list::Vector{MinimumDistance}
     indices_in_bulk::Vector{Int}
 end
-function Buffer(traj::Trajectory, R::Result)
+function Buffer(trajectory::Trajectory, R::Result)
     return Buffer(
-        solute_read=similar(traj.x_solute),
-        solvent_read=similar(traj.x_solvent),
+        solute_read=similar(trajectory.x_solute),
+        solvent_read=similar(trajectory.x_solvent),
         ref_solutes=zeros(Int, R.files[1].options.n_random_samples),
         list=fill(zero(MinimumDistance), R.solvent.nmols),
         indices_in_bulk=fill(0, R.solvent.nmols),
@@ -142,7 +142,7 @@ function mddf(
 )
 
     options.silent || println(bars)
-    options.silent || println("Initializing memory buffers ...")
+    options.silent || println("Initializing data structures ...")
 
     # Set random number generator
     RNG = init_random(options)
@@ -152,18 +152,14 @@ function mddf(
     if nchunks == 0
         nchunks = Threads.nthreads()
     end
+    
+    # Compute some meta-data from the trajectory file and the options,
+    # to allow parallel creation of the Result, and PeriodicSystem
+    # data structures
+    trajectory_data = TrajectoryMetaData(trajectory, options)
 
     # Structure in which the final results will be stored
-    R = Result(trajectory, options, frame_weights)
-
-    # Initializing the structure that carries the result per thread
-    R_chunk = [Result(trajectory, options, frame_weights) for _ = 1:nchunks]
-
-    # Create data structures required for multithreading: needed to read coordinates in each
-    # frame independently, and compute the minimum-distance list 
-    options.silent || println("Setting up system for fast cell list computation ...")
-    system = [setup_PeriodicSystem(trajectory, options) for _ = 1:nchunks]
-    buff = [Buffer(trajectory, R) for _ = 1:nchunks]
+    R = Result(trajectory, options; trajectory_data, frame_weights)
 
     # Open the trajectory stream and go to first frame
     options.silent || println("Open trajectory and read first frame ...")
@@ -189,9 +185,14 @@ function mddf(
 
     # Loop over the trajectory
     read_lock = ReentrantLock()
-    Threads.@threads for (ichunk, frame_range) in enumerate(ChunkSplitters.chunks(to_read_frames; n=nchunks))
+    sum_results_lock = ReentrantLock()
+    Threads.@threads for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
+        # Local data structures for this chunk
+        R_chunk = Result(trajectory, options; trajectory_data, frame_weights)
+        system_chunk = setup_PeriodicSystem(trajectory, trajectory_data.unitcell, options)
+        buff_chunk = Buffer(trajectory, R)
         # Reset the number of frames read by each chunk
-        R_chunk[ichunk].files[1].nframes_read = 0
+        R_chunk.files[1].nframes_read = 0
         for _ in frame_range
             local compute, frame_weight
             # Read frame coordinates
@@ -202,12 +203,12 @@ function mddf(
                     # The solute coordinates must be read in intermediate arrays, because the 
                     # solute molecules will be considered one at a time in the computation of the
                     # minimum distances
-                    @. buff[ichunk].solute_read = trajectory.x_solute
-                    @. buff[ichunk].solvent_read = trajectory.x_solvent
+                    @. buff_chunk.solute_read = trajectory.x_solute
+                    @. buff_chunk.solvent_read = trajectory.x_solvent
                     unitcell = convert_unitcell(getunitcell(trajectory))
-                    update_unitcell!(system[ichunk], unitcell)
+                    update_unitcell!(system_chunk, unitcell)
                     # Read weight of this frame. 
-                    frame_weight = R_chunk[ichunk].files[1].frame_weights[iframe]
+                    frame_weight = R_chunk.files[1].frame_weights[iframe]
                     # Display progress bar
                     options.silent || next!(progress)
                 end
@@ -216,22 +217,23 @@ function mddf(
             # Perform MDDF computation
             #
             if compute
-                R_chunk[ichunk].files[1].nframes_read += 1
+                R_chunk.files[1].nframes_read += 1
                 # Compute distances in this frame and update results
                 if !coordination_number_only
-                    mddf_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], options, frame_weight, RNG)
+                    mddf_frame!(R_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
                 else
-                    coordination_number_frame!(R_chunk[ichunk], system[ichunk], buff[ichunk], frame_weight)
+                    coordination_number_frame!(R_chunk, system_chunk, buff_chunk, frame_weight)
                 end
             end # compute if
         end # frame range for this chunk
+
+        # Sum the results of this chunk into the total results data structure
+        @lock sum_results_lock begin
+            sum!(R, R_chunk)
+        end
+
     end
     closetraj!(trajectory)
-
-    # Sum up the counts of all threads into the data of thread one (R1<-R1+R2)
-    for ichunk in eachindex(R_chunk)
-        sum!(R, R_chunk[ichunk])
-    end
 
     # Setup the final data structure with final values averaged over the number of frames,
     # sampling, etc, and computes final distributions and integrals
