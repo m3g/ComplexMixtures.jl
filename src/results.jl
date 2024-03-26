@@ -350,9 +350,10 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
         if R.md_count_random[ibin] == 0.0
             if !warn && !options.silent
                 @warn begin
-                    """
-                    Ideal-gas histogram bins with zero samples. 
-                    Increase n_random_samples and/or number of trajectory frames.
+                    """\n
+                        Ideal-gas histogram bins with zero samples. 
+                        Increase n_random_samples and/or number of trajectory frames.
+
                     """
                 end _file=nothing _line=nothing
                 warn = true
@@ -492,8 +493,9 @@ function Base.merge(results::Vector{<:Result})
         if !(w ≈ R.weights[ifile]) && !warn
             warn = true
             @warn begin 
-                """
-                Frame weights and file weights differ, because crustom frame weights were provided.
+                """\n
+                    Frame weights and file weights differ, because crustom frame weights were provided.
+
                 """ 
              end _file=nothing _line=nothing
         end
