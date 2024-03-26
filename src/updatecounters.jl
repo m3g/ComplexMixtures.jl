@@ -25,8 +25,8 @@ function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSe
     else
         iat = sol.indices[iatom] 
         for (igroup, indices) in enumerate(sol.group_atom_indices)
-            ifind = searchsortedfirst(iat, indices)
-            if ifind == iat
+            ifind = searchsortedfirst(indices, iat)
+            if ifind <= length(indices) && indices[ifind] == iat
                 group_count[igroup][ibin] += frame_weight
             end
         end
