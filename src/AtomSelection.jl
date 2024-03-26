@@ -296,7 +296,7 @@ function AtomSelection(
         nmols = nmols,
         natomspermol = natomspermol,
         custom_groups = custom_groups,
-        group_atom_indices = group_atom_indices,
+        group_atom_indices = sort.(group_atom_indices),
         group_names = group_names,
     )
 end
