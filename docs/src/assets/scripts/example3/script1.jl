@@ -57,29 +57,30 @@ println("Results saved to ./mddf_ethanol_POPC.json file")
 plot_font = "Computer Modern"
 default(
     fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
+    linewidth=2.5,
+    framestyle=:box,
+    label=nothing,
     grid=false,
     palette=:tab10
 )
-scalefontsizes(); scalefontsizes(1.3)
+scalefontsizes();
+scalefontsizes(1.3);
 
 #
 # Plots cossolvent-POPC MDDFs in subplot 1
 #
-plot(layout=(2,1))
+plot(layout=(2, 1))
 # Water MDDF
 plot!(
     mddf_water_POPC.d, # distances
-    movavg(mddf_water_POPC.mddf,n=10).x, # water MDDF - smoothed
+    movavg(mddf_water_POPC.mddf, n=10).x, # water MDDF - smoothed
     label="Water",
     subplot=1
 )
 # Ethanol MDDF
 plot!(
     mddf_ethanol_POPC.d, # distances
-    movavg(mddf_ethanol_POPC.mddf,n=10).x, # water MDDF - smoothed
+    movavg(mddf_ethanol_POPC.mddf, n=10).x, # water MDDF - smoothed
     label="Ethanol",
     subplot=1
 )
@@ -87,7 +88,7 @@ plot!(
 plot!(
     xlabel=L"\textrm{Distance / \AA}",
     ylabel="MDDF",
-    xlim=(0,10),
+    xlim=(0, 10),
     subplot=1
 )
 
@@ -112,7 +113,7 @@ plot!(
 plot!(
     xlabel=L"\textrm{Distance / \AA}",
     ylabel=L"\textrm{KB~/~L~mol^{-1}}",
-    xlim=(0,10),
+    xlim=(0, 10),
     subplot=2
 )
 

@@ -79,10 +79,10 @@ contourf!(
     color=cgrad(:tempo), linewidth=1, linecolor=:black,
     colorbar=:none, levels=10,
     ylabel=L"r/\AA", xrotation=60,
-    xticks=(1:length(oleoyl_groups), labels_o), 
+    xticks=(1:length(oleoyl_groups), labels_o),
     subplot=1,
 )
-annotate!( 14, 2.7, text("Oleoyl", :left, 12, plot_font), subplot=1)
+annotate!(14, 2.7, text("Oleoyl", :left, 12, plot_font), subplot=1)
 
 #
 # Repeat procedure for the palmitoyl groups
@@ -128,11 +128,11 @@ contourf!(
     colorbar=:none, levels=10,
     xlabel="Group",
     ylabel=L"r/\AA", xrotation=60,
-    xticks=(1:length(labels_p), labels_p), 
+    xticks=(1:length(labels_p), labels_p),
     bottom_margin=0.5Plots.Measures.cm,
     subplot=2,
 )
-annotate!( 12, 2.7, text("Palmitoyl", :left, 12, plot_font), subplot=2)
+annotate!(12, 2.7, text("Palmitoyl", :left, 12, plot_font), subplot=2)
 
 savefig("POPC_ethanol_chains.png")
 println("The plot was saved as POPC_ethanol_chains.png")
@@ -162,7 +162,7 @@ contourf!(
     ylabel=L"r/\AA", xrotation=60,
     xticks=(1:length(oleoyl_groups), labels_o), subplot=1,
 )
-annotate!( 14, 2.7, text("Oleoyl", :left, 12, plot_font), subplot=1)
+annotate!(14, 2.7, text("Oleoyl", :left, 12, plot_font), subplot=1)
 
 # Plot the contributions of the palmitoyl groups
 # We first collect the contributions of each group into a vector of vectors:
@@ -182,11 +182,11 @@ contourf!(
     colorbar=:none, levels=10,
     xlabel="Group",
     ylabel=L"r/\AA", xrotation=60,
-    xticks=(1:length(palmitoyl_groups), labels_o), 
+    xticks=(1:length(palmitoyl_groups), labels_o),
     subplot=2,
     bottom_margin=0.5Plots.Measures.cm,
 )
-annotate!( 12, 2.7, text("Palmitoyl", :left, 12, plot_font), subplot=2)
+annotate!(12, 2.7, text("Palmitoyl", :left, 12, plot_font), subplot=2)
 
 savefig("POPC_water_chains.png")
 println("The plot was saved as POPC_water_chains.png")

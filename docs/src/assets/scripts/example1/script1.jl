@@ -1,5 +1,6 @@
 # Activate environment in current directory
-import Pkg; Pkg.activate(".")
+import Pkg;
+Pkg.activate(".");
 
 # Run this once, to install necessary packages:
 # Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings"])
@@ -27,7 +28,7 @@ solute = AtomSelection(protein, nmols=1)
 solvent = AtomSelection(glyc, natomspermol=14)
 
 # Path to the trajectory file
-trajectory_file = "./glyc50_traj.dcd" 
+trajectory_file = "./glyc50_traj.dcd"
 
 # Run mddf calculation, and save results
 trajectory = Trajectory(trajectory_file, solute, solvent)
@@ -40,10 +41,10 @@ println("Results saved to glyc50_results.json")
 #
 # Default options for plots 
 Plots.default(
-    fontfamily="Computer Modern", 
-    linewidth=2, 
-    framestyle=:box, 
-    label=nothing, 
+    fontfamily="Computer Modern",
+    linewidth=2,
+    framestyle=:box,
+    label=nothing,
     grid=false
 )
 
@@ -53,15 +54,15 @@ Plots.default(
 plot(layout=(1, 2))
 # plot mddf
 plot!(results.d, results.mddf,
-    xlabel=L"r/\AA", 
-    ylabel="mddf", 
+    xlabel=L"r/\AA",
+    ylabel="mddf",
     subplot=1
 )
 hline!([1], linestyle=:dash, linecolor=:gray, subplot=1)
 # plot KB integral
 plot!(results.d, results.kb / 1000, #to L/mol
-    xlabel=L"r/\AA", 
-    ylabel=L"G_{us}/\mathrm{L~mol^{-1}}", 
+    xlabel=L"r/\AA",
+    ylabel=L"G_{us}/\mathrm{L~mol^{-1}}",
     subplot=2
 )
 # size and margin
@@ -77,9 +78,9 @@ aliphatic = ["C1", "C2", "HA", "HB", "HC", "HD"]
 hydr_contrib = contributions(results, SolventGroup(hydroxyls))
 aliph_contrib = contributions(results, SolventGroup(aliphatic))
 
-plot(results.d, results.mddf, 
-    xlabel=L"r/\AA", 
-    ylabel="mddf", 
+plot(results.d, results.mddf,
+    xlabel=L"r/\AA",
+    ylabel="mddf",
     size=(600, 400)
 )
 plot!(results.d, hydr_contrib, label="Hydroxyls")
