@@ -63,29 +63,30 @@ println(&quot;Results saved to ./mddf_ethanol_POPC.json file&quot;)
 plot_font = &quot;Computer Modern&quot;
 default(
     fontfamily=plot_font,
-    linewidth=2.5, 
-    framestyle=:box, 
-    label=nothing, 
+    linewidth=2.5,
+    framestyle=:box,
+    label=nothing,
     grid=false,
     palette=:tab10
 )
-scalefontsizes(); scalefontsizes(1.3)
+scalefontsizes();
+scalefontsizes(1.3);
 
 #
 # Plots cossolvent-POPC MDDFs in subplot 1
 #
-plot(layout=(2,1))
+plot(layout=(2, 1))
 # Water MDDF
 plot!(
     mddf_water_POPC.d, # distances
-    movavg(mddf_water_POPC.mddf,n=10).x, # water MDDF - smoothed
+    movavg(mddf_water_POPC.mddf, n=10).x, # water MDDF - smoothed
     label=&quot;Water&quot;,
     subplot=1
 )
 # Ethanol MDDF
 plot!(
     mddf_ethanol_POPC.d, # distances
-    movavg(mddf_ethanol_POPC.mddf,n=10).x, # water MDDF - smoothed
+    movavg(mddf_ethanol_POPC.mddf, n=10).x, # water MDDF - smoothed
     label=&quot;Ethanol&quot;,
     subplot=1
 )
@@ -93,7 +94,7 @@ plot!(
 plot!(
     xlabel=L&quot;\textrm{Distance / \AA}&quot;,
     ylabel=&quot;MDDF&quot;,
-    xlim=(0,10),
+    xlim=(0, 10),
     subplot=1
 )
 
@@ -118,7 +119,7 @@ plot!(
 plot!(
     xlabel=L&quot;\textrm{Distance / \AA}&quot;,
     ylabel=L&quot;\textrm{KB~/~L~mol^{-1}}&quot;,
-    xlim=(0,10),
+    xlim=(0, 10),
     subplot=2
 )
 
@@ -144,7 +145,8 @@ Plots.default(
     label=nothing,
     grid=false,
 )
-scalefontsizes(); scalefontsizes(1.3)
+scalefontsizes();
+scalefontsizes(1.3);
 
 # Read system PDB file
 system = readPDB(&quot;equilibrated.pdb&quot;)
@@ -400,10 +402,10 @@ contourf!(
     color=cgrad(:tempo), linewidth=1, linecolor=:black,
     colorbar=:none, levels=10,
     ylabel=L&quot;r/\AA&quot;, xrotation=60,
-    xticks=(1:length(oleoyl_groups), labels_o), 
+    xticks=(1:length(oleoyl_groups), labels_o),
     subplot=1,
 )
-annotate!( 14, 2.7, text(&quot;Oleoyl&quot;, :left, 12, plot_font), subplot=1)
+annotate!(14, 2.7, text(&quot;Oleoyl&quot;, :left, 12, plot_font), subplot=1)
 
 #
 # Repeat procedure for the palmitoyl groups
@@ -449,11 +451,11 @@ contourf!(
     colorbar=:none, levels=10,
     xlabel=&quot;Group&quot;,
     ylabel=L&quot;r/\AA&quot;, xrotation=60,
-    xticks=(1:length(labels_p), labels_p), 
+    xticks=(1:length(labels_p), labels_p),
     bottom_margin=0.5Plots.Measures.cm,
     subplot=2,
 )
-annotate!( 12, 2.7, text(&quot;Palmitoyl&quot;, :left, 12, plot_font), subplot=2)
+annotate!(12, 2.7, text(&quot;Palmitoyl&quot;, :left, 12, plot_font), subplot=2)
 
 savefig(&quot;POPC_ethanol_chains.png&quot;)
 println(&quot;The plot was saved as POPC_ethanol_chains.png&quot;)
@@ -483,7 +485,7 @@ contourf!(
     ylabel=L&quot;r/\AA&quot;, xrotation=60,
     xticks=(1:length(oleoyl_groups), labels_o), subplot=1,
 )
-annotate!( 14, 2.7, text(&quot;Oleoyl&quot;, :left, 12, plot_font), subplot=1)
+annotate!(14, 2.7, text(&quot;Oleoyl&quot;, :left, 12, plot_font), subplot=1)
 
 # Plot the contributions of the palmitoyl groups
 # We first collect the contributions of each group into a vector of vectors:
@@ -503,11 +505,11 @@ contourf!(
     colorbar=:none, levels=10,
     xlabel=&quot;Group&quot;,
     ylabel=L&quot;r/\AA&quot;, xrotation=60,
-    xticks=(1:length(palmitoyl_groups), labels_o), 
+    xticks=(1:length(palmitoyl_groups), labels_o),
     subplot=2,
     bottom_margin=0.5Plots.Measures.cm,
 )
-annotate!( 12, 2.7, text(&quot;Palmitoyl&quot;, :left, 12, plot_font), subplot=2)
+annotate!(12, 2.7, text(&quot;Palmitoyl&quot;, :left, 12, plot_font), subplot=2)
 
 savefig(&quot;POPC_water_chains.png&quot;)
-println(&quot;The plot was saved as POPC_water_chains.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example3/POPC_ethanol_chains.png" alt/></p><p>Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.</p><p>The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:</p><p><img src="../assets/scripts/example3/POPC_water_chains.png" alt/></p><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Membrane built with the <a href="https://www.ks.uiuc.edu/Research/vmd/">VMD</a> membrane plugin. </p><p>Water and ethanol layers added with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were performed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p><p>Density of the ethanol-water mixture from: <a href="https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/">https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example2/">« ◦ Polyacrylamide in DMF</a><a class="docs-footer-nextpage" href="../example4/">◦ Water/Glycerol mixture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Tuesday 26 March 2024 13:53">Tuesday 26 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+println(&quot;The plot was saved as POPC_water_chains.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example3/POPC_ethanol_chains.png" alt/></p><p>Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.</p><p>The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:</p><p><img src="../assets/scripts/example3/POPC_water_chains.png" alt/></p><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Membrane built with the <a href="https://www.ks.uiuc.edu/Research/vmd/">VMD</a> membrane plugin. </p><p>Water and ethanol layers added with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were performed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p><p>Density of the ethanol-water mixture from: <a href="https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/">https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example2/">« ◦ Polyacrylamide in DMF</a><a class="docs-footer-nextpage" href="../example4/">◦ Water/Glycerol mixture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Wednesday 27 March 2024 15:27">Wednesday 27 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
