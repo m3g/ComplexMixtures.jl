@@ -1,4 +1,5 @@
-import Pkg; Pkg.activate(".")
+import Pkg;
+Pkg.activate(".");
 using PDBTools
 using ComplexMixtures
 

@@ -16,7 +16,8 @@ Plots.default(
     label=nothing,
     grid=false,
 )
-scalefontsizes(); scalefontsizes(1.3)
+scalefontsizes();
+scalefontsizes(1.3);
 
 # Read system PDB file
 system = readPDB("equilibrated.pdb")

@@ -37,7 +37,7 @@ labels = latexstring.("\\textrm{$name}" for (name, atoms) in groups)
 # contributions of each Glycerol group to the MDDF
 #
 group_contrib = Vector{Float64}[] # empty vector of vectors
-for (name, atoms) in groups 
+for (name, atoms) in groups
     push!(group_contrib, contributions(mddf_glyc, SolventGroup(atoms)))
 end
 
@@ -77,7 +77,7 @@ contourf!(
 
 # Water-glycerol interactions (Glycerol contributions)
 group_contrib = Vector{Float64}[] # empty vector of vectors
-for (name, atoms) in groups 
+for (name, atoms) in groups
     push!(group_contrib, contributions(mddf_glyc_water, SoluteGroup(atoms)))
 end
 
@@ -96,8 +96,8 @@ contourf!(
     subplot=2
 )
 plot!(
-    xlabel="Glycerol group", 
-    bottommargin = 0.5Plots.Measures.cm,
+    xlabel="Glycerol group",
+    bottommargin=0.5Plots.Measures.cm,
     subplot=2
 )
 

@@ -30,7 +30,7 @@ trajectory = Trajectory(trajectory_file, solute) # solute and solvent are the sa
 
 # We define a large solute domain (large dbulk) to obtain a good convergence
 # for the KB integral. The mddf converges at much shorter distances.   
-options = Options(bulk_range=(20.0,25.0))
+options = Options(bulk_range=(20.0, 25.0))
 mddf_glyc = mddf(trajectory, options)
 
 # Save results for later analysis
@@ -214,7 +214,7 @@ labels = latexstring.(&quot;\\textrm{$name}&quot; for (name, atoms) in groups)
 # contributions of each Glycerol group to the MDDF
 #
 group_contrib = Vector{Float64}[] # empty vector of vectors
-for (name, atoms) in groups 
+for (name, atoms) in groups
     push!(group_contrib, contributions(mddf_glyc, SolventGroup(atoms)))
 end
 
@@ -254,7 +254,7 @@ contourf!(
 
 # Water-glycerol interactions (Glycerol contributions)
 group_contrib = Vector{Float64}[] # empty vector of vectors
-for (name, atoms) in groups 
+for (name, atoms) in groups
     push!(group_contrib, contributions(mddf_glyc_water, SoluteGroup(atoms)))
 end
 
@@ -273,10 +273,10 @@ contourf!(
     subplot=2
 )
 plot!(
-    xlabel=&quot;Glycerol group&quot;, 
-    bottommargin = 0.5Plots.Measures.cm,
+    xlabel=&quot;Glycerol group&quot;,
+    bottommargin=0.5Plots.Measures.cm,
     subplot=2
 )
 
 savefig(&quot;./GlycerolWater_map.png&quot;)
-println(&quot;Plot saved to GlycerolWater_map.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example4/GlycerolWater_map.png" alt/></p><p>The interesting result here is that the <span>$\mathrm{CH}$</span> group of glycerol is protected from both solvents. There is a strong density augmentation at the vicinity of hydroxyl groups, and the second peak of the MDDFs is clearly associated to interactions with the <span>$\mathrm{CH_2}$</span> groups.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example3/">« ◦ POPC membrane in water/ethanol</a><a class="docs-footer-nextpage" href="../selection/">Set solute and solvent »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Wednesday 27 March 2024 15:21">Wednesday 27 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+println(&quot;Plot saved to GlycerolWater_map.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example4/GlycerolWater_map.png" alt/></p><p>The interesting result here is that the <span>$\mathrm{CH}$</span> group of glycerol is protected from both solvents. There is a strong density augmentation at the vicinity of hydroxyl groups, and the second peak of the MDDFs is clearly associated to interactions with the <span>$\mathrm{CH_2}$</span> groups.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example3/">« ◦ POPC membrane in water/ethanol</a><a class="docs-footer-nextpage" href="../selection/">Set solute and solvent »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Wednesday 27 March 2024 15:26">Wednesday 27 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

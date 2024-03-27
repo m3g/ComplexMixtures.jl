@@ -1,5 +1,6 @@
 # Activate environment in current directory
-import Pkg; Pkg.activate(".")
+import Pkg;
+Pkg.activate(".");
 
 # Run this once, to install necessary packages:
 # Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "LaTeXStrings"])
@@ -41,7 +42,7 @@ rescontrib = zeros(length(results.d), length(residues))
 
 # Each column is then filled up with the contributions of each residue
 for (ires, residue) in enumerate(residues)
-    rescontrib[:, ires] .= contributions(results, SoluteGroup(residue))
+  rescontrib[:, ires] .= contributions(results, SoluteGroup(residue))
 end
 
 # Plot only for distances within 1.5 and 3.5:

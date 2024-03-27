@@ -1,4 +1,5 @@
-import Pkg; Pkg.activate(".")
+import Pkg;
+Pkg.activate(".");
 
 using PDBTools
 using ComplexMixtures
@@ -40,31 +41,32 @@ println("Results saved to ./mddf.json file")
 plot_font = "Computer Modern"
 default(
     fontfamily=plot_font,
-    linewidth=1.5, 
-    framestyle=:box, 
-    label=nothing, 
+    linewidth=1.5,
+    framestyle=:box,
+    label=nothing,
     grid=false,
     palette=:tab10
 )
-scalefontsizes(); scalefontsizes(1.3)
+scalefontsizes();
+scalefontsizes(1.3);
 
 # Plot the MDDF of DMF relative to PolyACR and its corresponding KB integral
-plot(layout=(2,1))
+plot(layout=(2, 1))
 plot!(
-    results.d, 
-    movavg(results.mddf,n=9).x, # Smooth example with a running average
-    ylabel="MDDF", 
-    xlims=(0,20),
-    subplot=1, 
+    results.d,
+    movavg(results.mddf, n=9).x, # Smooth example with a running average
+    ylabel="MDDF",
+    xlims=(0, 20),
+    subplot=1,
 )
 
 # Plot the KB integral
 plot!(
-    results.d, 
-    movavg(results.kb,n=9).x, # smooth kb
+    results.d,
+    movavg(results.kb, n=9).x, # smooth kb
     xlabel=L"\textrm{Distance / \AA}",
     ylabel=L"\textrm{KB~/~cm^2~mol^{-1}}",
-    xlim=(-1,20),
+    xlim=(-1, 20),
     subplot=2
 )
 savefig("./mddf_kb.png")
