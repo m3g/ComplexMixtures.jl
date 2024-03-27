@@ -29,7 +29,7 @@ plot!(
     subplot=1
 )
 
-# Plot DMF group contributions to the MDDF. We use a dictionary where
+# Plot DMF group contributions to the MDDF. We use a named tuple where
 # the keys are the group names, and the values are the atom names of the group
 groups = ( 
     "CO" => ["C","O"], # carbonyl
