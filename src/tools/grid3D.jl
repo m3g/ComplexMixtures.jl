@@ -68,56 +68,63 @@ function grid3D(
     # Building the grid with the nearest solute atom information
     igrid = 0
     grid = PDBTools.Atom[]
+    grid_lock = ReentrantLock()
     silent || (p = Progress(prod(n), "Building grid..."))
-    for ix = 1:n[1], iy = 1:n[2], iz = 1:n[3]
-        silent || next!(p)
-        x = lims.xmin[1] - dmax + step * (ix - 1)
-        y = lims.xmin[2] - dmax + step * (iy - 1)
-        z = lims.xmin[3] - dmax + step * (iz - 1)
-        rgrid = -1
-        _, iat, r = PDBTools.closest(SVector(x, y, z), solute_atoms)
-        if (dmin < r < dmax)
-            if rgrid < 0 || r < rgrid
-                at = solute_atoms[iat]
-                # Get contribution of this atom to the MDDF
-                c = contributions(result, SoluteGroup(SVector(index(at),)))
-                # Interpolate c at the current distance
-                iright = findfirst(d -> d > r, result.d)
-                ileft = iright - 1
-                cᵣ = interpolate(
-                    result.d[ileft],
-                    result.d[iright],
-                    c[ileft],
-                    c[iright],
-                    r,
-                )
-                if cᵣ > 0
-                    gridpoint = PDBTools.Atom(
-                        index = at.index,
-                        index_pdb = at.index_pdb,
-                        name = at.name,
-                        chain = at.chain,
-                        resname = at.resname,
-                        resnum = at.resnum,
-                        x = x,
-                        y = y,
-                        z = z,
-                        occup = r,
-                        beta = cᵣ,
-                        model = at.model,
-                        segname = at.segname,
+    Threads.@threads for ix_inds in ChunkSplitters.chunks(1:n[1]; n=Threads.nthreads())
+        for ix in ix_inds, iy in 1:n[2], iz in 1:n[3]
+            silent || next!(p)
+            x = lims.xmin[1] - dmax + step * (ix - 1)
+            y = lims.xmin[2] - dmax + step * (iy - 1)
+            z = lims.xmin[3] - dmax + step * (iz - 1)
+            rgrid = -1
+            _, iat, r = PDBTools.closest(SVector(x, y, z), solute_atoms)
+            if (dmin < r < dmax)
+                if rgrid < 0 || r < rgrid
+                    at = solute_atoms[iat]
+                    # Get contribution of this atom to the MDDF
+                    c = contributions(result, SoluteGroup(SVector(PDBTools.index(at),)))
+                    # Interpolate c at the current distance
+                    iright = findfirst(d -> d > r, result.d)
+                    ileft = iright - 1
+                    cᵣ = interpolate(
+                        result.d[ileft],
+                        result.d[iright],
+                        c[ileft],
+                        c[iright],
+                        r,
                     )
-                    if rgrid < 0
-                        igrid += 1
-                        push!(grid, gridpoint)
-                    elseif r < rgrid
-                        grid[igrid] = gridpoint
-                    end
-                    rgrid = r
-                end # cᵣ>0
-            end # rgrid
-        end # dmin/dmax
-    end #ix
+                    if cᵣ > 0
+                        gridpoint = PDBTools.Atom(
+                            index = PDBTools.index(at),
+                            index_pdb = PDBTools.index_pdb(at),
+                            name = PDBTools.name(at),
+                            chain = PDBTools.chain(at),
+                            resname = PDBTools.resname(at),
+                            resnum = PDBTools.resnum(at),
+                            x = x,
+                            y = y,
+                            z = z,
+                            occup = r,
+                            beta = cᵣ,
+                            model = PDBTools.model(at),
+                            segname = PDBTools.segname(at),
+                        )
+                        if rgrid < 0
+                            @lock grid_lock begin
+                                igrid += 1
+                                push!(grid, gridpoint)
+                            end
+                        elseif r < rgrid
+                            @lock grid_lock begin 
+                                grid[igrid] = gridpoint
+                            end
+                        end
+                        rgrid = r
+                    end # cᵣ>0
+                end # rgrid
+            end # dmin/dmax
+        end # ix, iy, iz
+    end # chunks
 
     # Now will scale the density to be between 0 and 99.9 in the temperature
     # factor column, such that visualization is good enough
