@@ -61,7 +61,7 @@ function grid3D(
     interpolate(x₁, x₂, y₁, y₂, xₙ) = y₁ + (y₂ - y₁) / (x₂ - x₁) * (xₙ - x₁)
 
     # Maximum and minimum coordinates of the solute
-    solute_atoms = PDBTools.select(atoms, by = at -> at.index in result.solute.indices)
+    solute_atoms = atoms[result.solute.indices]
     lims = PDBTools.maxmin(solute_atoms)
     n = @. ceil(Int, (lims.xlength + 2 * dmax) / step + 1)
 
@@ -80,7 +80,7 @@ function grid3D(
             if rgrid < 0 || r < rgrid
                 at = solute_atoms[iat]
                 # Get contribution of this atom to the MDDF
-                c = contributions(result, SoluteGroup([at.index_pdb]))
+                c = contributions(result, SoluteGroup(SVector(index(at),)))
                 # Interpolate c at the current distance
                 iright = findfirst(d -> d > r, result.d)
                 ileft = iright - 1
