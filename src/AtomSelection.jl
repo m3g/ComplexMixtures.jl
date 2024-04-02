@@ -501,8 +501,8 @@ SoluteGroup defined by:
 struct SoluteGroup{
     I<:Union{Int,Nothing},
     S<:Union{String,Nothing},
-    VI<:Union{Vector{Int},Nothing},
-    VS<:Union{Vector{String},Nothing}
+    VI<:Union{AbstractVector{Int},Nothing},
+    VS<:Union{AbstractVector{String},Nothing}
 }
     group_index::I
     group_name::S
@@ -513,8 +513,8 @@ end
 struct SolventGroup{
     I<:Union{Int,Nothing},
     S<:Union{String,Nothing},
-    VI<:Union{Vector{Int},Nothing},
-    VS<:Union{Vector{String},Nothing}
+    VI<:Union{AbstractVector{Int},Nothing},
+    VS<:Union{AbstractVector{String},Nothing}
 }
     group_index::I
     group_name::S
@@ -563,7 +563,7 @@ function SolventGroup(args...; kargs...)
 end
 
 SoluteGroup(atoms::Vector{PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
-SoluteGroup(atom_indices::Vector{Int}) = SoluteGroup(nothing, nothing, atom_indices, nothing)
+SoluteGroup(atom_indices::AbstractVector{Int}) = SoluteGroup(nothing, nothing, atom_indices, nothing)
 SoluteGroup(atom_names::Vector{String}) = SoluteGroup(nothing, nothing, nothing, atom_names)
 SoluteGroup(group_name::String) = SoluteGroup(nothing, group_name, nothing, nothing)
 SoluteGroup(group_index::Int) = SoluteGroup(group_index, nothing, nothing, nothing)
@@ -571,7 +571,7 @@ SoluteGroup(residue::PDBTools.Residue) = SoluteGroup(nothing, nothing, PDBTools.
 SoluteGroup(atsel::AtomSelection) = SoluteGroup(nothing, nothing, atsel.indices, nothing)
 
 SolventGroup(atoms::Vector{PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
-SolventGroup(atom_indices::Vector{Int}) = SolventGroup(nothing, nothing, atom_indices, nothing)
+SolventGroup(atom_indices::AbstractVector{Int}) = SolventGroup(nothing, nothing, atom_indices, nothing)
 SolventGroup(atom_names::Vector{String}) = SolventGroup(nothing, nothing, nothing, atom_names)
 SolventGroup(group_name::String) = SolventGroup(nothing, group_name, nothing, nothing)
 SolventGroup(group_index::Int) = SolventGroup(group_index, nothing, nothing, nothing)
