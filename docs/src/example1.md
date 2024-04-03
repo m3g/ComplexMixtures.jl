@@ -128,6 +128,7 @@ surface of the protein.
 ## [3D density map](@id 3D-map-example1)
 
 In this example we compute three-dimensional representations of the density map of Glycerol in the vicinity of a set of residues of a protein, from the minimum-distance distribution function. 
+For further information about the `grid3D` function, go to the [3D grid map](@ref grid3D) section of the manual.
 
 ```@raw html
 <details><summary><font color="darkgreen">Complete example code: click here!</font></summary>

@@ -1,5 +1,9 @@
 # [Tools](@id Tools)
 
+```@meta
+CollapsedDocStrings = true
+```
+
 A set of examples of analyses that can be performed with `ComplexMixtures` is given 
 in [this site](https://github.com/m3g/ComplexMixturesExamples). A brief the description
 of the possible results is provided here.   
@@ -99,9 +103,23 @@ end
 
 The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. [A complete running example is provided here](@ref 2D-map-example1), producing the figure above.    
 
-## Computing a 3D density map around a macromolecule 
+## [Computing a 3D density map around a macromolecule](@id grid3D)
 
 Three-dimensional representations of the distribution functions can also be obtained from the MDDF results. These 3D representations are obtained from the fact that the MDDFs can be decomposed into the contributions of each solute atom, and that each point in space is closest to a single solute atom as well. Thus, each point in space can be associated to one solute atom, and the contribution of that atom to the MDDF at the corresponding distance can be obtained.   
+
+A 3D density map is constructed with the `grid3D` function:
+
+```@autodocs
+Modules = [ComplexMixtures]
+Pages = ["tools/grid3D.jl"]
+```
+
+The call to `grid3D` will write an output a PDB file with the grid points, which loaded in a visualization software side-by-side with the protein structure, allows the production of the images shown. The `grid.pdb` file contains a regular PDB format where: 
+
+- The positions of the atoms are grid points. 
+- The identity of the atoms correspond to the identity of the protein atom contributing to the MDDF at that point (the closest protein atom). 
+- The temperature-factor column (`beta`) contains the relative contribution of that atom to the MDDF at the corresponding distance. 
+- The `occupancy` field contains the distance itself.
 
 For example, the distribution function of a hydrogen-bonding liquid solvating a protein will display a characteristic peak at about 1.8Å. The MDDF at that distance can be decomposed into the contributions of all atoms of the protein which were found to form hydrogen bonds to the solvent. A 3D representation of these contributions can be obtained by computing, around a static protein (solute) structure, which are the regions in space which are closer to each atom of the protein. The position in space is then marked with the atom of the protein to which that region "belongs" and with the contribution of that atom to the MDDF at each distance within that region. A special function to compute this 3D distribution is provided here: `grid3D`. 
 
@@ -118,15 +136,6 @@ In the figure on the left, the points in space around the protein are selected w
 Clicking on those points we obtain which are the atoms of the protein contributing to the MDDF at that region. In particular, the arrow on the right points to the strongest red region, which corresponds to an Aspartic acid. These residues are shown explicitly under the density (represented as a transparent surface) on the figure in the center.   
 
 The figure on the right displays, overlapped with the hydrogen-bonding residues, the most important contributions to the second peak of the distribution, corresponding to distances from the protein between 2.0 and 3.5Å. Notably, the regions involved are different from the ones forming hydrogen bonds, indicating that non-specific interactions with the protein (and not a second solvation shell) are responsible for the second peak. 
-
-The call to `grid3D` in the last command will write an output a PDB file with the grid points, which loaded in a visualization software side-by-side with the protein structure, allows the production of the images shown. The `grid.pdb` file contains a regular PDB format, but the atoms are grid points. The identity of the atoms correspond to the identity of the protein atom contributing to the MDDF at that point (the closest protein atom). The temperature-factor column (`beta`) contains the relative contribution of that atom to the MDDF at the corresponding distance, and the `occupancy` field contains the distance itself.
-
-The output `grid` variable contains the same information of the PDB file, which can be analyzed with the tools of `PDBTools` if the user wants to.
-
-```@autodocs
-Modules = [ComplexMixtures]
-Pages = ["tools/grid3D.jl"]
-```
 
 ## Computing radial distribution functions
 

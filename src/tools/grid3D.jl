@@ -18,6 +18,13 @@ of thousands points).
 
 `silent` is a boolean to suppress the progress bar.
 
+The output PDB has the following characteristics:
+
+- The positions of the atoms are grid points. 
+- The identity of the atoms correspond to the identity of the protein atom contributing to the MDDF at that point (the closest protein atom). 
+- The temperature-factor column (`beta`) contains the relative contribution of that atom to the MDDF at the corresponding distance. 
+- The `occupancy` field contains the distance itself.
+
 ### Example
 
 ```julia-repl
@@ -30,11 +37,7 @@ julia> R = ComplexMixtures.load("./results.json");
 julia> grid = grid3D(R, atoms, "grid.pdb");
 ```
 
-`grid` will contain a vector of `Atom`s with the information of the MDDF at each grid point, and the
-same data will be written in the `grid.pdb` file. This PDB file can be opened in VMD, for example, and contain
-in the `beta` field the contribution of each protein residue to the MDDF at each point in space relative to the 
-protein, and in the `occupancy` field the distance to the protein. Examples of how this information can be
-visualized are provided in the user guide of `ComplexMixtures`. 
+Examples of how the grid can be visualized are provided in the user guide of `ComplexMixtures`. 
 
 """
 function grid3D(
