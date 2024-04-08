@@ -25,6 +25,33 @@ export merge
 export overview
 export VMDselect
 
+function __init__()
+    if !haskey(ENV, "COMPLEXMIXTURES_WARNING_v1.4") || ENV["COMPLEXMIXTURES_WARNING_v1.4"] == true
+        @warn """\n
+    
+            ComplexMixtures - v1.4.2
+    
+            This version of ComplexMixtures is **not** the latest one. 
+    
+            If you did not intend to use this specific version, please update to the latest one by running:
+    
+            julia> import Pkg; Pkg.update("ComplexMixtures")
+    
+            One reason for incidentally installing this version is using a outdated version of Julia. 
+            To avoid that, install Julia from the official website: https://julialang.org/downloads/
+    
+            If you intended to use this version, you can ignore this message, but follow the user guide
+            with the correct version number, at: https://m3g.github.io/ComplexMixtures.jl/v1.4/ 
+
+            To suppress this warning, use:
+
+            julia> ENV["COMPLEXMIXTURES_WARNING_v1.4"] = false; using ComplexMixtures
+            
+        """ _file=nothing _line=nothing
+    end
+end
+
+
 # Tools
 export contributions, coordination_number, gr, grid3D
 
