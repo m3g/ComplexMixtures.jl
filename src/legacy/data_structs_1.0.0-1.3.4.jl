@@ -1,7 +1,7 @@
 #
 # Legacy data structures, from 1.0.0 to 1.3.4
 #
-Base.@kwdef struct LegacyOptionsA
+@with_kw_noshow struct LegacyOptionsA
 
     firstframe::Int = 1
     lastframe::Int = -1
@@ -42,20 +42,20 @@ struct LegacySolSummaryA
     natomspermol::Int
 end
 
-@kwdef mutable struct LegacyDensityA
+@with_kw_noshow mutable struct LegacyDensityA
     solute::Float64 = 0.0
     solvent::Float64 = 0.0
     solvent_bulk::Float64 = 0.0
 end
 
-@kwdef mutable struct LegacyVolumeA
+@with_kw_noshow mutable struct LegacyVolumeA
     total::Float64
     bulk::Float64
     domain::Float64
     shell::Vector{Float64}
 end
 
-@kwdef mutable struct LegacyResultA{T<:VecOrMat{Float64}}
+@with_kw_noshow mutable struct LegacyResultA{T<:VecOrMat{Float64}}
 
     # Histogram properties
     nbins::Int

@@ -7,7 +7,7 @@ Structure that contains the detailed input options.
 $(TYPEDFIELDS)
 
 """
-@kwdef struct Options
+@with_kw_noshow struct Options
 
     firstframe::Int = 1
     lastframe::Int = -1

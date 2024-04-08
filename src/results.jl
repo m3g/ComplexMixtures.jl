@@ -7,7 +7,7 @@ Structure to contain the density values obtained from the calculation.
 $(TYPEDFIELDS)
 
 """
-@kwdef mutable struct Density
+@with_kw_noshow mutable struct Density
     solute::Float64 = 0.0
     solvent::Float64 = 0.0
     solvent_bulk::Float64 = 0.0
@@ -38,7 +38,7 @@ Structures to contain the volumes obtained from calculations.
 $(TYPEDFIELDS)
 
 """
-@kwdef mutable struct Volume
+@with_kw_noshow mutable struct Volume
     total::Float64
     bulk::Float64
     domain::Float64
@@ -88,7 +88,7 @@ $(TYPEDFIELDS)
 The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
 
 """
-@kwdef mutable struct Result{T<:VecOrMat{Float64}}
+@with_kw_noshow mutable struct Result{T<:VecOrMat{Float64}}
 
     # ComplexMixtures version that generated this results
     Version::VersionNumber = pkgversion(@__MODULE__)
@@ -891,7 +891,7 @@ Structure that is used to dispatch the show of a overview.
 $(TYPEDFIELDS)
 
 """
-@kwdef mutable struct Overview
+@with_kw_noshow mutable struct Overview
     R::Result
     domain_molar_volume::Float64 = 0.0
     density::Density = Density()

@@ -9,7 +9,7 @@ Unit conversions.
 $(TYPEDFIELDS)
 
 """
-@kwdef struct Units{T}
+@with_kw_noshow struct Units{T}
     mole::T = 6.022140857e23
     Angs3tocm3::T = 1e24
     Angs3toL::T = 1e27
