@@ -149,7 +149,9 @@ function Options(;
                 cutoff = $(cutoff)
                 usecutoff = $(usecutoff)
             
-            It is recommended to set bulk_range manually, according to the system size and correlations of the distribution function.
+            It is recommended to set bulk_range manually, according to the 
+            system size and correlations of the distribution function with, 
+            for example: Options(bulk_range = (8.0, 12.0))
 
         """ _file=nothing _line=nothing
     end
