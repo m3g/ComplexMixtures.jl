@@ -71,7 +71,7 @@ function grid3D(
     igrid = 0
     grid = PDBTools.Atom[]
     grid_lock = ReentrantLock()
-    silent || (p = Progress(prod(n), "Building grid..."))
+    silent || (p = Progress(prod(n); desc="Building grid..."))
     Threads.@threads for ix_inds in ChunkSplitters.chunks(1:n[1]; n=Threads.nthreads())
         for ix in ix_inds, iy in 1:n[2], iz in 1:n[3]
             silent || next!(p)
