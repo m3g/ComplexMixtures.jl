@@ -105,7 +105,7 @@ In particular, the plot shows that besides being preferentially excluded from th
 ### Applications
 
 * A. F. Pereira, L. Martínez, **Helical Content Correlations and Hydration Structures of the Folding Ensemble of the B Domain of Protein A.**
-  *J. Chem. Inf. Model.* 2024. [[Full Text]](https://doi.org/10.1021/acs.jcim.3c01822)
+  *J. Chem. Inf. Model.* 64, 3350-3359, 2024. [[Full Text]](https://doi.org/10.1021/acs.jcim.3c01822)
 
 * A. F. Pereira, V. Piccoli, L. Martínez, **Trifluoroethanol direct interactions with protein backbones destabilize alpha-helices.** 
   *J. Mol. Liq.* 365, 120209, 2022. [[Full Text]](https://doi.org/10.1016/j.molliq.2022.120209)
