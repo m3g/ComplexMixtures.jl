@@ -679,6 +679,7 @@ Function to write the result data structure to a json file.
 
 """
 function save(R::Result, filename::String)
+    filename = expanduser(filename)
     open(filename, "w") do f
         JSON3.write(f, R)
     end
@@ -691,7 +692,7 @@ end
 # output file.
 #
 function _get_version(filename)
-    str = readuntil(filename, ',')
+    str = readuntil(expanduser(filename), ',')
     v = match(r"\"Version\":\"([^\"]*)\"", str)
     return isnothing(v) ? v"1.0.0" : VersionNumber(v[1])
 end
@@ -703,6 +704,7 @@ Function to load the json saved results file into the `Result` data structure.
 
 """
 function load(filename::String; legacy_warning = true)
+    filename = expanduser(filename)
     json_version = _get_version(filename)
     current_version = pkgversion(@__MODULE__)
     # Error if the json file is from a newer version than the current one

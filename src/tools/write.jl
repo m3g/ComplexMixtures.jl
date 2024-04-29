@@ -17,6 +17,8 @@ function Base.write(
     solvent_group_names::Union{Nothing,Vector{String}} = nothing,
 )
 
+    filename = expanduser(filename)
+
     # Set names of groups of solute and solvent (typically the atom names, but can
     # be any other name that the user wants to use, if custom groups were defined).
     solute_group_names = set_group_names(R, solute_group_names, :solute)

@@ -34,6 +34,7 @@ function Trajectory(
     chemfiles = false,
 
 )
+    filename = expanduser(filename) # expand tilde on Unix systems, to username
     if !chemfiles && (format == "dcd" || split(filename, '.')[end] == "dcd")
         trajectory = NamdDCD(filename, solute, solvent)
     elseif !chemfiles && format == "PDBTraj"
