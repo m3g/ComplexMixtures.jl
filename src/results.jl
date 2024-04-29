@@ -617,7 +617,7 @@ end
 end
 
 @testitem "Result - empty" begin
-    using ComplexMixtures: Result, Trajectory, Options, AtomSelection
+    #using ComplexMixtures: Result, Trajectory, Options, AtomSelection
     using ComplexMixtures.Testing: data_dir, pdbfile
     using PDBTools: readPDB, select, name
     atoms = readPDB(pdbfile)
