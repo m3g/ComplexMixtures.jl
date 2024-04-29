@@ -356,7 +356,7 @@ end
 
 @testitem "AtomSelection - argument errors" begin
     import ComplexMixtures
-    using ComplexMixtures: AtomSelection
+    #using ComplexMixtures: AtomSelection
     using PDBTools: select, readPDB, Select
     @test_throws ArgumentError AtomSelection([1,2,3])
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=2)
@@ -469,17 +469,17 @@ julia> using ComplexMixtures, PDBTools
 
 julia> atoms = PDBTools.readPDB(ComplexMixtures.Testing.pdbfile, "protein"); 
 
-julia> SoluteGroup(atoms) # vector of PDBTools.Atom(s)
+julia> SoluteGroup(select(atoms, "protein and resname ASP")) # vector of PDBTools.Atom(s)
 SoluteGroup defined by:
-    atom_indices: [ 1, 2, ..., 1462, 1463 ] - 1463 atoms
+    atom_indices: [ 24, 25, ..., 1056, 1057 ] - 72 atoms
 
-julia> SoluteGroup(PDBTools.index.(atoms)) # vector of atom indices
+julia> SoluteGroup(1:100) # atom indices (range or vector)
 SoluteGroup defined by:
-    atom_indices: [ 1, 2, ..., 1462, 1463 ] - 1463 atoms
+    atom_indices: [ 1, 2, ..., 99, 100 ] - 100 atoms
 
-julia> SoluteGroup(PDBTools.name.(atoms)) # vector of atom names
+julia> SoluteGroup(["N", "CA", "C", "O"]) # vector of atom names
 SoluteGroup defined by:
-    atom_names: [ N, HT1, ..., HG22, HG23 ] - 1463 atoms
+    atom_names: [ N, CA, C, O ] - 4 atom names.
  
 julia> SoluteGroup("acidic residues") # predefined group name
 SoluteGroup defined by:
@@ -547,18 +547,24 @@ function Base.show(io::IO, sg::Union{SoluteGroup, SolventGroup})
     elseif !isnothing(sg.atom_indices)
         print(io, "    atom_indices: $(print_vector_summary(sg.atom_indices)) - $(length(sg.atom_indices)) atoms")
     elseif !isnothing(sg.atom_names)
-        print(io, "    atom_names: $(print_vector_summary(sg.atom_names)) - $(length(sg.atom_names)) atoms")
+        print(io, "    atom_names: $(print_vector_summary(sg.atom_names)) - $(length(sg.atom_names)) atom names.")
     end
 end
 
 function SoluteGroup(args...; kargs...)
-    throw(ArgumentError(chomp("""
-        No constructor for SoluteGroup with these arguments. Please check the documentation.
+    throw(ArgumentError(("""\n
+        No constructor for SoluteGroup with these arguments. 
+
+        Please check the documentation by typing: ? SoluteGroup
+
     """)))
 end
 function SolventGroup(args...; kargs...)
-    throw(ArgumentError(chomp("""
-        No constructor for SoluteGroup with these arguments. Please check the documentation.
+    throw(ArgumentError(("""\n
+        No constructor for SolventGroup with these arguments. 
+            
+        Please check the documentation by typing: ? SolventGroup
+
     """)))
 end
 
