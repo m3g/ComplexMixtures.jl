@@ -48,7 +48,7 @@ end
 #
 # Methods to allow multi-threading in CellListMap
 #
-import CellListMap.PeriodicSystems: copy_output, reset_output!, reducer
+import CellListMap: copy_output, reset_output!, reducer
 copy_output(md::MinimumDistance) = MinimumDistance(
     md.within_cutoff,
     md.i,
@@ -124,14 +124,14 @@ function update_list!(
 end
 
 #=
-    minimum_distances!(system::CellListMap.PeriodicSystem, R::Result)
+    minimum_distances!(system::CellListMap.ParticleSystem, R::Result)
 
 Function that computes the list of distances of solvent molecules to a solute molecule. 
 It updates the lists of minimum distances. 
 
 =#
 function minimum_distances!(
-    system::AbstractPeriodicSystem,
+    system::AbstractParticleSystem,
     R::Result,
     isolute::Int;
     update_lists::Bool,
@@ -157,15 +157,15 @@ function minimum_distances!(
 end
 
 #=
-    setup_PeriodicSystem(trajectory::Trajectory, options::Options)
+    setup_ParticleSystem(trajectory::Trajectory, options::Options)
 
 Setup the periodic system from CellListMap, to compute minimimum distances. The system
 will be setup such that `xpositions` corresponds to one molecule of the solute, and 
 `ypositions` contains all coordinates of all atoms of the solvent. 
 
 =#
-function setup_PeriodicSystem(trajectory::Trajectory, unitcell, options::Options)
-    system = PeriodicSystem(
+function setup_ParticleSystem(trajectory::Trajectory, unitcell, options::Options)
+    system = ParticleSystem(
         xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
         ypositions = zeros(
             SVector{3,Float64},
@@ -182,7 +182,7 @@ function setup_PeriodicSystem(trajectory::Trajectory, unitcell, options::Options
     return system
 end
 
-@testitem "setup_PeriodicSystem" begin
+@testitem "setup_ParticleSystem" begin
     using ComplexMixtures
     using PDBTools
     using ComplexMixtures.Testing
@@ -197,7 +197,7 @@ end
     protein = AtomSelection(select(atoms, "protein"), nmols = 1)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options) 
-    system = ComplexMixtures.setup_PeriodicSystem(traj, tmeta.unitcell, options)
+    system = ComplexMixtures.setup_ParticleSystem(traj, tmeta.unitcell, options)
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181)
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
@@ -213,7 +213,7 @@ end
     # Auto-correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
-    system = ComplexMixtures.setup_PeriodicSystem(traj, tmeta.unitcell, options)
+    system = ComplexMixtures.setup_ParticleSystem(traj, tmeta.unitcell, options)
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181) # one molecule less
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)

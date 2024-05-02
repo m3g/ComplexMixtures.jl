@@ -98,7 +98,7 @@ end
 #=
     random_move!(x_ref::AbstractVector{T}, 
                  irefatom::Int,
-                 system::AbstractPeriodicSystem,
+                 system::AbstractParticleSystem,
                  x_new::AbstractVector{T}, RNG) where {T<:SVector}
 
 Function that generates a new random position for a molecule.
@@ -109,7 +109,7 @@ The new position is returned in `x_new`, a previously allocated array.
 function random_move!(
     x::AbstractVector{<:SVector{3}},
     irefatom::Int,
-    system::AbstractPeriodicSystem,
+    system::AbstractParticleSystem,
     RNG,
 )
     # To avoid boundary problems, the center of coordinates are generated in a 
@@ -117,7 +117,7 @@ function random_move!(
     scale = 100.0
 
     # Generate random coordinates for the center of mass
-    cmin, cmax = PeriodicSystems.get_computing_box(system)
+    cmin, cmax = CellListMap.get_computing_box(system)
     newcm = SVector{3}(
         scale * (cmin[i] + rand(RNG, Float64) * (cmax[i] - cmin[i])) for i = 1:3
     )
@@ -143,7 +143,7 @@ end
     using ComplexMixtures
     using StaticArrays
     using LinearAlgebra: norm
-    using CellListMap.PeriodicSystems
+    using CellListMap
     function check_internal_distances(x, y)
         for i = firstindex(x):lastindex(x)-1
             for j = i+1:lastindex(x)
@@ -160,7 +160,7 @@ end
     RNG = ComplexMixtures.init_random(Options())
     # Orthorhombic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    system = PeriodicSystem(
+    system = ParticleSystem(
         positions = x,
         cutoff = 0.1,
         unitcell = SVector(10.0, 10.0, 10.0),
@@ -174,7 +174,7 @@ end
 
     # Triclinic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    system = PeriodicSystem(
+    system = ParticleSystem(
         positions = x,
         cutoff = 0.1,
         unitcell = @SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0],

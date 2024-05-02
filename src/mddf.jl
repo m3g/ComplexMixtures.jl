@@ -63,7 +63,7 @@ Generate a random solvent distribution from the bulk molecules of a solvent
 
 =#
 function randomize_solvent!(
-    system::AbstractPeriodicSystem,
+    system::AbstractParticleSystem,
     buff::Buffer,
     n_solvent_in_bulk::Int,
     R::Result,
@@ -154,7 +154,7 @@ function mddf(
     end
     
     # Compute some meta-data from the trajectory file and the options,
-    # to allow parallel creation of the Result, and PeriodicSystem
+    # to allow parallel creation of the Result, and ParticleSystem
     # data structures
     trajectory_data = TrajectoryMetaData(trajectory, options)
 
@@ -189,7 +189,7 @@ function mddf(
     Threads.@threads for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
         # Local data structures for this chunk
         R_chunk = Result(trajectory, options; trajectory_data, frame_weights)
-        system_chunk = setup_PeriodicSystem(trajectory, trajectory_data.unitcell, options)
+        system_chunk = setup_ParticleSystem(trajectory, trajectory_data.unitcell, options)
         buff_chunk = Buffer(trajectory, R)
         # Reset the number of frames read by each chunk
         R_chunk.files[1].nframes_read = 0
@@ -244,18 +244,18 @@ function mddf(
 end
 
 # Compute cell volume from unitcell matrix
-cell_volume(system::AbstractPeriodicSystem) =
+cell_volume(system::AbstractParticleSystem) =
     @views dot(cross(system.unitcell[:, 1], system.unitcell[:, 2]), system.unitcell[:, 3])
 
 #=
-    mddf_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, options::Options, frame_weight, RNG)
+    mddf_frame!(R::Result, system::AbstractParticleSystem, buff::Buffer, options::Options, frame_weight, RNG)
 
 Computes the MDDF for a single frame. Modifies the data in the `R` (type `Result`) structure.
 
 =#
 function mddf_frame!(
     R::Result,
-    system::AbstractPeriodicSystem,
+    system::AbstractParticleSystem,
     buff::Buffer,
     options::Options,
     frame_weight,
@@ -522,14 +522,14 @@ end
 end
 
 #=
-    coordination_number_frame!(R::Result, system::AbstractPeriodicSystem, buff::Buffer, frame_weight)
+    coordination_number_frame!(R::Result, system::AbstractParticleSystem, buff::Buffer, frame_weight)
 
 Computes the coordination numbers for a single frame. Modifies the data in the `R` (type `Result`) structure.
 
 =#
 function coordination_number_frame!(
     R::Result,
-    system::AbstractPeriodicSystem,
+    system::AbstractParticleSystem,
     buff::Buffer,
     frame_weight::Float64,
 )

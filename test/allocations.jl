@@ -55,7 +55,7 @@
     @test t_RNG.allocs < 5
 
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
-    system = ComplexMixtures.setup_PeriodicSystem(traj, tmeta.unitcell, options)
+    system = ComplexMixtures.setup_ParticleSystem(traj, tmeta.unitcell, options)
     buff = ComplexMixtures.Buffer(traj, R)
     @. buff.solute_read = traj.x_solute
     @. buff.solvent_read = traj.x_solvent

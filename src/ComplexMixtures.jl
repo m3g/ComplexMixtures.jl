@@ -1,7 +1,5 @@
 module ComplexMixtures
 
-import CellListMap
-import .CellListMap.PeriodicSystems
 import ChunkSplitters
 import JSON3
 import PDBTools
@@ -9,8 +7,8 @@ import PrecompileTools
 import Random
 import StructTypes
 
-using .CellListMap.PeriodicSystems: AbstractPeriodicSystem, PeriodicSystem, 
-    update_unitcell!, map_pairwise!
+import CellListMap
+using CellListMap: AbstractParticleSystem, ParticleSystem, update_unitcell!, map_pairwise!
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using LinearAlgebra: norm, cross, dot, diag
 using FortranFiles: FortranFile, rewind, FString, read, close

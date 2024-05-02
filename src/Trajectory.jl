@@ -152,7 +152,7 @@ end
 
 #
 # This structure and function are used to retrieve metadata from the trajectory
-# that is used to initialize the Result and PeriodicSystem structures, without
+# that is used to initialize the Result and ParticleSystem structures, without
 # having to open the trajectory again. This allows the parallel initialization of
 # these data structures. 
 #
