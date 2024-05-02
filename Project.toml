@@ -1,7 +1,7 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
 authors = ["Leandro Martinez <lmartine@unicamp.br>"]
-version = "2.1.12-DEV"
+version = "2.1.12"
 
 [deps]
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
@@ -26,7 +26,7 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 [compat]
 Aqua = "0.8"
 BenchmarkTools = "1"
-CellListMap = "0.8.16"
+CellListMap = "0.8.30, 0.9"
 Chemfiles = "0.10.3"
 ChunkSplitters = "2.1"
 DelimitedFiles = "1.9"
