@@ -189,7 +189,7 @@ function mddf(
     Threads.@threads for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
         # Local data structures for this chunk
         R_chunk = Result(trajectory, options; trajectory_data, frame_weights)
-        system_chunk = setup_ParticleSystem(trajectory, trajectory_data.unitcell, options)
+        system_chunk = ParticleSystem(trajectory, trajectory_data.unitcell, options)
         buff_chunk = Buffer(trajectory, R)
         # Reset the number of frames read by each chunk
         R_chunk.files[1].nframes_read = 0
