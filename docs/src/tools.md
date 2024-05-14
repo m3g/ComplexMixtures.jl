@@ -36,7 +36,7 @@ coordination_number(R::Result) == R.coordination_number
     data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
 
 !!! compat
-    The use independent computation of coordination numbers was introduced in version 1.1.
+    The independent computation of coordination numbers was introduced in version 1.1.
 
 ### Example
 
