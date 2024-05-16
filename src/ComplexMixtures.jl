@@ -28,7 +28,9 @@ export overview
 export VMDselect
 
 function __init__()
-    if !haskey(ENV, "COMPLEXMIXTURES_WARNING_v1.4") || ENV["COMPLEXMIXTURES_WARNING_v1.4"] == true
+    # Suppress warnings from CellListMap
+    ENV["CELLLISTMAP_8.3_WARNING"] = "false"
+    if !haskey(ENV, "COMPLEXMIXTURES_WARNING_v1.4") || ENV["COMPLEXMIXTURES_WARNING_v1.4"] == "true"
         @warn """\n
     
             ComplexMixtures - v1.4.2
