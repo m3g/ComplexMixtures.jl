@@ -107,12 +107,31 @@ function goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
 end
 
 """     
-    mddf(trajectory::Trajectory, options::Options; frame_weights = Float64[], coordination_number_only = false)
+    mddf(
+        trajectory::Trajectory, 
+        options::Options; 
+        frame_weights = Float64[], 
+        coordination_number_only = false
+    )
 
-Function that computes the minimum-distance distribution function, atomic contributions, and 
+Computes the minimum-distance distribution function, atomic contributions, and 
 KB integrals, given the `Trajectory` structure of the simulation and, optionally, parameters
 given as a second argument of the `Options` type. This is the main function of the `ComplexMixtures` 
 package. 
+
+The `options` parameter is optional. If not set, the default `Options()` structure will be used.
+
+### Optional execution keywords
+
+The `frame_weights` keyword is an array
+of weights for each frame of the trajectory. If this is provided, the MDDF will be computed as a weighted
+average of the MDDFs of each frame. This can be used to study the solvation dependency in perturbed 
+ensembles. 
+
+The `coordination_number_only`, is a boolean that, if set to `true`, will compute only the
+site-counts and coordination numbers of the solvent molecules around the solute, and not the MDDF, RDF, or KB integrals. 
+This is useful when the normalization of the distribution is not possible or needed, for instance when
+the bulk solutio is not properly defined. The computation is much faster in this case. 
 
 ### Examples
 
