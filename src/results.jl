@@ -352,7 +352,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
                 @warn begin
                     """\n
                         Ideal-gas histogram bins with zero samples. 
-                        Increase n_random_samples and/or number of trajectory frames.
+                        Increase n_random_samples, number of trajectory frames, and/or bin size.
 
                     """
                 end _file=nothing _line=nothing
