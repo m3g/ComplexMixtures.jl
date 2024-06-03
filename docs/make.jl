@@ -21,7 +21,7 @@ makedocs(
         "Loading the trajectory" => "trajectory.md",
         "Computing the MDDF" => "mddf.md",
         "Results" => "results.md",
-        "Atomic and group contributions" => "contrib.md",
+        "Atomic and group contributions" => "contributions.md",
         "Save and load" => "save.md",
         "Multiple trajectories" => "multiple.md",
         "Options" => "options.md",
