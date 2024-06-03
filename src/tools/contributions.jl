@@ -38,7 +38,7 @@ julia> results = load(dir*"/protein_EMI.json"); # load pre-calculated results
 
 julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"])); # contribution of CA and CB atoms to the MDDF
 
-julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"]); type=:coordination_number); # contribution of CA and CB atoms to the MDDF
+julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"]); type=:coordination_number); # contribution of CA and CB atoms to the coordination number
 ```
 
 """

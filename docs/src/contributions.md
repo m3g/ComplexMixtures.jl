@@ -73,7 +73,7 @@ plot!(xlabel="Distance / Å", ylabel="MDDF")
 
 The keyword `type` defines the return type of the contribution:
 
-- `type=:mddf` : the contribution of the group to the MDDF is returned.
+- `type=:mddf` : the contribution of the group to the MDDF is returned (default).
 - `type=:coordination_number` : the contribution of the group to the coordination number, that is, the 
    cumulative sum of counts at each distance, is returned.
 - `type=:md_count` : the contribution of the group to the site count at each distance is returned. 
