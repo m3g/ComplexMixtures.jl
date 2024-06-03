@@ -275,7 +275,7 @@ function sum_frame_weights(R::Result)
 end
 
 #=
-    finalresults!(R::Result, options::Options, trajectory::Trajectory)
+    finalresults!(R::Result, options::Options; coordination_number_only)
 
 Function that computes the final results of all the data computed by averaging according to the sampling of each type of data, and converts to common units.
 
@@ -283,8 +283,10 @@ Computes also the final distribution functions and KB integrals.
 
 This function modified the values contained in the R data structure.
 
+If `coordination_number_only` is true, do not print a warning if there are zero samples in the ideal-gas histogram bins.
+
 =#
-function finalresults!(R::Result, options::Options, trajectory::Trajectory)
+function finalresults!(R::Result, options::Options; coordination_number_only)
 
     # Sampling scheme depending on the type of calculation
     samples = set_samples(R)
@@ -341,14 +343,23 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
     R.md_count_random .= density_fix * R.md_count_random
     R.rdf_count_random .= density_fix * R.rdf_count_random
 
+    if coordination_number_only && !options.silent
+        @warn begin
+            """\n
+                coordination_number_only was set to true, so the MDDF and KB integrals were not computed. 
+                (to remove this warning use `Options(silent=true)`)
+
+            """
+        end _file=nothing _line=nothing
+    end
     #
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
-    warn = false
+    warned_already = false
     for ibin = 1:R.nbins
         # For the MDDF
-        if R.md_count_random[ibin] == 0.0
-            if !warn && !options.silent
+        if !warned_already && !coordination_number_only && !options.silent 
+            if R.md_count_random[ibin] == 0.0
                 @warn begin
                     """\n
                         Ideal-gas histogram bins with zero samples. 
@@ -356,7 +367,7 @@ function finalresults!(R::Result, options::Options, trajectory::Trajectory)
 
                     """
                 end _file=nothing _line=nothing
-                warn = true
+                warned_already = true
             end
             continue
         end

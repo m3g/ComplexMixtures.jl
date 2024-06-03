@@ -256,7 +256,7 @@ function mddf(
 
     # Setup the final data structure with final values averaged over the number of frames,
     # sampling, etc, and computes final distributions and integrals
-    finalresults!(R, options, trajectory)
+    finalresults!(R, options; coordination_number_only)
     options.silent || println(bars)
 
     return R
