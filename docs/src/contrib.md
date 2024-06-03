@@ -6,7 +6,8 @@ contributions. Simply put, if a MDDF has a peak at a hydrogen-bonding
 distance, it is natural to decompose that peak into the contributions of
 each type of solute or solvent atom to that peak.     
 
-To obtain the atomic contributions of an atom or group of atoms, the
+To obtain the atomic contributions of an atom or group of atoms to the MDDF,
+the coordination number, or the site count at each distance, the
 `contributions` function is provided. For example, in a system composed
 of a protein and water, we would have defined the solute and solvent
 using:
@@ -68,6 +69,20 @@ plot!(xlabel="Distance / Å", ylabel="MDDF")
 ```@raw html
 <img src="../figures/oh2.png" width="60%">
 ```
+## Contributions to coordination numbers or site counts
+
+The keyword `type` defines the return type of the contribution:
+
+- `type=:mddf` : the contribution of the group to the MDDF is returned.
+- `type=:coordination_number` : the contribution of the group to the coordination number, that is, the 
+   cumulative sum of counts at each distance, is returned.
+- `type=:md_count` : the contribution of the group to the site count at each distance is returned. 
+
+Example of the usage of the `type` option:
+```julia
+ca_contributions = contributions(results, SoluteGroup(["CA"]); type=:coordination_number)
+```
+
 ## Using PDBTools
 
 If the solute is a protein, or other complex molecule, selections defined

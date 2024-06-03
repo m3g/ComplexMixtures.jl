@@ -11,7 +11,7 @@ Returns the contributions of the atoms of the solute or solvent to the MDDF, coo
 
 # Examples
 
-```jldoctes
+```jldoctest
 julia> using ComplexMixtures, PDBTools
 
 julia> dir = ComplexMixtures.Testing.data_dir*"/Gromacs";
@@ -36,8 +36,9 @@ AtomSelection
 
 julia> results = load(dir*"/protein_EMI.json"); # load pre-calculated results
 
-julia> contributions(results, SoluteGroup(["CA", "CB"])) # contribution of CA and CB atoms to the MDDF
+julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"])); # contribution of CA and CB atoms to the MDDF
 
+julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"]); type=:coordination_number); # contribution of CA and CB atoms to the MDDF
 ```
 
 """
