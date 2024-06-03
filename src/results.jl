@@ -358,8 +358,8 @@ function finalresults!(R::Result, options::Options; coordination_number_only)
     warned_already = false
     for ibin = 1:R.nbins
         # For the MDDF
-        if !warned_already && !coordination_number_only && !options.silent 
-            if R.md_count_random[ibin] == 0.0
+        if R.md_count_random[ibin] == 0.0
+            if !warned_already && !coordination_number_only && !options.silent 
                 @warn begin
                     """\n
                         Ideal-gas histogram bins with zero samples. 
