@@ -1,7 +1,7 @@
 """
     contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf)
 
-Returns the contributions of the atoms of the solute or solvent to the MDDF, coordiantion number or MD count.
+Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number or MD count.
 
 # Arguments
 
