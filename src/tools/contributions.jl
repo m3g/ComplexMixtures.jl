@@ -152,7 +152,7 @@ function contributions(
     elseif type == :coordination_number
         sel_count .= cumsum(sel_count)
     elseif type == :md_count
-        # do nothign, already md_count
+        # do nothing, already md_count
     else
         throw(ArgumentError("type must be :mddf (default), :coordination_number or :md_count"))
     end
