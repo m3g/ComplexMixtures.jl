@@ -1,13 +1,13 @@
 """
     contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf)
 
-Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number or MD count.
+Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number, or MD count.
 
 # Arguments
 
 - `R::Result`: The result of a calculation.
 - `group::Union{SoluteGroup,SolventGroup}`: The group of atoms to consider.
-- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number` or `:md_count`.
+- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number`, or `:md_count`.
 
 # Examples
 
