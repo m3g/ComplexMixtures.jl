@@ -154,7 +154,7 @@ function contributions(
     elseif type == :md_count
         # do nothing, already md_count
     else
-        throw(ArgumentError("type must be :mddf (default), :coordination_number or :md_count"))
+        throw(ArgumentError("type must be :mddf (default), :coordination_number, or :md_count"))
     end
 
     return sel_count
