@@ -1,15 +1,22 @@
 module ComplexMixturesPlotting
 
-using ComplexMixtures
-using PDBTools: Residue, residue_ticks, Atom
+import ComplexMixtures
+using ComplexMixtures: Result, SoluteGroup, contributions
+using PDBTools: Residue, residue_ticks, Atom, eachresidue
 import Plots
 
-function Plots.contourf(
+#
+# Function to plot the contour map fo the contribution of each residue
+# to the solute-solvent pair distribution function
+#
+function ComplexMixtures.contourf_per_residue(
     results::Result, atoms::AbstractVector{Atom};
-    residue_range=1:length(residues),
+    residue_range=1:length(eachresidue(atoms)),
     dmin=1.5, dmax=3.5,
+    oneletter=false,
 )
 
+    # collect the list of residues (using PDBTools)
     residues = collect(eachresidue(atoms))
 
     # of bins of the mddf histogram (length(results.d)) and a number of 
@@ -26,17 +33,17 @@ function Plots.contourf(
     idmax = findfirst(d -> d > dmax, results.d)
 
     # Obtain pretty labels for the residues in the x-axis
-    xticks = residue_ticks(protein, first=first(residue_range), last=last(residue_range))
+    xticks = residue_ticks(atoms, first=first(residue_range), last=last(residue_range); oneletter)
 
     # Plot a contour courves with the density at each distance from
     # each residue
     Plots.default(fontfamily="Computer Modern")
-    plt = contourf(residue_range, results.d[idmin:idmax], rescontrib[idmin:idmax, residue_range],
-        color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    plt = Plots.contourf(residue_range, results.d[idmin:idmax], rescontrib[idmin:idmax, residue_range],
+        color=Plots.cgrad(:tempo), linewidth=1, linecolor=:black,
         colorbar=:none, levels=5,
         xlabel="Residue", ylabel="r / Å",
         xticks=xticks, xrotation=60,
-        xtickfont=font(8, "Computer Modern"),
+        xtickfont=Plots.font(8, "Computer Modern"),
         size=(700, 400),
         margin=0.5Plots.PlotMeasures.cm
     )

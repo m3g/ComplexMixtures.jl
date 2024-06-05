@@ -245,6 +245,23 @@ julia> overview.solute_molar_volume
 657.5051512801567
 ```
 
+## Plot 2D density map per residue
+
+The contributions of each residue of a protein, or polymer, to the
+distribution function can be visualized as a 2D density map using 
+the convenience function `contourf_per_residue`, whose documentation can be
+seen below:
+
+```@docs
+contourf_per_residue
+```
+
+A complete example of its usage can be seen [here](@ref 2D-map-example1).
+This function is a convenience function only. For a customizable
+plot, please refer to the source code of the function, which is linked
+in the above doc entry.   
+
+
 
 
 
