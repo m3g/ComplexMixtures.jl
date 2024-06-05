@@ -101,8 +101,9 @@ contourf_per_residue
 
 A complete example of its usage can be seen [here](@ref 2D-map-example1).
 This function is a convenience function only. For a customizable
-plot, please refer to the source code of the function, which is linked
-in the above doc entry. Basically, we are extracting the contribution
+plot, please refer to the source code of the function at [this link](https://github.com/m3g/ComplexMixtures.jl/blob/c017bf6fd8aa412a43c8b3e08945496d2498d104/ext/ComplexMixturesPlotting.jl).
+
+Basically, we are extracting the contribution
 of each residue independently and building a matrix where each row 
 represents a distance and each column a residue. 
 Using `PDBTools`, this can be done with, for example: 
