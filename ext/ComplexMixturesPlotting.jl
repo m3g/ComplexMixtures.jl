@@ -14,6 +14,8 @@ function ComplexMixtures.contourf_per_residue(
     residue_range=1:length(eachresidue(atoms)),
     dmin=1.5, dmax=3.5,
     oneletter=false,
+    xlabel="Residue",
+    ylabel="r / Å"
 )
 
     # collect the list of residues (using PDBTools)
@@ -41,7 +43,7 @@ function ComplexMixtures.contourf_per_residue(
     plt = Plots.contourf(residue_range, results.d[idmin:idmax], rescontrib[idmin:idmax, residue_range],
         color=Plots.cgrad(:tempo), linewidth=1, linecolor=:black,
         colorbar=:none, levels=5,
-        xlabel="Residue", ylabel="r / Å",
+        xlabel=xlabel, ylabel=ylabel,
         xticks=xticks, xrotation=60,
         xtickfont=Plots.font(8, "Computer Modern"),
         size=(700, 400),

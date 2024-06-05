@@ -8,8 +8,7 @@ Pkg.activate(".");
 # Load packages
 using ComplexMixtures
 using PDBTools
-using Plots, Plots.Measures
-using LaTeXStrings
+using Plots
 
 # The complete trajectory file can be downloaded from (3Gb):
 # https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing
