@@ -80,7 +80,7 @@ Modules = [ComplexMixtures]
 Pages = ["coordination_number.jl"]
 ```
 
-## Computing a 2D density map around a macromolecule 
+## [2D density map per residue](@id 2D_per_residue)
 
 One nice way to visualize the accumulation or depletion of a solvent around a macromolecule (a protein, for example), is to obtain a 2D map of the density as a function of the distance from its surface. For example, in the figure below the density of a solute (here, Glycerol), in the neighborhood of a protein is shown:
 
@@ -90,7 +90,22 @@ One nice way to visualize the accumulation or depletion of a solvent around a ma
 </center>
 ```
 
-Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF. Using `PDBTools`, this can be done with, for example: 
+Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF. 
+
+The convenience function `contourf_per_residue` provides a direct way to 
+produce such plots. See the documentation below:
+
+```@docs
+contourf_per_residue
+```
+
+A complete example of its usage can be seen [here](@ref 2D-map-example1).
+This function is a convenience function only. For a customizable
+plot, please refer to the source code of the function, which is linked
+in the above doc entry. Basically, we are extracting the contribution
+of each residue independently and building a matrix where each row 
+represents a distance and each column a residue. 
+Using `PDBTools`, this can be done with, for example: 
 
 ```julia
 residues = collect(eachresidue(protein))
@@ -101,9 +116,9 @@ for (i,residue) in pairs(residues)
 end
 ```
 
-The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. [A complete running example is provided here](@ref 2D-map-example1), producing the figure above.    
+The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. 
 
-## [Computing a 3D density map around a macromolecule](@id grid3D)
+## [3D density map around a macromolecule](@id grid3D)
 
 Three-dimensional representations of the distribution functions can also be obtained from the MDDF results. These 3D representations are obtained from the fact that the MDDFs can be decomposed into the contributions of each solute atom, and that each point in space is closest to a single solute atom as well. Thus, each point in space can be associated to one solute atom, and the contribution of that atom to the MDDF at the corresponding distance can be obtained.   
 
@@ -244,24 +259,5 @@ julia> overview = overview(results);
 julia> overview.solute_molar_volume
 657.5051512801567
 ```
-
-## Plot 2D density map per residue
-
-The contributions of each residue of a protein, or polymer, to the
-distribution function can be visualized as a 2D density map using 
-the convenience function `contourf_per_residue`, whose documentation can be
-seen below:
-
-```@docs
-contourf_per_residue
-```
-
-A complete example of its usage can be seen [here](@ref 2D-map-example1).
-This function is a convenience function only. For a customizable
-plot, please refer to the source code of the function, which is linked
-in the above doc entry.   
-
-
-
 
 
