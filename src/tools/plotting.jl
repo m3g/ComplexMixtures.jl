@@ -28,7 +28,7 @@ This function requires loading the `Plots` and `PDBTools` packages.
 ```julia-repl
 julia> using ComplexMixtures, Plots, PDBTools
 
-julia> results = load("mddf.jl")
+julia> results = load("mddf.json")
 
 julia> atoms = readPDB("system.pdb", "protein")
 
