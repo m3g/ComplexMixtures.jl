@@ -118,6 +118,11 @@ end
 
 The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. 
 
+!!! tip
+    For a customized plot, you can adapt the source code of this function,
+    which is commented in detail and available at [this link](https://github.com/m3g/ComplexMixtures.jl/blob/c017bf6fd8aa412a43c8b3e08945496d2498d104/ext/ComplexMixturesPlotting.jl).
+
+
 ## [3D density map around a macromolecule](@id grid3D)
 
 Three-dimensional representations of the distribution functions can also be obtained from the MDDF results. These 3D representations are obtained from the fact that the MDDFs can be decomposed into the contributions of each solute atom, and that each point in space is closest to a single solute atom as well. Thus, each point in space can be associated to one solute atom, and the contribution of that atom to the MDDF at the corresponding distance can be obtained.   
