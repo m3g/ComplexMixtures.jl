@@ -1,5 +1,6 @@
 module ComplexMixturesPlotting
 
+using TestItems: @testitem
 import ComplexMixtures
 using ComplexMixtures: Result, SoluteGroup, contributions
 using PDBTools: Residue, residue_ticks, Atom, eachresidue
@@ -21,8 +22,10 @@ function ComplexMixtures.contourf_per_residue(
     # collect the list of residues (using PDBTools)
     residues = collect(eachresidue(atoms))
 
-    # of bins of the mddf histogram (length(results.d)) and a number of 
-    # columns equal to the number of residues
+    # Create matrix that will cotain the contribution per 
+    # residue as a function of the distance:
+    # number of rows of the mddf histogram is (length(results.d)) and 
+    # number of columns equal to the number of residues
     rescontrib = zeros(length(results.d), length(residues))
 
     # Each column is then filled up with the contributions of each residue
@@ -31,14 +34,16 @@ function ComplexMixtures.contourf_per_residue(
     end
 
     # Plot only for distances within 1.5 and 3.5:
+    # find the indexes of the distances that are within the range
     idmin = findfirst(d -> d > dmin, results.d)
     idmax = findfirst(d -> d > dmax, results.d)
 
     # Obtain pretty labels for the residues in the x-axis
+    # (using PDBTools)
     xticks = residue_ticks(atoms, first=first(residue_range), last=last(residue_range); oneletter)
 
-    # Plot a contour courves with the density at each distance from
-    # each residue
+    # Plot a contour courves with the density at each distance from each residue
+    # colors, linewidths, etc. are defined here and can be tuned
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(residue_range, results.d[idmin:idmax], rescontrib[idmin:idmax, residue_range],
         color=Plots.cgrad(:tempo), linewidth=1, linecolor=:black,
@@ -50,7 +55,25 @@ function ComplexMixtures.contourf_per_residue(
         margin=0.5Plots.PlotMeasures.cm
     )
 
+    # return the plot
     return plt
+end
+
+@testitem "contourf_per_residue" begin 
+    using ComplexMixtures
+    using ComplexMixtures.Testing
+    using Plots
+    using PDBTools
+    # Load example output file (computed in the previous script)
+    protein = readPDB(joinpath(Testing.data_dir, "Gromacs/system.pdb"), "protein")
+    results = load(joinpath(Testing.data_dir, "Gromacs/protein_EMI.json"))
+    plt = contourf_per_residue(results, protein; residue_range=50:75, oneletter=true)
+    tmpplot = tempname()*".png"
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+    plt = contourf_per_residue(results, protein; residue_range=50:75)
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
 end
 
 end
