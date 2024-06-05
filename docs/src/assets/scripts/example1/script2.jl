@@ -10,17 +10,11 @@ using ComplexMixtures
 using PDBTools
 using Plots
 
-# The complete trajectory file can be downloaded from (3Gb):
-# https://drive.google.com/file/d/14M30jDHRwUM77hzbDphgbu8mcWFBcQrX/view?usp=sharing
-
-# The example output file is available at:
-# 
 # Load PDB file of the system
 atoms = readPDB("./system.pdb")
 
 # Select the protein and the GLYC molecules
 protein = select(atoms, "protein")
-glyc = select(atoms, "resname GLYC")
 
 # Load example output file (computed in the previous script)
 example_output = "./glyc50_results.json"
@@ -28,8 +22,10 @@ results = load(example_output)
 
 #
 # Plot a 2D map showing the contributions of some residues
+# - the residue range referes to serial residue indices in the
+#   structure provided.
 #
-countourf_per_residue(
+contourf_per_residue(
   results, protein;
   residue_range=70:110,
   dmin=1.5, dmax=3.5,
