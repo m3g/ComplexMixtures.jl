@@ -32,11 +32,17 @@ julia> results = load("mddf.json")
 
 julia> atoms = readPDB("system.pdb", "protein")
 
-julia> contourf_per_residue(results, atoms; oneletter=true)
+julia> plt = contourf_per_residue(results, atoms; oneletter=true)
 ```
 
 This will produce a plot with the contribution of each residue to the solute-solvent pair distribution function,
 as a contour plot, with the residues in the x-axis and the distance in the y-axis.
+
+The resulting plot can customized using the standard mutating `plot!` function, for example, 
+
+```julia-repl
+julia> plot!(plt, size=(800, 400), title="Contribution per residue")
+```
 
 !!! compat
     This function requires loading the `Plots` package and is available in 
