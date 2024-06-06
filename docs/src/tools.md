@@ -1,14 +1,14 @@
 # [Tools](@id Tools)
 
+- [Coordination numbers](@ref coordination_number)
+- [2D density map per residue](@ref 2D_per_residue)
+- [3D density map around a macromolecule](@ref grid3D)
+- [Overview of the solvent and solute properties](@ref overview)
+- [Computing radial distribution functions](@ref radial_distribution)
+
 ```@meta
 CollapsedDocStrings = true
 ```
-
-A set of examples of analyses that can be performed with `ComplexMixtures` is given 
-in [this site](https://github.com/m3g/ComplexMixturesExamples). A brief the description
-of the possible results is provided here.   
-
-Some tools are provided to analyze the results:
 
 ## [Coordination numbers](@id coordination_number)
 
@@ -120,8 +120,12 @@ end
 The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. 
 
 !!! tip
-    For a customized plot, you can adapt the source code of this function,
+    The appearance of the resulting plot can be customized with the mutating `plot!` function, as usual.  
+
+    For a more customized plot, you can adapt the source code of the `contourf_per_residue` function,
     which is commented in detail and available at [this link](https://github.com/m3g/ComplexMixtures.jl/blob/c017bf6fd8aa412a43c8b3e08945496d2498d104/ext/ComplexMixturesPlotting.jl).
+
+    In particular, [this example](@ref 2Dmap-example2) we show how to produce a custom 2D map in detail, splitting the contributions in to residue subgroups. 
 
 
 ## [3D density map around a macromolecule](@id grid3D)
@@ -158,7 +162,7 @@ Clicking on those points we obtain which are the atoms of the protein contributi
 
 The figure on the right displays, overlapped with the hydrogen-bonding residues, the most important contributions to the second peak of the distribution, corresponding to distances from the protein between 2.0 and 3.5Å. Notably, the regions involved are different from the ones forming hydrogen bonds, indicating that non-specific interactions with the protein (and not a second solvation shell) are responsible for the second peak. 
 
-## Computing radial distribution functions
+## [Computing radial distribution functions](@id radial_distribution)
 
 The distributions returned by the `mddf` function (the `mddf` and
 `rdf` vectors), are normalized by the random reference state or
@@ -205,7 +209,7 @@ Modules = [ComplexMixtures]
 Pages = ["gr.jl"]
 ```
 
-## Overview of the solvent and solute properties 
+## [Overview of the solvent and solute properties](@id overview)
 
 The output to the REPL of the Result structure provides an overview of the
 properties of the solution. The data can be retrieved into a data structure
