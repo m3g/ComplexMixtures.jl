@@ -1,10 +1,10 @@
 module Plotting
 
+import Plots
 import ComplexMixtures
 using ComplexMixtures: Result, SoluteGroup, contributions
 using TestItems: @testitem
 using PDBTools: Residue, residue_ticks, Atom, eachresidue
-import Plots
 
 """
     contourf_per_residue(
