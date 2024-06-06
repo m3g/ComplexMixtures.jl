@@ -1,9 +1,9 @@
 module ComplexMixturesPlotting
 
-using TestItems: @testitem
 import ComplexMixtures
 using ComplexMixtures: Result, SoluteGroup, contributions
-using PDBTools: Residue, residue_ticks, Atom, eachresidue
+using ComplexMixtures: @testitem
+using ComplexMixtures.PDBTools: Residue, residue_ticks, Atom, eachresidue
 import Plots
 
 #
