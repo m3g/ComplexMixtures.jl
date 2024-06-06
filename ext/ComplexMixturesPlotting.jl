@@ -46,13 +46,17 @@ function ComplexMixtures.contourf_per_residue(
     # colors, linewidths, etc. are defined here and can be tuned
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(residue_range, results.d[idmin:idmax], rescontrib[idmin:idmax, residue_range],
-        color=Plots.cgrad(:tempo), linewidth=1, linecolor=:black,
-        colorbar=:none, levels=5,
-        xlabel=xlabel, ylabel=ylabel,
-        xticks=xticks, xrotation=60,
-        xtickfont=Plots.font(8, "Computer Modern"),
+        color=Plots.cgrad(:tempo), 
+        linewidth=1, 
+        linecolor=:black,
+        colorbar=:none, 
+        levels=5,
+        xlabel=xlabel, 
+        ylabel=ylabel,
+        xticks=xticks, xrotation=60, xtickfont=Plots.font(8, "Computer Modern"),
         size=(700, 400),
-        margin=0.5Plots.PlotMeasures.cm
+        margin=0.5Plots.PlotMeasures.cm,
+        framestyle=:box,
     )
 
     # return the plot
