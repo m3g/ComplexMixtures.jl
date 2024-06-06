@@ -27,7 +27,7 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [extensions]
-ComplexMixturesPlotting = "Plots"
+Plotting = "Plots"
 
 [compat]
 Aqua = "0.8"

@@ -1,11 +1,15 @@
 import Pkg
 Pkg.add("Documenter")
+using Documenter
 using ComplexMixtures
 using PDBTools
-using Documenter
+using Plots
 push!(LOAD_PATH, "../src/")
 makedocs(
-    modules = [ComplexMixtures],
+    modules = [
+        ComplexMixtures, 
+        isdefined(Base, :get_extension) ? Base.get_extension(ComplexMixtures, :Plotting) : ComplexMixtures.Plotting,
+    ],
     sitename = "ComplexMixtures.jl",
     pages = [
         "Introduction" => "index.md",

@@ -96,12 +96,11 @@ The convenience function `contourf_per_residue` provides a direct way to
 produce such plots. See the documentation below:
 
 ```@docs
-contourf_per_residue
+contourf_per_residue(::Result, ::AbstractVector{PDBTools.Atom})
 ```
 
 A complete example of its usage can be seen [here](@ref 2D-map-example1).
-This function is a convenience function only. For a customizable
-plot, please refer to the source code of the function at [this link](https://github.com/m3g/ComplexMixtures.jl/blob/c017bf6fd8aa412a43c8b3e08945496d2498d104/ext/ComplexMixturesPlotting.jl).
+This function is a convenience function only.
 
 Basically, we are extracting the contribution
 of each residue independently and building a matrix where each row 
@@ -123,7 +122,7 @@ The above produces a matrix with a number of columns equal to the number of resi
     The appearance of the resulting plot can be customized with the mutating `plot!` function, as usual.  
 
     For a more customized plot, you can adapt the source code of the `contourf_per_residue` function,
-    which is commented in detail and available at [this link](https://github.com/m3g/ComplexMixtures.jl/blob/c017bf6fd8aa412a43c8b3e08945496d2498d104/ext/ComplexMixturesPlotting.jl).
+    which is commented in detail and available in the `source` link at the bottom right of the above doc entry.
 
     In particular, [this example](@ref 2Dmap-example2) we show how to produce a custom 2D map in detail, splitting the contributions in to residue subgroups. 
 
