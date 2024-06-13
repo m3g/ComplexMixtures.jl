@@ -1,7 +1,7 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
 authors = ["Leandro Martinez <lmartine@unicamp.br>"]
-version = "2.2.5-DEV"
+version = "2.2.5"
 
 [deps]
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
