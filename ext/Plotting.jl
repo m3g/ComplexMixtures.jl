@@ -2,7 +2,7 @@ module Plotting
 
 import Plots
 import ComplexMixtures
-using ComplexMixtures: Result, SoluteGroup, contributions
+using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions
 using TestItems: @testitem
 using PDBTools: Residue, residue_ticks, Atom, eachresidue
 
@@ -111,6 +111,21 @@ function ComplexMixtures.contourf_per_residue(
     return plt
 end
 
+# Custom error message for common mistaken call
+function ComplexMixtures.contourf_per_residue(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs...)
+    throw(ArgumentError("""\n
+
+        contourf_per_residue cannot be run if the MDDFs were computed with custom groups.
+
+        This is because it requires the contribution of each independent atom to accumulate
+        the residue contributions. The second argument of the function must be the vector of 
+        atoms of the solute, not a group selection.
+
+        Please read the documention, by typing: `? contourf_per_residue`
+    
+    """)) 
+end
+
 @testitem "contourf_per_residue" begin 
     using ComplexMixtures
     using ComplexMixtures.Testing
@@ -126,6 +141,7 @@ end
     plt = contourf_per_residue(results, protein; residue_range=50:75)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
+    @test_throws ArgumentError contourf_per_residue(results, SoluteGroup("ALA"))
 end
 
 end
