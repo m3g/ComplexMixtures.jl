@@ -4,12 +4,12 @@ import Plots
 import ComplexMixtures
 using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions
 using TestItems: @testitem
-using PDBTools: Residue, residue_ticks, Atom, eachresidue, residue
+using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
 
 """
     contourf_per_residue(
         results::Result, atoms::AbstractVector{PDBTools.Atom}; 
-        residue_range=1:length(eachresidue(atoms)), 
+        residue_range=1:1:length(eachresidue(atoms)), 
         dmin=1.5, dmax=3.5, 
         oneletter=false,
         xlabel="Residue",
@@ -28,16 +28,14 @@ This function requires loading the `Plots` package.
 
 # Optional arguments
 
-- `residue_range::UnitRange{Int}`: The range of residues to plot. Default is `1:length(eachresidue(atoms))`.
+- `residue_range`: The range of residues to plot. Default is `1:1:length(eachresidue(atoms))`. Use
+  a step to plot every `n` residues, e.g., `1:2:30`.
 - `dmin::Real`: The minimum distance to plot. Default is `1.5`.
 - `dmax::Real`: The maximum distance to plot. Default is `3.5`.
 - `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
 - `type::Symbol`: That data to plot. Default is `:mddf` for MDDF contributions. Options are `:coordination_number`, and `:mddf_count`.
 - `clims`: The color limits for the contour plot.
-
-!!! compat
-    The `type` and `clims` arguments are available in ComplexMixtures v2.3.0 or greater.
 
 # Example
 
@@ -64,6 +62,8 @@ julia> plot!(plt, size=(800, 400), title="Contribution per residue")
     This function requires loading the `Plots` package and is available in 
     ComplexMixtures v2.2.0 or greater.
 
+    The `type` and `clims` arguments, and the support for a step in `residue_range` were introduced in ComplexMixtures v2.3.0.
+
 """
 function ComplexMixtures.contourf_per_residue(
     results::Result, atoms::AbstractVector{Atom};
@@ -83,10 +83,10 @@ function ComplexMixtures.contourf_per_residue(
     if last(residue_range) > length(residues) || first(residue_range) < 1
         throw(ArgumentError("""\n
         
-            residue_range is out of bounds
+            The residue_range $residue_range is out of bounds
 
             The atom selection provided has $(length(residues)) residues. 
-            Select a range where the first and last indices are within 1 and  $(length(residues)).
+            Select a range where the first and last indices are within 1 and $(length(residues)).
             
         """
         ))
@@ -110,11 +110,13 @@ function ComplexMixtures.contourf_per_residue(
 
     # Obtain pretty labels for the residues in the x-axis (using PDBTools)
     xticks = residue_ticks(atoms; 
-        first=resnum(first(residues)), 
-        last=resnum(last(residues)),
+        first=residue_range[1],
+        last=residue_range[end],
+        stride=step(residue_range),
         oneletter
     )
 
+    @show xticks
     # Plot a contour courves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
     Plots.default(fontfamily="Computer Modern")
@@ -126,7 +128,7 @@ function ComplexMixtures.contourf_per_residue(
         levels=5,
         xlabel=xlabel, 
         ylabel=ylabel,
-        xticks=(residue_range, xticks[2]), xrotation=60, xtickfont=Plots.font(8, "Computer Modern"),
+        xticks=xticks, xrotation=60, xtickfont=Plots.font(8, "Computer Modern"),
         size=(700, 400),
         margin=0.5Plots.PlotMeasures.cm,
         framestyle=:box,
@@ -165,6 +167,9 @@ end
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
     plt = contourf_per_residue(results, protein; residue_range=50:75)
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+    plt = contourf_per_residue(results, protein; residue_range=50:2:70)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
     @test_throws ArgumentError contourf_per_residue(results, SoluteGroup("ALA"))
