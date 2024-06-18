@@ -116,7 +116,6 @@ function ComplexMixtures.contourf_per_residue(
         oneletter
     )
 
-    @show xticks
     # Plot a contour courves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
     Plots.default(fontfamily="Computer Modern")
