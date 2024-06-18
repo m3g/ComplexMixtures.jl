@@ -93,7 +93,7 @@ and the same distribution function, decomposed into the contributions of the hyd
 
 ## [2D density map](@id 2D-map-example1)
 
-In this followup from the example aboave, we compute group contributions of the solute (the protein) to the MDDFs,
+In this followup from the example above, we compute group contributions of the solute (the protein) to the MDDFs,
 split into the contributions each protein residue. This allows the observation of the penetration of the solvent
 on the structure, and the strength of the interaction of the solvent, or cossolvent, with each type of residue
 in the structure. The `contourf_per_residue` auxiliary function, [documented here](@ref 2D_per_residue), is used:  
