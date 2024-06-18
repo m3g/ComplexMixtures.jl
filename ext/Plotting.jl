@@ -4,7 +4,7 @@ import Plots
 import ComplexMixtures
 using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions
 using TestItems: @testitem
-using PDBTools: Residue, residue_ticks, Atom, eachresidue
+using PDBTools: Residue, residue_ticks, Atom, eachresidue, residue
 
 """
     contourf_per_residue(
@@ -79,6 +79,19 @@ function ComplexMixtures.contourf_per_residue(
     # collect the list of residues (using PDBTools)
     residues = collect(eachresidue(atoms))
 
+    # Check if the range is fine
+    if last(residue_range) > length(residues) || first(residue_range) < 1
+        throw(ArgumentError("""\n
+        
+            residue_range is out of bounds
+
+            The atom selection provided has $(length(residues)) residues. 
+            Select a range where the first and last indices are within 1 and  $(length(residues)).
+            
+        """
+        ))
+    end
+
     # Create matrix that will cotain the contribution per 
     # residue as a function of the distance:
     # number of rows of the mddf histogram is (length(results.d)) and 
@@ -95,9 +108,12 @@ function ComplexMixtures.contourf_per_residue(
     idmin = findfirst(d -> d > dmin, results.d)
     idmax = findfirst(d -> d > dmax, results.d)
 
-    # Obtain pretty labels for the residues in the x-axis
-    # (using PDBTools)
-    xticks = residue_ticks(atoms, first=first(residue_range), last=last(residue_range); oneletter)
+    # Obtain pretty labels for the residues in the x-axis (using PDBTools)
+    xticks = residue_ticks(atoms; 
+        first=resnum(first(residues)), 
+        last=resnum(last(residues)),
+        oneletter
+    )
 
     # Plot a contour courves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
@@ -110,7 +126,7 @@ function ComplexMixtures.contourf_per_residue(
         levels=5,
         xlabel=xlabel, 
         ylabel=ylabel,
-        xticks=xticks, xrotation=60, xtickfont=Plots.font(8, "Computer Modern"),
+        xticks=(residue_range, xticks[2]), xrotation=60, xtickfont=Plots.font(8, "Computer Modern"),
         size=(700, 400),
         margin=0.5Plots.PlotMeasures.cm,
         framestyle=:box,
@@ -152,6 +168,7 @@ end
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
     @test_throws ArgumentError contourf_per_residue(results, SoluteGroup("ALA"))
+    @test_throws ArgumentError contourf_per_residue(results, protein; residue_range=50:80)
 end
 
 end
