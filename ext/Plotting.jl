@@ -13,7 +13,9 @@ using PDBTools: Residue, residue_ticks, Atom, eachresidue
         dmin=1.5, dmax=3.5, 
         oneletter=false,
         xlabel="Residue",
-        ylabel="r / Å"
+        ylabel="r / Å",
+        type=:mddf,
+        clims=nothing,
     )
 
 Plot the contribution of each residue to the solute-solvent pair distribution function as a contour plot.
@@ -31,6 +33,11 @@ This function requires loading the `Plots` package.
 - `dmax::Real`: The maximum distance to plot. Default is `3.5`.
 - `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
+- `type::Symbol`: That data to plot. Default is `:mddf` for MDDF contributions. Options are `:coordination_number`, and `:mddf_count`.
+- `clims`: The color limits for the contour plot.
+
+!!! compat
+    The `type` and `clims` arguments are available in ComplexMixtures v2.3.0 or greater.
 
 # Example
 
@@ -64,7 +71,9 @@ function ComplexMixtures.contourf_per_residue(
     dmin=1.5, dmax=3.5,
     oneletter=false,
     xlabel="Residue",
-    ylabel="r / Å"
+    ylabel="r / Å",
+    type=:mddf,
+    clims=nothing,
 )
 
     # collect the list of residues (using PDBTools)
@@ -78,7 +87,7 @@ function ComplexMixtures.contourf_per_residue(
 
     # Each column is then filled up with the contributions of each residue
     for (ires, residue) in enumerate(residues)
-        rescontrib[:, ires] .= contributions(results, SoluteGroup(residue))
+        rescontrib[:, ires] .= contributions(results, SoluteGroup(residue); type)
     end
 
     # Plot only for distances within 1.5 and 3.5:
@@ -105,6 +114,7 @@ function ComplexMixtures.contourf_per_residue(
         size=(700, 400),
         margin=0.5Plots.PlotMeasures.cm,
         framestyle=:box,
+        clims=clims,
     )
 
     # return the plot

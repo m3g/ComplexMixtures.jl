@@ -90,17 +90,15 @@ One nice way to visualize the accumulation or depletion of a solvent around a ma
 </center>
 ```
 
-Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF. 
+Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF, coordination numbers or minimum-distance counts. 
 
-The convenience function `contourf_per_residue` provides a direct way to 
-produce such plots. See the documentation below:
+The convenience function `contourf_per_residue` provides a direct way to produce such plots. See the documentation below:
 
 ```@docs
 contourf_per_residue(::Result, ::AbstractVector{PDBTools.Atom})
 ```
 
-A complete example of its usage can be seen [here](@ref 2D-map-example1).
-This function is a convenience function only.
+A complete example of its usage can be seen [here](@ref 2D-map-example1).  This function is a convenience function only.
 
 Basically, we are extracting the contribution
 of each residue independently and building a matrix where each row 
