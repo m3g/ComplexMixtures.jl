@@ -202,6 +202,7 @@ function mddf(
     to_read_frames = options.firstframe:R.files[1].lastframe_read
     to_compute_frames = options.firstframe:options.stride:R.files[1].lastframe_read
 
+    # Check if the system free memory is enough, if not throw an error
     if nchunks * Base.summarysize(R) > 0.7 * Sys.free_memory()
         R_size = Base.summarysize(R) / 1024^3
         free = Sys.free_memory() / 1024^3
@@ -517,6 +518,9 @@ end
     @test sum(R.rdf) ≈ 491.4450029864516 rtol = 0.1
     @test R.kb[end] ≈ -6019.863896959123 rtol = 0.5
     @test R.kb_rdf[end] ≈ -6905.975623304156 rtol = 0.5
+    
+    # Throw insufficent memory error
+    @test_throws ErrorException mddf(traj, Options(nthreads=10^10))
 
     # Self correlation
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
