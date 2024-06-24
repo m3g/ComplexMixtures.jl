@@ -202,6 +202,27 @@ function mddf(
     to_read_frames = options.firstframe:R.files[1].lastframe_read
     to_compute_frames = options.firstframe:options.stride:R.files[1].lastframe_read
 
+    if nchunks * Base.summarysize(R) > 0.7 * Sys.free_memory()
+        R_size = Base.summarysize(R) / 1024^3
+        free = Sys.free_memory() / 1024^3
+        throw(ErrorException("""Insufficient memory! 
+
+            The memory required for the computation is too large:
+
+            - The Results data structure is $(round(R_size, digits=2)) GB, and $nchunks copies are required 
+              for the parallel computation, thus requiring $(round(nchunks * R_size, digits=2)) GB.
+            - The free system memory is: $(round(free, digits=2)) GB.
+
+            To reduce memory requirements, consider:
+
+            - Reducing the number of threads, with the `Options(nthreads=N)` parameter.
+              Here, we suggest at most N=$(Int(fld(0.7 * free, R_size))).
+            - Using the predefinition of custom groups of atoms in the solute and solvent.
+              See: https://m3g.github.io/ComplexMixtures.jl/stable/selection/#predefinition-of-groups
+                
+        """))
+    end
+
     # Loop over the trajectory
     read_lock = ReentrantLock()
     sum_results_lock = ReentrantLock()
