@@ -50,27 +50,6 @@ end
 end
 
 #
-# Structure to carry the results of the computation
-# in threaded chunks: carries the information if the
-# results must be updated atomically or not. The locked
-# update is used in the `low_memory` mode.
-#
-struct ResultChunk{L<:Union{ReentrantLock,Nothing}}
-    R::Result
-    lock::L
-end
-# unlocked updates
-update_volume!(r_chunk::ResultChunk{Nothing}, system, frame_weight) = 
-    r_chunk.R.volume.total += frame_weight * cell_volume(system)
-update_counters!(r_chunk::ResultChunk{Nothing}, args...) =
-    update_counters!(r_chunk.R, args...)
-# locked updates
-update_volume!(r_chunk::ResultChunk{ReentrantLock}, system, frame_weight) = 
-    @lock r_chunk.lock r_chunk.R.volume.total += frame_weight * cell_volume(system)
-update_counters!(r_chunk::ResultChunk{ReentrantLock}, args...) =
-    @lock r_chunk.lock update_counters!(r_chunk.R, args...)
-
-#
 # Defines is a molecule is a bulk molecule
 #
 inbulk(md::MinimumDistance, options::Options) =
@@ -189,12 +168,6 @@ function mddf(
     # Set random number generator
     RNG = init_random(options)
 
-    # Number of threads (chunks) to use
-    nchunks = options.nthreads
-    if nchunks == 0
-        nchunks = Threads.nthreads()
-    end
-    
     # Compute some meta-data from the trajectory file and the options,
     # to allow parallel creation of the Result, and ParticleSystem
     # data structures
@@ -215,6 +188,9 @@ function mddf(
         iframe += 1
     end
 
+    # Default number of chunks for !low_memory run
+    nchunks = options.nthreads == 0 ? Threads.nthreads() : options.nthreads
+
     # Print some information about this run
     if !options.silent
         title(R, trajectory.solute, trajectory.solvent, nchunks)
@@ -228,7 +204,7 @@ function mddf(
     # Check if the system free memory is enough, if not throw an error
     required_memory = Base.summarysize(R) * nchunks / 1024^3
     total_memory = Sys.total_memory()  / 1024^3
-    if !low_memory && mem_warn && (required_memory > 0.5 * total_memory)
+    if mem_warn && (required_memory > 0.5 * total_memory)
         @warn begin 
             """\n
             The memory required for the computation is a large proportion of the total system memory.
@@ -251,22 +227,34 @@ function mddf(
             """
         end _file = nothing _line = nothing
     end
-    if !low_memory && (required_memory > total_memory)
+    if required_memory > total_memory
         throw(ErrorException("The memory required for the computation is larger than the total system memory."))
     end
 
+    #
+    # Number of batches of parallel CellListMap minimum-distance calculation
+    #
+    parallel_cl, nbatches_cl = if low_memory
+        true, (min(8, max(1,fld(Threads.nthreads(), nchunks))), max(1,fld(Threads.nthreads(), nchunks))) 
+    else
+        false, (1,1)
+    end
+    if low_memory && !options.silent
+        println("Running with low-memory option. Parallel CellListMap will be used.")
+        println("  Number of parallel minimum-distance computations: $nchunks")
+        println("  Each computation will use $(nbatches_cl[2]) threads.")
+    end
+    
     # Loop over the trajectory
     read_lock = ReentrantLock()
     sum_results_lock = ReentrantLock()
     Threads.@threads for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
         # Local data structures for this chunk
-        system_chunk = ParticleSystem(trajectory, trajectory_data.unitcell, options)
+        system_chunk = ParticleSystem(
+            trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
+        )
         buff_chunk = Buffer(trajectory, R)
-        if low_memory
-            R_chunk = ResultChunk(R, sum_results_lock) # has to be updated with locks: slow but memory efficient
-        else
-            R_chunk = ResultChunk(Result(trajectory, options; trajectory_data, frame_weights), nothing)
-        end
+        r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
         # Reset the number of frames read by each chunk
         nframes_read = 0
         for _ in frame_range
@@ -284,7 +272,7 @@ function mddf(
                     unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
                     update_unitcell!(system_chunk, unitcell)
                     # Read weight of this frame. 
-                    frame_weight = R_chunk.R.files[1].frame_weights[iframe]
+                    frame_weight = r_chunk.files[1].frame_weights[iframe]
                     # Display progress bar
                     options.silent || next!(progress)
                 end
@@ -296,20 +284,15 @@ function mddf(
                 nframes_read += 1
                 # Compute distances in this frame and update results
                 if !coordination_number_only
-                    mddf_frame!(R_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
+                    mddf_frame!(r_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
                 else
-                    coordination_number_frame!(R_chunk, system_chunk, buff_chunk, frame_weight)
+                    coordination_number_frame!(r_chunk, system_chunk, buff_chunk, frame_weight)
                 end
             end # compute if
         end # frame range for this chunk
 
         # Sum the results of this chunk into the total results data structure
-        if !low_memory
-            R_chunk.R.files[1].nframes_read = nframes_read
-            @lock sum_results_lock sum!(R, R_chunk.R)
-        else
-            @lock sum_results_lock R.files[1].nframes_read += nframes_read
-        end
+        @lock sum_results_lock sum!(R, r_chunk)
 
     end
     closetraj!(trajectory)
@@ -325,16 +308,17 @@ end
 # Compute cell volume from unitcell matrix
 cell_volume(system::AbstractParticleSystem) =
     @views dot(cross(system.unitcell[:, 1], system.unitcell[:, 2]), system.unitcell[:, 3])
+update_volume!(r_chunk, system, frame_weight) = r_chunk.volume.total += frame_weight * cell_volume(system)
 
 #=
-    mddf_frame!(r_chunk::ResultChunk, system::AbstractParticleSystem, buff::Buffer, options::Options, frame_weight, RNG)
+    mddf_frame!(r_chunk::Result, system::AbstractParticleSystem, buff::Buffer, options::Options, frame_weight, RNG)
 
-Computes the MDDF for a single frame. Modifies the data in the `r_chunk` (type `ResultChunk`) structure, through
+Computes the MDDF for a single frame. Modifies the data in the `r_chunk` (type `Result`) structure, through
 the `update_volume!` and `update_counters!` functions.
 
 =#
 function mddf_frame!(
-    r_chunk::ResultChunk,
+    r_chunk::Result,
     system::AbstractParticleSystem,
     buff::Buffer,
     options::Options,
@@ -347,7 +331,7 @@ function mddf_frame!(
 
     # Random set of solute molecules to use as reference for the ideal gas distributions
     for i in eachindex(buff.ref_solutes)
-        buff.ref_solutes[i] = rand(RNG, 1:r_chunk.R.solute.nmols)
+        buff.ref_solutes[i] = rand(RNG, 1:r_chunk.solute.nmols)
     end
 
     #
@@ -355,15 +339,15 @@ function mddf_frame!(
     #
     update_lists = true
     system.ypositions .= buff.solvent_read
-    for isolute = 1:r_chunk.R.solute.nmols
+    for isolute = 1:r_chunk.solute.nmols
 
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
-        system.xpositions .= viewmol(isolute, buff.solute_read, r_chunk.R.solute)
+        system.xpositions .= viewmol(isolute, buff.solute_read, r_chunk.solute)
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
         # for the previous solute
-        minimum_distances!(system, r_chunk.R, isolute; update_lists=update_lists)
+        minimum_distances!(system, r_chunk, isolute; update_lists=update_lists)
         update_lists = false # avoid recomputation of the cell lists in the next iteration
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
@@ -384,15 +368,15 @@ function mddf_frame!(
             # Annotate the indices of the molecules that are in the bulk solution
             n_solvent_in_bulk = 0
             for i in eachindex(system.list)
-                r_chunk.R.autocorrelation && i == isolute && continue
+                r_chunk.autocorrelation && i == isolute && continue
                 if inbulk(system.list[i], options)
                     n_solvent_in_bulk += 1
                     buff.indices_in_bulk[n_solvent_in_bulk] = i
                 end
             end
             for _ = 1:nrand
-                randomize_solvent!(system, buff, n_solvent_in_bulk, r_chunk.R, RNG)
-                minimum_distances!(system, r_chunk.R, isolute; update_lists=update_lists)
+                randomize_solvent!(system, buff, n_solvent_in_bulk, r_chunk, RNG)
+                minimum_distances!(system, r_chunk, isolute; update_lists=update_lists)
                 update_counters!(r_chunk, system, frame_weight, Val(:random))
             end
             # Restore positions and minimum distance list of system structure
@@ -406,37 +390,36 @@ function mddf_frame!(
 end
 
 #=
-    coordination_number_frame!(r_chunk::ResultChunk, system::AbstractParticleSystem, buff::Buffer, frame_weight)
+    coordination_number_frame!(r_chunk::Result, system::AbstractParticleSystem, buff::Buffer, frame_weight)
 
-Computes the coordination number for a single frame. Modifies the data in the `r_chunk` (type `ResultChunk`) structure, through
+Computes the coordination number for a single frame. Modifies the data in the `r_chunk` (type `Result`) structure, through
 the `update_volume!` and `update_counters!` functions.
 
 =#
 function coordination_number_frame!(
-    r_chunk::ResultChunk,
+    r_chunk::Result,
     system::AbstractParticleSystem,
     buff::Buffer,
     frame_weight::Float64,
-    sum_results_lock::Union{<:ReentrantLock,Nothing} = nothing,
 )
 
     # Sum up the volume of this frame
-    upate_volume!(r_chunk, system, frame_weight)
+    update_volume!(r_chunk, system, frame_weight)
 
     #
     # Compute the MDDFs for each solute molecule
     #
     update_lists = true
     system.ypositions .= buff.solvent_read
-    for isolute = 1:r_chunk.R.solute.nmols
+    for isolute = 1:r_chunk.solute.nmols
 
         # We need to do this one solute molecule at a time to avoid exploding the memory requirements
-        system.xpositions .= viewmol(isolute, buff.solute_read, r_chunk.R.solute)
+        system.xpositions .= viewmol(isolute, buff.solute_read, r_chunk.solute)
 
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
         # for the previous solute
-        minimum_distances!(system, r_chunk.R, isolute; update_lists=update_lists)
+        minimum_distances!(system, r_chunk, isolute; update_lists=update_lists)
         update_lists = false # avoid recomputation of the cell lists in the next iteration
 
         # For each solute molecule, update the counters (this is highly suboptimal, because

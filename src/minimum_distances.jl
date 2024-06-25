@@ -164,16 +164,23 @@ will be setup such that `xpositions` corresponds to one molecule of the solute, 
 `ypositions` contains all coordinates of all atoms of the solvent. 
 
 =#
-function CellListMap.ParticleSystem(trajectory::Trajectory, unitcell, options::Options)
-    system = ParticleSystem(
+function CellListMap.ParticleSystem(
+    trajectory::Trajectory, 
+    unitcell, 
+    options::Options, 
+    parallel::Bool,
+    nbatches::Tuple{Int,Int},
+)
+    system = ParticleSystem(;
         xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
         ypositions = zeros(SVector{3,Float64}, trajectory.solvent.nmols * trajectory.solvent.natomspermol),
-        unitcell = unitcell,
+        unitcell,
         cutoff = options.usecutoff ? options.cutoff : options.dbulk,
         output = fill(zero(MinimumDistance), trajectory.solvent.nmols),
         output_name = :list,
         lcell = options.lcell,
-        parallel = false, # Important: parallellization is performed at the frame level
+        parallel, # true only if low_memory is set 
+        nbatches,
         autoswap = false, # The lists will be built for the solvent, always
     )
     return system
