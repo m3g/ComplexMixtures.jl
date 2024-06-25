@@ -501,7 +501,7 @@ end
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
 
-    for nthreads in [1,2], lastframe in [1, 2], low_memory in [false]
+    for nthreads in [1,2], lastframe in [1, 2], low_memory in [true, false]
         options = Options(;
             seed=321,
             StableRNG=true,
@@ -624,81 +624,86 @@ end
     using PDBTools: readPDB, select
     using ComplexMixtures.Testing: data_dir, pdbfile
 
-    options = Options(
-        seed=1, 
-        stride=1, 
-        StableRNG=true, 
-        nthreads=1, 
-        n_random_samples=100,
-        silent=true
-    )
     atoms = readPDB(pdbfile)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-
-    # Test actual system: cross correlation
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
-    R = mddf(traj, options)
-    # Deterministic
-    @test R.volume.total ≈ 603078.4438609097
-    @test sum(R.md_count) ≈ 25.250000000000007
-    @test sum(R.rdf_count) ≈ 19.550000000000004
-    @test R.density.solute ≈ 1.6581590839128614e-6
-    @test R.density.solvent ≈ 0.00030012679418822794
-    # Dependent on the random number seed
-    @test R.volume.domain ≈ 74560.15401932324 rtol = 0.1
-    @test R.volume.bulk ≈ 528518.2898415865 rtol = 0.1
-    @test R.density.solvent_bulk ≈ 0.0003054766563488117 rtol = 0.1
-    @test sum(R.mddf) ≈ 527.670164155438 rtol = 0.1
-    @test sum(R.rdf) ≈ 444.71561185073836 rtol = 0.1
-    @test R.kb[end] ≈ -5775.215792514756 rtol = 0.5
-    @test R.kb_rdf[end] ≈ -6360.471034166915 rtol = 0.5
 
     # Throw error in incorrect call to coordination_number
-    @test_throws ArgumentError coordination_number(traj, options, coordination_number_only=true)
-    
+    @test_throws ArgumentError coordination_number(traj, Options(); coordination_number_only=true)
+
     # Throw insufficent memory error
     @test_throws ErrorException mddf(traj, Options(nthreads=10^10))
 
-    # Self correlation
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
-    R = mddf(traj, options)
-    # Deterministic
-    @test R.volume.total ≈ 603078.4438609097
-    @test sum(R.md_count) ≈ 2.8939226519337016
-    @test sum(R.rdf_count) ≈ 1.858839779005525
-    @test R.density.solute ≈ 0.00030012679418822794
-    @test R.density.solvent ≈ 0.00030012679418822794
-    # Dependent on the random number seed
-    @test R.volume.domain ≈ 6958.855154995052 rtol = 0.1
-    @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1
-    @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
-    @test sum(R.mddf) ≈ 434.7773107740875 rtol = 0.1
-    @test sum(R.rdf) ≈ 345.9169130954568 rtol = 0.1
-    @test R.kb[end] ≈ -476 rtol = 0.5
-    @test R.kb_rdf[end] ≈ -421 rtol = 0.5
+    for nthreads in [1,2], low_memory in [true, false]
+        options = Options(;
+            seed=1, 
+            stride=1, 
+            StableRNG=true, 
+            nthreads, 
+            n_random_samples=100,
+            silent=true
+        )
+        # Test actual system: cross correlation
+        traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
+        R = mddf(traj, options; low_memory)
+        # Deterministic
+        @test R.volume.total ≈ 603078.4438609097
+        @test sum(R.md_count) ≈ 25.250000000000007
+        @test sum(R.rdf_count) ≈ 19.550000000000004
+        @test R.density.solute ≈ 1.6581590839128614e-6
+        @test R.density.solvent ≈ 0.00030012679418822794
+        # Dependent on the random number seed
+        @test R.volume.domain ≈ 74560.15401932324 rtol = 0.1
+        @test R.volume.bulk ≈ 528518.2898415865 rtol = 0.1
+        @test R.density.solvent_bulk ≈ 0.0003054766563488117 rtol = 0.1
+        @test sum(R.mddf) ≈ 527.670164155438 rtol = 0.1
+        @test sum(R.rdf) ≈ 444.71561185073836 rtol = 0.1
+        @test R.kb[end] ≈ -5775.215792514756 rtol = 0.5
+        @test R.kb_rdf[end] ≈ -6360.471034166915 rtol = 0.5
 
-    # Test varying frame weights: the trajectory below has 3 frames
-    # extracted from NAMD/trajectory.dcd, and the 2 first frames are the
-    # first frame duplicated.
-    traj1 = Trajectory("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao)
-    R1 = mddf(traj1, Options())
-    traj2 = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
-    R2 = mddf(traj2, Options(lastframe=2), frame_weights=[2.0, 1.0])
-    @test R2.md_count ≈ R1.md_count
-    @test all(R2.solute_group_count == R1.solute_group_count)
-    @test all(R2.solvent_group_count == R1.solvent_group_count)
-    R2 = mddf(traj2, Options(lastframe=2), frame_weights=[0.5, 0.25])
-    @test R2.md_count ≈ R1.md_count
-    @test all(R2.solute_group_count == R1.solute_group_count)
-    @test all(R2.solvent_group_count == R1.solvent_group_count)
-    @test R2.volume.total ≈ R1.volume.total
-    # Varying weights with stride
-    R1 = mddf(traj1, Options(firstframe=2, lastframe=3))
-    R2 = mddf(traj1, Options(lastframe=3, stride=2), frame_weights=[1.0, 100.0, 1.0])
-    @test R2.md_count ≈ R1.md_count
-    @test all(R2.solute_group_count == R1.solute_group_count)
-    @test all(R2.solvent_group_count == R1.solvent_group_count)
-    @test R2.volume.total ≈ R1.volume.total
+        # Self correlation
+        traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
+        R = mddf(traj, options; low_memory)
+        # Deterministic
+        @test R.volume.total ≈ 603078.4438609097
+        @test sum(R.md_count) ≈ 2.8939226519337016
+        @test sum(R.rdf_count) ≈ 1.858839779005525
+        @test R.density.solute ≈ 0.00030012679418822794
+        @test R.density.solvent ≈ 0.00030012679418822794
+        # Dependent on the random number seed
+        if nthreads == 1
+            @test R.volume.domain ≈ 6958.855154995052 rtol = 0.1
+            @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1
+            @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
+            @test sum(R.mddf) ≈ 434.7773107740875 rtol = 0.1
+            @test sum(R.rdf) ≈ 345.9169130954568 rtol = 0.1
+            @test R.kb[end] ≈ -476 rtol = 0.5
+            @test R.kb_rdf[end] ≈ -421 rtol = 0.5
+        end
+
+        # Test varying frame weights: the trajectory below has 3 frames
+        # extracted from NAMD/trajectory.dcd, and the 2 first frames are the
+        # first frame duplicated.
+        traj1 = Trajectory("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao)
+        R1 = mddf(traj1, Options(); low_memory)
+        traj2 = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
+        R2 = mddf(traj2, Options(lastframe=2); frame_weights=[2.0, 1.0], low_memory)
+        @test R2.md_count ≈ R1.md_count
+        @test all(R2.solute_group_count == R1.solute_group_count)
+        @test all(R2.solvent_group_count == R1.solvent_group_count)
+        R2 = mddf(traj2, Options(lastframe=2); frame_weights=[0.5, 0.25], low_memory)
+        @test R2.md_count ≈ R1.md_count
+        @test all(R2.solute_group_count == R1.solute_group_count)
+        @test all(R2.solvent_group_count == R1.solvent_group_count)
+        @test R2.volume.total ≈ R1.volume.total
+        # Varying weights with stride
+        R1 = mddf(traj1, Options(firstframe=2, lastframe=3); low_memory)
+        R2 = mddf(traj1, Options(lastframe=3, stride=2); frame_weights=[1.0, 100.0, 1.0], low_memory)
+        @test R2.md_count ≈ R1.md_count
+        @test all(R2.solute_group_count == R1.solute_group_count)
+        @test all(R2.solvent_group_count == R1.solvent_group_count)
+        @test R2.volume.total ≈ R1.volume.total
+    end
 
 end
