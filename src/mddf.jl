@@ -112,6 +112,7 @@ end
         options::Options; 
         frame_weights = Float64[], 
         coordination_number_only = false
+        mem_warn = true
     )
 
 Computes the minimum-distance distribution function, atomic contributions, and 
@@ -133,6 +134,9 @@ site-counts and coordination numbers of the solvent molecules around the solute,
 This is useful when the normalization of the distribution is not possible or needed, for instance when
 the bulk solutio is not properly defined. The computation is much faster in this case. 
 
+The `mem_warn` keyword is a boolean that, if set to `true`, will issue a warning if the memory required for the computation
+is larger than 50% of the total system memory. This is to avoid memory exhaustion and the termination of the computation.
+
 ### Examples
 
 ```julia-repl
@@ -150,14 +154,11 @@ julia> results = mddf(trajectory, options);
 ```
 
 """
-function mddf(trajectory::Trajectory; frame_weights=Float64[], coordination_number_only=false)
-    return mddf(trajectory, Options(); frame_weights, coordination_number_only)
-end
-
 function mddf(
-    trajectory::Trajectory, options::Options;
+    trajectory::Trajectory, options::Options=Options();
     frame_weights=Float64[],
-    coordination_number_only=false
+    coordination_number_only=false,
+    mem_warn=true,
 )
 
     options.silent || println(bars)
@@ -203,25 +204,33 @@ function mddf(
     to_compute_frames = options.firstframe:options.stride:R.files[1].lastframe_read
 
     # Check if the system free memory is enough, if not throw an error
-    if nchunks * Base.summarysize(R) > 0.7 * Sys.free_memory()
-        R_size = Base.summarysize(R) / 1024^3
-        free = Sys.free_memory() / 1024^3
-        throw(ErrorException("""Insufficient memory! 
+    required_memory = Base.summarysize(R) * nchunks / 1024^3
+    total_memory = Sys.total_memory()  / 1024^3
+    if mem_warn && (required_memory > 0.5 * total_memory)
+        @warn begin 
+            """\n
+            The memory required for the computation is a large proportion of the total system memory.
+            Depending on resources used by other processes, this may lead to memory exhaustion and
+            and the termination of the computation.
 
-            The memory required for the computation is too large:
-
-            - The Results data structure is $(round(R_size, digits=2)) GB, and $nchunks copies are required 
-              for the parallel computation, thus requiring $(round(nchunks * R_size, digits=2)) GB.
-            - The free system memory is: $(round(free, digits=2)) GB.
+            - The Results data structure is $(round(required_memory/nchunks, digits=2)) GiB, and $nchunks copies are required 
+              for the parallel computation, thus requiring $(round(required_memory, digits=2)) GiB.
+            - The total system memory is: $(round(total_memory, digits=2)) GiB.
 
             To reduce memory requirements, consider:
 
             - Reducing the number of threads, with the `Options(nthreads=N)` parameter.
-              Here, we suggest at most N=$(Int(fld(0.7 * free, R_size))).
+              Here, we suggest at most N=$(Int(fld(0.5 * total_memory, required_memory/nchunks))).
             - Using the predefinition of custom groups of atoms in the solute and solvent.
               See: https://m3g.github.io/ComplexMixtures.jl/stable/selection/#predefinition-of-groups
+
+            To suppress this warning, set `mem_warn = false` in the call to `mddf`.
                 
-        """))
+            """
+        end _file = nothing _line = nothing
+        if required_memory > total_memory
+            throw(ErrorException("The memory required for the computation is larger than the total system memory."))
+        end
     end
 
     # Loop over the trajectory
@@ -609,7 +618,10 @@ function coordination_number_frame!(
 end
 
 """     
-    coordination_number(trajectory::Trajectory, options::Options)
+    coordination_number(
+        trajectory::Trajectory, options::Options;
+        kargs...
+    )
 
 Computes the coordination numbers for each solute molecule in the trajectory, given the `Trajectory`.
 This is an auxiliary function of the `ComplexMixtures` package, which is used to compute 
@@ -618,6 +630,9 @@ coordination numbers when the normalization of the distribution is not possible 
 The output is a `Result` structure, which contains the data as the result of a call to `mddf`, except
 that all counters which require normalization of the distribution will be zero. In summary, this result
 data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
+
+The keyword arguments are the same as for the `mddf` function, and are passed to it.
+This function is a wrapper around `mddf` with the `coordination_number_only` keyword set to `true`.
 
 ### Examples
 
@@ -630,5 +645,17 @@ julia> coordination_numbers = coordination_number(trajectory);
 ```
 
 """
-coordination_number(trajectory::Trajectory, options::Options=Options()) =
-    mddf(trajectory, options; coordination_number_only=true)
+function coordination_number(
+    trajectory::Trajectory, options::Options=Options();
+    kargs...
+)
+    if haskey(kargs, :coordination_number_only)
+        throw(ArgumentError("""\n
+        
+            The keyword argument `coordination_number_only` is not allowed in the `coordination_number` function.
+            It is, by definition, set to `true` in this function. 
+            
+        """))
+    end
+    return mddf(trajectory, options; coordination_number_only=true, kargs...)
+end
