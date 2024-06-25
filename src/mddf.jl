@@ -590,7 +590,14 @@ end
     using PDBTools: readPDB, select
     using ComplexMixtures.Testing: data_dir, pdbfile
 
-    options = Options(seed=1, stride=1, StableRNG=true, nthreads=1, silent=true)
+    options = Options(
+        seed=1, 
+        stride=1, 
+        StableRNG=true, 
+        nthreads=1, 
+        n_random_samples=100,
+        silent=true
+    )
     atoms = readPDB(pdbfile)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
@@ -605,13 +612,13 @@ end
     @test R.density.solute ≈ 1.6581590839128614e-6
     @test R.density.solvent ≈ 0.00030012679418822794
     # Dependent on the random number seed
-    @test R.volume.domain ≈ 75368.14585709268 rtol = 0.1
-    @test R.volume.bulk ≈ 527710.298003817 rtol = 0.1
-    @test R.density.solvent_bulk ≈ 0.000305944380109164 rtol = 0.1
-    @test sum(R.mddf) ≈ 582.8371304452286 rtol = 0.1
-    @test sum(R.rdf) ≈ 491.4450029864516 rtol = 0.1
-    @test R.kb[end] ≈ -6019.863896959123 rtol = 0.5
-    @test R.kb_rdf[end] ≈ -6905.975623304156 rtol = 0.5
+    @test R.volume.domain ≈ 74560.15401932324 rtol = 0.1
+    @test R.volume.bulk ≈ 528518.2898415865 rtol = 0.1
+    @test R.density.solvent_bulk ≈ 0.0003054766563488117 rtol = 0.1
+    @test sum(R.mddf) ≈ 527.670164155438 rtol = 0.1
+    @test sum(R.rdf) ≈ 444.71561185073836 rtol = 0.1
+    @test R.kb[end] ≈ -5775.215792514756 rtol = 0.5
+    @test R.kb_rdf[end] ≈ -6360.471034166915 rtol = 0.5
 
     # Throw error in incorrect call to coordination_number
     @test_throws ArgumentError coordination_number(traj, options, coordination_number_only=true)
@@ -629,13 +636,13 @@ end
     @test R.density.solute ≈ 0.00030012679418822794
     @test R.density.solvent ≈ 0.00030012679418822794
     # Dependent on the random number seed
-    @test R.volume.domain ≈ 6801.384672431371 rtol = 0.1
+    @test R.volume.domain ≈ 6958.855154995052 rtol = 0.1
     @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1
     @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
-    @test sum(R.mddf) ≈ 275.5648734200309 rtol = 0.1
-    @test sum(R.rdf) ≈ 145.0 rtol = 0.1
-    @test R.kb[end] ≈ -10.0 rtol = 0.5
-    @test R.kb_rdf[end] ≈ 36 rtol = 0.5
+    @test sum(R.mddf) ≈ 434.7773107740875 rtol = 0.1
+    @test sum(R.rdf) ≈ 345.9169130954568 rtol = 0.1
+    @test R.kb[end] ≈ -476 rtol = 0.5
+    @test R.kb_rdf[end] ≈ -421 rtol = 0.5
 
     # Test varying frame weights: the trajectory below has 3 frames
     # extracted from NAMD/trajectory.dcd, and the 2 first frames are the
