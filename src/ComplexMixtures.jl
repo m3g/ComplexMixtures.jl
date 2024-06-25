@@ -67,7 +67,7 @@ include("./compare.jl")
 include("./minimum_distances.jl")
 
 # Update counters routines
-include("./updatecounters.jl")
+include("./update_counters.jl")
 
 # Main function
 include("./mddf.jl")

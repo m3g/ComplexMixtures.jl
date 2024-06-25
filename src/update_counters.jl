@@ -35,11 +35,11 @@ function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSe
 end
 
 #
-#    updatecounters!(R::Result, system::AbstractParticleSystem)
+#    update_counters!(R::Result, system::AbstractParticleSystem)
 #
 # Function that updates the minimum-distance counters in `R`
 #
-function updatecounters!(R::Result, system::AbstractParticleSystem, frame_weight::Float64)
+function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::Float64)
     for md in system.list
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
@@ -62,7 +62,7 @@ function updatecounters!(R::Result, system::AbstractParticleSystem, frame_weight
     return R
 end
 # Update counters for the ideal gas distributions
-function updatecounters!(R::Result, system::AbstractParticleSystem, frame_weight::Float64, ::Val{:random})
+function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::Float64, ::Val{:random})
     for md in system.list
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
