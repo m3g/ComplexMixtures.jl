@@ -228,9 +228,9 @@ function mddf(
                 
             """
         end _file = nothing _line = nothing
-        if required_memory > total_memory
-            throw(ErrorException("The memory required for the computation is larger than the total system memory."))
-        end
+    end
+    if required_memory > total_memory
+        throw(ErrorException("The memory required for the computation is larger than the total system memory."))
     end
 
     # Loop over the trajectory
@@ -373,6 +373,91 @@ function mddf_frame!(
     end # loop over solute molecules
 
     return R
+end
+
+#=
+    coordination_number_frame!(R::Result, system::AbstractParticleSystem, buff::Buffer, frame_weight)
+
+Computes the coordination numbers for a single frame. Modifies the data in the `R` (type `Result`) structure.
+
+=#
+function coordination_number_frame!(
+    R::Result,
+    system::AbstractParticleSystem,
+    buff::Buffer,
+    frame_weight::Float64,
+)
+
+    # Sum up the volume of this frame
+    R.volume.total += frame_weight * cell_volume(system)
+
+    #
+    # Compute the MDDFs for each solute molecule
+    #
+    update_lists = true
+    system.ypositions .= buff.solvent_read
+    for isolute = 1:R.solute.nmols
+
+        # We need to do this one solute molecule at a time to avoid exploding the memory requirements
+        system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
+
+        # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
+        # The cell lists will be recomputed for the first solute, or if a random distribution was computed
+        # for the previous solute
+        minimum_distances!(system, R, isolute; update_lists=update_lists)
+        update_lists = false # avoid recomputation of the cell lists in the next iteration
+
+        # For each solute molecule, update the counters (this is highly suboptimal, because
+        # within updatecounters there are loops over solvent molecules, in such a way that
+        # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
+        # at this point with acceptable memory requirements
+        updatecounters!(R, system, frame_weight)
+
+    end # loop over solute molecules
+
+    return R
+end
+
+"""     
+    coordination_number(
+        trajectory::Trajectory, options::Options;
+        kargs...
+    )
+
+Computes the coordination numbers for each solute molecule in the trajectory, given the `Trajectory`.
+This is an auxiliary function of the `ComplexMixtures` package, which is used to compute 
+coordination numbers when the normalization of the distribution is not possible or needed. 
+
+The output is a `Result` structure, which contains the data as the result of a call to `mddf`, except
+that all counters which require normalization of the distribution will be zero. In summary, this result
+data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
+
+The keyword arguments are the same as for the `mddf` function, and are passed to it.
+This function is a wrapper around `mddf` with the `coordination_number_only` keyword set to `true`.
+
+### Examples
+
+```julia-repl
+julia> trajectory = Trajectory("./trajectory.dcd",solute,solvent);
+
+julia> results = mddf(trajectory);
+
+julia> coordination_numbers = coordination_number(trajectory);
+```
+
+"""
+function coordination_number(
+    trajectory::Trajectory, options::Options=Options();
+    kargs...
+)
+    if haskey(kargs, :coordination_number_only)
+        throw(ArgumentError("""\n
+            The keyword argument `coordination_number_only` is not allowed in the `coordination_number` function.
+            It is, by definition, set to `true` in this function. 
+            
+        """))
+    end
+    return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
 
 @testitem "mddf - toy system" begin
@@ -527,6 +612,9 @@ end
     @test sum(R.rdf) ≈ 491.4450029864516 rtol = 0.1
     @test R.kb[end] ≈ -6019.863896959123 rtol = 0.5
     @test R.kb_rdf[end] ≈ -6905.975623304156 rtol = 0.5
+
+    # Throw error in incorrect call to coordination_number
+    @test_throws ArgumentError coordination_number(traj, options, coordination_number_only=true)
     
     # Throw insufficent memory error
     @test_throws ErrorException mddf(traj, Options(nthreads=10^10))
@@ -572,90 +660,4 @@ end
     @test all(R2.solvent_group_count == R1.solvent_group_count)
     @test R2.volume.total ≈ R1.volume.total
 
-end
-
-#=
-    coordination_number_frame!(R::Result, system::AbstractParticleSystem, buff::Buffer, frame_weight)
-
-Computes the coordination numbers for a single frame. Modifies the data in the `R` (type `Result`) structure.
-
-=#
-function coordination_number_frame!(
-    R::Result,
-    system::AbstractParticleSystem,
-    buff::Buffer,
-    frame_weight::Float64,
-)
-
-    # Sum up the volume of this frame
-    R.volume.total += frame_weight * cell_volume(system)
-
-    #
-    # Compute the MDDFs for each solute molecule
-    #
-    update_lists = true
-    system.ypositions .= buff.solvent_read
-    for isolute = 1:R.solute.nmols
-
-        # We need to do this one solute molecule at a time to avoid exploding the memory requirements
-        system.xpositions .= viewmol(isolute, buff.solute_read, R.solute)
-
-        # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
-        # The cell lists will be recomputed for the first solute, or if a random distribution was computed
-        # for the previous solute
-        minimum_distances!(system, R, isolute; update_lists=update_lists)
-        update_lists = false # avoid recomputation of the cell lists in the next iteration
-
-        # For each solute molecule, update the counters (this is highly suboptimal, because
-        # within updatecounters there are loops over solvent molecules, in such a way that
-        # this will loop with cost nsolute*nsolvent. However, I cannot see an easy solution 
-        # at this point with acceptable memory requirements
-        updatecounters!(R, system, frame_weight)
-
-    end # loop over solute molecules
-
-    return R
-end
-
-"""     
-    coordination_number(
-        trajectory::Trajectory, options::Options;
-        kargs...
-    )
-
-Computes the coordination numbers for each solute molecule in the trajectory, given the `Trajectory`.
-This is an auxiliary function of the `ComplexMixtures` package, which is used to compute 
-coordination numbers when the normalization of the distribution is not possible or needed. 
-
-The output is a `Result` structure, which contains the data as the result of a call to `mddf`, except
-that all counters which require normalization of the distribution will be zero. In summary, this result
-data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
-
-The keyword arguments are the same as for the `mddf` function, and are passed to it.
-This function is a wrapper around `mddf` with the `coordination_number_only` keyword set to `true`.
-
-### Examples
-
-```julia-repl
-julia> trajectory = Trajectory("./trajectory.dcd",solute,solvent);
-
-julia> results = mddf(trajectory);
-
-julia> coordination_numbers = coordination_number(trajectory);
-```
-
-"""
-function coordination_number(
-    trajectory::Trajectory, options::Options=Options();
-    kargs...
-)
-    if haskey(kargs, :coordination_number_only)
-        throw(ArgumentError("""\n
-        
-            The keyword argument `coordination_number_only` is not allowed in the `coordination_number` function.
-            It is, by definition, set to `true` in this function. 
-            
-        """))
-    end
-    return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
