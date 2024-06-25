@@ -60,8 +60,9 @@
     @. buff.solute_read = traj.x_solute
     @. buff.solvent_read = traj.x_solvent
     ComplexMixtures.update_unitcell!(system, ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)))
+    r_chunk = ComplexMixtures.ResultChunk(R, nothing)
     t_mddf_frame =
-        @benchmark ComplexMixtures.mddf_frame!($R, $system, $buff, $options, 1.0, $RNG) samples = 1 evals = 1
+        @benchmark ComplexMixtures.mddf_frame!($r_chunk, $system, $buff, $options, 1.0, $RNG) samples = 1 evals = 1
     @test t_mddf_frame.allocs < 100
 
 end
