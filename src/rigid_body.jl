@@ -114,7 +114,7 @@ function random_move!(
 )
     # To avoid boundary problems, the center of coordinates are generated in a 
     # much larger region, and wrapped aftwerwards
-    scale = 100.0
+    scale = 10^4
 
     # Generate random coordinates for the center of mass
     cmin, cmax = CellListMap.get_computing_box(system)
