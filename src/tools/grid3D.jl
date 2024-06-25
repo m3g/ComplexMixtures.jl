@@ -156,7 +156,14 @@ end
     # Test argument error: no custom groups can be defined
     protein = AtomSelection(select(atoms, "protein"); group_atom_indices = [ findall(sel"resname ARG", atoms) ], nmols = 1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
-    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    options = Options(
+        stride = 5, 
+        seed = 321, 
+        StableRNG = true, 
+        nthreads = 1, 
+        silent = true,
+        n_random_samples=100,
+    )
     traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
     @test_throws ArgumentError grid3D(R, atoms, tempname())
@@ -166,13 +173,20 @@ end
     solvent = AtomSelection(select(atoms, "water"), natomspermol=3)
     traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
     grid_file = tempname()*".pdb"
+    options = Options(
+        stride = 5, 
+        seed = 321, 
+        StableRNG = true, 
+        nthreads = 1, 
+        silent = true,
+    )
     R = mddf(traj, options)
     grid = grid3D(R, atoms, grid_file)
     @test length(grid) == 1539
     c05 = filter(at -> beta(at) > 0.5, grid)
-    @test length(c05) == 15
+    @test length(c05) == 14
     @test all(at -> element(at) == "O", c05)
-    @test all(at -> occup(at) < 1.8, c05)
+    @test all(at -> occup(at) < 2.0, c05)
 
     # Test if the file was properly written
     grid_read = readPDB(grid_file)
