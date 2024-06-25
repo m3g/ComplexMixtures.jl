@@ -228,7 +228,7 @@ function mddf(
     # Check if the system free memory is enough, if not throw an error
     required_memory = Base.summarysize(R) * nchunks / 1024^3
     total_memory = Sys.total_memory()  / 1024^3
-    if mem_warn && (required_memory > 0.5 * total_memory)
+    if !low_memory && mem_warn && (required_memory > 0.5 * total_memory)
         @warn begin 
             """\n
             The memory required for the computation is a large proportion of the total system memory.
@@ -251,7 +251,7 @@ function mddf(
             """
         end _file = nothing _line = nothing
     end
-    if required_memory > total_memory
+    if !low_memory && (required_memory > total_memory)
         throw(ErrorException("The memory required for the computation is larger than the total system memory."))
     end
 
