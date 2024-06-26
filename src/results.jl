@@ -358,18 +358,22 @@ function finalresults!(R::Result, options::Options; coordination_number_only)
     warned_already = false
     for ibin = 1:R.nbins
         # For the MDDF
-        if R.md_count_random[ibin] == 0.0
-            if !warned_already && !coordination_number_only && !options.silent 
-                @warn begin
-                    """\n
-                        Ideal-gas histogram bins with zero samples. 
-                        Increase n_random_samples, number of trajectory frames, and/or bin size.
-
-                    """
-                end _file=nothing _line=nothing
-                warned_already = true
+        if !coordination_number_only
+            if R.md_count_random[ibin] == 0.0
+                if !warned_already && !options.silent 
+                    @warn begin
+                        """\n
+                            Ideal-gas histogram bins with zero samples. 
+                            Increase n_random_samples, number of trajectory frames, and/or bin size.
+    
+                        """
+                    end _file=nothing _line=nothing
+                    warned_already = true
+                end
+                continue
             end
-            continue
+        else
+            R.md_count_random[ibin] = 1.0
         end
         R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
         if ibin == 1
