@@ -111,8 +111,8 @@ end
         trajectory::Trajectory, 
         options::Options; 
         frame_weights = Float64[], 
-        coordination_number_only = false
-        mem_warn = true
+        coordination_number_only = false,
+        low_memory = false,
     )
 
 Computes the minimum-distance distribution function, atomic contributions, and 
@@ -134,8 +134,9 @@ site-counts and coordination numbers of the solvent molecules around the solute,
 This is useful when the normalization of the distribution is not possible or needed, for instance when
 the bulk solutio is not properly defined. The computation is much faster in this case. 
 
-The `mem_warn` keyword is a boolean that, if set to `true`, will issue a warning if the memory required for the computation
-is larger than 50% of the total system memory. This is to avoid memory exhaustion and the termination of the computation.
+The `low_memory` can be set to `true` to reduce the memory requirements of the computation. This will
+parallelize the computation of the minimum distances at a lower level, reducing the memory
+requirements at the expense of some performance. 
 
 ### Examples
 
@@ -158,7 +159,6 @@ function mddf(
     trajectory::Trajectory, options::Options=Options();
     frame_weights=Float64[],
     coordination_number_only=false,
-    mem_warn=true,
     low_memory=false,
 )
 
@@ -190,7 +190,7 @@ function mddf(
 
     # Define how the parallelization will be performed, according to the memory
     # requirements of the computation
-    nchunks, parallel_cl, nbatches_cl, nthreads = parallel_setup(options, R, low_memory, mem_warn)
+    nchunks, parallel_cl, nbatches_cl, nthreads = parallel_setup(options, R, low_memory)
 
     # Print some information about this run
     if !options.silent

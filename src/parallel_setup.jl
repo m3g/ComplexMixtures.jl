@@ -4,7 +4,7 @@ This function will set the number of chunks and the parameters for the CellListM
 parallelization, given the size of the results data structure and the level of parallelization.
 
 =#
-function parallel_setup(options::Options, R::Result, low_memory::Bool, mem_warn::Bool)
+function parallel_setup(options::Options, R::Result, low_memory::Bool)
 
     # Number of threads available 
     nthreads = options.nthreads == 0 ? Threads.nthreads() : options.nthreads
@@ -26,7 +26,7 @@ function parallel_setup(options::Options, R::Result, low_memory::Bool, mem_warn:
         (nthreads, false, (1,1))
     end
 
-    if mem_warn && (nchunks * results_memory > 0.5 * total_memory)
+    if nchunks * results_memory > 0.5 * total_memory
         @warn begin 
             """\n
             The memory required for the computation is a large proportion of the total system's memory.
@@ -41,13 +41,11 @@ function parallel_setup(options::Options, R::Result, low_memory::Bool, mem_warn:
 
             - Use the `low_memory = true` option in the call to `mddf`.
               For example: `mddf(traj, options; low_memory = true)`
-            - Reducing the number of threads, with the `Options(nthreads=N)` parameter.
-              Here, we suggest at most N=$(Int(fld(0.2 * total_memory, results_memory))).
             - Using the predefinition of custom groups of atoms in the solute and solvent.
               See: https://m3g.github.io/ComplexMixtures.jl/stable/selection/#predefinition-of-groups
+            - Reducing the number of threads, with the `Options(nthreads=N)` parameter.
+              Here, we suggest at most N=$(Int(fld(0.2 * total_memory, results_memory))).
 
-            To suppress this warning, set `mem_warn = false` in the call to `mddf`.
-                
             """
         end _file = nothing _line = nothing
     end
