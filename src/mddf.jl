@@ -440,7 +440,7 @@ function coordination_number(
 end
 
 @testitem "mddf - toy system" begin
-    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
+    using ComplexMixtures
     using PDBTools: readPDB, select
     using ComplexMixtures.Testing: data_dir
 
@@ -466,6 +466,16 @@ end
         @test R.density.solute ≈ 1 / R.volume.total
         @test R.density.solvent ≈ 3 / R.volume.total
         @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+        @test sum(R.md_count) ≈ 1
+        @test sum(R.coordination_number) ≈ 51
+        C = coordination_number(traj, options; low_memory)
+        @test C.volume.total == R.volume.total
+        @test C.volume.domain ≈ 0.0
+        @test C.density.solute ≈ 1 / C.volume.total
+        @test C.density.solvent ≈ 3 / C.volume.total
+        @test C.density.solvent_bulk ≈ 2 / C.volume.bulk
+        @test C.md_count == R.md_count
+        @test coordination_number(C) == coordination_number(R)
     end
 
     # Test wrong frame_weights input
