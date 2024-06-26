@@ -188,12 +188,19 @@ function mddf(
         iframe += 1
     end
 
-    # Default number of chunks for !low_memory run
-    nchunks = options.nthreads == 0 ? Threads.nthreads() : options.nthreads
+    # Define how the parallelization will be performed, according to the memory
+    # requirements of the computation
+    nchunks, parallel_cl, nbatches_cl, nthreads = parallel_setup(options, R, low_memory, mem_warn)
 
     # Print some information about this run
     if !options.silent
-        title(R, trajectory.solute, trajectory.solvent, nchunks)
+        title(R, trajectory.solute, trajectory.solvent, nthreads)
+        if low_memory 
+            println("Running with low-memory option:")
+            println("  - Parallel CellListMap will be used.")
+            println("  - Number of parallel minimum-distance computations: $nchunks")
+            println("  - Each minimum-distance computation will use $(nbatches_cl[2]) threads.")
+        end
         progress = Progress(R.files[1].nframes_read; dt=1)
     end
 
@@ -201,100 +208,56 @@ function mddf(
     to_read_frames = options.firstframe:R.files[1].lastframe_read
     to_compute_frames = options.firstframe:options.stride:R.files[1].lastframe_read
 
-    # Check if the system free memory is enough, if not throw an error
-    required_memory = Base.summarysize(R) * nchunks / 1024^3
-    total_memory = Sys.total_memory()  / 1024^3
-    if mem_warn && (required_memory > 0.5 * total_memory)
-        @warn begin 
-            """\n
-            The memory required for the computation is a large proportion of the total system memory.
-            Depending on resources used by other processes, this may lead to memory exhaustion and
-            and the termination of the computation.
-
-            - The Results data structure is $(round(required_memory/nchunks, digits=2)) GiB, and $nchunks copies are required 
-              for the parallel computation, thus requiring $(round(required_memory, digits=2)) GiB.
-            - The total system memory is: $(round(total_memory, digits=2)) GiB.
-
-            To reduce memory requirements, consider:
-
-            - Reducing the number of threads, with the `Options(nthreads=N)` parameter.
-              Here, we suggest at most N=$(Int(fld(0.5 * total_memory, required_memory/nchunks))).
-            - Using the predefinition of custom groups of atoms in the solute and solvent.
-              See: https://m3g.github.io/ComplexMixtures.jl/stable/selection/#predefinition-of-groups
-
-            To suppress this warning, set `mem_warn = false` in the call to `mddf`.
-                
-            """
-        end _file = nothing _line = nothing
-    end
-    if required_memory > total_memory
-        throw(ErrorException("The memory required for the computation is larger than the total system memory."))
-    end
-
-    #
-    # Number of batches of parallel CellListMap minimum-distance calculation
-    #
-    parallel_cl, nbatches_cl = if low_memory
-        true, (min(8, max(1,fld(Threads.nthreads(), nchunks))), max(1,fld(Threads.nthreads(), nchunks))) 
-    else
-        false, (1,1)
-    end
-    if low_memory && !options.silent
-        println("Running with low-memory option. Parallel CellListMap will be used.")
-        println("  Number of parallel minimum-distance computations: $nchunks")
-        println("  Each computation will use $(nbatches_cl[2]) threads.")
-    end
-    
     # Loop over the trajectory
     read_lock = ReentrantLock()
     sum_results_lock = ReentrantLock()
-    Threads.@threads for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
-        # Local data structures for this chunk
-        system_chunk = ParticleSystem(
-            trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
-        )
-        buff_chunk = Buffer(trajectory, R)
-        r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
-        # Reset the number of frames read by each chunk
-        nframes_read = 0
-        for _ in frame_range
-            local compute, frame_weight
-            # Read frame coordinates
-            @lock read_lock begin
-                iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options) 
+    @sync for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
+        Threads.@spawn begin
+            # Local data structures for this chunk
+            system_chunk = ParticleSystem(
+                trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
+            )
+            buff_chunk = Buffer(trajectory, R)
+            r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
+            # Reset the number of frames read by each chunk
+            nframes_read = 0
+            for _ in frame_range
+                local compute, frame_weight
+                # Read frame coordinates
+                @lock read_lock begin
+                    iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options) 
+                    if compute
+                        # Read frame for computing 
+                        # The solute coordinates must be read in intermediate arrays, because the 
+                        # solute molecules will be considered one at a time in the computation of the
+                        # minimum distances
+                        @. buff_chunk.solute_read = trajectory.x_solute
+                        @. buff_chunk.solvent_read = trajectory.x_solvent
+                        unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
+                        update_unitcell!(system_chunk, unitcell)
+                        # Read weight of this frame. 
+                        frame_weight = r_chunk.files[1].frame_weights[iframe]
+                        # Display progress bar
+                        options.silent || next!(progress)
+                    end
+                end # release reading lock
+                #
+                # Perform MDDF computation
+                #
                 if compute
-                    # Read frame for computing 
-                    # The solute coordinates must be read in intermediate arrays, because the 
-                    # solute molecules will be considered one at a time in the computation of the
-                    # minimum distances
-                    @. buff_chunk.solute_read = trajectory.x_solute
-                    @. buff_chunk.solvent_read = trajectory.x_solvent
-                    unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
-                    update_unitcell!(system_chunk, unitcell)
-                    # Read weight of this frame. 
-                    frame_weight = r_chunk.files[1].frame_weights[iframe]
-                    # Display progress bar
-                    options.silent || next!(progress)
-                end
-            end # release reading lock
-            #
-            # Perform MDDF computation
-            #
-            if compute
-                nframes_read += 1
-                # Compute distances in this frame and update results
-                if !coordination_number_only
-                    mddf_frame!(r_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
-                else
-                    coordination_number_frame!(r_chunk, system_chunk, buff_chunk, frame_weight)
-                end
-            end # compute if
-        end # frame range for this chunk
-
-        # Sum the results of this chunk into the total results data structure
-        @lock sum_results_lock sum!(R, r_chunk)
-
-    end
+                    nframes_read += 1
+                    # Compute distances in this frame and update results
+                    if !coordination_number_only
+                        mddf_frame!(r_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
+                    else
+                        coordination_number_frame!(r_chunk, system_chunk, buff_chunk, frame_weight)
+                    end
+                end # compute if
+            end # frame range for this chunk
+            # Sum the results of this chunk into the total results data structure
+            @lock sum_results_lock sum!(R, r_chunk)
+        end # spawn
+    end # chunk loop
     closetraj!(trajectory)
 
     # Setup the final data structure with final values averaged over the number of frames,
