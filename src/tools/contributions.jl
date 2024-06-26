@@ -60,8 +60,9 @@ function contributions(
     if atsel.custom_groups
         if isnothing(group.group_index) && isnothing(group.group_name)
             throw(ArgumentError("""\n
-                Custom groups are defined. Cannot retrieve general group contributions. Please provide a group name or index.
-                For example, use SoluteGroup(1) or SoluteGroup("name of group 1")
+                Custom groups are defined. Cannot retrieve general group contributions. 
+                Please provide a group name or index.
+                For example, use SoluteGroup(1) or SoluteGroup("Group1_NAME")
             """)) 
         end
     else
@@ -104,8 +105,29 @@ function contributions(
         end
         # Check consistency of input indexes
         for i in group.atom_indices
-            itype = findfirst(==(i), atsel.indices)
-            isnothing(itype) && throw(ArgumentError("Atom index $i not found in group data."))
+            if atsel.nmols == 1
+                itype = findfirst(==(i), atsel.indices)
+                if isnothing(itype) 
+                    throw(ArgumentError("""\n
+                        Atom index $i not found in atom selection. 
+                        Indices array: $(print_vector_summary(atsel.indices)).
+
+                        Note: the indices correspond to the indices of the atoms in the original structure file.
+
+                    """
+                    ))
+                end
+            else
+                if !(i in 1:atsel.natomspermol)
+                    throw(ArgumentError("""\n
+                        Atom index $i outside range of atoms of this type: $(atsel.natomspermol). 
+
+                        Note: the indices correspond to the indices of the atoms within each molecule.
+
+                    """
+                    ))
+                end
+            end
         end
         # Now run over the types, and sum the contributions. If the selection of 
         # indices have repeated types, the contributions are then *not* summed. 
@@ -201,6 +223,14 @@ end
     @test_throws ArgumentError contributions(results, SoluteGroup(["N", "CA"]))
     @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
     @test_throws ArgumentError contributions(results, SolventGroup(1))
+    @test_throws ArgumentError contributions(results, SolventGroup([15]))
+
+    solute = AtomSelection(protein, nmols = 1)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format = "PDBTraj")
+    results = mddf(traj)
+    @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
+    @test_throws ArgumentError contributions(results, SoluteGroup([50000]))
+
 end
 
 @testitem "custom group contributions" begin
