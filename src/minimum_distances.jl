@@ -157,23 +157,29 @@ function minimum_distances!(
 end
 
 #=
-    ParticleSystem(trajectory::Trajectory, options::Options)
 
 Setup the periodic system from CellListMap, to compute minimimum distances. The system
 will be setup such that `xpositions` corresponds to one molecule of the solute, and 
 `ypositions` contains all coordinates of all atoms of the solvent. 
 
 =#
-function CellListMap.ParticleSystem(trajectory::Trajectory, unitcell, options::Options)
-    system = ParticleSystem(
+function CellListMap.ParticleSystem(
+    trajectory::Trajectory, 
+    unitcell, 
+    options::Options, 
+    parallel::Bool,
+    nbatches::Tuple{Int,Int},
+)
+    system = ParticleSystem(;
         xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
         ypositions = zeros(SVector{3,Float64}, trajectory.solvent.nmols * trajectory.solvent.natomspermol),
-        unitcell = unitcell,
+        unitcell,
         cutoff = options.usecutoff ? options.cutoff : options.dbulk,
         output = fill(zero(MinimumDistance), trajectory.solvent.nmols),
         output_name = :list,
         lcell = options.lcell,
-        parallel = false, # Important: parallellization is performed at the frame level
+        parallel, # true only if low_memory is set 
+        nbatches,
         autoswap = false, # The lists will be built for the solvent, always
     )
     return system
@@ -194,7 +200,7 @@ end
     protein = AtomSelection(select(atoms, "protein"), nmols = 1)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options) 
-    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options)
+    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1,1))
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181)
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
@@ -210,7 +216,7 @@ end
     # Auto-correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
-    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options)
+    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1,1))
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181) # one molecule less
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
