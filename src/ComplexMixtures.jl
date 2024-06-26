@@ -69,6 +69,9 @@ include("./minimum_distances.jl")
 # Update counters routines
 include("./update_counters.jl")
 
+# Parallel steup function
+include("./parallel_setup.jl")
+
 # Main function
 include("./mddf.jl")
 
