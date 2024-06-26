@@ -105,28 +105,19 @@ function contributions(
         end
         # Check consistency of input indexes
         for i in group.atom_indices
-            if atsel.nmols == 1
-                itype = findfirst(==(i), atsel.indices)
-                if isnothing(itype) 
-                    throw(ArgumentError("""\n
-                        Atom index $i not found in atom selection. 
-                        Indices array: $(print_vector_summary(atsel.indices)).
+            index = findfirst(==(i), atsel.indices)
+            if isnothing(index) 
+                throw(ArgumentError("""\n
+                    Atom index $i not found in atom selection. 
+                    Indices array: $(print_vector_summary(atsel.indices)).
 
-                        Note: the indices correspond to the indices of the atoms in the original structure file.
+                    Notes: 
+                    - The indices must correspond to the indices of the atoms in the original structure file.
+                    - If the atom selection contains more than one molecule, all the atoms corresponding to the 
+                      same index *within each molecule* are considered equivalent and summed.
 
-                    """
-                    ))
-                end
-            else
-                if !(i in 1:atsel.natomspermol)
-                    throw(ArgumentError("""\n
-                        Atom index $i outside range of atoms of this type: $(atsel.natomspermol). 
-
-                        Note: the indices correspond to the indices of the atoms within each molecule.
-
-                    """
-                    ))
-                end
+                """
+                ))
             end
         end
         # Now run over the types, and sum the contributions. If the selection of 
@@ -223,7 +214,7 @@ end
     @test_throws ArgumentError contributions(results, SoluteGroup(["N", "CA"]))
     @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
     @test_throws ArgumentError contributions(results, SolventGroup(1))
-    @test_throws ArgumentError contributions(results, SolventGroup([15]))
+    @test_throws ArgumentError contributions(results, SolventGroup([5000]))
 
     solute = AtomSelection(protein, nmols = 1)
     traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format = "PDBTraj")
