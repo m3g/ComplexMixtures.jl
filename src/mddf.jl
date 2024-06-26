@@ -138,6 +138,9 @@ The `low_memory` can be set to `true` to reduce the memory requirements of the c
 parallelize the computation of the minimum distances at a lower level, reducing the memory
 requirements at the expense of some performance. 
 
+!!! compat
+    The `low_memory` option was introduced in v2.4.0.
+
 ### Examples
 
 ```julia-repl
