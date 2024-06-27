@@ -287,14 +287,21 @@ If `coordination_number_only` is true, do not print a warning if there are zero 
 
 =#
 function finalresults!(R::Result, options::Options; coordination_number_only)
+    R = if !coordination_number_only
+        _mddf_final_results!(R, options)
+    else
+        _coordination_number_final_results!(R, options)
+    end
+    return R
+end
+
+function _mddf_final_results!(R::Result, options::Options)
+
+    # Setup the distance vector
+    R.d .= shellradius.(1:R.nbins, options.binstep)
 
     # Sampling scheme depending on the type of calculation
     samples = set_samples(R)
-
-    # Setup the distance vector
-    for i = 1:R.nbins
-        R.d[i] = shellradius(i, options.binstep)
-    end
 
     # Normalization of number of frames: sum of weights for all frames read
     Q = sum_frame_weights(R)
@@ -343,46 +350,31 @@ function finalresults!(R::Result, options::Options; coordination_number_only)
     R.md_count_random .= density_fix * R.md_count_random
     R.rdf_count_random .= density_fix * R.rdf_count_random
 
-    if coordination_number_only && !options.silent
-        @warn begin
-            """\n
-                coordination_number_only was set to true, so the MDDF and KB integrals were not computed. 
-                (to remove this warning use `Options(silent=true)`)
-
-            """
-        end _file=nothing _line=nothing
-    end
-    #
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
     warned_already = false
     for ibin = 1:R.nbins
-        # For the MDDF
-        if !coordination_number_only
-            if R.md_count_random[ibin] == 0.0
-                if !warned_already && !options.silent 
-                    @warn begin
-                        """\n
-                            Ideal-gas histogram bins with zero samples. 
-                            Increase n_random_samples, number of trajectory frames, and/or bin size.
-    
-                        """
-                    end _file=nothing _line=nothing
-                    warned_already = true
-                end
-                continue
+        if R.md_count_random[ibin] > 0.0
+            R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
+            if ibin == 1
+                R.coordination_number[ibin] = R.md_count[ibin]
+                R.coordination_number_random[ibin] = R.md_count_random[ibin]
+            else
+                R.coordination_number[ibin] = R.coordination_number[ibin-1] + R.md_count[ibin]
+                R.coordination_number_random[ibin] =
+                    R.coordination_number_random[ibin-1] + R.md_count_random[ibin]
             end
         else
-            R.md_count_random[ibin] = 1.0
-        end
-        R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
-        if ibin == 1
-            R.coordination_number[ibin] = R.md_count[ibin]
-            R.coordination_number_random[ibin] = R.md_count_random[ibin]
-        else
-            R.coordination_number[ibin] = R.coordination_number[ibin-1] + R.md_count[ibin]
-            R.coordination_number_random[ibin] =
-                R.coordination_number_random[ibin-1] + R.md_count_random[ibin]
+            if !warned_already && !options.silent 
+                @warn begin
+                    """\n
+                        Ideal-gas histogram bins with zero samples. 
+                        Increase n_random_samples, number of trajectory frames, and/or bin size.
+
+                    """
+                end _file=nothing _line=nothing
+                warned_already = true
+            end
         end
         R.kb[ibin] =
             units.Angs3tocm3permol *
@@ -406,6 +398,53 @@ function finalresults!(R::Result, options::Options; coordination_number_only)
             (1 / R.density.solvent_bulk) *
             (R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
+    end
+
+    return R
+end
+
+function _coordination_number_final_results!(R::Result, options::Options)
+
+    if !options.silent
+        @warn begin
+            """\n
+                coordination_number_only was set to true, so the MDDF and KB integrals were not computed. 
+                (to remove this warning use `Options(silent=true)`)
+
+            """
+        end _file=nothing _line=nothing
+    end
+
+    # Setup the distance vector
+    R.d .= shellradius.(1:R.nbins, options.binstep)
+
+    # Normalization of number of frames: sum of weights for all frames read
+    Q = sum_frame_weights(R)
+
+    # Scale counters by number of samples and frames
+    @. R.md_count = R.md_count / (R.solute.nmols * Q)
+    @. R.solute_group_count = R.solute_group_count / (R.solute.nmols * Q)
+    if R.autocorrelation
+        R.solvent_group_count .= R.solute_group_count
+    else
+        @. R.solvent_group_count = R.solvent_group_count / (R.solute.nmols * Q)
+    end
+    @. R.rdf_count = R.rdf_count / (R.solute.nmols * Q)
+
+    # Volume of each bin shell and of the solute domain
+    R.volume.total = R.volume.total / Q
+
+    R.density.solvent = R.solvent.nmols / R.volume.total
+    R.density.solute = R.solute.nmols / R.volume.total
+    # Coordination numbers
+    for ibin = 1:R.nbins
+        if ibin == 1
+            R.coordination_number[ibin] = R.md_count[ibin]
+            R.sum_rdf_count[ibin] = R.rdf_count[ibin]
+        else
+            R.coordination_number[ibin] = R.coordination_number[ibin-1] + R.md_count[ibin]
+            R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
+        end
     end
 
     return R
