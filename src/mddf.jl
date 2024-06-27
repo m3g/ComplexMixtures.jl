@@ -144,17 +144,23 @@ requirements at the expense of some performance.
 ### Examples
 
 ```julia-repl
-julia> trajectory = Trajectory("./trajectory.dcd",solute,solvent);
+julia> using ComplexMixtures, PDBTools
 
-julia> results = mddf(trajectory, Options(bulk_range=(10.0, 15.0)));
-```
+julia> using ComplexMixtures.Testing: data_dir
 
-or, to set some other custom optional parameters,
+julia> dir = "\$data_dir/NAMD";
 
-```julia-repl
-julia> options = Options(lastframe=1000, bulk_range=(10.0, 15.0));
+julia> atoms = readPDB("\$dir/structure.pdb");
 
-julia> results = mddf(trajectory, options);
+julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
+
+julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
+
+julia> trajectory = Trajectory("\$dir/trajectory.dcd",solute,solvent);
+
+julia> options = Options(lastframe=10, bulk_range=(10.0, 15.0));
+
+julia> results = mddf(trajectory, options)
 ```
 
 """
@@ -415,14 +421,6 @@ data structure can be used to compute the coordination numbers, but not the MDDF
 
 The keyword arguments are the same as for the `mddf` function, and are passed to it.
 This function is a wrapper around `mddf` with the `coordination_number_only` keyword set to `true`.
-
-### Examples
-
-```julia-repl
-julia> trajectory = Trajectory("./trajectory.dcd",solute,solvent);
-
-julia> coordination_numbers = coordination_number(trajectory, Options(bulk_range=(10.0, 15.0));
-```
 
 """
 function coordination_number(

@@ -1,9 +1,18 @@
-# Computing the Minimum-Distance Distribution Function
+```@meta
+CollapsedDocStrings = true
+```
+# Computing the MDDF
+
+## Minimum-Distance Distribution Function
 
 The main function of the ComplexMixtures package actually computes the MDDF between
 the solute and the solvent chosen. 
 
-It is run with the following command:
+```@docs
+mddf
+```
+
+The `mddf` functions is run with, for example:
 
 ```julia
 results = mddf(trajectory, Options(bulk_range=(10.0, 15.0)))  
@@ -49,9 +58,19 @@ results = mddf(trajectory, options)
 See the [Options](@ref options) section for further details and other options
 to set.
 
-## Reference functions
+## Coordination numbers only
 
-```@autodocs
-Modules = [ComplexMixtures]
-Pages = ["mddf.jl"]
+The `coordination_number` function, called with the same arguments as the `mddf`
+function, can be used to compute coordination numbers without the normalization
+required for the MDDF:
+
+```@docs
+coordination_number(::Trajectory, ::Options)
 ```
+
+This function can be useful if the normalization is not possible or meaningful.
+The computation is much faster if the normalization is not necessary.
+
+!!! note 
+    The `mddf`, `kb`, and random count parameters will be empty when using 
+    this options, and are meaningless. 
