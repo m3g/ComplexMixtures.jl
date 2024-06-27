@@ -473,7 +473,7 @@ end
         @test C.volume.domain ≈ 0.0
         @test C.density.solute ≈ 1 / C.volume.total
         @test C.density.solvent ≈ 3 / C.volume.total
-        @test C.density.solvent_bulk ≈ 2 / C.volume.bulk
+        @test C.density.solvent_bulk == 0.0
         @test C.md_count == R.md_count
         @test coordination_number(C) == coordination_number(R)
     end
@@ -509,6 +509,7 @@ end
     #
     # Read only first frame
     for low_memory in [false, true]
+        local traj
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, lastframe=1)
         traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format="PDBTraj")
         R1 = mddf(traj, options; low_memory)
@@ -595,6 +596,7 @@ end
     @test_throws ErrorException mddf(traj, Options(nthreads=10^10))
 
     for nthreads in [1,2], low_memory in [true, false]
+        local traj
         options = Options(;
             seed=1, 
             stride=1, 
