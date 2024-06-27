@@ -1,6 +1,6 @@
 
 @testitem "NAMD with ChemFiles" begin
-    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load
+    using ComplexMixtures
     using PDBTools: readPDB, select
     using ComplexMixtures.Testing: data_dir
 
@@ -26,6 +26,13 @@
     save(R, temp_output)
     R_load = load(temp_output)
     @test R_load ≈ R_save
+
+    # Save and load a coordination-number run
+    C = coordination_number(traj)
+    temp_output = tempname()
+    save(C, temp_output)
+    C_read = load(temp_output)
+    @test C_read ≈ C
 
     # Example 2: water-tmao
     # save(R,"$dir/water_tmao.json")
