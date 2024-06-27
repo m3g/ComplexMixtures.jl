@@ -832,7 +832,7 @@ to identify the types of atoms involved in a selection.
 
 =#
 function which_types(s::AtomSelection, indices::Vector{Int}; warning = true)
-    selected_types = Vector{Int}(undef, 0)
+    selected_types = Int[]
     ntypes = 0
     for i in indices
         isel = findfirst(ind -> ind == i, s.indices)

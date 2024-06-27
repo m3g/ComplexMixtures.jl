@@ -57,7 +57,7 @@ function NamdDCD(
     st = FortranFile(filename)
 
     # Read header
-    IntVec = Vector{Int32}(undef, 17)
+    IntVec = zeros(Int, 17)
     _, _, IntVec[1:8], _, IntVec[9:17] = read(st, FString{4}, Int32, (Int32, 8), Float64, (Int32, 9))
     _, _ = read(st, Int32, FString{80})
     read_natoms = read(st, Int32)
