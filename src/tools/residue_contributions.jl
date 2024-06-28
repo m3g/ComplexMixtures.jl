@@ -30,14 +30,13 @@ contourf(rc_diff) # plots a contour map of the difference
 """
 struct ResidueContributions
     d::Vector{Float64}
-    xticks::Tuple{StepRange{Int,Int},Vector{String}}
+    xticks::Tuple{Vector{Int},Vector{String}}
     residue_contributions::Matrix{Float64}
 end
 
 """
     ResidueContributions(
         results::Result, atoms::AbstractVector{PDBTools.Atom};
-        residue_range=nothing,
         dmin=1.5, dmax=3.5,
         type=:mddf,
     )
@@ -53,7 +52,6 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 
 # Optional arguments
 
-- `residue_range::UnitRange{Int}`: The range of residues to consider. By default, it considers all residues.
 - `dmin::Float64`: The minimum distance to consider. Default is `1.5`.
 - `dmax::Float64`: The maximum distance to consider. Default is `3.5`.
 - `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, or `:coordination_number`). Default is `:mddf`.
@@ -94,7 +92,6 @@ The `rc` object of the example can be plotted using the `contourf` function of `
 """
 function ResidueContributions(
     results::Result, atoms::AbstractVector{PDBTools.Atom};
-    residue_range=nothing,
     dmin=1.5, dmax=3.5,
     type=:mddf,
 )
@@ -110,23 +107,6 @@ function ResidueContributions(
 
     # collect the list of residues (using PDBTools)
     residues = collect(PDBTools.eachresidue(atoms))
-    if isnothing(residue_range)
-        residue_range = PDBTools.resnum(first(residues)):PDBTools.resnum(last(residues))
-    end
-    ifirst = findfirst(res -> PDBTools.resnum(res) == first(residue_range), residues)
-    ilast = findfirst(res -> PDBTools.resnum(res) == last(residue_range), residues)
-
-    # Check if the range is fine
-    if isnothing(ifirst) || isnothing(ilast)
-        throw(ArgumentError("""\n
-
-            The residue_range $residue_range is out of bounds.
-
-            The first and last residue numbers of the selection are: $(PDBTools.resnum(first(residues))) and $(PDBTools.resnum(last(residues))).
-            
-        """
-        ))
-    end
 
     # Create matrix that will cotain the contribution per 
     # residue as a function of the distance:
@@ -148,16 +128,16 @@ function ResidueContributions(
 
     # Obtain pretty labels for the residues in the x-axis (using PDBTools)
     xticks = PDBTools.residue_ticks(atoms;
-        first=first(residue_range),
-        last=last(residue_range),
-        stride=step(residue_range),
+        first=PDBTools.resnum(first(residues)),
+        last=PDBTools.resnum(last(residues)),
         oneletter=false,
+        serial=false,
     )
 
     return ResidueContributions(
         results.d[idmin:idmax],
         xticks,
-        rescontrib[idmin:idmax, ifirst:ilast]
+        rescontrib[idmin:idmax, 1:length(residues)]
     )
 end
 
