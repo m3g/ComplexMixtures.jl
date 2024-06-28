@@ -205,7 +205,7 @@ function ComplexMixtures.contourf_per_residue(
     return Plots.contourf(rc; residue_range, kargs...)
 end
 
-@testitem "contourf_per_residue" begin
+@testitem "contourf/contourf_per_residue" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
     using Plots

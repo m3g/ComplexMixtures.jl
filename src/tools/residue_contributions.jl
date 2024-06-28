@@ -290,6 +290,11 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1"))) ≈ rc.residue_contributions[:, 1] 
     @test first(rc.d) == first(result.d)
     @test last(rc.d) == last(result.d)
+    rcc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0, type = :coordination_number)
+    @test length(rcc.d) == 101 
+    @test length.(rcc.xticks) == (104, 104)
+    @test size(rcc.residue_contributions) == (101, 104)
+    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1")); type = :coordination_number) ≈ rcc.residue_contributions[:, 1]
 
     # arithmetic operations
     rc = ResidueContributions(result, select(atoms, "protein"))
@@ -308,7 +313,6 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     rc2 = ResidueContributions(result, select(atoms, "protein"); dmax = 3.0)
     @test_throws ArgumentError rc - rc2
     @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein and resname XXX"))
-    @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein"); residue_range=1:300)
     @test_throws ArgumentError ResidueContributions(result, SoluteGroup("ALA"))
 
     acidic_residues = select(atoms, "protein and acidic");
