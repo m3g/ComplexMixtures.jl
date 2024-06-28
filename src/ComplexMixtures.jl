@@ -6,6 +6,7 @@ import PDBTools
 import PrecompileTools
 import Random
 import StructTypes
+import StyledStrings
 
 import CellListMap
 using CellListMap: AbstractParticleSystem, ParticleSystem, update_unitcell!, map_pairwise!
@@ -30,6 +31,7 @@ export save, load, write, merge
 export atom_group, atom_group_name, atom_group_names
 
 # Tools
+export ResidueContributions
 export contributions 
 export coordination_number
 export gr
@@ -77,6 +79,7 @@ include("./mddf.jl")
 
 # Tools
 include("./tools/contributions.jl")
+include("./tools/residue_contributions.jl")
 include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
