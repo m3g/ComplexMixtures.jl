@@ -146,7 +146,7 @@ function _check_identity_of_residues(rc1::ResidueContributions, rc2::ResidueCont
         throw(ArgumentError("The residues in the two ResidueContributions objects differ."))
     end
     if rc1.d != rc2.d
-        throw(ArgumentError("The distances in the two ResidueContributions objects differ.")) 
+        throw(ArgumentError("The distances in the two ResidueContributions objects differ."))
     end
     return nothing
 end
@@ -260,7 +260,7 @@ function _custom_group_error_for_ResidueContributions()
 end
 
 # Custom error message for common mistaken call
-ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs...) = 
+ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs...) =
     _custom_group_error_for_ResidueContributions()
 
 @testitem "ResidueContribution" begin
@@ -283,18 +283,19 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
 
     # essential properties
     rc = ResidueContributions(result, select(atoms, "protein"))
-    @test length(rc.d) == 101 
+    @test length(rc.d) == 101
     @test length.(rc.xticks) == (104, 104)
     @test size(rc.residue_contributions) == (101, 104)
     rc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0)
-    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1"))) ≈ rc.residue_contributions[:, 1] 
+    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1"))) ≈ rc.residue_contributions[:, 1]
     @test first(rc.d) == first(result.d)
     @test last(rc.d) == last(result.d)
-    rcc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0, type = :coordination_number)
+    rcc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0, type=:coordination_number)
     @test length(rcc.d) == 500
     @test length.(rcc.xticks) == (500, 104)
     @test size(rcc.residue_contributions) == (500, 104)
-    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1")); type = :coordination_number) ≈ rcc.residue_contributions[:, 1]
+    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1")); type=:coordination_number) ≈
+          rcc.residue_contributions[:, 1]
 
     # arithmetic operations
     rc = ResidueContributions(result, select(atoms, "protein"))
@@ -305,25 +306,24 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     @test all(x -> isapprox(x, 1.0), filter(>(0.5), rdiv.residue_contributions))
     @test all(<(1.e-10), filter(<(0.5), rdiv.residue_contributions))
     rmul = rc * rc2
-    @test rmul.residue_contributions ≈ rc.residue_contributions .^2
+    @test rmul.residue_contributions ≈ rc.residue_contributions .^ 2
 
     # Error messages
     rc2 = ResidueContributions(result, select(atoms, "protein and residue < 50"))
     @test_throws ArgumentError rc - rc2
-    rc2 = ResidueContributions(result, select(atoms, "protein"); dmax = 3.0)
+    rc2 = ResidueContributions(result, select(atoms, "protein"); dmax=3.0)
     @test_throws ArgumentError rc - rc2
     @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein and resname XXX"))
     @test_throws ArgumentError ResidueContributions(result, SoluteGroup("ALA"))
 
-    acidic_residues = select(atoms, "protein and acidic");
-    basic_residues = select(atoms, "protein and basic");
+    acidic_residues = select(atoms, "protein and acidic")
+    basic_residues = select(atoms, "protein and basic")
     protein = AtomSelection(select(atoms, "protein"), nmols=1,
-        group_atom_indices = [ index.(acidic_residues), index.(basic_residues) ],
-        group_names = [ "acidic residues", "basic residues" ]
+        group_atom_indices=[index.(acidic_residues), index.(basic_residues)],
+        group_names=["acidic residues", "basic residues"]
     )
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, water)
     result = mddf(traj, Options(lastframe=2))
     @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein"))
-    
 
 end
