@@ -27,7 +27,7 @@ results = load(example_output)
 #
 contourf_per_residue(
   results, protein;
-  residue_range=70:110,
+  xticks_range=70:110,
   dmin=1.5, dmax=3.5,
   oneletter=true
 )

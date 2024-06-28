@@ -92,6 +92,42 @@ One nice way to visualize the accumulation or depletion of a solvent around a ma
 
 Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF, coordination numbers or minimum-distance counts. 
 
+The computation of the contributions of each residue can be performed with the convenience function `ResidueContributions`, which
+creates an object containing the contributions of the residues to the mddf (or coordination numbers, or minimum-distance counts), the 
+residue names, and distances:
+
+The output of `ResidueContributions` is shown as a simple unicode plot:
+
+```@raw html
+<center>
+<img src="../figures/ResidueContributions.png" width=60%>
+</center>
+```
+
+The `ResidueContribution` object can be used to produce a high-quality contour plot using the `Plots.contourf` function:
+
+```@docs
+Plots.contourf(::ResidueContributions)
+```
+
+Additionally, these `ResidueContributions` objects can be subtracted, divided, summed, or multiplied, to compare contributions of residues
+among different simulations. Typically, if one wants to compare the solvation of residues in two different simulations, 
+one can do:
+```julia
+# first simulation (for example, low temperature)
+rc1 = ResidueContributions(results1, select(atoms, "protein")); 
+
+# second simulation (for example, high temperature)
+rc2 = ResidueContributions(results2, select(atoms, "protein"));
+
+# difference in residue contributions to solvation
+rc_diff = rc2 - rc1
+
+# Plot difference
+using Plots
+contourf(rc_diff)
+```
+
 The convenience function `contourf_per_residue` provides a direct way to produce such plots. See the documentation below:
 
 ```@docs
