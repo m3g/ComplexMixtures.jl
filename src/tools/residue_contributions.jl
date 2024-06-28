@@ -288,14 +288,17 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     @test size(rc.residue_contributions) == (101, 104)
     rc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0)
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1"))) ≈ rc.residue_contributions[:, 1]
+    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 104"))) ≈ rc.residue_contributions[:, 104]
     @test first(rc.d) == first(result.d)
     @test last(rc.d) == last(result.d)
     rcc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0, type=:coordination_number)
     @test length(rcc.d) == 500
-    @test length.(rcc.xticks) == (500, 104)
+    @test length.(rcc.xticks) == (104, 104)
     @test size(rcc.residue_contributions) == (500, 104)
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1")); type=:coordination_number) ≈
           rcc.residue_contributions[:, 1]
+    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 104")); type=:coordination_number) ≈
+          rcc.residue_contributions[:, 104]
 
     # arithmetic operations
     rc = ResidueContributions(result, select(atoms, "protein"))
