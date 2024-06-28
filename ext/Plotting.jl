@@ -2,12 +2,12 @@ module Plotting
 
 import Plots
 import ComplexMixtures
-using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions
+using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions, ResidueContributions
 using TestItems: @testitem
 using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
 
 """
-    contourf_per_residue(
+    contourf(
         rc::ResidueContributions; 
         oneletter=false,
         xlabel="Residue",
@@ -21,7 +21,7 @@ This function requires loading the `Plots` package.
 # Arguments
 
 - `rc::ResidueContributions`: The residue contributions to the solute-solvent pair distribution function,
-   as computed by the `ResidueContribution` function.
+   as computed by the `ResidueContributions` function.
 
 # Optional arguments
 
@@ -38,7 +38,7 @@ julia> results = load("mddf.json")
 
 julia> atoms = readPDB("system.pdb", "protein")
 
-julia> rc = ResidueContribution(results, atoms; oneletter=true)
+julia> rc = ResidueContributions(results, atoms; oneletter=true)
 
 julia> plt = contourf(rc)
 ```
@@ -57,12 +57,13 @@ julia> plot!(plt, size=(800, 400), title="Contribution per residue")
     ComplexMixtures v2.5.0 or greater.
 
 """
-function ComplexMixtures.contourf_per_residue(
+function Plots.contourf(
     rc::ResidueContributions;
     oneletter=false,
     xlabel="Residue",
     ylabel="r / Å",
     clims=nothing,
+    colorscale=:tempo,
 )
 
     # Plot a contour courves with the density at each distance from each residue
@@ -72,7 +73,7 @@ function ComplexMixtures.contourf_per_residue(
         xticks = (xticks[1], PDBTools.oneletter.(xticks[2][1:3]*xticks[2][4:end]))
     end
     plt = Plots.contourf(rc.xticks[1], rc.d, rc.residue_contributions,
-        color=Plots.cgrad(:tempo),
+        color=Plots.cgrad(colorscale),
         linewidth=1,
         linecolor=:black,
         colorbar=:none,
@@ -103,6 +104,16 @@ function ComplexMixtures.contourf_per_residue(result, g::Union{SoluteGroup,Solve
         Please read the documention, by typing: `? contourf_per_residue`
 
     """))
+end
+
+function ComplexMixtures.contourf_per_residue(
+    rc::ResidueContributions;
+    oneletter=false,
+    xlabel="Residue",
+    ylabel="r / Å",
+    clims=nothing,
+)
+
 end
 
 @testitem "contourf_per_residue" begin
