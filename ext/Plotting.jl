@@ -14,6 +14,7 @@ using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
         xlabel="Residue",
         ylabel="r / Å",
         clims=nothing,
+        colorscale=:tempo,
     )
 
 Plot the contribution of each residue to the solute-solvent pair distribution function as a contour plot.
@@ -29,6 +30,8 @@ This function requires loading the `Plots` package.
 - `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
 - `clims`: The color limits for the contour plot.
+- `colorscale`: The color scale for the contour plot. Default is `:tempo`. We suggest `:bwr` if the zero
+  is at the middle of the color scale (use `clims` to adjust the color limits).  
 
 # Example
 
@@ -133,6 +136,7 @@ ComplexMixtures.contourf_per_residue(rc::ResidueContributions; kwargs...) = Plot
         ylabel="r / Å",
         type=:mddf,
         clims=nothing,
+        colorscale=:tempo,
     )
 
 Plot the contribution of each residue to the solute-solvent pair distribution function as a contour plot.
@@ -153,6 +157,8 @@ This function requires loading the `Plots` package.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
 - `type::Symbol`: That data to plot. Default is `:mddf` for MDDF contributions. Options are `:coordination_number`, and `:mddf_count`.
 - `clims`: The color limits for the contour plot.
+- `colorscale`: The color scale for the contour plot. Default is `:tempo`. We suggest `:bwr` if the zero
+  is at the middle of the color scale (use `clims` to adjust the color limits).
 
 # Example
 
