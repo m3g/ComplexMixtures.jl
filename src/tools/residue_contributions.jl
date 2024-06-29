@@ -1,40 +1,8 @@
 """
-    ResidueContributions
+    ResidueContributions (data structure)
 
-Structure to store the residue contributions to the solute-solvent pair distribution function.
+## Constructor function: 
 
-A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
-or to perform arithmetic operations with other `ResidueContributions` objects.
-
-# Examples
-
-```julia
-using ComplexMixturs, PDBTools, Plots
-...
-result = mddf(traj, options)
-rc = ResidueContributions(result, select(atoms, "protein"))
-contourf(rc) # plots a contour map
-```
-
-```julia
-using ComplexMixturs, PDBTools, Plots
-...
-result = mddf(traj2, options)
-rc1 = ResidueContributions(result, select(atoms, "protein"))
-result = mddf(traj2, options)
-rc2 = ResidueContributions(result, select(atoms, "protein"))
-rc_diff = rc2 - rc1
-contourf(rc_diff) # plots a contour map of the difference
-```
-
-"""
-struct ResidueContributions
-    d::Vector{Float64}
-    xticks::Tuple{Vector{Int},Vector{String}}
-    residue_contributions::Matrix{Float64}
-end
-
-"""
     ResidueContributions(
         results::Result, atoms::AbstractVector{PDBTools.Atom};
         dmin=1.5, dmax=3.5,
@@ -56,7 +24,12 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 - `dmax::Float64`: The maximum distance to consider. Default is `3.5`.
 - `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, or `:coordination_number`). Default is `:mddf`.
 
-# Example
+A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
+using the `Plots.contourf` function, and to perform arithmetic operations with other `ResidueContributions` objects.
+
+# Examples
+
+## Constructing a ResidueContributions object
 
 ```julia-repl
 julia> using ComplexMixtures, PDBTools
@@ -87,9 +60,39 @@ julia> rc = ResidueContributions(result, select(atoms, "protein"))
          A1      S17     V33     D49     G65     N81     G97     
 ```
 
-The `rc` object of the example can be plotted using the `contourf` function of `Plots`.
+## Plotting 
+
+```julia
+using ComplexMixtures, PDBTools, Plots
+...
+result = mddf(traj, options)
+rc = ResidueContributions(result, select(atoms, "protein"))
+contourf(rc) # plots a contour map
+```
+
+## Arithmetic operations
+
+```julia
+using ComplexMixtures, PDBTools, Plots
+...
+# first simulation (for example, low temperature):
+result1 = mddf(traj2, options)
+rc1 = ResidueContributions(result1, select(atoms, "protein"))
+# second simulation (for example, high temperature):
+result2 = mddf(traj2, options)
+rc2 = ResidueContributions(result2, select(atoms, "protein"))
+# difference of the residue contributions between the two simulations:
+rc_diff = rc2 - rc1
+contourf(rc_diff) # plots a contour map of the difference
+```
 
 """
+struct ResidueContributions
+    d::Vector{Float64}
+    xticks::Tuple{Vector{Int},Vector{String}}
+    residue_contributions::Matrix{Float64}
+end
+
 function ResidueContributions(
     results::Result, atoms::AbstractVector{PDBTools.Atom};
     dmin=1.5, dmax=3.5,
