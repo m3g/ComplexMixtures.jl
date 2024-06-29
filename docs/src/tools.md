@@ -74,7 +74,6 @@ With appropriate input data, this code produces:
 </center>
 ```
 
-
 ```@autodocs
 Modules = [ComplexMixtures]
 Pages = ["coordination_number.jl"]
@@ -96,7 +95,11 @@ The computation of the contributions of each residue can be performed with the c
 creates an object containing the contributions of the residues to the mddf (or coordination numbers, or minimum-distance counts), the 
 residue names, and distances:
 
-The output of `ResidueContributions` is shown as a simple unicode plot:
+```@docs; canonical=false
+ResidueContributions
+```
+
+The output of `ResidueContributions` is by default shown as a simple unicode plot:
 
 ```@raw html
 <center>
@@ -128,16 +131,9 @@ using Plots
 contourf(rc_diff)
 ```
 
-The convenience function `contourf_per_residue` provides a direct way to produce such plots. See the documentation below:
-
-```@docs
-contourf_per_residue(::Result, ::AbstractVector{PDBTools.Atom})
-```
-
 A complete example of its usage can be seen [here](@ref 2D-map-example1).  This function is a convenience function only.
 
-Basically, we are extracting the contribution
-of each residue independently and building a matrix where each row 
+Basically, we are extracting the contribution of each residue independently and building a matrix where each row 
 represents a distance and each column a residue. 
 Using `PDBTools`, this can be done with, for example: 
 
@@ -155,10 +151,17 @@ The above produces a matrix with a number of columns equal to the number of resi
 !!! tip
     The appearance of the resulting plot can be customized with the mutating `plot!` function, as usual.  
 
-    For a more customized plot, you can adapt the source code of the `contourf_per_residue` function,
+    For a more customized plot, you can adapt the source code of the `contourf` function,
     which is commented in detail and available in the `source` link at the bottom right of the above doc entry.
 
     In particular, [this example](@ref 2Dmap-example2) we show how to produce a custom 2D map in detail, splitting the contributions in to residue subgroups. 
+
+The legacy function `contourf_per_residue` provides a direct way to produce contour plots:
+
+```@docs
+contourf_per_residue(::Result, ::AbstractVector{PDBTools.Atom})
+```
+
 
 
 ## [3D density map around a macromolecule](@id grid3D)
