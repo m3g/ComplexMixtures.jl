@@ -22,14 +22,11 @@ results = load(example_output)
 
 #
 # Plot a 2D map showing the contributions of some residues
-# - the residue range referes to serial residue indices in the
-#   structure provided.
 #
-contourf_per_residue(
-  results, protein;
-  xticks_range=70:110,
-  dmin=1.5, dmax=3.5,
-  oneletter=true
+residue_contributions = ResidueContributions(
+  results, 
+  select(protein, "resnum >= 70 and resnum <= 110")
 )
+contourf(residue_contributions; oneletter=true)
 savefig("./density2D.png")
 println("Created plot density2D.png")
