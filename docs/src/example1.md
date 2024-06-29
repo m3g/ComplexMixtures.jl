@@ -96,7 +96,7 @@ and the same distribution function, decomposed into the contributions of the hyd
 In this followup from the example above, we compute group contributions of the solute (the protein) to the MDDFs,
 split into the contributions each protein residue. This allows the observation of the penetration of the solvent
 on the structure, and the strength of the interaction of the solvent, or cossolvent, with each type of residue
-in the structure. The `contourf_per_residue` auxiliary function, [documented here](@ref 2D_per_residue), is used:  
+in the structure. The `ResidueContributions` and `Plots.contourf` auxiliary functions, [documented here](@ref 2D_per_residue), are used:  
 
 ```@raw html
 <details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
