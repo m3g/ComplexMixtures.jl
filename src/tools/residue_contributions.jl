@@ -233,7 +233,9 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
         end
         map *= "$(round(rc.d[d], digits=2)) "
         for res in 1:rstride:size(m, 2)
-            cbin = tempo_color_scheme[round(Int, 255 * (rc.residue_contributions[d, res] - min_val) / max_val)+1]
+            cbin = tempo_color_scheme[
+                    round(Int, 255 * (rc.residue_contributions[d, res] - min_val) / (max_val - min_val) + 1) 
+                ]
             map *= StyledStrings.styled"{(fg=$cbin):█}"
         end
         map *= '\n'
