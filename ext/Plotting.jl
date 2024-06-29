@@ -70,7 +70,7 @@ function Plots.contourf(
     xlabel="Residue",
     ylabel="r / Å",
     clims=nothing,
-    colorscale=:tempo,
+    colorscale=nothing,
 )
 
     residue_numbers = [ parse(Int, label[4:end]) for label in rc.xticks[2] ]
@@ -88,13 +88,32 @@ function Plots.contourf(
     else
         (tick_marks, tick_labels) 
     end
+
+    if isnothing(clims)
+        minval, maxval = extrema(rc.residue_contributions)
+        if minval >= 0
+            clims = (0, maxval)
+            isnothing(colorscale) && (colorscale = :tempo)
+            levels = 5
+        elseif maxval <= 0
+            clims = (minval, 0)
+            isnothing(colorscale) && (colorscale = :tempo)
+            levels = 5
+        else
+            mval = max(abs(minval), maxval)
+            clims = (-mval, mval)
+            isnothing(colorscale) && (colorscale = :bwr)
+            levels = 11
+        end
+    end
+
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(residue_numbers, rc.d, rc.residue_contributions,
         color=Plots.cgrad(colorscale),
         linewidth=1,
         linecolor=:black,
         colorbar=:none,
-        levels=5,
+        levels=levels,
         xlabel=xlabel,
         ylabel=ylabel,
         xticks=xticks, xrotation=60, xtickfont=Plots.font(8, "Computer Modern"),
