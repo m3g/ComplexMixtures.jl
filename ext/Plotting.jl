@@ -10,6 +10,7 @@ using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
 """
     contourf(
         rc::ResidueContributions; 
+        step::Int=1,
         oneletter=false,
         xlabel="Residue",
         ylabel="r / Å",
@@ -27,6 +28,7 @@ This function requires loading the `Plots` package.
 
 # Optional arguments
 
+- `step`: The step of the residue ticks in the x-axis of the plot. Default is 1.
 - `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
 - `clims`: The color limits for the contour plot.
@@ -44,7 +46,7 @@ julia> atoms = readPDB("system.pdb", "protein")
 
 julia> rc = ResidueContributions(results, atoms; oneletter=true)
 
-julia> plt = contourf(rc)
+julia> plt = contourf(rc; step=5)
 ```
 
 This will produce a plot with the contribution of each residue to the solute-solvent pair distribution function,
@@ -106,8 +108,10 @@ function Plots.contourf(
     return plt
 end
 
+#
+# This is a legacy function, will probably be deprecated some day.
+#
 ComplexMixtures.contourf_per_residue(rc::ResidueContributions; kwargs...) = Plots.contourf(rc; kwargs...)
-
 """
     contourf_per_residue(
         results::Result, atoms::AbstractVector{PDBTools.Atom}; 
