@@ -63,7 +63,7 @@ julia> plot!(plt, size=(800, 400), title="Contribution per residue")
 """
 function Plots.contourf(
     rc::ResidueContributions;
-    xticks_range=nothing,
+    step::Int=1,
     oneletter=false,
     xlabel="Residue",
     ylabel="r / Å",
@@ -73,27 +73,9 @@ function Plots.contourf(
 
     residue_numbers = [ parse(Int, label[4:end]) for label in rc.xticks[2] ]
 
-    # Check if the range is fine
-    xticks_range, tick_range = if isnothing(xticks_range)
-        first(rc.xticks[1]):1:last(rc.xticks[1]), 1:1:length(rc.xticks[1])
-    else
-        ifirst = findfirst(==(xticks_range[1]), rc.xticks[1])
-        ilast = findfirst(==(xticks_range[end]), rc.xticks[1])
-        if isnothing(ifirst) || isnothing(ilast)
-            throw(ArgumentError("""\n
-    
-                The xticks_range $xticks_range is out of bounds.
-    
-                The first and last residue numbers of the selection are: $(first(residue_numbers)) and $(last(residue_numbers)).
-                
-            """
-            ))
-        end
-        xticks_range, ifirst:step(xticks_range):ilast
-    end
-
     # Plot a contour courves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
+    tick_range = 1:step:length(rc.xticks[1])
     tick_marks = rc.xticks[1][tick_range]
     tick_labels = rc.xticks[2][tick_range]
     xticks = if oneletter 
@@ -129,7 +111,7 @@ ComplexMixtures.contourf_per_residue(rc::ResidueContributions; kwargs...) = Plot
 """
     contourf_per_residue(
         results::Result, atoms::AbstractVector{PDBTools.Atom}; 
-        xticks_range=nothing, 
+        residue_range=nothing, 
         dmin=1.5, dmax=3.5, 
         oneletter=false,
         xlabel="Residue",
@@ -149,7 +131,7 @@ This function requires loading the `Plots` package.
 
 # Optional arguments
 
-- `xticks_range`: The range of residues to plot. Default is all residues. Use
+- `residue_range`: The range of residues to plot. Default is all residues. Use
   a step to plot every `n` residues, e.g., `1:2:30`.
 - `dmin::Real`: The minimum distance to plot. Default is `1.5`.
 - `dmax::Real`: The maximum distance to plot. Default is `3.5`.
@@ -190,17 +172,17 @@ julia> plot!(plt, size=(800, 400), title="Contribution per residue")
 """
 function ComplexMixtures.contourf_per_residue(
     results::Result, atoms::AbstractVector{Atom}; 
-    xticks_range=nothing,
+    residue_range::AbstractRange=resnum(first(atoms)):resnum(last(atoms)),
     dmin=1.5, dmax=3.5,
     type=:mddf,
     kargs...
 )
-    first_atom = findfirst(at -> resnum(at) == first(xticks_range), atoms)
-    last_atom = findfirst(at -> resnum(at) == last(xticks_range), atoms)
+    first_atom = findfirst(at -> resnum(at) == first(residue_range), atoms)
+    last_atom = findfirst(at -> resnum(at) == last(residue_range), atoms)
     if isnothing(first_atom) || isnothing(last_atom)
         throw(ArgumentError("""\n
 
-            The xticks_range $xticks_range is out of bounds.
+            The residue_range $residue_range is out of bounds.
 
             The first and last residue numbers of the selection are: $(resnum(first(atoms))) and $(resnum(last(atoms))).
 
@@ -208,7 +190,7 @@ function ComplexMixtures.contourf_per_residue(
         ))
     end
     rc = ResidueContributions(results, atoms[first_atom:last_atom]; dmin, dmax, type)
-    return Plots.contourf(rc; xticks_range, kargs...)
+    return Plots.contourf(rc; step=step(residue_range), kargs...)
 end
 
 @testitem "contourf/contourf_per_residue" begin
@@ -226,21 +208,21 @@ end
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
-    plt = contourf_per_residue(results, protein; xticks_range=50:75, oneletter=true)
+    plt = contourf_per_residue(results, protein; residue_range=50:75, oneletter=true)
     tmpplot = tempname() * ".png"
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
-    plt = contourf_per_residue(results, protein; xticks_range=50:75)
+    plt = contourf_per_residue(results, protein; residue_range=50:75)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
-    plt = contourf_per_residue(results, protein; xticks_range=50:2:70)
+    plt = contourf_per_residue(results, protein; residue_range=50:2:70)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
     @test_throws ArgumentError contourf_per_residue(results, SoluteGroup("ALA"))
-    @test_throws ArgumentError contourf_per_residue(results, protein; xticks_range=50:80)
+    @test_throws ArgumentError contourf_per_residue(results, protein; residue_range=50:80)
 end
 
 end # module Plotting
