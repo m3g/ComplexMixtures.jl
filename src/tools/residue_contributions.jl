@@ -187,42 +187,9 @@ end
 Base.copy(rc::ResidueContributions) = 
     ResidueContributions(copy(rc.d), (copy(rc.xticks[1]), copy(rc.xticks[2])), copy(rc.residue_contributions))
 
-const _colorscales = Dict{Symbol,Vector{String}}(
-    :tempo => [
-        "#FFF6F4", "#FDF5F3", "#FCF4F1", "#FBF3F0", "#F9F2EE", "#F8F1ED", "#F7F0EB", "#F5EFEA", "#F4EEE8", "#F2EDE7", "#F1ECE5", "#F0EBE4",
-        "#EEEAE2", "#EDEAE1", "#EBE9DF", "#EAE8DE", "#E9E7DD", "#E7E6DB", "#E6E5DA", "#E4E4D8", "#E3E3D7", "#E2E2D6", "#E0E2D4", "#DFE1D3",
-        "#DDE0D1", "#DCDFD0", "#DBDECF", "#D9DDCD", "#D8DDCC", "#D6DCCB", "#D5DBC9", "#D3DAC8", "#D2D9C7", "#D1D8C5", "#CFD8C4", "#CED7C3",
-        "#CCD6C1", "#CBD5C0", "#C9D4BF", "#C8D4BE", "#C6D3BC", "#C5D2BB", "#C3D1BA", "#C2D1B9", "#C0D0B7", "#BFCFB6", "#BDCEB5", "#BCCEB4",
-        "#BACDB3", "#B9CCB2", "#B7CBB0", "#B6CBAF", "#B4CAAE", "#B3C9AD", "#B1C8AC", "#B0C8AB", "#AEC7AA", "#ACC6A9", "#ABC5A8", "#A9C5A6",
-        "#A8C4A5", "#A6C3A4", "#A4C3A3", "#A3C2A2", "#A1C1A1", "#A0C0A0", "#9EC09F", "#9CBF9F", "#9BBE9E", "#99BE9D", "#97BD9C", "#96BC9B",
-        "#94BC9A", "#92BB99", "#91BA98", "#8FBA97", "#8DB997", "#8BB896", "#8AB795", "#88B794", "#86B693", "#85B593", "#83B592", "#81B491",
-        "#7FB390", "#7DB390", "#7CB28F", "#7AB18E", "#78B18E", "#76B08D", "#74AF8D", "#72AF8C", "#71AE8B", "#6FAD8B", "#6DAD8A", "#6BAC8A",
-        "#69AB89", "#67AB89", "#65AA88", "#63A988", "#61A987", "#5FA887", "#5DA786", "#5BA686", "#59A685", "#57A585", "#56A485", "#54A484",
-        "#52A384", "#50A284", "#4EA183", "#4BA183", "#49A083", "#479F82", "#459F82", "#439E82", "#419D82", "#3F9C81", "#3D9C81", "#3B9B81",
-        "#3A9A81", "#389981", "#369880", "#349880", "#329780", "#309680", "#2E9580", "#2C947F", "#2A937F", "#29937F", "#27927F", "#25917F",
-        "#24907F", "#228F7E", "#218E7E", "#1F8D7E", "#1E8D7E", "#1C8C7E", "#1B8B7D", "#1A8A7D", "#19897D", "#17887D", "#16877C", "#16867C",
-        "#15857C", "#14847C", "#13847B", "#13837B", "#12827B", "#12817B", "#11807A", "#117F7A", "#117E7A", "#117D79", "#117C79", "#117B79",
-        "#117A78", "#117978", "#117878", "#117777", "#117677", "#127676", "#127576", "#127476", "#137375", "#137275", "#137174", "#147074",
-        "#146F73", "#146E73", "#156D73", "#156C72", "#166B72", "#166A71", "#166971", "#176870", "#176770", "#17666F", "#18656F", "#18656E",
-        "#18646E", "#19636D", "#19626D", "#19616C", "#19606C", "#1A5F6B", "#1A5E6B", "#1A5D6A", "#1A5C6A", "#1A5B69", "#1B5A68", "#1B5968",
-        "#1B5867", "#1B5867", "#1B5766", "#1B5666", "#1C5565", "#1C5465", "#1C5364", "#1C5263", "#1C5163", "#1C5062", "#1C4F62", "#1C4E61",
-        "#1C4D61", "#1C4C60", "#1C4C5F", "#1C4B5F", "#1C4A5E", "#1C495E", "#1C485D", "#1C475D", "#1C465C", "#1C455B", "#1C445B", "#1C435A",
-        "#1C425A", "#1C4259", "#1C4158", "#1C4058", "#1B3F57", "#1B3E57", "#1B3D56", "#1B3C56", "#1B3B55", "#1B3A54", "#1B3954", "#1B3853",
-        "#1A3753", "#1A3652", "#1A3651", "#1A3551", "#1A3450", "#1A3350", "#19324F", "#19314F", "#19304E", "#192F4D", "#192E4D", "#182D4C",
-        "#182C4C", "#182B4B", "#182A4B", "#18294A", "#17284A", "#172749", "#172648", "#172548", "#172447", "#162347", "#162246", "#162146",
-        "#162045", "#151F45", "#151E44", "#151D44"
-    ],
-    :bwr => [
-        "#0000FF", "#0505FF", "#0A0AFF", "#0F0FFF", "#1515FF", "#1A1AFF", "#1F1FFF", "#2424FF", "#2929FF", "#2E2EFF", "#3434FF", "#3939FF", 
-        "#3E3EFF", "#4343FF", "#4848FF", "#4D4DFF", "#5252FF", "#5858FF", "#5D5DFF", "#6262FF", "#6767FF", "#6C6CFF", "#7171FF", "#7676FF", 
-        "#7C7CFF", "#8181FF", "#8686FF", "#8B8BFF", "#9090FF", "#9595FF", "#9B9BFF", "#A0A0FF", "#A5A5FF", "#AAAAFF", "#AFAFFF", "#B4B4FF", 
-        "#B9B9FF", "#BFBFFF", "#C4C4FF", "#C9C9FF", "#CECEFF", "#D3D3FF", "#D8D8FF", "#DEDEFF", "#E3E3FF", "#E8E8FF", "#EDEDFF", "#F2F2FF", 
-        "#F7F7FF", "#FCFCFF", "#FFFCFC", "#FFF7F7", "#FFF2F2", "#FFEDED", "#FFE8E8", "#FFE3E3", "#FFDEDE", "#FFD8D8", "#FFD3D3", "#FFCECE", 
-        "#FFC9C9", "#FFC4C4", "#FFBFBF", "#FFB9B9", "#FFB4B4", "#FFAFAF", "#FFAAAA", "#FFA5A5", "#FFA0A0", "#FF9B9B", "#FF9595", "#FF9090", 
-        "#FF8B8B", "#FF8686", "#FF8181", "#FF7C7C", "#FF7676", "#FF7171", "#FF6C6C", "#FF6767", "#FF6262", "#FF5D5D", "#FF5858", "#FF5252", 
-        "#FF4D4D", "#FF4848", "#FF4343", "#FF3E3E", "#FF3939", "#FF3434", "#FF2E2E", "#FF2929", "#FF2424", "#FF1F1F", "#FF1A1A", "#FF1515", 
-        "#FF0F0F", "#FF0A0A", "#FF0505", "#FF0000"
-    ]
+const _colorscales = Dict{Symbol,Vector{Int}}(
+    :tempo => [231, 194, 157, 120, 083, 046, 040, 034, 028, 022 ],
+    :bwr => [017, 018, 019, 020, 021, 063, 105, 147, 189, 231, 224, 217, 210, 203, 196, 160, 124, 088, 052 ],
 )
 
 function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, colorscale=nothing)
@@ -247,39 +214,38 @@ function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, col
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
-    println(io, StyledStrings.styled"{bold:         Residue Contributions}")
+    printstyled(io, "         Residue Contributions\n", bold=true)
     m = rc.residue_contributions
     clims, colorscale = _set_clims_and_colorscale!(rc)
     colors = _colorscales[colorscale]
     ncolors = length(colors)
     dstride = max(1, size(m, 1) ÷ 9 + 1)
     rstride = max(1, size(m, 2) ÷ 79 + 1)
-    map = ""
+    print(io,"")
     xlabel = false
     crange = clims[2] - clims[1]
     for d in size(m, 1):-dstride:1
-        map *= if !xlabel && d < (size(m, 1) + dstride) ÷ 2
+        print(io, if !xlabel && d < (size(m, 1) + dstride) ÷ 2
             xlabel = true
             " d  "
         else
             "    "
-        end
-        map *= "$(round(rc.d[d], digits=2)) "
+        end)
+        print(io, "$(round(rc.d[d], digits=2)) ")
         for res in 1:rstride:size(m, 2)
             cval = rc.residue_contributions[d, res]
             cbin = colors[round(Int, 1 + (ncolors - 1) * (cval - clims[1]) / crange)]
-            map *= StyledStrings.styled"{(fg=$cbin):█}"
+            printstyled(io, "█", color=cbin)
         end
-        map *= '\n'
+        println(io)
     end
-    map *= "         "
+    print(io,"         ")
     for i in 1:rstride*8:length(rc.xticks[1])
         tick = "$(PDBTools.oneletter(rc.xticks[2][i][1:3]))$(rc.xticks[2][i][4:end])"
         tick *= repeat(" ", 8 - length(tick))
-        map *= tick
+        print(io,tick)
     end
-    map *= '\n'
-    print(io, map)
+    println(io)    
 end
 
 function _custom_group_error_for_ResidueContributions()

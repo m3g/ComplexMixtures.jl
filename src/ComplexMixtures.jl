@@ -6,7 +6,6 @@ import PDBTools
 import PrecompileTools
 import Random
 import StructTypes
-import StyledStrings
 
 import CellListMap
 using CellListMap: AbstractParticleSystem, ParticleSystem, update_unitcell!, map_pairwise!
