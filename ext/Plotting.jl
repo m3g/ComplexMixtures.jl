@@ -4,8 +4,8 @@ using TestItems: @testitem
 import Plots
 import ComplexMixtures
 import PDBTools
-using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions, 
-                       ResidueContributions, _set_clims_and_colorscale!
+using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions,
+    ResidueContributions, _set_clims_and_colorscale!
 using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
 
 """
@@ -76,20 +76,20 @@ function Plots.contourf(
     kargs...
 )
 
-    residue_numbers = [ parse(Int, label[4:end]) for label in rc.xticks[2] ]
+    residue_numbers = [parse(Int, label[4:end]) for label in rc.xticks[2]]
 
     # Plot a contour courves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
     tick_range = 1:step:length(rc.xticks[1])
     tick_marks = rc.xticks[1][tick_range]
     tick_labels = rc.xticks[2][tick_range]
-    xticks = if oneletter 
+    xticks = if oneletter
         for i in eachindex(tick_labels)
-            tick_labels[i] = PDBTools.oneletter(tick_labels[i][1:3]) * tick_labels[i][4:end] 
-        end 
-        (tick_marks, tick_labels) 
+            tick_labels[i] = PDBTools.oneletter(tick_labels[i][1:3]) * tick_labels[i][4:end]
+        end
+        (tick_marks, tick_labels)
     else
-        (tick_marks, tick_labels) 
+        (tick_marks, tick_labels)
     end
     clims, colorscale = _set_clims_and_colorscale!(rc; clims, colorscale=color)
     if colorscale == :tempo
@@ -100,7 +100,7 @@ function Plots.contourf(
 
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(
-        residue_numbers, 
+        residue_numbers,
         rc.d, rc.residue_contributions;
         color=Plots.cgrad(colorscale),
         linewidth=1,
@@ -188,7 +188,7 @@ julia> plot!(plt, size=(800, 400), title="Contribution per residue")
 
 """
 function ComplexMixtures.contourf_per_residue(
-    results::Result, atoms::AbstractVector{Atom}; 
+    results::Result, atoms::AbstractVector{Atom};
     residue_range::AbstractRange=resnum(first(atoms)):resnum(last(atoms)),
     dmin=1.5, dmax=3.5,
     type=:mddf,
@@ -227,7 +227,7 @@ end
 
     # different color scale
     rc2 = copy(rc)
-    rc2.residue_contributions[:,10:end] .*= -1
+    rc2.residue_contributions[:, 10:end] .*= -1
     plt = contourf(rc2)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
