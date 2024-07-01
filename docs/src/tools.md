@@ -112,6 +112,7 @@ The `ResidueContribution` object can be used to produce a high-quality contour p
 ```@docs
 Plots.contourf(::ResidueContributions)
 ```
+A complete example of its usage can be seen [here](@ref 2D-map-example1). 
 
 Additionally, these `ResidueContributions` objects can be subtracted, divided, summed, or multiplied, to compare contributions of residues
 among different simulations. Typically, if one wants to compare the solvation of residues in two different simulations, 
@@ -128,42 +129,33 @@ rc_diff = rc2 - rc1
 
 # Plot difference
 using Plots
-contourf(rc_diff)
+contourf(rc_diff; title="Density difference", step=2, colorbar=:left)
 ```
+Which will produce a plot similar to the one below (the data of this plot is just illustrative):
 
-A complete example of its usage can be seen [here](@ref 2D-map-example1).  This function is a convenience function only.
-
-Basically, we are extracting the contribution of each residue independently and building a matrix where each row 
-represents a distance and each column a residue. 
-Using `PDBTools`, this can be done with, for example: 
-
-```julia
-residues = collect(eachresidue(protein))
-residue_contributions = zeros(length(R.d),length(residues))
-for (i,residue) in pairs(residues)
-  c = contributions(results, SoluteGroup(residue)) 
-  residue_contributions[:,i] .= c
-end
+```@raw html
+<center>
+<img src="../figures/density2.png" width=70%>
+</center>
 ```
+!!! tip 
+    This function is a convenience function only.
 
-The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. 
-
-!!! tip
-    The appearance of the resulting plot can be customized with the mutating `plot!` function, as usual.  
-
-    For a more customized plot, you can adapt the source code of the `contourf` function,
-    which is commented in detail and available in the `source` link at the bottom right of the above doc entry.
-
-    In particular, [this example](@ref 2Dmap-example2) we show how to produce a custom 2D map in detail, splitting the contributions in to residue subgroups. 
-
-The legacy function `contourf_per_residue` provides a direct way to produce contour plots:
-
-```@docs
-contourf_per_residue(::Result, ::AbstractVector{PDBTools.Atom})
-```
-
-
-
+    Basically, we are extracting the contribution of each residue independently and building a matrix where each row 
+    represents a distance and each column a residue. 
+    Using `PDBTools`, this can be done with, for example: 
+    
+    ```julia
+    residues = collect(eachresidue(protein))
+    residue_contributions = zeros(length(R.d),length(residues))
+    for (i,residue) in pairs(residues)
+      c = contributions(results, SoluteGroup(residue)) 
+      residue_contributions[:,i] .= c
+    end
+    ```
+    
+    The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. 
+    
 ## [3D density map around a macromolecule](@id grid3D)
 
 Three-dimensional representations of the distribution functions can also be obtained from the MDDF results. These 3D representations are obtained from the fact that the MDDFs can be decomposed into the contributions of each solute atom, and that each point in space is closest to a single solute atom as well. Thus, each point in space can be associated to one solute atom, and the contribution of that atom to the MDDF at the corresponding distance can be obtained.   
@@ -304,6 +296,14 @@ julia> overview = overview(results);
 
 julia> overview.solute_molar_volume
 657.5051512801567
+```
+
+## Legacy 
+
+The legacy function `contourf_per_residue` provides a direct way to produce contour plots:
+
+```@docs
+contourf_per_residue(::Result, ::AbstractVector{PDBTools.Atom})
 ```
 
 
