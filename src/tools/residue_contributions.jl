@@ -47,6 +47,7 @@ julia> traj = Trajectory("\$data_dir/NAMD/trajectory.dcd", protein, water);
 julia> results = mddf(traj, Options(bulk_range=(8.0, 12.0)))
 
 julia> rc = ResidueContributions(result, select(atoms, "protein"))
+
          Residue Contributions
     3.51 ████████████████████████████████████████████████████
     3.27 ███████████   ████████ ████████████████ ████████████
@@ -214,7 +215,7 @@ function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, col
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
-    printstyled(io, "         Residue Contributions\n", bold=true)
+    printstyled(io, "\n         Residue Contributions\n", bold=true)
     m = rc.residue_contributions
     clims, colorscale = _set_clims_and_colorscale!(rc)
     colors = _colorscales[colorscale]
