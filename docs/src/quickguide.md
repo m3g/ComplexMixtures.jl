@@ -8,7 +8,7 @@ command is described in detail.
 ## Basic example
 
 Here we show the input file required for the study of the solvation of a protein
-by the `TMAO` solvent, which is a molecule 4 atoms. The protein is assumed to be
+by the `TMAO` solvent, which is a molecule with 14 atoms. The protein is assumed to be
 at infinite dilution in the simulation. The trajectory of the simulation is in `DCD`
 format in this example, which is the default output of `NAMD` and `CHARMM` simulation
 packages.
