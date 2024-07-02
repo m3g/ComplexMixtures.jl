@@ -241,6 +241,22 @@ end
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
+    plt = contourf(rc; step=5)
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+
+    plt = contourf(rc; clims=(-1,1))
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+
+    plt = contourf(rc; colorscale=:tempo)
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+
+    plt = contourf(rc; clims=(-1,1), colorscale=:tempo)
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+
     plt = contourf_per_residue(results, protein; residue_range=50:75, oneletter=true)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
