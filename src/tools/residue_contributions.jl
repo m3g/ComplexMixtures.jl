@@ -210,6 +210,8 @@ function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, col
             clims = (-mval, mval)
             isnothing(colorscale) && (colorscale = :bwr)
         end
+    else
+        colorscale = isnothing(colorscale) ? :bwr : colorscale
     end
     return clims, colorscale
 end
