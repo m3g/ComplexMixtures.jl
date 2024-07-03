@@ -36,25 +36,23 @@ julia> using ComplexMixtures, PDBTools
 
 julia> using ComplexMixtures.Testing: data_dir
 
-julia> atoms = readPDB(data_dir*"/NAMD/structure.pdb");
+julia> atoms = readPDB(data_dir*"/NAMD/Protein_in_Glycerol/system.pdb");
 
-julia> protein = AtomSelection(select(atoms, "protein"), nmols=1);
-
-julia> results = load(data_dir*"/NAMD/protein_tmao.json");
+julia> results = load(data_dir*"/NAMD/Protein_in_Glycerol/protein_glyc.json");
 
 julia> rc = ResidueContributions(results, select(atoms, "protein"))
 
-         Residue Contributions
-    3.51 ████████████████████████████████████████████████████
-    3.27 ████████████████████████████████████████████████████
-    3.03 ████████████████████████████████████████████████████
-    2.79 ████████████████████████████████████████████████████
- d  2.55 ████████████████████████████████████████████████████
-    2.31 ████████████████████████████████████████████████████
-    2.07 ████████████████████████████████████████████████████
-    1.83 ████████████████████████████████████████████████████
-    1.59 ████████████████████████████████████████████████████
-         A1      S17     V33     D49     G65     N81     G97     
+          Residue Contributions
+     3.51 █     █      █     █            █
+     3.27 █              █   █
+     3.03 █     █    █       █            █       █       █                █
+     2.79 █    ██    █ █ █   █            █      ██          █        █    █
+ d   2.55 █ █  ██    █ █ █   █            ██     ██ █  █  █  █  █     █    █
+     2.31 █ █  ██    █ ███   █    ██      ██     ██ █  ██ █  ██ █     █    █
+     2.07 █ █   █  █ █████   █    ██      ██     ██ █  ██ █  █ ██    █     █
+     1.83 █   █ █  █ █████   █    ██      █      ██ █  ██    █ ██     █    █
+     1.59
+         A1      T33     T66     S98     S130    T162    A194    H226    G258     
 
 ```
 
@@ -190,6 +188,8 @@ const _colorscales = Dict{Symbol,Vector{Int}}(
     :bwr => [017, 018, 019, 020, 021, 063, 105, 147, 189, 231, 224, 217, 210, 203, 196, 160, 124, 088, 052 ],
 )
 
+const _testing_show_method = Ref(false)
+
 function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, colorscale=nothing)
     if isnothing(clims)
         minval, maxval = extrema(rc.residue_contributions)
@@ -234,8 +234,12 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
         print(io, @sprintf("%5.2f ", rc.d[d]))
         for res in 1:rstride:size(m, 2)
             cval = rc.residue_contributions[d, res]
-            cbin = colors[round(Int, 1 + (ncolors - 1) * (cval - clims[1]) / crange)]
-            printstyled(io, "█", color=cbin)
+            if _testing_show_method[]
+                print(io, cval > 0.05*clims[2] ? "█" : " ")
+            else
+                cbin = colors[round(Int, 1 + (ncolors - 1) * (cval - clims[1]) / crange)]
+                printstyled(io, "█", color=cbin)
+            end
         end
         println(io)
     end

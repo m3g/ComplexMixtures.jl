@@ -8,5 +8,6 @@ end
 
 @testitem "Doctests" begin
     using Documenter: doctest
+    ComplexMixtures._testing_show_method[] = true
     doctest(ComplexMixtures)
 end
