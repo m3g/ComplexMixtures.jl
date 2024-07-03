@@ -214,7 +214,7 @@ function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, col
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
-    printstyled(io, "\n         Residue Contributions\n", bold=true)
+    printstyled(io, "\n          Residue Contributions\n", bold=true)
     m = rc.residue_contributions
     clims, colorscale = _set_clims_and_colorscale!(rc)
     colors = _colorscales[colorscale]
@@ -231,7 +231,7 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
         else
             "    "
         end)
-        print(io, "$(round(rc.d[d], digits=2)) ")
+        print(io, @sprintf("%5.2f ", rc.d[d]))
         for res in 1:rstride:size(m, 2)
             cval = rc.residue_contributions[d, res]
             cbin = colors[round(Int, 1 + (ncolors - 1) * (cval - clims[1]) / crange)]
