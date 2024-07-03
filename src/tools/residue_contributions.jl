@@ -31,34 +31,31 @@ using the `Plots.contourf` function, and to perform arithmetic operations with o
 
 ## Constructing a ResidueContributions object
 
-```julia-repl
+```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures.Testing
+julia> using ComplexMixtures.Testing: data_dir
 
-julia> atoms = readPDB(pdbfile);
+julia> atoms = readPDB(data_dir*"/NAMD/structure.pdb");
 
 julia> protein = AtomSelection(select(atoms, "protein"), nmols=1);
 
-julia> water = AtomSelection(select(atoms, "water"), natomspermol=3);
+julia> results = load(data_dir*"/NAMD/protein_tmao.json");
 
-julia> traj = Trajectory("\$data_dir/NAMD/trajectory.dcd", protein, water);
-
-julia> results = mddf(traj, Options(bulk_range=(8.0, 12.0)))
-
-julia> rc = ResidueContributions(result, select(atoms, "protein"))
+julia> rc = ResidueContributions(results, select(atoms, "protein"))
 
          Residue Contributions
     3.51 ████████████████████████████████████████████████████
-    3.27 ███████████   ████████ ████████████████ ████████████
-    3.03 █████ █████   ████████    █████████████ ████████████
-    2.79 █████ █████   ████████    █████████████ ████████████
- d  2.55 █████ █████   ████████    █████████████ ████████████
-    2.31 █████ █████   ████████    █████████████ ████████████
-    2.07 █████ █████   ████████    █████████████ ████████████
-    1.83 ███████████████████████████████████████ ████████████
+    3.27 ████████████████████████████████████████████████████
+    3.03 ████████████████████████████████████████████████████
+    2.79 ████████████████████████████████████████████████████
+ d  2.55 ████████████████████████████████████████████████████
+    2.31 ████████████████████████████████████████████████████
+    2.07 ████████████████████████████████████████████████████
+    1.83 ████████████████████████████████████████████████████
     1.59 ████████████████████████████████████████████████████
          A1      S17     V33     D49     G65     N81     G97     
+
 ```
 
 ## Plotting 
@@ -306,15 +303,21 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 104")); type=:coordination_number) ≈
           rcc.residue_contributions[:, 104]
 
+    # empty plot (just test if the show function does not throw an error)
+    rc2 = copy(rc)
+    rc2.residue_contributions .= 0.0
+    @test show(IOBuffer(), MIME"text/plain"(), rc2) === nothing
+
     # arithmetic operations
     rc = ResidueContributions(result, select(atoms, "protein"))
-    rc2 = ResidueContributions(result, select(atoms, "protein"))
-    @test all(rc.residue_contributions .- rc2.residue_contributions .< 1e-10)
-    @test all(rc.residue_contributions + rc2.residue_contributions .≈ 2 .* rc.residue_contributions)
-    rdiv = rc / rc2
-    @test all(x -> isapprox(x, 1.0), filter(>(0.5), rdiv.residue_contributions))
+    rcminus = rc - rc
+    @test all(rcminus.residue_contributions .< 1e-10)
+    rcplus = rc + rc
+    @test all(rcplus.residue_contributions .≈ 2 .* rc.residue_contributions)
+    rdiv = rc / rc
+    @test all(x -> isapprox(x, 1.0), filter(>(0.0), rdiv.residue_contributions))
     @test all(<(1.e-10), filter(<(0.5), rdiv.residue_contributions))
-    rmul = rc * rc2
+    rmul = rc * rc 
     @test rmul.residue_contributions ≈ rc.residue_contributions .^ 2
 
     # copy structure
