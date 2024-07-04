@@ -34,7 +34,7 @@ using the `Plots.contourf` function, and to perform arithmetic operations with o
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures.Testing: data_dir
+julia> using ComplexMixtures.Testing: data_dir; ComplexMixtures._testing_show_method[] = true; # testing mode
 
 julia> atoms = readPDB(data_dir*"/NAMD/Protein_in_Glycerol/system.pdb");
 
@@ -214,7 +214,11 @@ function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, col
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
-    printstyled(io, "\n          Residue Contributions\n", bold=true)
+    if _testing_show_method[]
+        print(io, "\n          Residue Contributions\n")
+    else
+        printstyled(io, "\n          Residue Contributions\n", bold=true)
+    end
     m = rc.residue_contributions
     clims, colorscale = _set_clims_and_colorscale!(rc)
     colors = _colorscales[colorscale]
