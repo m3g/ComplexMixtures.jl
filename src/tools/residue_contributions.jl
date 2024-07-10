@@ -360,11 +360,11 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     rmul = rc * rc 
     @test rmul.residue_contributions ≈ rc.residue_contributions .^ 2
     rc2 = 2 * rc
-    @test rc2.residue_contributions = 2 .* rc.residue_contributions
+    @test rc2.residue_contributions == 2 .* rc.residue_contributions
     rc2 = rc * 2
-    @test rc2.residue_contributions = 2 .* rc.residue_contributions
+    @test rc2.residue_contributions == 2 .* rc.residue_contributions
     rc2 = rc / 2
-    @test rc2.residue_contributions = rc.residue_contributions ./ 2
+    @test rc2.residue_contributions == rc.residue_contributions ./ 2
 
     # copy structure
     rc2 = copy(rc)
