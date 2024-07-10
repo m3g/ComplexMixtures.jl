@@ -91,6 +91,9 @@ One nice way to visualize the accumulation or depletion of a solvent around a ma
 
 Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF, coordination numbers or minimum-distance counts. 
 
+!!! compat
+    All features described in this section are only available in v2.7.0 or greater.
+
 The computation of the contributions of each residue can be performed with the convenience function `ResidueContributions`, which
 creates an object containing the contributions of the residues to the mddf (or coordination numbers, or minimum-distance counts), the 
 residue names, and distances:
@@ -114,6 +117,16 @@ Plots.contourf(::ResidueContributions)
 ```
 A complete example of its usage can be seen [here](@ref 2D-map-example1). 
 
+The `ResidueContributions` object can be indexes and sliced, for the analysis of the contributions of specific residues
+or range of residues:
+
+```julia
+rc = ResidueContributions(results1, select(atoms, "protein")); 
+rc_7 = rc[7] # contributions of residue 7
+rc_range = rc[20:50] # contributions of a range of residues
+```
+Slicing will return a new `ResidueContributions` object.
+
 Additionally, these `ResidueContributions` objects can be subtracted, divided, summed, or multiplied, to compare contributions of residues
 among different simulations. Typically, if one wants to compare the solvation of residues in two different simulations, 
 one can do:
@@ -133,11 +146,19 @@ contourf(rc_diff; title="Density difference", step=2, colorbar=:left)
 ```
 Which will produce a plot similar to the one below (the data of this plot is just illustrative):
 
+which will return a new `ResidueContributions` object.
+
 ```@raw html
 <center>
 <img src="../figures/density2.png" width=70%>
 </center>
 ```
+Finally, it is also possible to renormalize the contributions by multiplication or division by scalars,
+```julia
+rc2 = rc / 15
+rc2 = 2 * rc
+```
+
 !!! tip 
     This function is a convenience function only.
 

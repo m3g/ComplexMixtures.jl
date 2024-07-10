@@ -23,6 +23,7 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 - `dmin::Float64`: The minimum distance to consider. Default is `1.5`.
 - `dmax::Float64`: The maximum distance to consider. Default is `3.5`.
 - `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, or `:coordination_number`). Default is `:mddf`.
+- `silent::Bool`: If `true`, the progress bar is not shown. Default is `false`.
 
 A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
 using the `Plots.contourf` function, and to perform arithmetic operations with other `ResidueContributions` objects, 
@@ -41,7 +42,7 @@ julia> atoms = readPDB(data_dir*"/NAMD/Protein_in_Glycerol/system.pdb");
 
 julia> results = load(data_dir*"/NAMD/Protein_in_Glycerol/protein_glyc.json");
 
-julia> rc = ResidueContributions(results, select(atoms, "protein"))
+julia> rc = ResidueContributions(results, select(atoms, "protein"); silent=true)
 
           Residue Contributions
      3.51 █     █      █     █            █
@@ -71,7 +72,7 @@ contourf(rc) # plots a contour map
 
 Slicing, or indexing, the residue contributions returns a new `ResidueContributions` object with the selected residues:
 
-```
+```julia
 using ComplexMixtures, PDBTools, Plots
 ...
 result = mddf(traj, options)
@@ -111,6 +112,7 @@ function ResidueContributions(
     results::Result, atoms::AbstractVector{PDBTools.Atom};
     dmin=1.5, dmax=3.5,
     type=:mddf,
+    silent=false,
 )
 
     if length(atoms) == 0
@@ -132,11 +134,11 @@ function ResidueContributions(
     rescontrib = zeros(length(results.d), length(residues))
 
     # Each column is then filled up with the contributions of each residue
-    p = Progress(length(residues); dt=1)
+    silent || (p = Progress(length(residues); dt=1))
     Threads.@threads for ires in eachindex(residues)
         residue = residues[ires]
         rescontrib[:, ires] .= contributions(results, SoluteGroup(residue); type)
-        next!(p)
+        silent || next!(p)
     end
 
     # Plot only for distances within 1.5 and 3.5:
