@@ -25,7 +25,8 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 - `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, or `:coordination_number`). Default is `:mddf`.
 
 A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
-using the `Plots.contourf` function, and to perform arithmetic operations with other `ResidueContributions` objects.
+using the `Plots.contourf` function, and to perform arithmetic operations with other `ResidueContributions` objects, 
+multiplying or dividing by a scalar, and slicing (see examples below).
 
 # Examples
 
@@ -66,6 +67,20 @@ rc = ResidueContributions(result, select(atoms, "protein"))
 contourf(rc) # plots a contour map
 ```
 
+## Slicing
+
+Slicing, or indexing, the residue contributions returns a new `ResidueContributions` object with the selected residues:
+
+```
+using ComplexMixtures, PDBTools, Plots
+...
+result = mddf(traj, options)
+rc = ResidueContributions(result, select(atoms, "protein"))
+rc_7 = rc[7] # contributions of residue 7
+rc_range = rc[10:50] # slice the residue contributions
+contourf(rc_range) # plots a contour map of the selected residues
+```
+
 ## Arithmetic operations
 
 ```julia
@@ -81,6 +96,9 @@ rc2 = ResidueContributions(result2, select(atoms, "protein"))
 rc_diff = rc2 - rc1
 contourf(rc_diff) # plots a contour map of the difference
 ```
+
+!!! compat
+    Slicing, indexing, and multiplication and divison by scalars were introduces in v2.7.0.
 
 """
 struct ResidueContributions
