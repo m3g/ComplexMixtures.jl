@@ -114,8 +114,11 @@ function ResidueContributions(
     rescontrib = zeros(length(results.d), length(residues))
 
     # Each column is then filled up with the contributions of each residue
-    for (ires, residue) in enumerate(residues)
+    p = Progress(n=length(residues); dt=1)
+    Threads.@threads for ires in eachindex(residues)
+        residue = residues[ires]
         rescontrib[:, ires] .= contributions(results, SoluteGroup(residue); type)
+        next!(p)
     end
 
     # Plot only for distances within 1.5 and 3.5:
