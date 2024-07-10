@@ -150,6 +150,22 @@ function _check_identity_of_residues(rc1::ResidueContributions, rc2::ResidueCont
     return nothing
 end
 
+import Base: ==
+==(rc1::ResidueContributions, rc2::ResidueContributions) = 
+    rc1.d == rc2.d && rc1.xticks == rc2.xticks && 
+    rc1.residue_contributions == rc2.residue_contributions
+
+Base.copy(rc::ResidueContributions) = 
+    ResidueContributions(copy(rc.d), (copy(rc.xticks[1]), copy(rc.xticks[2])), copy(rc.residue_contributions))
+function Base.getindex(rc::ResidueContributions, r::AbstractRange) 
+    return ResidueContributions(
+        rc.d, 
+	(rc.xticks[1][r], rc.xticks[2][r]), 
+	rc.residue_contributions[:,r]
+    )
+end
+Base.getindex(rc::ResidueContributions, i) = rc[i:i] 
+
 import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
@@ -180,8 +196,14 @@ function *(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
     return ResidueContributions(rc1.d, rc1.xticks, rc1.residue_contributions .* rc2.residue_contributions)
 end
-Base.copy(rc::ResidueContributions) = 
-    ResidueContributions(copy(rc.d), (copy(rc.xticks[1]), copy(rc.xticks[2])), copy(rc.residue_contributions))
+
+function *(rc::ResidueContributions, x::Real)  
+    rc2 = copy(rc)
+    rc2.residue_contributions .*= x
+    return rc2
+end
+*(x::Real, rc::ResidueContributions) = rc * x
+/(rc::ResidueContributions, x::Real) = rc * inv(x)  
 
 const _colorscales = Dict{Symbol,Vector{Int}}(
     :tempo => [231, 194, 157, 120, 083, 046, 040, 034, 028, 022 ],
@@ -311,6 +333,13 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 104")); type=:coordination_number) ≈
           rcc.residue_contributions[:, 104]
 
+    # indexing
+    rc = ResidueContributions(result, select(atoms, "protein"))
+    rc1 = rc[1]
+    @test rc1 == ResidueContributions(result, select(atoms, "protein and resnum 1"))
+    rc2 = rc[2:10]
+    @test rc2 == ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"))
+
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
     rc2.residue_contributions .= 0.0
@@ -327,6 +356,12 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     @test all(<(1.e-10), filter(<(0.5), rdiv.residue_contributions))
     rmul = rc * rc 
     @test rmul.residue_contributions ≈ rc.residue_contributions .^ 2
+    rc2 = 2 * rc
+    @test rc2.residue_contributions = 2 .* rc.residue_contributions
+    rc2 = rc * 2
+    @test rc2.residue_contributions = 2 .* rc.residue_contributions
+    rc2 = rc / 2
+    @test rc2.residue_contributions = rc.residue_contributions ./ 2
 
     # copy structure
     rc2 = copy(rc)
