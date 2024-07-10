@@ -76,7 +76,7 @@ function Plots.contourf(
     kargs...
 )
 
-    residue_numbers = [parse(Int, label[4:end]) for label in rc.xticks[2]]
+    residue_numbers = [parse(Int, label[findlast(!isdigit, label)+1:end]) for label in rc.xticks[2]]
 
     # Plot a contour courves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
@@ -220,6 +220,13 @@ end
     results = load(joinpath(Testing.data_dir, "Gromacs/protein_EMI.json"))
     tmpplot = tempname() * ".png"
 
+    # Add some strange residue names to the protein
+    for atom in protein
+        if resname(atom) == "LEU"
+            atom.resname = "lx"
+        end
+    end
+
     rc = ResidueContributions(results, select(protein, "residue >= 50 and residue <= 75"))
     plt = contourf(rc)
     savefig(plt, tmpplot)
@@ -257,6 +264,12 @@ end
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
+    # Slice and plot
+    rc2 = rc[10:5:20]
+    plt = contourf_per_residue(results, protein; residue_range=50:2:70)
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+
     plt = contourf_per_residue(results, protein; residue_range=50:75, oneletter=true)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
@@ -271,6 +284,7 @@ end
 
     @test_throws ArgumentError contourf_per_residue(results, SoluteGroup("ALA"))
     @test_throws ArgumentError contourf_per_residue(results, protein; residue_range=50:80)
+
 end
 
 end # module Plotting
