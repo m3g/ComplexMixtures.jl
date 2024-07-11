@@ -104,8 +104,9 @@ contourf(rc_diff) # plots a contour map of the difference
 """
 struct ResidueContributions
     d::Vector{Float64}
-    xticks::Tuple{Vector{Int},Vector{String}}
     residue_contributions::Matrix{Float64}
+    resnums::Vector{Int}
+    xticks::Tuple{Vector{Int},Vector{String}}
 end
 
 function ResidueContributions(
@@ -149,17 +150,19 @@ function ResidueContributions(
     isnothing(idmax) && (idmax = length(results.d))
 
     # Obtain pretty labels for the residues in the x-axis (using PDBTools)
+    resnums = PDBTools.resnum.(residues)
     xticks = PDBTools.residue_ticks(atoms;
-        first=PDBTools.resnum(first(residues)),
-        last=PDBTools.resnum(last(residues)),
+        first=first(resnums),
+        last=last(resnums),
         oneletter=false,
         serial=false,
     )
 
     return ResidueContributions(
         results.d[idmin:idmax],
+        rescontrib[idmin:idmax, 1:length(residues)],
+        resnums,
         xticks,
-        rescontrib[idmin:idmax, 1:length(residues)]
     )
 end
 
@@ -175,16 +178,23 @@ end
 
 import Base: ==
 ==(rc1::ResidueContributions, rc2::ResidueContributions) = 
-    rc1.d == rc2.d && rc1.xticks == rc2.xticks && 
+    rc1.d == rc2.d && rc1.xticks == rc2.xticks && rc1.resnums == rc2.resnums &&
     rc1.residue_contributions == rc2.residue_contributions
 
-Base.copy(rc::ResidueContributions) = 
-    ResidueContributions(copy(rc.d), (copy(rc.xticks[1]), copy(rc.xticks[2])), copy(rc.residue_contributions))
+function Base.copy(rc::ResidueContributions)
+    return ResidueContributions(
+        copy(rc.d), 
+        copy(rc.residue_contributions),
+        copy(rc.resnums),
+        (copy(rc.xticks[1]), copy(rc.xticks[2])), 
+    )
+end
 function Base.getindex(rc::ResidueContributions, r::AbstractRange) 
     return ResidueContributions(
         rc.d, 
-	(rc.xticks[1][r], rc.xticks[2][r]), 
-	rc.residue_contributions[:,r]
+        rc.residue_contributions[:,r],
+        rc.resnums[r],
+        (rc.xticks[1][r], rc.xticks[2][r]), 
     )
 end
 Base.getindex(rc::ResidueContributions, i) = rc[i:i] 
@@ -192,11 +202,15 @@ Base.getindex(rc::ResidueContributions, i) = rc[i:i]
 import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
-    return ResidueContributions(rc1.d, rc1.xticks, rc1.residue_contributions - rc2.residue_contributions)
+    rc_new = copy(rc1)
+    @. rc_new.residue_contributions = rc1.residue_contributions - rc2.residue_contributions
+    return rc_new
 end
 function +(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
-    return ResidueContributions(rc1.d, rc1.xticks, rc1.residue_contributions + rc2.residue_contributions)
+    rc_new = copy(rc1)
+    @. rc_new.residue_contributions = rc1.residue_contributions + rc2.residue_contributions
+    return rc_new
 end
 function /(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
@@ -208,18 +222,18 @@ function /(rc1::ResidueContributions, rc2::ResidueContributions)
     """
         end _file = nothing _line = nothing
     end
-    return ResidueContributions(
-        rc1.d,
-        rc1.xticks,
-        @. ifelse(rc2.residue_contributions == 0, 0.0, rc1.residue_contributions ./ rc2.residue_contributions)
-    )
-
+    rc_new = copy(rc1)
+    @. rc_new.residue_contributions = ifelse(rc2.residue_contributions == 0, 0.0, rc1.residue_contributions / rc2.residue_contributions)
+    return rc_new
 end
 function *(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
-    return ResidueContributions(rc1.d, rc1.xticks, rc1.residue_contributions .* rc2.residue_contributions)
+    rc_new = copy(rc1)
+    @. rc_new.residue_contributions = rc1.residue_contributions * rc2.residue_contributions
+    return rc_new
 end
 
+# Arithmetic operations with scalars
 function *(rc::ResidueContributions, x::Real)  
     rc2 = copy(rc)
     rc2.residue_contributions .*= x
@@ -294,7 +308,7 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
     end
     print(io,"         ")
     for i in 1:rstride*8:length(rc.xticks[1])
-        tick = "$(PDBTools.oneletter(rc.xticks[2][i][1:3]))$(rc.xticks[2][i][4:end])"
+        tick = "$(PDBTools.oneletter(rc.xticks[2][i][1:3]))$(rc.resnums[i])"
         tick *= repeat(" ", 8 - length(tick))
         print(io,tick)
     end
@@ -341,6 +355,7 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     rc = ResidueContributions(result, select(atoms, "protein"))
     @test length(rc.d) == 101
     @test length.(rc.xticks) == (104, 104)
+    @test rc.resnums == 1:104
     @test size(rc.residue_contributions) == (101, 104)
     rc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0)
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1"))) ≈ rc.residue_contributions[:, 1]
@@ -359,8 +374,10 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     # indexing
     rc = ResidueContributions(result, select(atoms, "protein"))
     rc1 = rc[1]
+    @test rc1.resnums == [1]
     @test rc1 == ResidueContributions(result, select(atoms, "protein and resnum 1"))
     rc2 = rc[2:10]
+    @test rc2.resnums == 2:10
     @test rc2 == ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"))
 
     # empty plot (just test if the show function does not throw an error)

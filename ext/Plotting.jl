@@ -76,8 +76,6 @@ function Plots.contourf(
     kargs...
 )
 
-    residue_numbers = [parse(Int, label[findlast(!isdigit, label)+1:end]) for label in rc.xticks[2]]
-
     # Plot a contour courves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
     tick_range = 1:step:length(rc.xticks[1])
@@ -85,7 +83,7 @@ function Plots.contourf(
     tick_labels = rc.xticks[2][tick_range]
     xticks = if oneletter
         for i in eachindex(tick_labels)
-            tick_labels[i] = PDBTools.oneletter(tick_labels[i][1:3]) * tick_labels[i][4:end]
+            tick_labels[i] = PDBTools.oneletter(tick_labels[i][1:3]) * "$(rc.resnums[i])"
         end
         (tick_marks, tick_labels)
     else
@@ -100,7 +98,7 @@ function Plots.contourf(
 
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(
-        residue_numbers,
+        rc.resnums,
         rc.d, rc.residue_contributions;
         color=Plots.cgrad(colorscale),
         linewidth=1,
