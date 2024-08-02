@@ -101,8 +101,9 @@ From differences in KB integrals among cosolvents, the Preferential Solvation pa
 
 In particular, the plot shows that besides being preferentially excluded from the protein surface at high concentrations in the native state, suggesting protein folding stabilization, the interactions with the protein in the denatured states are stronger, leading to denaturation at all concentrations. 
 
-
 ## References
+
+Please cite the following articles if the package was useful to you:
 
 * L. Martínez, **ComplexMixtures.jl: Investigating the structure of solutions of complex-shaped molecules from a solvent-shell perspective.** *J. Mol. Liq.* 347, 117945, 2022. [[Full Text]](https://doi.org/10.1016/j.molliq.2021.117945)
 
@@ -115,6 +116,9 @@ In particular, the plot shows that besides being preferentially excluded from th
 * Presentation about ComplexMixtures.jl and protein-solvent interactions: [https://youtu.be/umSRjsITzyA](https://youtu.be/umSRjsITzyA)
 
 ### Applications
+
+* V. Piccoli, L. Martínez, **Competitive Effects of Anions on Protein Solvation by Aqueous Ionic Liquids.** 
+  *J. Phys. Chem. B* [[Full Text]](https://pubs.acs.org/doi/10.1021/acs.jpcb.4c03735)
 
 * A. F. Pereira, L. Martínez, **Helical Content Correlations and Hydration Structures of the Folding Ensemble of the B Domain of Protein A.**
   *J. Chem. Inf. Model.* 64, 3350-3359, 2024. [[Full Text]](https://doi.org/10.1021/acs.jcim.3c01822)
