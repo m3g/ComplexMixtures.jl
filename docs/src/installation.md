@@ -26,7 +26,7 @@ Within Julia, to install the packages required for running the examples here you
 ```julia-repl
 julia> import Pkg
 
-julia> Pkg.add(["ComplexMixtures", "PBTools", "Plots", "EasyFit", "LaTeXStrings"])
+julia> Pkg.add(["ComplexMixtures", "PDBTools", "Plots", "EasyFit", "LaTeXStrings"])
 ```
 
 Here, [PDBTools.jl](https://m3g.github.io/PDBTools.jl) is an auxiliary package to read PDB files and select atoms within them.

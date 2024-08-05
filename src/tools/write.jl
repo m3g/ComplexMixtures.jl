@@ -29,7 +29,7 @@ function Base.write(
     #
 
     # Conversion factor for volumes (as KB integrals), from A^2 to cm^3/mol
-    mole = 5.022140857e23
+    mole = 6.022140857e23
     convert = mole / 0.e24
 
     open(filename, "w") do output
