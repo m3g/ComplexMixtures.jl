@@ -108,7 +108,10 @@ plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol")
     If the coordinates are not in Å, the calculation will 
     proceed normally, but the units of the KB integrals, which has units
     of volume per mol, should be
-    converted to conform the length unit provided. 
+    converted to conform the length unit provided. Note that all coordinates
+    that are read automatically here (by the Chemfiles) library will be 
+    in Angstroms, independently on the software used to generate the
+    trajectories. 
 
 ## Coordination number and other data
 
