@@ -89,7 +89,12 @@ like:
 Thus, this plot was obtained with the following code:
 ```julia
 using Plots
-plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol") 
+plot(
+    results.d, 
+    results.kb / 1000, # convert to L / mol
+    xlabel="d/A",
+    ylabel="mddf(d) / L/mol"
+) 
 ```
 
 ## Units
@@ -111,7 +116,7 @@ plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol")
     converted to conform the length unit provided. Note that all coordinates
     that are supported by default (and are thus read by the Chemfiles library) will be 
     in Å, independently on the software used to generate the
-    trajectories, as described here [http://chemfiles.org/chemfiles/latest/overview.html#units]. 
+    trajectories, as described [here](http://chemfiles.org/chemfiles/latest/overview.html#units). 
 
 ## Coordination number and other data
 
