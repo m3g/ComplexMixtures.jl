@@ -109,9 +109,9 @@ plot(results.d,results.kb,xlabel="d/A",ylabel="mddf(d) / L/mol")
     proceed normally, but the units of the KB integrals, which has units
     of volume per mol, should be
     converted to conform the length unit provided. Note that all coordinates
-    that are read automatically here (by the Chemfiles) library will be 
-    in Angstroms, independently on the software used to generate the
-    trajectories. 
+    that are supported by default (and are thus read by the Chemfiles library) will be 
+    in Å, independently on the software used to generate the
+    trajectories, as described here [http://chemfiles.org/chemfiles/latest/overview.html#units]. 
 
 ## Coordination number and other data
 
