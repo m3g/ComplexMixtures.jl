@@ -200,33 +200,43 @@ end
 
 @testitem "write" begin
     using DelimitedFiles
-    using ComplexMixtures: load, write
+    using ComplexMixtures
+    using PDBTools
     using ComplexMixtures.Testing: data_dir
-    r = load("$data_dir/NAMD/protein_tmao.json")
-    tmpfile = tempname()
-    out1, out2, out3 = write(r, tmpfile)
-    r_read = readdlm(out1, comments=true, comment_char='#')
-    # Main output file
-    @test r.d ≈ r_read[:,1]
-    @test r.mddf ≈ r_read[:,2]
-    @test r.kb ≈ r_read[:,3] rtol = 1e-5
-    @test r.md_count ≈ r_read[:,4] 
-    @test r.md_count_random ≈ r_read[:,5] rtol = 1e-5
-    @test r.coordination_number ≈ r_read[:,6] rtol = 1e-5
-    @test r.coordination_number_random ≈ r_read[:,7] rtol = 1e-5
-    @test r.volume.shell ≈ r_read[:,8] rtol = 1e-5
-    # Solute contributions
-    r_read = readdlm(out2, comments=true, comment_char='#')
-    @test r.d ≈ r_read[:,1]
-    @test r.mddf ≈ r_read[:,2] 
-    for i in eachindex(r.solute.group_names)
-        @test contributions(r, SoluteGroup([i])) ≈ r_read[:,i+2] rtol = 1e-5
-    end
-    # Solvent contributions
-    r_read = readdlm(out3, comments=true, comment_char='#')
-    @test r.d ≈ r_read[:,1]
-    @test r.mddf ≈ r_read[:,2] 
-    for (i, name) in enumerate(atom_group_names(r.solvent))
-        @test contributions(r, SolventGroup([name])) ≈ r_read[:,i+2] rtol = 1e-5
+    atoms = readPDB("$data_dir/NAMD/structure.pdb")
+    # Using or not bulk-range
+    options1 = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true, bulk_range=(8.0, 10.0))
+    options2 = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true, dbulk=8.0, usecutoff=false)
+    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao, chemfiles = true)
+    for options in (options1, options2)
+        r = mddf(traj, options)
+        tmpfile = tempname()*".dat"
+        out1, out2, out3 = write(r, tmpfile)
+        r_read = readdlm(out1, comments=true, comment_char='#')
+        # Main output file
+        @test r.d ≈ r_read[:,1]
+        @test r.mddf ≈ r_read[:,2]
+        @test r.kb ≈ r_read[:,3] rtol = 1e-5
+        @test r.md_count ≈ r_read[:,4] 
+        @test r.md_count_random ≈ r_read[:,5] rtol = 1e-5
+        @test r.coordination_number ≈ r_read[:,6] rtol = 1e-5
+        @test r.coordination_number_random ≈ r_read[:,7] rtol = 1e-5
+        @test r.volume.shell ≈ r_read[:,8] rtol = 1e-5
+        # Solute contributions
+        r_read = readdlm(out2, comments=true, comment_char='#')
+        @test r.d ≈ r_read[:,1]
+        @test r.mddf ≈ r_read[:,2] 
+        for i in eachindex(r.solute.group_names)
+            @test contributions(r, SoluteGroup([i])) ≈ r_read[:,i+2] rtol = 1e-5
+        end
+        # Solvent contributions
+        r_read = readdlm(out3, comments=true, comment_char='#')
+        @test r.d ≈ r_read[:,1]
+        @test r.mddf ≈ r_read[:,2] 
+        for (i, name) in enumerate(atom_group_names(r.solvent))
+            @test contributions(r, SolventGroup([name])) ≈ r_read[:,i+2] rtol = 1e-5
+        end
     end
 end
