@@ -51,8 +51,8 @@ function Base.write(
         println(output, @sprintf("#"))
         if R.files[1].options.usecutoff
             ibulk = setbin(R.files[1].options.dbulk, R.files[1].options.binstep)
-            bulkerror = Statistics.mean(R.mddf[ibulk:R.nbins])
-            sdbulkerror = Statistics.std(R.mddf[ibulk:R.nbins])
+            bulkerror = mean(R.mddf[ibulk:R.nbins])
+            sdbulkerror = std(R.mddf[ibulk:R.nbins])
             println(output, "#")
             println(output, "# Using cutoff distance: $(R.cutoff)")
             println(output, @sprintf("# Average and standard deviation of bulk-gmd: %11.5f +/- %12.5f", bulkerror, sdbulkerror))
