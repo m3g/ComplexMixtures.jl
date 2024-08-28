@@ -83,7 +83,11 @@ function Plots.contourf(
     tick_labels = rc.xticks[2][tick_range]
     xticks = if oneletter
         for i in eachindex(tick_labels)
-            tick_labels[i] = PDBTools.oneletter(tick_labels[i][1:3]) * "$(rc.resnums[i])"
+            resnum = "$(rc.resnums[i])"
+            # The following will allow custom residue names to be identified
+            # in the tick label string, by removing the residue number
+            residue_name = string(strip(tick_labels[i][1:(first(findlast(resnum, tick_labels[i]))-1)]))
+            tick_labels[i] = PDBTools.oneletter(residue_name) * resnum
         end
         (tick_marks, tick_labels)
     else
