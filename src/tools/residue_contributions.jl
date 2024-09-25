@@ -177,27 +177,27 @@ function _check_identity_of_residues(rc1::ResidueContributions, rc2::ResidueCont
 end
 
 import Base: ==
-==(rc1::ResidueContributions, rc2::ResidueContributions) = 
+==(rc1::ResidueContributions, rc2::ResidueContributions) =
     rc1.d == rc2.d && rc1.xticks == rc2.xticks && rc1.resnums == rc2.resnums &&
     rc1.residue_contributions == rc2.residue_contributions
 
 function Base.copy(rc::ResidueContributions)
     return ResidueContributions(
-        copy(rc.d), 
+        copy(rc.d),
         copy(rc.residue_contributions),
         copy(rc.resnums),
-        (copy(rc.xticks[1]), copy(rc.xticks[2])), 
+        (copy(rc.xticks[1]), copy(rc.xticks[2])),
     )
 end
-function Base.getindex(rc::ResidueContributions, r::AbstractRange) 
+function Base.getindex(rc::ResidueContributions, r::AbstractRange)
     return ResidueContributions(
-        rc.d, 
-        rc.residue_contributions[:,r],
+        rc.d,
+        rc.residue_contributions[:, r],
         rc.resnums[r],
-        (rc.xticks[1][r], rc.xticks[2][r]), 
+        (rc.xticks[1][r], rc.xticks[2][r]),
     )
 end
-Base.getindex(rc::ResidueContributions, i) = rc[i:i] 
+Base.getindex(rc::ResidueContributions, i) = rc[i:i]
 
 import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
@@ -217,9 +217,9 @@ function /(rc1::ResidueContributions, rc2::ResidueContributions)
     if any(==(0), rc2.residue_contributions)
         @warn begin
             """\n
-        Division by zero detected. These elements will be set to zero."
+        Division by zero detected. These elements will be set to zero.
 
-    """
+            """
         end _file = nothing _line = nothing
     end
     rc_new = copy(rc1)
@@ -234,17 +234,17 @@ function *(rc1::ResidueContributions, rc2::ResidueContributions)
 end
 
 # Arithmetic operations with scalars
-function *(rc::ResidueContributions, x::Real)  
+function *(rc::ResidueContributions, x::Real)
     rc2 = copy(rc)
     rc2.residue_contributions .*= x
     return rc2
 end
 *(x::Real, rc::ResidueContributions) = rc * x
-/(rc::ResidueContributions, x::Real) = rc * inv(x)  
+/(rc::ResidueContributions, x::Real) = rc * inv(x)
 
 const _colorscales = Dict{Symbol,Vector{Int}}(
-    :tempo => [231, 194, 157, 120, 083, 046, 040, 034, 028, 022 ],
-    :bwr => [017, 018, 019, 020, 021, 063, 105, 147, 189, 231, 224, 217, 210, 203, 196, 160, 124, 088, 052 ],
+    :tempo => [231, 194, 157, 120, 083, 046, 040, 034, 028, 022],
+    :bwr => [017, 018, 019, 020, 021, 063, 105, 147, 189, 231, 224, 217, 210, 203, 196, 160, 124, 088, 052],
 )
 
 const _testing_show_method = Ref(false)
@@ -284,7 +284,7 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
     ncolors = length(colors)
     dstride = max(1, size(m, 1) ÷ 9 + 1)
     rstride = max(1, size(m, 2) ÷ 79 + 1)
-    print(io,"")
+    print(io, "")
     xlabel = false
     crange = clims[2] - clims[1]
     for d in size(m, 1):-dstride:1
@@ -298,7 +298,7 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
         for res in 1:rstride:size(m, 2)
             cval = rc.residue_contributions[d, res]
             if _testing_show_method[]
-                print(io, cval > 0.05*clims[2] ? "█" : " ")
+                print(io, cval > 0.05 * clims[2] ? "█" : " ")
             else
                 cbin = colors[round(Int, 1 + (ncolors - 1) * (cval - clims[1]) / crange)]
                 printstyled(io, "█", color=cbin)
@@ -306,13 +306,13 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
         end
         println(io)
     end
-    print(io,"         ")
+    print(io, "         ")
     for i in 1:rstride*8:length(rc.xticks[1])
         tick = "$(PDBTools.oneletter(rc.xticks[2][i][1:3]))$(rc.resnums[i])"
         tick *= repeat(" ", 8 - length(tick))
-        print(io,tick)
+        print(io, tick)
     end
-    println(io)    
+    println(io)
 end
 
 function _custom_group_error_for_ResidueContributions()
@@ -394,7 +394,7 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     rdiv = rc / rc
     @test all(x -> isapprox(x, 1.0), filter(>(0.0), rdiv.residue_contributions))
     @test all(<(1.e-10), filter(<(0.5), rdiv.residue_contributions))
-    rmul = rc * rc 
+    rmul = rc * rc
     @test rmul.residue_contributions ≈ rc.residue_contributions .^ 2
     rc2 = 2 * rc
     @test rc2.residue_contributions == 2 .* rc.residue_contributions
