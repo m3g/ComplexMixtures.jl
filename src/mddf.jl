@@ -206,7 +206,7 @@ function mddf(
         title(R, trajectory.solute, trajectory.solvent, nthreads)
         if low_memory 
             println("Running with low-memory option:")
-            println("  - Parallel CellListMap will be used.")
+            println("  - Parallel CellListMap can be used.")
             println("  - Number of parallel minimum-distance computations: $nchunks")
             println("  - Each minimum-distance computation will use $(nbatches_cl[2]) threads.")
         end
