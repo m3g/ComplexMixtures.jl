@@ -11,7 +11,7 @@ PrecompileTools.@setup_workload begin
         solvent = AtomSelection(tmao, natomspermol = 14)
         traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
         R = mddf(traj, options)
-        rc = ResidueContributions(R, prot)
+        rc = ResidueContributions(R, prot; silent=true)
         traj = Trajectory("$dir/trajectory.dcd", solvent)
         R = mddf(traj, options)
     end

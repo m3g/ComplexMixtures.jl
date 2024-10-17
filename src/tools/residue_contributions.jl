@@ -137,7 +137,7 @@ function ResidueContributions(
     # Each column is then filled up with the contributions of each residue
     silent || (p = Progress(length(residues); dt=1))
     Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=Threads.nthreads()))
-        _warn_zero_md_count = ichunk == 1 ? true : false
+        _warn_zero_md_count = ichunk == 1 ? (!silent) : false
         for ires in residue_inds
             rescontrib[:, ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count)
             _warn_zero_md_count = false
