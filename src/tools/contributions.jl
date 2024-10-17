@@ -49,6 +49,10 @@ function contributions(
     _warn_zero_md_count = true,
 )
 
+    if !(type in (:mddf, :coordination_number, :md_count))
+        throw(ArgumentError("type must be :mddf (default), :coordination_number, or :md_count"))
+    end
+
     if _warn_zero_md_count && type == :mddf && all(==(0), R.md_count_random)
         @warn begin """\n
             This is probably a `coordination_number` calculation only. 
@@ -58,7 +62,6 @@ function contributions(
         """
         end _file=nothing _line=nothing
     end
-
 
     if group isa SoluteGroup
         atsel = R.solute
@@ -179,8 +182,6 @@ function contributions(
         sel_count .= cumsum(sel_count)
     elseif type == :md_count
         # do nothing, already md_count
-    else
-        throw(ArgumentError("type must be :mddf (default), :coordination_number, or :md_count"))
     end
 
     return sel_count
