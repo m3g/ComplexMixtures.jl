@@ -144,21 +144,11 @@ function ResidueContributions(
     # number of columns equal to the number of residues
     rescontrib = zeros(length(results.d), length(residues))
 
-
-    @show sum(sum.(results.solute_group_count))
-    @show length(residues)
-    @show residues[485]
-    @show sum(contributions(results, SoluteGroup(residues[485]); type))
-
     # Each column is then filled up with the contributions of each residue
     silent || (p = Progress(length(residues); dt=1))
     Threads.@threads for ires in eachindex(residues)
         residue = residues[ires]
         rescontrib[:, ires] .= contributions(results, SoluteGroup(residue); type)
-        if ires == 485
-            @show PDBTools.index.(residue)
-            @show sum(rescontrib[:, ires])
-        end
         silent || next!(p)
     end
 
