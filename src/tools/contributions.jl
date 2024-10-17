@@ -46,7 +46,20 @@ function contributions(
     R::Result, 
     group::Union{SoluteGroup,SolventGroup};
     type = :mddf, 
+    _warn_zero_md_count = true,
 )
+
+    if _warn_zero_md_count && type == :mddf && all(==(0), R.md_count_random)
+        @warn begin """\n
+            This is probably a `coordination_number` calculation only. 
+            
+            To compute the contributions to coordination numbers, use `type=:coordination_number`.
+
+        """
+        end _file=nothing _line=nothing
+    end
+
+
     if group isa SoluteGroup
         atsel = R.solute
         group_count = R.solute_group_count
@@ -181,7 +194,7 @@ function warning_nmols_types()
 end
 
 @testitem "contributions" begin
-    using ComplexMixtures: AtomSelection, contributions, Trajectory, mddf, SoluteGroup, SolventGroup
+    using ComplexMixtures
     using PDBTools: select, readPDB, Select
     using ComplexMixtures.Testing: data_dir
     atoms = readPDB("$data_dir/PDB/trajectory.pdb", "model 1")
@@ -221,6 +234,9 @@ end
     results = mddf(traj)
     @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
     @test_throws ArgumentError contributions(results, SoluteGroup([50000]))
+
+    # Contributions to coordination-number only
+    results = coordination_number(traj)
 
 end
 

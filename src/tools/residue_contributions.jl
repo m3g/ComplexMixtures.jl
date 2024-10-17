@@ -124,16 +124,6 @@ function ResidueContributions(
     if results.solute.custom_groups
         _custom_group_error_for_ResidueContributions()
     end
-    if type == :mddf && all(==(0), results.mddf)
-        @warn begin
-            """\n
-                All mddf values are zero. The residue contributions will be zero.
-                Probably this is a `coordination_number` calculation only. To compute
-                the contributions to coordination numbers, use `type=:coordination_number`.
-
-            """
-        end _file=nothing _line=nothing
-    end
 
     # collect the list of residues (using PDBTools)
     residues = collect(PDBTools.eachresidue(atoms))
@@ -146,9 +136,12 @@ function ResidueContributions(
 
     # Each column is then filled up with the contributions of each residue
     silent || (p = Progress(length(residues); dt=1))
-    Threads.@threads for ires in eachindex(residues)
-        residue = residues[ires]
-        rescontrib[:, ires] .= contributions(results, SoluteGroup(residue); type)
+    Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=Threads.nthreads()))
+        _warn_zero_md_count = ichunk == 1 ? true : false
+        for ires in residue_inds
+            rescontrib[:, ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count)
+            _warn_zero_md_count = false
+        end
         silent || next!(p)
     end
 
