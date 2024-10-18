@@ -126,6 +126,7 @@ function ResidueContributions(
     dmin=1.5, dmax=3.5,
     type=:mddf,
     silent=false,
+    nthreads=Threads.nthreads(),
 )
 
     if length(atoms) == 0
@@ -148,13 +149,13 @@ function ResidueContributions(
 
     # Each column is then filled up with the contributions of each residue
     silent || (p = Progress(length(residues); dt=1))
-    Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=Threads.nthreads()))
+    Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=nthreads))
         _warn_zero_md_count = ichunk == 1 ? (!silent) : false
         for ires in residue_inds
             rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count)
             _warn_zero_md_count = false
+            silent || next!(p)
         end
-        silent || next!(p)
     end
 
     # Plot only for distances within 1.5 and 3.5:
@@ -349,7 +350,8 @@ end
 function _custom_group_error_for_ResidueContributions()
     throw(ArgumentError("""\n
 
-        ResidueContribution cannot be run if the MDDFs were computed with custom groups.
+        ResidueContribution cannot be run if the MDDFs were computed with custom groups,
+        and neither with with `SoluteGroup` or `SolventGroup` objects as arguments. 
 
         This is because it requires the contribution of each independent atom to accumulate
         the residue contributions. The second argument of the function must be the vector of 
