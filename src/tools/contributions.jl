@@ -95,7 +95,7 @@ function contributions(
     if !isnothing(group.group_index)
         igroup = group.group_index
         if igroup > length(group_count)
-            throw(ArgumentError("Group $igroup not found in the group contribution count array."))
+            throw(ArgumentError("Group $igroup greater than number of groups ($(length(group_count))) of group contribution array."))
         end
         sel_count .= group_count[igroup]
     end
@@ -104,7 +104,7 @@ function contributions(
     if !isnothing(group.group_name)
         igroup = findfirst(==(group.group_name), atsel.group_names)
         if isnothing(igroup) || igroup > length(group_count)
-            throw(ArgumentError("Group $igroup not found in the group contribution count array."))
+            throw(ArgumentError("Group '$(group.group_name)' not found in the group contribution count array."))
         end
         sel_count .= group_count[igroup]
     end
@@ -117,7 +117,7 @@ function contributions(
     # Given atom inidices, sum over the contributions of the atoms
     if !isnothing(group.atom_indices) 
         if isempty(group.atom_indices)
-            throw(ArgumentError("Group selection is empty"))
+            throw(ArgumentError("Group selection by group indices is empty"))
         end
         # Check consistency of input indexes
         for i in group.atom_indices
@@ -147,12 +147,12 @@ function contributions(
     # Given atom names, sum over the contributions of the atoms
     if !isnothing(group.atom_names) 
         if isempty(group.atom_names)
-            throw(ArgumentError("Group selection is empty"))
+            throw(ArgumentError("Group selection by group names is empty"))
         end
         # Check consistency of input names
         for name in group.atom_names
             if all(!=(name), atsel.group_names)
-                throw(ArgumentError("Atom (group) name $name not found in group name data."))
+                throw(ArgumentError("Atom (or group) name $name not found in group name data."))
             end
         end
         # Now run over the names, and sum the contributions. If the selection of
@@ -225,6 +225,11 @@ end
     @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
     @test_throws ArgumentError contributions(results, SolventGroup(1))
     @test_throws ArgumentError contributions(results, SolventGroup([5000]))
+    @test_throws ArgumentError contributions(results, SoluteGroup("NOT_FOUND"))
+    @test_throws ArgumentError contributions(results, SoluteGroup(1000))
+    @test_throws ArgumentError contributions(results, SolventGroup(Int[]))
+    @test_throws ArgumentError contributions(results, SolventGroup(String[]))
+    @test_throws ArgumentError contributions(results, SolventGroup(["NOT_FOUND"]))
 
     solute = AtomSelection(protein, nmols = 1)
     traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format = "PDBTraj")
