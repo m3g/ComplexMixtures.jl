@@ -543,4 +543,22 @@ end
     result = mddf(traj, Options(lastframe=2))
     @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein"))
 
+    # Solute with more than one molecule
+    glicines = select(atoms, "protein and resname GLY")
+    solute = AtomSelection(glicines; natomspermol=7)
+    water = AtomSelection(select(atoms, "water"), natomspermol=3)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", solute, water)
+    options = Options(;
+        seed=1,
+        stride=1,
+        StableRNG=true,
+        nthreads=2,
+        silent=true
+    )
+    result = mddf(traj, options)
+    @test_throws ArgumentError ResidueContributions(result, solute; _unsafe_types_from_indices=true)
+    rc = ResidueContributions(result, glicines)
+    # This might actually be changed in the future, depending on what one wants. Maybe just throw an error.
+    @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions)) 
+
 end
