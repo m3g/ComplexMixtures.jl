@@ -103,7 +103,7 @@ function Plots.contourf(
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(
         rc.resnums,
-        rc.d, rc.residue_contributions;
+        rc.d, hcat(rc.residue_contributions...);
         color=Plots.cgrad(colorscale),
         linewidth=1,
         linecolor=:black,
