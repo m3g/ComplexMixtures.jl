@@ -102,9 +102,10 @@ contourf(rc_diff) # plots a contour map of the difference
     Slicing, indexing, and multiplication and divison by scalars were introduces in v2.7.0.
 
 """
-struct ResidueContributions
+@kwdef struct ResidueContributions
+    Version::VersionNumber = pkgversion(@__MODULE__)
     d::Vector{Float64}
-    residue_contributions::Matrix{Float64}
+    residue_contributions::Vector{Vector{Float64}}
     resnums::Vector{Int}
     xticks::Tuple{Vector{Int},Vector{String}}
 end
@@ -132,14 +133,14 @@ function ResidueContributions(
     # residue as a function of the distance:
     # number of rows of the mddf histogram is (length(results.d)) and 
     # number of columns equal to the number of residues
-    rescontrib = zeros(length(results.d), length(residues))
+    rescontrib = [ zeros(length(results.d)) for _ in 1:length(residues) ]
 
     # Each column is then filled up with the contributions of each residue
     silent || (p = Progress(length(residues); dt=1))
     Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=Threads.nthreads()))
         _warn_zero_md_count = ichunk == 1 ? (!silent) : false
         for ires in residue_inds
-            rescontrib[:, ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count)
+            rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count)
             _warn_zero_md_count = false
         end
         silent || next!(p)
@@ -161,11 +162,11 @@ function ResidueContributions(
         serial=false,
     )
 
-    return ResidueContributions(
-        results.d[idmin:idmax],
-        rescontrib[idmin:idmax, 1:length(residues)],
-        resnums,
-        xticks,
+    return ResidueContributions(;
+        d=results.d[idmin:idmax],
+        residue_contributions=[ rc[idmin:idmax] for rc in rescontrib ], 
+        resnums=resnums,
+        xticks=xticks,
     )
 end
 
@@ -186,18 +187,18 @@ import Base: ==
 
 function Base.copy(rc::ResidueContributions)
     return ResidueContributions(
-        copy(rc.d),
-        copy(rc.residue_contributions),
-        copy(rc.resnums),
-        (copy(rc.xticks[1]), copy(rc.xticks[2])),
+        d=copy(rc.d),
+        residue_contributions=[copy(v) for v in rc.residue_contributions],
+        resnums=copy(rc.resnums),
+        xticks=(copy(rc.xticks[1]), copy(rc.xticks[2])),
     )
 end
 function Base.getindex(rc::ResidueContributions, r::AbstractRange)
     return ResidueContributions(
-        rc.d,
-        rc.residue_contributions[:, r],
-        rc.resnums[r],
-        (rc.xticks[1][r], rc.xticks[2][r]),
+        d=rc.d,
+        residue_contributions=[rc.residue_contributions[i] for i in r],
+        resnums=rc.resnums[r],
+        xticks=(rc.xticks[1][r], rc.xticks[2][r]),
     )
 end
 Base.getindex(rc::ResidueContributions, i) = rc[i:i]
@@ -206,13 +207,17 @@ import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
     rc_new = copy(rc1)
-    @. rc_new.residue_contributions = rc1.residue_contributions - rc2.residue_contributions
+    for i in eachindex(rc_new.residue_contributions)
+        @. rc_new.residue_contributions[i] = rc1.residue_contributions[i] - rc2.residue_contributions[i]
+    end
     return rc_new
 end
 function +(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
     rc_new = copy(rc1)
-    @. rc_new.residue_contributions = rc1.residue_contributions + rc2.residue_contributions
+    for i in eachindex(rc_new.residue_contributions)
+        @. rc_new.residue_contributions[i] = rc1.residue_contributions[i] + rc2.residue_contributions[i]
+    end
     return rc_new
 end
 function /(rc1::ResidueContributions, rc2::ResidueContributions)
@@ -220,26 +225,32 @@ function /(rc1::ResidueContributions, rc2::ResidueContributions)
     if any(==(0), rc2.residue_contributions)
         @warn begin
             """\n
-        Division by zero detected. These elements will be set to zero.
+            Division by zero detected. These elements will be set to zero.
 
             """
         end _file = nothing _line = nothing
     end
     rc_new = copy(rc1)
-    @. rc_new.residue_contributions = ifelse(rc2.residue_contributions == 0, 0.0, rc1.residue_contributions / rc2.residue_contributions)
+    for i in eachindex(rc_new.residue_contributions)
+        @. rc_new.residue_contributions[i] = ifelse(rc2.residue_contributions[i] == 0, 0.0, rc1.residue_contributions[i] / rc2.residue_contributions[i])
+    end
     return rc_new
 end
 function *(rc1::ResidueContributions, rc2::ResidueContributions)
     _check_identity_of_residues(rc1, rc2)
     rc_new = copy(rc1)
-    @. rc_new.residue_contributions = rc1.residue_contributions * rc2.residue_contributions
+    for i in eachindex(rc_new.residue_contributions)
+        @. rc_new.residue_contributions[i] = rc1.residue_contributions[i] * rc2.residue_contributions[i]
+    end
     return rc_new
 end
 
 # Arithmetic operations with scalars
 function *(rc::ResidueContributions, x::Real)
     rc2 = copy(rc)
-    rc2.residue_contributions .*= x
+    for v in rc2.residue_contributions
+        v .*= x
+    end
     return rc2
 end
 *(x::Real, rc::ResidueContributions) = rc * x
@@ -254,7 +265,13 @@ const _testing_show_method = Ref(false)
 
 function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, colorscale=nothing)
     if isnothing(clims)
-        minval, maxval = extrema(rc.residue_contributions)
+        minval = +Inf
+        maxval = -Inf
+        for v in rc.residue_contributions
+            mi, ma = extrema(v)
+            minval = min(minval, mi)
+            maxval = max(maxval, ma)
+        end
         if minval == maxval
             maxval = minval + 1.0
         end
@@ -285,12 +302,12 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
     clims, colorscale = _set_clims_and_colorscale!(rc)
     colors = _colorscales[colorscale]
     ncolors = length(colors)
-    dstride = max(1, size(m, 1) ÷ 9 + 1)
-    rstride = max(1, size(m, 2) ÷ 79 + 1)
+    dstride = max(1, length(rc.d) ÷ 9 + 1)
+    rstride = max(1, length(m) ÷ 79 + 1)
     print(io, "")
     xlabel = false
     crange = clims[2] - clims[1]
-    for d in size(m, 1):-dstride:1
+    for d in length(rc.d):-dstride:1
         print(io, if !xlabel && d < (size(m, 1) + dstride) ÷ 2
             xlabel = true
             " d  "
@@ -298,8 +315,8 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
             "    "
         end)
         print(io, @sprintf("%5.2f ", rc.d[d]))
-        for res in 1:rstride:size(m, 2)
-            cval = rc.residue_contributions[d, res]
+        for res in 1:rstride:length(m)
+            cval = m[res][d]
             if _testing_show_method[]
                 print(io, cval > 0.05 * clims[2] ? "█" : " ")
             else
@@ -336,6 +353,44 @@ end
 ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs...) =
     _custom_group_error_for_ResidueContributions()
 
+"""
+    save(filename::String, rc::ResidueContributions)
+
+Save the `ResidueContributions` object to a JSON file.
+
+"""
+function save(filename::String, rc::ResidueContributions)
+    filename = expanduser(filename)
+    open(filename, "w") do f
+        JSON3.write(f, rc)
+    end
+    return "ResidueContributions saved in JSON file: $filename"
+end
+
+"""
+    load(filename::String, ResidueContributions)
+
+Function to load the residue contributions saved into a JSON file into the `ResidueContributions` data structure.
+
+## Example
+
+```julia
+using ComplexMixtures
+rc = ResidueContributions(resutls, SoluteGroup(protein))
+save("residue_contributions.json", rc)
+rc = load("residue_contributions.json", ResidueContributions)
+```
+
+"""
+function load(filename::String, ::Type{ResidueContributions})
+    filename = expanduser(filename)
+    _check_version(filename)
+    rc = open(filename, "r") do io
+        JSON3.read(io, ResidueContributions)
+    end
+    return rc
+end
+
 @testitem "ResidueContribution" begin
     using ComplexMixtures
     using PDBTools
@@ -359,20 +414,36 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     @test length(rc.d) == 101
     @test length.(rc.xticks) == (104, 104)
     @test rc.resnums == 1:104
-    @test size(rc.residue_contributions) == (101, 104)
+    @test all(length(v) == 101 for v in rc.residue_contributions)
+    @test length(rc.residue_contributions) == 104
     rc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0)
-    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1"))) ≈ rc.residue_contributions[:, 1]
-    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 104"))) ≈ rc.residue_contributions[:, 104]
+    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1"))) ≈ rc.residue_contributions[1]
+    @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 104"))) ≈ rc.residue_contributions[104]
     @test first(rc.d) == first(result.d)
     @test last(rc.d) == last(result.d)
     rcc = ResidueContributions(result, select(atoms, "protein"); dmin=0.0, dmax=10.0, type=:coordination_number)
     @test length(rcc.d) == 500
     @test length.(rcc.xticks) == (104, 104)
-    @test size(rcc.residue_contributions) == (500, 104)
+    @test all(length(v) == 500 for v in rcc.residue_contributions)
+    @test length(rcc.residue_contributions) == 104
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 1")); type=:coordination_number) ≈
-          rcc.residue_contributions[:, 1]
+          rcc.residue_contributions[1]
     @test contributions(result, SoluteGroup(select(atoms, "protein and resnum 104")); type=:coordination_number) ≈
-          rcc.residue_contributions[:, 104]
+          rcc.residue_contributions[104]
+
+    # save and load
+    tmpfile = tempname()*".json"
+    save(tmpfile, rc)
+    rc_load = load(tmpfile, ResidueContributions)
+    @test rc == rc_load
+
+    # version issues
+    rc_future = ResidueContributions(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    save(tmpfile, rc_future)
+    @test_throws ArgumentError load(tmpfile, ResidueContributions)
+    rc_past = ResidueContributions(Version=v"1.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    save(tmpfile, rc_past)
+    @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
     # indexing
     rc = ResidueContributions(result, select(atoms, "protein"))
@@ -385,26 +456,28 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
-    rc2.residue_contributions .= 0.0
+    for v in rc2.residue_contributions
+        v .= 0.0
+    end
     @test show(IOBuffer(), MIME"text/plain"(), rc2) === nothing
 
     # arithmetic operations
     rc = ResidueContributions(result, select(atoms, "protein"))
     rcminus = rc - rc
-    @test all(rcminus.residue_contributions .< 1e-10)
+    @test all(sum(rcminus.residue_contributions) .< 1e-10)
     rcplus = rc + rc
-    @test all(rcplus.residue_contributions .≈ 2 .* rc.residue_contributions)
+    @test all((rcplus.residue_contributions[i] ≈ 2 * rc.residue_contributions[i]) for i in 1:length(rc.residue_contributions))
     rdiv = rc / rc
-    @test all(x -> isapprox(x, 1.0), filter(>(0.0), rdiv.residue_contributions))
-    @test all(<(1.e-10), filter(<(0.5), rdiv.residue_contributions))
+    @test all(all(x -> isapprox(x, 1.0), filter(>(0.0), v)) for v in rdiv.residue_contributions)
+    @test all(all(<(1e-10), filter(<(0.0), v)) for v in rdiv.residue_contributions)
     rmul = rc * rc
-    @test rmul.residue_contributions ≈ rc.residue_contributions .^ 2
+    @test all(rmul.residue_contributions[i] ≈ rc.residue_contributions[i] .^ 2 for i in 1:length(rc.residue_contributions))
     rc2 = 2 * rc
-    @test rc2.residue_contributions == 2 .* rc.residue_contributions
+    @test all(rc2.residue_contributions[i] == 2 .* rc.residue_contributions[i] for i in 1:length(rc.residue_contributions))
     rc2 = rc * 2
-    @test rc2.residue_contributions == 2 .* rc.residue_contributions
+    @test all(rc2.residue_contributions[i] == 2 .* rc.residue_contributions[i] for i in 1:length(rc.residue_contributions))
     rc2 = rc / 2
-    @test rc2.residue_contributions == rc.residue_contributions ./ 2
+    @test all(rc2.residue_contributions[i] == rc.residue_contributions[i] ./ 2 for i in 1:length(rc.residue_contributions))
 
     # copy structure
     rc2 = copy(rc)
