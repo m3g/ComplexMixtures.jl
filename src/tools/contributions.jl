@@ -114,7 +114,7 @@ function contributions(
     # If the structure has more than one molecule, than the indices are indices of 
     # the atoms *within* the molecule. 
 
-    # Given atom inidices, sum over the contributions of the atoms
+    # Given atom indices, sum over the contributions of the atoms
     if !isnothing(group.atom_indices) 
         if isempty(group.atom_indices)
             throw(ArgumentError("Group selection by group indices is empty"))
