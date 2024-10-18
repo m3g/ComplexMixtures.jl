@@ -732,13 +732,15 @@ StructTypes.StructType(::Type{TrajectoryFileOptions}) = StructTypes.Struct()
 Function to write the result data structure to a json file.
 
 """
-function save(R::Result, filename::String)
+function save(filename::String, R::Result)
     filename = expanduser(filename)
     open(filename, "w") do f
         JSON3.write(f, R)
     end
     return "Results saved in JSON file: $filename"
 end
+# legacy order
+save(R::Result, filename::String) = save(filename, R)
 
 #
 # This function tries to read a version number from a result.json
@@ -815,6 +817,9 @@ end
     r2 = load(tmp)
     @test r1 == r2
     r2 = load(tmp, Result)
+    @test r1 == r2
+    save(tmp, r1)
+    r2 = load(tmp)
     @test r1 == r2
     # Test throwing an error incompatible versions of ComplexMixtures
     @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_new.json")
