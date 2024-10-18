@@ -471,6 +471,7 @@ end
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
     # Unsafe types from indices
+    rc = ResidueContributions(result, select(atoms, "protein"))
     rc_unsafe = ResidueContributions(result, select(atoms, "protein"); _unsafe_types_from_indices=true)
     @test rc_unsafe == rc
 
@@ -556,7 +557,7 @@ end
         silent=true
     )
     result = mddf(traj, options)
-    @test_throws ArgumentError ResidueContributions(result, solute; _unsafe_types_from_indices=true)
+    @test_throws CompositeException ResidueContributions(result, glicines; _unsafe_types_from_indices=true)
     rc = ResidueContributions(result, glicines)
     # This might actually be changed in the future, depending on what one wants. Maybe just throw an error.
     @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions)) 
