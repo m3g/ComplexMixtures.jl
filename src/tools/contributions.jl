@@ -219,6 +219,7 @@ end
     @test sum(contributions(results, SolventGroup(tmao); type = :md_count)) ≈ 29.4
     @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type = :md_count)) ≈ 29.4
 
+    @test_throws ArgumentError contributions(results, SolventGroup(solvent); type = :wrong_type)
     @test_throws ArgumentError contributions(results, SoluteGroup([1,2,3]))
     @test_throws ArgumentError contributions(results, SoluteGroup(["N", "CA"]))
     @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
