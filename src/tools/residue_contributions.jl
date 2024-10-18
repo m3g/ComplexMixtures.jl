@@ -403,8 +403,15 @@ rc = load("residue_contributions.json", ResidueContributions)
 function load(filename::String, ::Type{ResidueContributions})
     filename = expanduser(filename)
     _check_version(filename)
-    rc = open(filename, "r") do io
-        JSON3.read(io, ResidueContributions)
+    rc = try
+        open(filename, "r") do io
+            JSON3.read(io, ResidueContributions)
+        end
+    catch
+        throw(ArgumentError("""\n
+            The file $filename does not appear to contain a ResidueContributions object.
+
+        """))
     end
     return rc
 end
@@ -454,6 +461,11 @@ end
     save(tmpfile, rc)
     rc_load = load(tmpfile, ResidueContributions)
     @test rc == rc_load
+    tmpfile = tempname()
+    open(tmpfile, "w") do io
+        println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
+    end
+    @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
     # version issues
     rc_future = ResidueContributions(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)

@@ -771,8 +771,15 @@ R = load("results.json", Result)
 function load(filename::String, ::Type{Result}=Result)
     filename = expanduser(filename)
     _check_version(filename)
-    R = open(filename, "r") do io
-        JSON3.read(io, Result)
+    R = try
+        open(filename, "r") do io
+                JSON3.read(io, Result)
+        end
+    catch
+        throw(ArgumentError("""\n 
+            The file $filename does not appear to contain a Result object.
+
+        """))
     end
     return R
 end
@@ -793,6 +800,11 @@ end
     # Test throwing an error incompatible versions of ComplexMixtures
     @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_new.json")
     @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_old.json")
+    tmpfile = tempname()
+    open(tmpfile, "w") do io
+        println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
+    end
+    @test_throws ArgumentError load(tmpfile)
 end
 
 
