@@ -121,8 +121,7 @@ function contributions(
         end
         # Check consistency of input indexes
         for i in group.atom_indices
-            index = findfirst(==(i), atsel.indices)
-            if isnothing(index) 
+            if all(!=(i), atsel.indices)
                 throw(ArgumentError("""\n
                     Atom index $i not found in atom selection. 
                     Indices array: $(print_vector_summary(atsel.indices)).
@@ -139,11 +138,7 @@ function contributions(
         # Now run over the types, and sum the contributions. If the selection of 
         # indices have repeated types, the contributions are then *not* summed. 
         for itype in eachindex(atsel.group_names)
-            iatom = findfirst(
-                iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, 
-                group.atom_indices
-            )
-            if !isnothing(iatom)
+            if any(iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, group.atom_indices)
                 sel_count .+= group_count[itype]
             end
         end
@@ -156,14 +151,14 @@ function contributions(
         end
         # Check consistency of input names
         for name in group.atom_names
-            itype = findfirst(==(name), atsel.group_names)
-            isnothing(itype) && throw(ArgumentError("Atom (group) name $name not found in group name data."))
+            if all(!=(name), atsel.group_names)
+                throw(ArgumentError("Atom (group) name $name not found in group name data."))
+            end
         end
         # Now run over the names, and sum the contributions. If the selection of
         # names have repeated types, the contributions are then *not* summed.
         for (itype, name) in enumerate(atsel.group_names)
-            iatom = findfirst(==(name), group.atom_names)
-            if !isnothing(iatom)
+            if any(==(name), group.atom_names)
                 sel_count .+= group_count[itype]
             end
         end
