@@ -198,7 +198,7 @@ solvent, each type of residue of the protein, etc.
 
 The results can be saved into a file (with JSON format) with:
 ```julia
-save(results, "./results.json")
+save("./results.json", results)
 ```
 And these results can be loaded afterwards with:
 ```julia
@@ -207,7 +207,7 @@ load("./results.json")
 Alternatively, a human-readable set of output files can be obtained to
 be analyzed in other software (or plotted with alternative tools), with
 ```julia
-write(results,"./results.dat")
+write("./results.dat", results)
 ```
 
 

@@ -6,7 +6,7 @@ obtained with ComplexMixtures:
 ## Save data to recover it later 
 
 ```julia
-save(results,"results.json")
+save("results.json", results)
 ```
 where `results` is the output data structure of the `mddf()`
 calculation, and `results.json` is the output file to be created. The
@@ -27,7 +27,7 @@ you can read them with another analysis program, plotting graphic, or
 just want to inspect the data visually, use:
 
 ```julia
-write(results,"results.dat")
+write("results.dat", results)
 ```
 Three files will be created by this function:
 
