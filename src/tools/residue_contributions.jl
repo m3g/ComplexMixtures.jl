@@ -127,7 +127,7 @@ function ResidueContributions(
     type=:mddf,
     silent=false,
     nthreads=Threads.nthreads(),
-    _indices_are_types=false,
+    _unsafe_types_from_indices=false,
 )
 
     if length(atoms) == 0
@@ -153,7 +153,7 @@ function ResidueContributions(
     Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=nthreads))
         _warn_zero_md_count = ichunk == 1 ? (!silent) : false
         for ires in residue_inds
-            rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count, _indices_are_types)
+            rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count, _unsafe_types_from_indices)
             _warn_zero_md_count = false
             silent || next!(p)
         end
