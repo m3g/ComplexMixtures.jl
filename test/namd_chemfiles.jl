@@ -53,7 +53,7 @@
 
     # Example 3: water-water
     # save(R,"$dir/water_water.json")
-    R_save = load("$dir/water_water.json"; legacy_warning = false)
+    R_save = load("$dir/water_water.json")
     water = AtomSelection(select(atoms, "water"), natomspermol = 3)
     traj = Trajectory("$dir/trajectory.dcd", water, water, chemfiles = true)
     R = mddf(traj, options)
