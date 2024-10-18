@@ -247,7 +247,7 @@ Base.write(
         end
     end
     # legacy order of arguments 
-    r = mddf(traj, options)
+    r = mddf(traj, options1)
     tmpfile = tempname()*".dat"
     out1, out2, out3 = write(r, tmpfile)
     r_read = readdlm(out1, comments=true, comment_char='#')
