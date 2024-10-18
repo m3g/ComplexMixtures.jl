@@ -27,7 +27,9 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 
 A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
 using the `Plots.contourf` function, and to perform arithmetic operations with other `ResidueContributions` objects, 
-multiplying or dividing by a scalar, and slicing (see examples below).
+multiplying or dividing by a scalar, and slicing (see examples below). 
+
+A ResidueContributions object can be saved to a JSON file using the `save` function, and loaded back using the `load` function.
 
 # Examples
 
@@ -56,6 +58,11 @@ julia> rc = ResidueContributions(results, select(atoms, "protein"); silent=true)
      1.59
          A1      T33     T66     S98     S130    T162    A194    H226    G258     
 
+
+julia> save("residue_contributions.json", rc)
+"ResidueContributions saved in JSON file: residue_contributions.json"
+
+julia> rc = load("residue_contributions.json", ResidueContributions);
 ```
 
 ## Plotting 
@@ -96,10 +103,14 @@ rc2 = ResidueContributions(result2, select(atoms, "protein"))
 # difference of the residue contributions between the two simulations:
 rc_diff = rc2 - rc1
 contourf(rc_diff) # plots a contour map of the difference
+# multiply and divide by scalars
+rc3 = 3 * rc1
+rc4 = rc2 / 2
 ```
 
 !!! compat
     Slicing, indexing, and multiplication and divison by scalars were introduces in v2.7.0.
+    Saving and loading was introduced in v2.8.0.
 
 """
 @kwdef struct ResidueContributions
