@@ -12,7 +12,7 @@ If they are not defined, the user can pass the names of the groups as strings in
 
 """
 function Base.write(
-    R::Result, filename::String;
+    filename::String, R::Result;
     solute_group_names::Union{Nothing,Vector{String}} = nothing,
     solvent_group_names::Union{Nothing,Vector{String}} = nothing,
 )
@@ -197,6 +197,13 @@ function write_group_contributions(
 
     return group_contributions_output
 end
+ 
+# legacy order
+Base.write(
+    R::Result, filename::String;
+    solute_group_names::Union{Nothing,Vector{String}} = nothing,
+    solvent_group_names::Union{Nothing,Vector{String}} = nothing,
+) = write(filename, R; solute_group_names, solvent_group_names)
 
 @testitem "write" begin
     using DelimitedFiles
@@ -213,7 +220,7 @@ end
     for options in (options1, options2)
         r = mddf(traj, options)
         tmpfile = tempname()*".dat"
-        out1, out2, out3 = write(r, tmpfile)
+        out1, out2, out3 = write(tmpfile, r)
         r_read = readdlm(out1, comments=true, comment_char='#')
         # Main output file
         @test r.d ≈ r_read[:,1]
@@ -239,4 +246,11 @@ end
             @test contributions(r, SolventGroup([name])) ≈ r_read[:,i+2] rtol = 1e-5
         end
     end
+    # legacy order of arguments 
+    r = mddf(traj, options)
+    tmpfile = tempname()*".dat"
+    out1, out2, out3 = write(r, tmpfile)
+    r_read = readdlm(out1, comments=true, comment_char='#')
+    # Main output file
+    @test r.d ≈ r_read[:,1]
 end
