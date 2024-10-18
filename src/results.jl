@@ -752,12 +752,21 @@ function _get_version(filename)
 end
 
 """
-    load(filename::String)
+    load(filename::String, ::Type{T}=Result)
 
-Function to load the json saved results file into the `Result` data structure.
+Function to load the json saved results file into, by default, the `Result` data structure.
+
+## Example
+
+```julia
+using ComplexMixtures: load
+R = load("results.json")
+#or
+R = load("results.json", Result)
+```
 
 """
-function load(filename::String; legacy_warning = true)
+function load(filename::String, ::Type{Result}=Result)
     filename = expanduser(filename)
     json_version = _get_version(filename)
     current_version = pkgversion(@__MODULE__)
@@ -805,10 +814,11 @@ end
     save(r1, tmp)
     r2 = load(tmp)
     @test r1 == r2
+    r2 = load(tmp, Result)
+    @test r1 == r2
     # Test throwing an error incompatible versions of ComplexMixtures
     @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_new.json")
     @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_old.json")
-
 end
 
 
