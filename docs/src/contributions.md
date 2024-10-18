@@ -143,7 +143,6 @@ types of residues, atoms, the backbone, the side-chains, etc.
 
 ## Reference functions
 
-```@autodocs
-Modules = [ComplexMixtures]
-Pages = ["contributions.jl"]
+```@docs
+contributions
 ```

@@ -184,6 +184,11 @@ rc_loaded = load("residue_contributions.json", ResidueContributions)
 Note that the `load` function requires, as a second argument, the `ResidueContributions` type, to differentiate
 the method from the loading of the `Result` data structure.
 
+```@docs
+load(::String, ::Type{ResidueContributions})
+save(::String, ::ResidueContributions)
+```
+
 !!! tip 
     These `ResidueContributions` methods are convenience functions only. 
 

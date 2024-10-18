@@ -727,7 +727,7 @@ StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
 StructTypes.StructType(::Type{TrajectoryFileOptions}) = StructTypes.Struct()
 
 """
-    save(R::Result, filename::String)
+    save(filename::String, R::Result)
 
 Function to write the result data structure to a json file.
 
@@ -754,9 +754,10 @@ function _get_version(filename)
 end
 
 """
-    load(filename::String, ::Type{T}=Result)
+    load(filename::String, [::Type{Result}=Result])
 
 Function to load the json saved results file into, by default, the `Result` data structure.
+The second parameter is optional for loading `Result` objects.
 
 ## Example
 
@@ -768,7 +769,7 @@ R = load("results.json", Result)
 ```
 
 """
-function load(filename::String, ::Type{Result}=Result)
+function load(filename::String, ::Type{Result})
     filename = expanduser(filename)
     _check_version(filename)
     R = try
@@ -783,6 +784,7 @@ function load(filename::String, ::Type{Result}=Result)
     end
     return R
 end
+load(filename::String) = load(filename, Result)
 
 @testitem "Result - load/save" begin
     using ComplexMixtures: load

@@ -1,5 +1,9 @@
 # [Results](@id results)
 
+```@meta
+CollapsedDocStrings = true
+```
+
 The results of a MDDF calculation are returned in a data structure which contains 
 the MDDF, KB integrals, and atomic contributions. The following section
 will assume that the computation was performed by calling the `mddf`
@@ -175,9 +179,13 @@ The complete data available is:
 
 ## Reference functions
 
-```@autodocs
-Modules = [ComplexMixtures]
-Pages = ["results.jl"]
+```@docs
+Result
+load(::String, ::Type{Result})
+save(::String, ::Result)
+merge(::Vector{Result})
+overview(::Result)
+ComplexMixtures.Density
 ```
 
 
