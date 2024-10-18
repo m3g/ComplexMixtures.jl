@@ -47,6 +47,7 @@ function contributions(
     group::Union{SoluteGroup,SolventGroup};
     type = :mddf, 
     _warn_zero_md_count = true,
+    _indices_are_types = false,
 )
 
     if !(type in (:mddf, :coordination_number, :md_count))
@@ -137,9 +138,15 @@ function contributions(
         end
         # Now run over the types, and sum the contributions. If the selection of 
         # indices have repeated types, the contributions are then *not* summed. 
-        for itype in eachindex(atsel.group_names)
-            if any(iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, group.atom_indices)
-                sel_count .+= group_count[itype]
+        if _indices_are_types # this only works if: 1) there's only 1 molecule; 2) the indices correspond to the group types
+            for i in group.atom_indices
+                sel_count .+= group_count[i]
+            end
+        else # search for the correspondence between indices and types 
+            for itype in eachindex(atsel.group_names)
+                if any(iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, group.atom_indices)
+                    sel_count .+= group_count[itype]
+                end
             end
         end
     end
