@@ -319,7 +319,7 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
     xlabel = false
     crange = clims[2] - clims[1]
     for d in length(rc.d):-dstride:1
-        print(io, if !xlabel && d < (size(m, 1) + dstride) ÷ 2
+        print(io, if !xlabel && d < (length(rc.d) + dstride) ÷ 2
             xlabel = true
             " d  "
         else
