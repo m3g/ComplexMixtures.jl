@@ -470,6 +470,10 @@ end
     end
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
+    # Unsafe types from indices
+    rc_unsafe = ResidueContributions(result, select(atoms, "protein"); _unsafe_types_from_indices=true)
+    @test rc_unsafe == rc
+
     # version issues
     rc_future = ResidueContributions(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
     save(tmpfile, rc_future)
@@ -486,6 +490,8 @@ end
     rc2 = rc[2:10]
     @test rc2.resnums == 2:10
     @test rc2 == ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"))
+    rc_unsafe = ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"); _unsafe_types_from_indices=true)
+    @test rc_unsafe == rc2
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
