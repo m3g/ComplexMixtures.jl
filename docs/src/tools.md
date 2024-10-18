@@ -81,6 +81,12 @@ Pages = ["coordination_number.jl"]
 
 ## [2D density map per residue](@id 2D_per_residue)
 
+- [The `ResidueContributions` object](@ref)
+- [Indexing, slicing, arithmetic operations](@ref)
+- [Saving and loading a ResidueContributions object](@ref)
+
+### The `ResidueContributions` object
+
 One nice way to visualize the accumulation or depletion of a solvent around a macromolecule (a protein, for example), is to obtain a 2D map of the density as a function of the distance from its surface. For example, in the figure below the density of a solute (here, Glycerol), in the neighborhood of a protein is shown:
 
 ```@raw html
@@ -92,13 +98,13 @@ One nice way to visualize the accumulation or depletion of a solvent around a ma
 Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF, coordination numbers or minimum-distance counts. 
 
 !!! compat
-    All features described in this section are only available in v2.7.0 or greater.
+    All features described in this section are only available in v2.8.0 or greater.
 
 The computation of the contributions of each residue can be performed with the convenience function `ResidueContributions`, which
 creates an object containing the contributions of the residues to the mddf (or coordination numbers, or minimum-distance counts), the 
 residue names, and distances:
 
-```@docs; canonical=false
+```@docs
 ResidueContributions
 ```
 
@@ -116,6 +122,8 @@ The `ResidueContribution` object can be used to produce a high-quality contour p
 Plots.contourf(::ResidueContributions)
 ```
 A complete example of its usage can be seen [here](@ref 2D-map-example1). 
+
+### Indexing, slicing, arithmetic operations
 
 The `ResidueContributions` object can be indexes and sliced, for the analysis of the contributions of specific residues
 or range of residues:
@@ -159,12 +167,28 @@ rc2 = rc / 15
 rc2 = 2 * rc
 ```
 
+### Saving and loading a ResidueContributions object
+
+The `ResidueContributions` object can be saved and loaded for easier data analysis. In particular, this 
+is important for very large structures, where its computation can be costly. The saving and loading 
+functions can be use with:
+
+```julia
+rc = ResidueContributions(results1, select(atoms, "protein")); 
+# Save rc objecto to a file (json format):
+save("residue_contributions.json", rc) 
+# Load json file into a new rc_loaded object:
+rc_loaded = load("residue_contributions.json", ResidueContributions)
+```
+
+Note that the `load` function requires, as a second argument, the `ResidueContributions` type, to differentiate
+the method from the loading of the `Result` data structure.
+
 !!! tip 
-    This function is a convenience function only.
+    These `ResidueContributions` methods are convenience functions only. 
 
     Basically, we are extracting the contribution of each residue independently and building a matrix where each row 
-    represents a distance and each column a residue. 
-    Using `PDBTools`, this can be done with, for example: 
+    represents a distance and each column a residue.  Using `PDBTools`, this can be done with, for example: 
     
     ```julia
     residues = collect(eachresidue(protein))

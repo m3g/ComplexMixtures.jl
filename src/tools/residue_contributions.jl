@@ -369,6 +369,13 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
 
 Save the `ResidueContributions` object to a JSON file.
 
+```julia
+using ComplexMixtures
+rc = ResidueContributions(resutls, SoluteGroup(protein))
+save("residue_contributions.json", rc)
+rc = load("residue_contributions.json", ResidueContributions)
+```
+
 """
 function save(filename::String, rc::ResidueContributions)
     filename = expanduser(filename)

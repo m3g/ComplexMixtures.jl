@@ -6,6 +6,10 @@ contributions. Simply put, if a MDDF has a peak at a hydrogen-bonding
 distance, it is natural to decompose that peak into the contributions of
 each type of solute or solvent atom to that peak.     
 
+!!! tip
+    See also the section on contributions per residue for proteins and other
+    macromolecules: [2D density map per residue](@ref 2D_per_residue).
+
 To obtain the atomic contributions of an atom or group of atoms to the MDDF,
 the coordination number, or the site count at each distance, the
 `contributions` function is provided. For example, in a system composed
