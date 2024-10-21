@@ -192,9 +192,8 @@ function mddf(
 
     # Skip initial frames if desired
     progress = Progress(options.firstframe; dt=1)
-    for iframe in 1:options.firstframe - 1
+    for _ in 1:options.firstframe
         nextframe!(trajectory)
-        iframe += 1
         if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
             GC.gc()
         end
