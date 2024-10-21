@@ -191,11 +191,15 @@ function mddf(
     firstframe!(trajectory)
 
     # Skip initial frames if desired
-    iframe = 0 # Counter for all frames of the input file, that must be read serially
-    while iframe < options.firstframe - 1
+    progress = Progress(options.firstframe; dt=1)
+    for _ in 1:options.firstframe - 1
         nextframe!(trajectory)
-        iframe += 1
+        if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+            GC.gc()
+        end
+        options.silent || next!(progress)
     end
+    iframe = options.firstframe - 1
 
     # Define how the parallelization will be performed, according to the memory
     # requirements of the computation
