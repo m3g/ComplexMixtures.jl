@@ -192,14 +192,14 @@ function mddf(
 
     # Skip initial frames if desired
     progress = Progress(options.firstframe; dt=1)
-    for _ in 1:options.firstframe
+    for _ in 1:options.firstframe - 1
         nextframe!(trajectory)
         if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
             GC.gc()
         end
         options.silent || next!(progress)
     end
-    iframe = options.firstframe
+    iframe = options.firstframe - 1
 
     # Define how the parallelization will be performed, according to the memory
     # requirements of the computation
