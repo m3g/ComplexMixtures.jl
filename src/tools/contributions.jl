@@ -122,7 +122,8 @@ function contributions(
         end
         # Check consistency of input indexes
         for i in group.atom_indices
-            if all(!=(i), atsel.indices)
+            itype = findfirst(==(i), atsel.indices)
+            if isnothing(itype)
                 throw(ArgumentError("""\n
                     Atom index $i not found in atom selection. 
                     Indices array: $(print_vector_summary(atsel.indices)).
@@ -134,29 +135,30 @@ function contributions(
 
                 """
                 ))
+            else
+                sel_count .+= group_count[itype]
             end
         end
         # Now run over the types, and sum the contributions. If the selection of 
         # indices have repeated types, the contributions are then *not* summed. 
-        if _unsafe_types_from_indices # this only works if: 1) there's only 1 molecule; 2) the indices correspond to the group types
-            if atsel.nmols > 1
-                throw(ArgumentError("""\n
-                    There is more than one molecule in this $(typeof(atsel)). 
-                    This is not compatible with `_unsafe_types_from_indices = true`.
+        #for i in group.atom_indices
+        #    itype = searchsortedfirst(atsel.indices, i)
+        #end
+        #if _unsafe_types_from_indices # this only works if: 1) there's only 1 molecule; 2) the indices correspond to the group types
+        #    if atsel.nmols > 1
+        #        throw(ArgumentError("""\n
+        #            There is more than one molecule in this $(typeof(atsel)). 
+        #            This is not compatible with `_unsafe_types_from_indices = true`.
 
-                """))
-            end
-            for i in group.atom_indices
-                itype = atom_type(i, atsel.natomspermol; first = atsel.indices[1])
-                sel_count .+= group_count[itype]
-            end
-        else # search for the correspondence between indices and types 
-            for itype in eachindex(atsel.group_names)
-                if any(iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, group.atom_indices)
-                    sel_count .+= group_count[itype]
-                end
-            end
-        end
+        #        """))
+        #    end
+        #else # search for the correspondence between indices and types 
+        #    for itype in eachindex(atsel.group_names)
+        #        if any(iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, group.atom_indices)
+        #            sel_count .+= group_count[itype]
+        #        end
+        #    end
+        #end
     end
 
     # Given atom names, sum over the contributions of the atoms
