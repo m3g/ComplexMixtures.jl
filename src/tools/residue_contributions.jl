@@ -145,7 +145,7 @@ function ResidueContributions(
     # residue as a function of the distance:
     # number of rows of the mddf histogram is (length(results.d)) and 
     # number of columns equal to the number of residues
-    rescontrib = [ zeros(length(results.d)) for _ in 1:length(residues) ]
+    rescontrib = [zeros(length(results.d)) for _ in 1:length(residues)]
 
     # Each column is then filled up with the contributions of each residue
     silent || (p = Progress(length(residues); dt=1))
@@ -176,7 +176,7 @@ function ResidueContributions(
 
     return ResidueContributions(;
         d=results.d[idmin:idmax],
-        residue_contributions=[ rc[idmin:idmax] for rc in rescontrib ], 
+        residue_contributions=[rc[idmin:idmax] for rc in rescontrib],
         resnums=resnums,
         xticks=xticks,
     )
@@ -459,7 +459,7 @@ end
           rcc.residue_contributions[104]
 
     # save and load
-    tmpfile = tempname()*".json"
+    tmpfile = tempname() * ".json"
     save(tmpfile, rc)
     rc_load = load(tmpfile, ResidueContributions)
     @test rc == rc_load
@@ -551,6 +551,6 @@ end
     result = mddf(traj, options)
     rc = ResidueContributions(result, glicines)
     # This might actually be changed in the future, depending on what one wants. Maybe just throw an error.
-    @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions)) 
+    @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions))
 
 end
