@@ -451,7 +451,6 @@ The possible constructors are:
     SoluteGroup(atom_names::Vector{String})
     SoluteGroup(group_name::String)
     SoluteGroup(residue::PDBTools.Residue)
-    SoluteGroup(atsel::AtomSelection)
 
 above, each constructor can be replaced by SolventGroup. The resulting data structures 
 are used as input parameters for the `contributions` function:
@@ -574,7 +573,6 @@ SoluteGroup(atom_names::Vector{String}) = SoluteGroup(nothing, nothing, nothing,
 SoluteGroup(group_name::String) = SoluteGroup(nothing, group_name, nothing, nothing)
 SoluteGroup(group_index::Int) = SoluteGroup(group_index, nothing, nothing, nothing)
 SoluteGroup(residue::PDBTools.Residue) = SoluteGroup(nothing, nothing, PDBTools.index.(residue), nothing)
-SoluteGroup(atsel::AtomSelection) = SoluteGroup(nothing, nothing, atsel.indices, nothing)
 
 SolventGroup(atoms::Vector{PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
 SolventGroup(atom_indices::AbstractVector{Int}) = SolventGroup(nothing, nothing, atom_indices, nothing)
@@ -582,7 +580,6 @@ SolventGroup(atom_names::Vector{String}) = SolventGroup(nothing, nothing, nothin
 SolventGroup(group_name::String) = SolventGroup(nothing, group_name, nothing, nothing)
 SolventGroup(group_index::Int) = SolventGroup(group_index, nothing, nothing, nothing)
 SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTools.index.(residue), nothing)
-SolventGroup(atsel::AtomSelection) = SolventGroup(nothing, nothing, atsel.indices, nothing)
 
 @testitem "SoluteGroup and SolventGroup" begin
     using PDBTools: readPDB, select, name, eachresidue
