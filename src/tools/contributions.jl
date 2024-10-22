@@ -1,3 +1,27 @@
+#
+# Error functions for wrong input of atom indices or names
+#
+function _index_not_found_error(i, atsel)
+    throw(ArgumentError("""\n
+            Atom index $i not found in atom selection. 
+            Indices array: $(print_vector_summary(atsel.indices)).
+
+            Notes: 
+            - The indices must correspond to the indices of the atoms in the original structure file.
+            - If the atom selection contains more than one molecule, all the atoms corresponding to the 
+              same index *within each molecule* are considered equivalent and summed.
+
+        """))
+end
+function _name_not_found_error(name, atsel)
+    throw(ArgumentError("""\n
+            Atom (or group) name $name not found in atom selection. 
+            Group names list: $(print_vector_summary(atsel.group_names)).
+
+        """))
+end
+
+
 """
     contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf)
 
@@ -43,11 +67,10 @@ julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"]); type=:coordinat
 
 """
 function contributions(
-    R::Result, 
+    R::Result,
     group::Union{SoluteGroup,SolventGroup};
-    type = :mddf, 
-    _warn_zero_md_count = true,
-    _unsafe_types_from_indices = false,
+    type=:mddf,
+    _warn_zero_md_count=true,
 )
 
     if !(type in (:mddf, :coordination_number, :md_count))
@@ -87,6 +110,7 @@ function contributions(
             throw(ArgumentError("""\n
                 No custom groups are defined. Please provide vectors of *atomic* indices or names.
                 For example, to get the contribution of atoms 1, 2 and 3, use SoluteGroup([1,2,3]). 
+
             """))
         end
     end
@@ -96,7 +120,10 @@ function contributions(
     if !isnothing(group.group_index)
         igroup = group.group_index
         if igroup > length(group_count)
-            throw(ArgumentError("Group $igroup greater than number of groups ($(length(group_count))) of group contribution array."))
+            throw(ArgumentError("""\n
+                Group $igroup greater than number of groups ($(length(group_count))) of group contribution array.
+
+            """))
         end
         sel_count .= group_count[igroup]
     end
@@ -104,9 +131,7 @@ function contributions(
     # If the name of the group was provided
     if !isnothing(group.group_name)
         igroup = findfirst(==(group.group_name), atsel.group_names)
-        if isnothing(igroup) || igroup > length(group_count)
-            throw(ArgumentError("Group '$(group.group_name)' not found in the group contribution count array."))
-        end
+        isnothing(igroup) && _name_not_found_error(group.group_name, atsel)
         sel_count .= group_count[igroup]
     end
 
@@ -116,66 +141,61 @@ function contributions(
     # the atoms *within* the molecule. 
 
     # Given atom indices, sum over the contributions of the atoms
-    if !isnothing(group.atom_indices) 
+    if !isnothing(group.atom_indices)
         if isempty(group.atom_indices)
-            throw(ArgumentError("Group selection by group indices is empty"))
+            throw(ArgumentError("""\n 
+                Group selection by group indices is empty.
+
+            """))
         end
-        # Check consistency of input indexes
-        for i in group.atom_indices
-            if all(!=(i), atsel.indices)
-                throw(ArgumentError("""\n
-                    Atom index $i not found in atom selection. 
-                    Indices array: $(print_vector_summary(atsel.indices)).
+        if !allunique(group.atom_indices)
+            throw(ArgumentError("""\n
+                Selection by atom indices contains repeated indices.
 
-                    Notes: 
-                    - The indices must correspond to the indices of the atoms in the original structure file.
-                    - If the atom selection contains more than one molecule, all the atoms corresponding to the 
-                      same index *within each molecule* are considered equivalent and summed.
-
-                """
-                ))
-            end
+            """))
         end
-        # Now run over the types, and sum the contributions. If the selection of 
-        # indices have repeated types, the contributions are then *not* summed. 
-        if _unsafe_types_from_indices # this only works if: 1) there's only 1 molecule; 2) the indices correspond to the group types
-            if atsel.nmols > 1
-                throw(ArgumentError("""\n
-                    There is more than one molecule in this $(typeof(atsel)). 
-                    This is not compatible with `_unsafe_types_from_indices = true`.
-
-                """))
-            end
-            for i in group.atom_indices
-                itype = atom_type(i, atsel.natomspermol; first = atsel.indices[1])
+        # For a single molecule, all contributions are summed up
+        if atsel.nmols == 1
+            for iat in group.atom_indices
+                itype = findfirst(==(iat), atsel.indices)
+                isnothing(itype) && _index_not_found_error(iat, atsel)
                 sel_count .+= group_count[itype]
             end
-        else # search for the correspondence between indices and types 
-            for itype in eachindex(atsel.group_names)
-                if any(iat -> atom_type(iat, atsel.natomspermol; first = atsel.indices[1]) == itype, group.atom_indices)
-                    sel_count .+= group_count[itype]
-                end
+        else
+            # If there's more than one molecule, the contributions are stored by 
+            # atom type. Thus, if the user asked for the contribution of *one* molecule
+            # the contributions are scaled accordingly. 
+            for iat in group.atom_indices
+                any(==(iat), atsel.indices) || _index_not_found_error(iat, atsel)
+                itype = atom_type(iat, atsel.natomspermol; first=first(atsel.indices))
+                sel_count .+= group_count[itype] / atsel.nmols
             end
         end
     end
 
     # Given atom names, sum over the contributions of the atoms
-    if !isnothing(group.atom_names) 
+    if !isnothing(group.atom_names)
         if isempty(group.atom_names)
-            throw(ArgumentError("Group selection by group names is empty"))
+            throw(ArgumentError("""\n
+                Selection by atom names is empty.
+
+            """))
         end
-        # Check consistency of input names
-        for name in group.atom_names
-            if all(!=(name), atsel.group_names)
-                throw(ArgumentError("Atom (or group) name $name not found in group name data."))
-            end
+        if !allunique(group.atom_names)
+            throw(ArgumentError("""\n
+                Selection by atom names contains repeated names.
+
+            """))
         end
-        # Now run over the names, and sum the contributions. If the selection of
-        # names have repeated types, the contributions are then *not* summed.
-        for (itype, name) in enumerate(atsel.group_names)
-            if any(==(name), group.atom_names)
-                sel_count .+= group_count[itype]
+        for atom_name in group.atom_names
+            found_atom_name = false
+            for (igroup, name) in enumerate(atsel.group_names)
+                if atom_name == name
+                    found_atom_name = true
+                    sel_count .+= group_count[igroup]
+                end
             end
+            found_atom_name || _name_not_found_error(atom_name, atsel)
         end
     end
 
@@ -197,46 +217,37 @@ function contributions(
     return sel_count
 end
 
-function warning_nmols_types()
-    println("""
-        WARNING: There is more than one molecule in this selection.
-                 Contributions are summed over all atoms of the same type.
-    """)
-end
-
 @testitem "contributions" begin
     using ComplexMixtures
-    using PDBTools: select, readPDB, Select
+    using PDBTools
     using ComplexMixtures.Testing: data_dir
     atoms = readPDB("$data_dir/PDB/trajectory.pdb", "model 1")
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
     solute = AtomSelection(
-        protein, nmols = 1;
-        group_names = [ "acidic", "basic", "polar", "nonpolar" ],
-        group_atom_indices = [ 
+        protein, nmols=1;
+        group_names=["acidic", "basic", "polar", "nonpolar"],
+        group_atom_indices=[
             findall(Select("acidic"), protein),
             findall(Select("basic"), protein),
             findall(Select("polar"), protein),
             findall(Select("nonpolar"), protein),
         ]
     )
-    solvent = AtomSelection(tmao, natomspermol = 14)
-    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format = "PDBTraj")
+    solvent = AtomSelection(tmao, natomspermol=14)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
     results = mddf(traj)
 
-    @test sum(contributions(results, SoluteGroup("acidic"); type = :md_count)) ≈ 4.4
-    @test sum(contributions(results, SoluteGroup("basic"); type = :md_count)) ≈ 2.4
-    @test sum(contributions(results, SoluteGroup("polar"); type = :md_count)) ≈ 20.0
-    @test sum(contributions(results, SoluteGroup("nonpolar"); type = :md_count)) ≈ 9.4
-    
-    @test sum(contributions(results, SolventGroup(solvent); type = :md_count)) ≈ 29.4
-    @test sum(contributions(results, SolventGroup(tmao); type = :md_count)) ≈ 29.4
-    @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type = :md_count)) ≈ 29.4
+    @test sum(contributions(results, SoluteGroup("acidic"); type=:md_count)) ≈ 4.4
+    @test sum(contributions(results, SoluteGroup("basic"); type=:md_count)) ≈ 2.4
+    @test sum(contributions(results, SoluteGroup("polar"); type=:md_count)) ≈ 20.0
+    @test sum(contributions(results, SoluteGroup("nonpolar"); type=:md_count)) ≈ 9.4
+    @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type=:md_count)) ≈ 29.4 / length(eachresidue(tmao))
 
-    @test_throws ArgumentError contributions(results, SolventGroup(solvent); type = :wrong_type)
-    @test_throws ArgumentError contributions(results, SoluteGroup([1,2,3]))
+    @test_throws ArgumentError contributions(results, SolventGroup(solvent); type=:wrong_type)
+    @test_throws ArgumentError contributions(results, SoluteGroup([1, 2, 3]))
     @test_throws ArgumentError contributions(results, SoluteGroup(["N", "CA"]))
+    @test_throws ArgumentError contributions(results, SoluteGroup(["N", "N"]))
     @test_throws ArgumentError contributions(results, SolventGroup("acidic"))
     @test_throws ArgumentError contributions(results, SolventGroup(1))
     @test_throws ArgumentError contributions(results, SolventGroup([5000]))
@@ -246,14 +257,34 @@ end
     @test_throws ArgumentError contributions(results, SolventGroup(String[]))
     @test_throws ArgumentError contributions(results, SolventGroup(["NOT_FOUND"]))
 
-    solute = AtomSelection(protein, nmols = 1)
-    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format = "PDBTraj")
+    solute = AtomSelection(protein, nmols=1)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
     results = mddf(traj)
     @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
     @test_throws ArgumentError contributions(results, SoluteGroup([50000]))
+    @test sum(contributions(results, SolventGroup([1483]))) ≈ 0.3961968338913652
+    @test_throws ArgumentError contributions(results, SolventGroup([1483, 1483]))
 
-    # Contributions to coordination-number only
-    results = coordination_number(traj)
+    # Testing decomposition of solute contributions
+    @test results.mddf ≈ contributions(results, SoluteGroup(protein))
+    r = collect(eachresidue(protein))
+    @test results.mddf ≈ mapreduce(x -> contributions(results, SoluteGroup(x)), +, r)
+
+    # Now test if the solute is a dicontinuous set of atoms in the original structure
+    # The solute has only one molecule.
+    ala_residues = select(atoms, "resname ALA")
+    solute = AtomSelection(ala_residues, nmols=1)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
+    results = mddf(traj)
+    @test results.mddf ≈ contributions(results, SoluteGroup(ala_residues))
+    r = collect(eachresidue(ala_residues))
+    @test results.mddf ≈ mapreduce(x -> contributions(results, SoluteGroup(x)), +, r)
+
+    # Contributions of all solvent residues: with multiple molecules, the contributions should
+    # be summed over all atoms of the same type, not repeating types. 
+    @test results.mddf ≈ contributions(results, SolventGroup(tmao))
+    r = collect(eachresidue(tmao))
+    @test all(results.mddf ≈ length(r) * contributions(results, SolventGroup(x)) for x in r)
 
 end
 
@@ -265,30 +296,30 @@ end
 
     dir = "$data_dir/NAMD"
     atoms = readPDB("$dir/structure.pdb")
-    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     #
     # Test computation of custom group counters
     #
     solute = AtomSelection(
-        select(atoms , "water and residue 301"), 
-        nmols = 1,
-        group_atom_indices = [
+        select(atoms, "water and residue 301"),
+        nmols=1,
+        group_atom_indices=[
             findall(Select("water and residue 301 and name H1"), atoms),
             findall(Select("water and residue 301 and name H2"), atoms),
             findall(Select("water and residue 301 and name OH2"), atoms)
         ],
-        group_names = ["H1", "H2", "OH2"] 
+        group_names=["H1", "H2", "OH2"]
     )
     solvent = AtomSelection(
         select(atoms, "water and not residue 301"),
-        natomspermol = 3, 
-        group_atom_indices = [
+        natomspermol=3,
+        group_atom_indices=[
             findall(Select("water and name H1 and not residue 301"), atoms),
             findall(Select("water and name H2 and not residue 301"), atoms),
             findall(Select("water and name OH2 and not residue 301"), atoms)
         ],
-        group_names = ["H1", "H2", "OH2"] 
+        group_names=["H1", "H2", "OH2"]
     )
     traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
     R = mddf(traj)
@@ -301,28 +332,28 @@ end
     @test !all(==(0), contributions(R, SolventGroup("H2")))
     @test !all(==(0), contributions(R, SolventGroup("OH2")))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
-          contributions(R, SolventGroup("H1")) + 
-          contributions(R, SolventGroup("H2")) + 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
+          contributions(R, SolventGroup("H1")) +
+          contributions(R, SolventGroup("H2")) +
           contributions(R, SolventGroup("OH2"))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
           R.mddf
 
     # Group contributions in autocorrelation computation
     solute = AtomSelection(
-        select(atoms, "water and resnum <= 1000"), 
-        natomspermol = 3,
-        group_atom_indices = [
+        select(atoms, "water and resnum <= 1000"),
+        natomspermol=3,
+        group_atom_indices=[
             findall(Select("water and name H1 and resnum <= 1000"), atoms),
             findall(Select("water and name H2 and resnum <= 1000"), atoms),
             findall(Select("water and name OH2 and resnum <= 1000"), atoms)
         ],
-        group_names = ["H1", "H2", "OH2"] 
+        group_names=["H1", "H2", "OH2"]
     )
     traj = Trajectory("$dir/trajectory.dcd", solute)
     R = mddf(traj, options)
@@ -335,30 +366,30 @@ end
     @test !all(==(0), contributions(R, SolventGroup("H2")))
     @test !all(==(0), contributions(R, SolventGroup("OH2")))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
-          contributions(R, SolventGroup("H1")) + 
-          contributions(R, SolventGroup("H2")) + 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
+          contributions(R, SolventGroup("H1")) +
+          contributions(R, SolventGroup("H2")) +
           contributions(R, SolventGroup("OH2"))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
           R.mddf
 
     # Group contributions in autocorrelation computation, with different chains
     solute = AtomSelection(
         filter(
-            at -> iswater(at) && (chain(at) == "B" || chain(at) == "C") && resnum(at) <= 1000, 
+            at -> iswater(at) && (chain(at) == "B" || chain(at) == "C") && resnum(at) <= 1000,
             atoms
         ),
-        natomspermol = 3, 
-        group_atom_indices = [
+        natomspermol=3,
+        group_atom_indices=[
             findall(Select("water and chain B and resnum <= 1000"), atoms),
             findall(Select("water and chain C and resnum <= 1000"), atoms)
         ],
-        group_names = ["B", "C"]
+        group_names=["B", "C"]
     )
     traj = Trajectory("$dir/trajectory.dcd", solute)
     R = mddf(traj, options)
@@ -379,30 +410,30 @@ end
 
     dir = "$data_dir/NAMD"
     atoms = readPDB("$dir/structure.pdb")
-    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
+    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     #
     # Test computation of custom group counters
     #
     solute = AtomSelection(
-        select(atoms , "water and residue 301"), 
-        nmols = 1,
-        group_atom_indices = [
+        select(atoms, "water and residue 301"),
+        nmols=1,
+        group_atom_indices=[
             shuffle!(findall(Select("water and residue 301 and name H1"), atoms)),
             shuffle!(findall(Select("water and residue 301 and name H2"), atoms)),
             shuffle!(findall(Select("water and residue 301 and name OH2"), atoms))
         ],
-        group_names = ["H1", "H2", "OH2"] 
+        group_names=["H1", "H2", "OH2"]
     )
     solvent = AtomSelection(
         select(atoms, "water and not residue 301"),
-        natomspermol = 3, 
-        group_atom_indices = [
+        natomspermol=3,
+        group_atom_indices=[
             shuffle!(findall(Select("water and name H1 and not residue 301"), atoms)),
             shuffle!(findall(Select("water and name H2 and not residue 301"), atoms)),
             shuffle!(findall(Select("water and name OH2 and not residue 301"), atoms))
         ],
-        group_names = ["H1", "H2", "OH2"] 
+        group_names=["H1", "H2", "OH2"]
     )
     traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
     R = mddf(traj)
@@ -415,28 +446,28 @@ end
     @test !all(==(0), contributions(R, SolventGroup("H2")))
     @test !all(==(0), contributions(R, SolventGroup("OH2")))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
-          contributions(R, SolventGroup("H1")) + 
-          contributions(R, SolventGroup("H2")) + 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
+          contributions(R, SolventGroup("H1")) +
+          contributions(R, SolventGroup("H2")) +
           contributions(R, SolventGroup("OH2"))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
           R.mddf
 
     # Group contributions in autocorrelation computation
     solute = AtomSelection(
-        select(atoms, "water and resnum <= 1000"), 
-        natomspermol = 3,
-        group_atom_indices = [
+        select(atoms, "water and resnum <= 1000"),
+        natomspermol=3,
+        group_atom_indices=[
             shuffle!(findall(Select("water and name H1 and resnum <= 1000"), atoms)),
             shuffle!(findall(Select("water and name H2 and resnum <= 1000"), atoms)),
             shuffle!(findall(Select("water and name OH2 and resnum <= 1000"), atoms))
         ],
-        group_names = ["H1", "H2", "OH2"] 
+        group_names=["H1", "H2", "OH2"]
     )
     traj = Trajectory("$dir/trajectory.dcd", solute)
     R = mddf(traj, options)
@@ -449,30 +480,30 @@ end
     @test !all(==(0), contributions(R, SolventGroup("H2")))
     @test !all(==(0), contributions(R, SolventGroup("OH2")))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
-          contributions(R, SolventGroup("H1")) + 
-          contributions(R, SolventGroup("H2")) + 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
+          contributions(R, SolventGroup("H1")) +
+          contributions(R, SolventGroup("H2")) +
           contributions(R, SolventGroup("OH2"))
 
-    @test contributions(R, SoluteGroup("H1")) + 
-          contributions(R, SoluteGroup("H2")) + 
-          contributions(R, SoluteGroup("OH2")) ≈ 
+    @test contributions(R, SoluteGroup("H1")) +
+          contributions(R, SoluteGroup("H2")) +
+          contributions(R, SoluteGroup("OH2")) ≈
           R.mddf
 
     # Group contributions in autocorrelation computation, with different chains
     solute = AtomSelection(
         filter(
-            at -> iswater(at) && (chain(at) == "B" || chain(at) == "C") && resnum(at) <= 1000, 
+            at -> iswater(at) && (chain(at) == "B" || chain(at) == "C") && resnum(at) <= 1000,
             atoms
         ),
-        natomspermol = 3, 
-        group_atom_indices = [
+        natomspermol=3,
+        group_atom_indices=[
             shuffle!(findall(Select("water and chain B and resnum <= 1000"), atoms)),
             shuffle!(findall(Select("water and chain C and resnum <= 1000"), atoms))
         ],
-        group_names = ["B", "C"]
+        group_names=["B", "C"]
     )
     traj = Trajectory("$dir/trajectory.dcd", solute)
     R = mddf(traj, options)

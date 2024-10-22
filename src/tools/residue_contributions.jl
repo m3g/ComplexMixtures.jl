@@ -127,7 +127,6 @@ function ResidueContributions(
     type=:mddf,
     silent=false,
     nthreads=Threads.nthreads(),
-    _unsafe_types_from_indices=false,
 )
 
     if length(atoms) == 0
@@ -146,14 +145,14 @@ function ResidueContributions(
     # residue as a function of the distance:
     # number of rows of the mddf histogram is (length(results.d)) and 
     # number of columns equal to the number of residues
-    rescontrib = [ zeros(length(results.d)) for _ in 1:length(residues) ]
+    rescontrib = [zeros(length(results.d)) for _ in 1:length(residues)]
 
     # Each column is then filled up with the contributions of each residue
     silent || (p = Progress(length(residues); dt=1))
     Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=nthreads))
         _warn_zero_md_count = ichunk == 1 ? (!silent) : false
         for ires in residue_inds
-            rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count, _unsafe_types_from_indices)
+            rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count)
             _warn_zero_md_count = false
             silent || next!(p)
         end
@@ -177,7 +176,7 @@ function ResidueContributions(
 
     return ResidueContributions(;
         d=results.d[idmin:idmax],
-        residue_contributions=[ rc[idmin:idmax] for rc in rescontrib ], 
+        residue_contributions=[rc[idmin:idmax] for rc in rescontrib],
         resnums=resnums,
         xticks=xticks,
     )
@@ -460,7 +459,7 @@ end
           rcc.residue_contributions[104]
 
     # save and load
-    tmpfile = tempname()*".json"
+    tmpfile = tempname() * ".json"
     save(tmpfile, rc)
     rc_load = load(tmpfile, ResidueContributions)
     @test rc == rc_load
@@ -469,11 +468,6 @@ end
         println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
     end
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
-
-    # Unsafe types from indices
-    rc = ResidueContributions(result, select(atoms, "protein"))
-    rc_unsafe = ResidueContributions(result, select(atoms, "protein"); _unsafe_types_from_indices=true)
-    @test rc_unsafe == rc
 
     # version issues
     rc_future = ResidueContributions(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
@@ -491,8 +485,6 @@ end
     rc2 = rc[2:10]
     @test rc2.resnums == 2:10
     @test rc2 == ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"))
-    rc_unsafe = ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"); _unsafe_types_from_indices=true)
-    @test rc_unsafe == rc2
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
@@ -557,9 +549,8 @@ end
         silent=true
     )
     result = mddf(traj, options)
-    @test_throws CompositeException ResidueContributions(result, glicines; _unsafe_types_from_indices=true)
     rc = ResidueContributions(result, glicines)
     # This might actually be changed in the future, depending on what one wants. Maybe just throw an error.
-    @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions)) 
+    @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions))
 
 end

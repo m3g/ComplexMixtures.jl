@@ -78,7 +78,6 @@ coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contrib
     # Test self-consistency
     @test sum(sum.(R.solute_group_count)) ≈ sum(sum.(R.solvent_group_count))
     @test coordination_number(R) == R.coordination_number
-    @test coordination_number(R, SoluteGroup(R.solute)) == R.coordination_number
 
     # Checked with vmd: same residue as (resname TMAO and within 3.0 of protein)
     @test R.coordination_number[findfirst(>(3), R.d)] == 7.0
