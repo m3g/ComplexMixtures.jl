@@ -71,7 +71,6 @@ function contributions(
     group::Union{SoluteGroup,SolventGroup};
     type = :mddf, 
     _warn_zero_md_count = true,
-    _unsafe_types_from_indices = false,
 )
 
     if !(type in (:mddf, :coordination_number, :md_count))
