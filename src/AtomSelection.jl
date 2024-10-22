@@ -620,7 +620,9 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
     # If the input is an AtomSelection, consider the whole selection
     atsel = AtomSelection([1,2,3], natomspermol=1)
-    @test SolventGroup(atsel).atom_indices == [1,2,3]
+
+    # error if the atomic selection itself is provided
+    @test_throws ArgumentError SolventGroup(atsel)
 end
 
 
