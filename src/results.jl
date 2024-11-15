@@ -215,7 +215,7 @@ function set_samples(R::Result)
 end
 
 # autocorrelation can be obtained from the comparison of solute and solvent indices
-isautocorrelation(solute_indices::Vector{Int}, solvent_indices::Vector{Int}) =
+isautocorrelation(solute_indices::AbstractVector{<:Integer}, solvent_indices::AbstractVector{<:Integer}) =
     solute_indices == solvent_indices ? true : false
 isautocorrelation(trajectory::Trajectory) =
     isautocorrelation(trajectory.solute.indices, trajectory.solvent.indices)
