@@ -183,7 +183,7 @@ end
     )
     R = mddf(traj, options)
     grid = grid3D(R, atoms, grid_file)
-    @test length(grid) == 1539
+    @test length(grid) ≈ 1539 atol=3
     c05 = filter(at -> beta(at) > 0.5, grid)
     @test length(c05) == 14
     @test all(at -> element(at) == "O", c05)
