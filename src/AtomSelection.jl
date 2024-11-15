@@ -63,7 +63,7 @@ end
 natoms(atsel::AtomSelection) = length(atsel.indices)
 
 """
-    atom_group(atsel::AtomSelection, i::Int)
+    atom_group(atsel::AtomSelection, i::Integer)
     atom_group(atsel::AtomSelection, groupname::String)
 
     atom_group(atsel::AtomSelection, i::Int)
@@ -96,7 +96,7 @@ julia> atom_group_name(atsel, 1)
 ```
 
 """
-atom_group(atsel::AtomSelection, i::Int) = atsel.group_atom_indices[i]
+atom_group(atsel::AtomSelection, i::Integer) = atsel.group_atom_indices[i]
 function atom_group(atsel::AtomSelection, group_name::String) 
     igroup = findfirst(==(group_name), atsel.group_names)
     if isnothing(igroup)
@@ -106,7 +106,7 @@ function atom_group(atsel::AtomSelection, group_name::String)
 end
 
 """
-    atom_group_name(atsel::AtomSelection, i::Int)
+    atom_group_name(atsel::AtomSelection, i::Integer)
     atom_group_names(atsel::AtomSelection)
 
 Return the name of the group of atoms with index `i`. 
@@ -194,11 +194,11 @@ julia> length(atom_group_names(atsel))
 
 ```
     AtomSelection(
-        indices::Vector{Int};
+        indices::AbstractVector{<:Integer};
         nmols::Int = 0,
         natomspermol::Int = 0,
-        group_atom_indices::Union{Nothing,Vector{Vector{Int}}} = nothing,
-        group_names::Vector{String} = String[]
+        group_atom_indices::Union{Nothing,AbstractVector{<:AbstractVector{<:Int}}} = nothing,
+        group_names::AbstractVector{<:AbstractString} = String[]
     )
 ```
 
@@ -243,12 +243,11 @@ end
 # most low-level information: the index of atoms and groups
 #
 function AtomSelection(
-    indices::Vector{Int};
-    nmols::Int = 0,
-    natomspermol::Int = 0,
-    group_atom_indices::Vector{Vector{Int}} = Vector{Int}[],
-    group_names::Vector{String} = String[]
-
+    indices::Vector{<:Integer};
+    nmols::Integer = 0,
+    natomspermol::Integer = 0,
+    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}} = Vector{Int}[],
+    group_names::AbstractVector{<:AbstractString} = String[]
 )
 
     nmols, natomspermol = set_nmols_natomspermol(indices, nmols, natomspermol)
@@ -389,8 +388,8 @@ function AtomSelection(
     atoms::AbstractVector{<:PDBTools.Atom}; 
     nmols::Integer = 0, 
     natomspermol::Integer = 0,
-    group_atom_indices::Vector{<:Vector{<:Integer}} = Vector{Int32}[],
-    group_names::Vector{<:AbstractString} = String[]
+    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}} = Vector{Int32}[],
+    group_names::AbstractVector{<:AbstractString} = String[]
 )
     custom_groups = !isempty(group_atom_indices)
     indices = PDBTools.index.(atoms)
@@ -500,8 +499,8 @@ SoluteGroup defined by:
 struct SoluteGroup{
     I<:Union{Int,Nothing},
     S<:Union{String,Nothing},
-    VI<:Union{AbstractVector{Int},Nothing},
-    VS<:Union{AbstractVector{String},Nothing}
+    VI<:Union{AbstractVector{<:Integer},Nothing},
+    VS<:Union{AbstractVector{<:AbstractString},Nothing}
 }
     group_index::I
     group_name::S
@@ -510,10 +509,10 @@ struct SoluteGroup{
 end
 
 struct SolventGroup{
-    I<:Union{Int,Nothing},
-    S<:Union{String,Nothing},
-    VI<:Union{AbstractVector{Int},Nothing},
-    VS<:Union{AbstractVector{String},Nothing}
+    I<:Union{<:Integer,Nothing},
+    S<:Union{<:AbstractString,Nothing},
+    VI<:Union{AbstractVector{<:Integer},Nothing},
+    VS<:Union{AbstractVector{<:AbstractString},Nothing}
 }
     group_index::I
     group_name::S
@@ -568,20 +567,21 @@ function SolventGroup(args...; kargs...)
 end
 
 SoluteGroup(atoms::Vector{<:PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
-SoluteGroup(atom_indices::AbstractVector{Int}) = SoluteGroup(nothing, nothing, atom_indices, nothing)
-SoluteGroup(atom_names::Vector{String}) = SoluteGroup(nothing, nothing, nothing, atom_names)
-SoluteGroup(group_name::String) = SoluteGroup(nothing, group_name, nothing, nothing)
-SoluteGroup(group_index::Int) = SoluteGroup(group_index, nothing, nothing, nothing)
+SoluteGroup(atom_indices::AbstractVector{<:Integer}) = SoluteGroup(nothing, nothing, atom_indices, nothing)
+SoluteGroup(atom_names::Vector{<:AbstractString}) = SoluteGroup(nothing, nothing, nothing, atom_names)
+SoluteGroup(group_name::AbstractString) = SoluteGroup(nothing, group_name, nothing, nothing)
+SoluteGroup(group_index::Integer) = SoluteGroup(group_index, nothing, nothing, nothing)
 SoluteGroup(residue::PDBTools.Residue) = SoluteGroup(nothing, nothing, PDBTools.index.(residue), nothing)
 
 SolventGroup(atoms::Vector{<:PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
-SolventGroup(atom_indices::AbstractVector{Int}) = SolventGroup(nothing, nothing, atom_indices, nothing)
-SolventGroup(atom_names::Vector{String}) = SolventGroup(nothing, nothing, nothing, atom_names)
-SolventGroup(group_name::String) = SolventGroup(nothing, group_name, nothing, nothing)
-SolventGroup(group_index::Int) = SolventGroup(group_index, nothing, nothing, nothing)
+SolventGroup(atom_indices::AbstractVector{<:Integer}) = SolventGroup(nothing, nothing, atom_indices, nothing)
+SolventGroup(atom_names::Vector{<:AbstractString}) = SolventGroup(nothing, nothing, nothing, atom_names)
+SolventGroup(group_name::AbstractString) = SolventGroup(nothing, group_name, nothing, nothing)
+SolventGroup(group_index::Integer) = SolventGroup(group_index, nothing, nothing, nothing)
 SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTools.index.(residue), nothing)
 
 @testitem "SoluteGroup and SolventGroup" begin
+    using ComplexMixtures
     using PDBTools: readPDB, select, name, eachresidue
     using ComplexMixtures.Testing: pdbfile
     pdb = readPDB(pdbfile)
