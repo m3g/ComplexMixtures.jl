@@ -65,7 +65,7 @@ Generate a random solvent distribution from the bulk molecules of a solvent
 function randomize_solvent!(
     system::AbstractParticleSystem,
     buff::Buffer,
-    n_solvent_in_bulk::Int,
+    n_solvent_in_bulk::Integer,
     R::Result,
     RNG,
 )

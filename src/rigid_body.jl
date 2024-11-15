@@ -97,7 +97,7 @@ end
 
 #=
     random_move!(x_ref::AbstractVector{T}, 
-                 irefatom::Int,
+                 irefatom::Integer,
                  system::AbstractParticleSystem,
                  x_new::AbstractVector{T}, RNG) where {T<:SVector}
 
@@ -108,7 +108,7 @@ The new position is returned in `x_new`, a previously allocated array.
 =#
 function random_move!(
     x::AbstractVector{<:SVector{3}},
-    irefatom::Int,
+    irefatom::Integer,
     system::AbstractParticleSystem,
     RNG,
 )

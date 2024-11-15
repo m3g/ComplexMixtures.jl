@@ -811,7 +811,7 @@ end
 
 
 #=
-    which_types(s::AtomSelection, indices::Vector{Int})
+    which_types(s::AtomSelection, indices::AbstractVector{<:Integer})
 
 Function that returns the list of the indices of the types of the atoms in a
 selection. For example, if a selection corresponds to a solvent of water molecules:
@@ -829,7 +829,7 @@ if the distribution function was computed for all molecules. Thus, the necessity
 to identify the types of atoms involved in a selection.   
 
 =#
-function which_types(s::AtomSelection, indices::Vector{Int}; warning = true)
+function which_types(s::AtomSelection, indices::AbstractVector{<:Integer}; warning = true)
     selected_types = Int[]
     ntypes = 0
     for i in indices

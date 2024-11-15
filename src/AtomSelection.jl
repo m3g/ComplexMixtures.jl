@@ -446,9 +446,9 @@ or group name.
 The possible constructors are:
 
     SoluteGroup(atoms::Vector{<:PDBTools.Atom})
-    SoluteGroup(atom_indices::Vector{Int})
-    SoluteGroup(atom_names::Vector{String})
-    SoluteGroup(group_name::String)
+    SoluteGroup(atom_indices::AbstractVector{<:Integer})
+    SoluteGroup(atom_names::AbstractVector{<:AbstractString})
+    SoluteGroup(group_name::AbstractString)
     SoluteGroup(residue::PDBTools.Residue)
 
 above, each constructor can be replaced by SolventGroup. The resulting data structures 
