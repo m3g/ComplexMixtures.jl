@@ -497,7 +497,7 @@ SoluteGroup defined by:
 @doc (@doc SoluteGroup) SolventGroup
 
 struct SoluteGroup{
-    I<:Union{Int,Nothing},
+    I<:Union{<:Integer,Nothing},
     S<:Union{String,Nothing},
     VI<:Union{AbstractVector{<:Integer},Nothing},
     VS<:Union{AbstractVector{<:AbstractString},Nothing}
@@ -523,16 +523,16 @@ end
 #
 # Functions for printing solvent and solute groups 
 #
-_round(T, x::Real; digits=2) = round(x; digits=digits)
-_round(T, x::Int; digits=nothing) = x
-_round(T, x::String; digits=nothing) = x
+_round(x::Real; digits=2) = round(x; digits=digits)
+_round(x::Integer; digits=nothing) = x
+_round(x::String; digits=nothing) = x
 @views function print_vector_summary(x::AbstractVector{T}; digits=2) where T
     if length(x) <= 4
-        return "[ "*join(_round.(T, x;digits), ", ")*" ]"
+        return "[ "*join(_round.(x;digits), ", ")*" ]"
     end
-    return "[ "*join(_round.(T, x[begin:begin+1];digits), ", ")*
+    return "[ "*join(_round.(x[begin:begin+1];digits), ", ")*
               ", ..., " *  
-            join(_round.(T, x[end-1:end];digits), ", ")*" ]"
+            join(_round.(x[end-1:end];digits), ", ")*" ]"
 end
 
 function Base.show(io::IO, sg::Union{SoluteGroup, SolventGroup}) 
