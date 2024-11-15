@@ -69,7 +69,7 @@ function grid3D(
 
     # Building the grid with the nearest solute atom information
     igrid = 0
-    at = Atom() # to support PDBTools < 2 (which does not have a Atom{T} constructor)
+    at = PDBTools.Atom() # to support PDBTools < 2 (which does not have a Atom{T} constructor)
     grid = typeof(at)[]
     grid_lock = ReentrantLock()
     silent || (p = Progress(prod(n); desc="Building grid..."))

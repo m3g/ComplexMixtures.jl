@@ -1,8 +1,8 @@
 """
     write(
         R::Result, filename::String;
-        solute_group_names::Vector{String} = R.solute.group_names,
-        solvent_group_names::Vector{String} = R.solvent.group_names,
+        solute_group_names::AbstractVector{<:AbstractString} = R.solute.group_names,
+        solvent_group_names::AbstractVector{<:AbstractString} = R.solvent.group_names,
     )
 
 Function to write the final results to output files as simple tables that are human-readable and easy to analyze with other software
@@ -13,8 +13,8 @@ If they are not defined, the user can pass the names of the groups as strings in
 """
 function Base.write(
     filename::String, R::Result;
-    solute_group_names::Union{Nothing,Vector{String}} = nothing,
-    solvent_group_names::Union{Nothing,Vector{String}} = nothing,
+    solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
+    solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
 )
 
     filename = expanduser(filename)
@@ -104,7 +104,7 @@ format(x) = abs(x) < 998 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 #
 # Function that set the group names, given the optional input parameters of the write function
 #
-function set_group_names(R::Result, group_names::Union{Nothing,Vector{String}}, type::Symbol)
+function set_group_names(R::Result, group_names::Union{Nothing,AbstractVector{<:AbstractString}}, type::Symbol)
     atsel = getfield(R, type)
     atsel_str = type == :solute ? "Solute" : "Solvent"
     if isnothing(group_names)
@@ -129,7 +129,7 @@ function write_group_contributions(
     R::Result, 
     filename::String, 
     type::Symbol,
-    group_names::Vector{String},
+    group_names::AbstractVector{<:AbstractString},
 )
     if type == :solute
         atsel_str = "Solute"
@@ -201,8 +201,8 @@ end
 # legacy order
 Base.write(
     R::Result, filename::String;
-    solute_group_names::Union{Nothing,Vector{String}} = nothing,
-    solvent_group_names::Union{Nothing,Vector{String}} = nothing,
+    solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
+    solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
 ) = write(filename, R; solute_group_names, solvent_group_names)
 
 @testitem "write" begin
