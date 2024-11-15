@@ -4,7 +4,7 @@
 ## Constructor function: 
 
     ResidueContributions(
-        results::Result, atoms::AbstractVector{PDBTools.Atom};
+        results::Result, atoms::AbstractVector{<:PDBTools.Atom};
         dmin=1.5, dmax=3.5,
         type=:mddf,
     )
@@ -16,7 +16,7 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 # Arguments
 
 - `results::Result`: The result object obtained from the `mddf` function.
-- `atoms::AbstractVector{PDBTools.Atom}`: The vector of atoms of the solute, or a part of it.
+- `atoms::AbstractVector{<:PDBTools.Atom}`: The vector of atoms of the solute, or a part of it.
 
 # Optional arguments
 
@@ -122,7 +122,7 @@ rc4 = rc2 / 2
 end
 
 function ResidueContributions(
-    results::Result, atoms::AbstractVector{PDBTools.Atom};
+    results::Result, atoms::AbstractVector{<:PDBTools.Atom};
     dmin=1.5, dmax=3.5,
     type=:mddf,
     silent=false,

@@ -148,10 +148,10 @@ The structure can be initialized in different ways:
 ```
     AtomSelection(
         atoms::AbstractVector{<:PDBTools.Atom}; 
-        nmols::Int = 0, 
-        natomspermol::Int = 0,
-        group_atom_indices::Union{Nothing,Vector{Vector{Int}}} = nothing,
-        group_names::Vector{String} = String[]
+        nmols::Integer = 0, 
+        natomspermol::Integer = 0,
+        group_atom_indices::Union{Nothing,Vector{<:Vector{<:Int}}} = nothing,
+        group_names::Vector{<:AbstractString} = String[]
     ) 
 ```
 
@@ -387,10 +387,10 @@ end
 #
 function AtomSelection(
     atoms::AbstractVector{<:PDBTools.Atom}; 
-    nmols::Int = 0, 
-    natomspermol::Int = 0,
-    group_atom_indices::Vector{Vector{Int}} = Vector{Int}[],
-    group_names::Vector{String} = String[]
+    nmols::Integer = 0, 
+    natomspermol::Integer = 0,
+    group_atom_indices::Vector{<:Vector{<:Integer}} = Vector{Int32}[],
+    group_names::Vector{<:AbstractString} = String[]
 )
     custom_groups = !isempty(group_atom_indices)
     indices = PDBTools.index.(atoms)
@@ -411,7 +411,7 @@ function AtomSelection(
     )
 end
 
-@testitem "AtomSelection Vector{PDBTools.Atom}" begin
+@testitem "AtomSelection Vector{<:PDBTools.Atom}" begin
     using ComplexMixtures
     using PDBTools
     import Random: shuffle!
@@ -446,7 +446,7 @@ or group name.
 
 The possible constructors are:
 
-    SoluteGroup(atoms::Vector{PDBTools.Atom})
+    SoluteGroup(atoms::Vector{<:PDBTools.Atom})
     SoluteGroup(atom_indices::Vector{Int})
     SoluteGroup(atom_names::Vector{String})
     SoluteGroup(group_name::String)
@@ -567,14 +567,14 @@ function SolventGroup(args...; kargs...)
     """)))
 end
 
-SoluteGroup(atoms::Vector{PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
+SoluteGroup(atoms::Vector{<:PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
 SoluteGroup(atom_indices::AbstractVector{Int}) = SoluteGroup(nothing, nothing, atom_indices, nothing)
 SoluteGroup(atom_names::Vector{String}) = SoluteGroup(nothing, nothing, nothing, atom_names)
 SoluteGroup(group_name::String) = SoluteGroup(nothing, group_name, nothing, nothing)
 SoluteGroup(group_index::Int) = SoluteGroup(group_index, nothing, nothing, nothing)
 SoluteGroup(residue::PDBTools.Residue) = SoluteGroup(nothing, nothing, PDBTools.index.(residue), nothing)
 
-SolventGroup(atoms::Vector{PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
+SolventGroup(atoms::Vector{<:PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
 SolventGroup(atom_indices::AbstractVector{Int}) = SolventGroup(nothing, nothing, atom_indices, nothing)
 SolventGroup(atom_names::Vector{String}) = SolventGroup(nothing, nothing, nothing, atom_names)
 SolventGroup(group_name::String) = SolventGroup(nothing, group_name, nothing, nothing)

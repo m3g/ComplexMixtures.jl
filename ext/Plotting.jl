@@ -129,7 +129,7 @@ end
 ComplexMixtures.contourf_per_residue(rc::ResidueContributions; kwargs...) = Plots.contourf(rc; kwargs...)
 """
     contourf_per_residue(
-        results::Result, atoms::AbstractVector{PDBTools.Atom}; 
+        results::Result, atoms::AbstractVector{<:PDBTools.Atom}; 
         residue_range=nothing, 
         dmin=1.5, dmax=3.5, 
         oneletter=false,
@@ -146,7 +146,7 @@ This function requires loading the `Plots` package.
 # Arguments
 
 - `results::Result`: The result of a `mddf` call.
-- `atoms::AbstractVector{Atom}`: The atoms of the solute.
+- `atoms::AbstractVector{<:Atom}`: The atoms of the solute.
 
 # Optional arguments
 
@@ -190,7 +190,7 @@ julia> plot!(plt, size=(800, 400), title="Contribution per residue")
 
 """
 function ComplexMixtures.contourf_per_residue(
-    results::Result, atoms::AbstractVector{Atom};
+    results::Result, atoms::AbstractVector{<:Atom};
     residue_range::AbstractRange=resnum(first(atoms)):resnum(last(atoms)),
     dmin=1.5, dmax=3.5,
     type=:mddf,
