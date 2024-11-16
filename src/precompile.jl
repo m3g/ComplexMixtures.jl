@@ -1,5 +1,4 @@
 PrecompileTools.@setup_workload begin
-    return nothing
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
     # precompile file and potentially make loading faster.
     dir = "$(Testing.data_dir)/NAMD"
