@@ -5,19 +5,31 @@
 function set_nmols_natomspermol(indices, nmols, natomspermol)
     natoms = length(indices)
     if natoms == 0
-        throw(ArgumentError("Vector of atom indices is empty."))
+        throw(ArgumentError("""
+            Vector of atom indices is empty.
+
+        """))
     end
     if nmols == 0 && natomspermol == 0
-        throw(ArgumentError("Set nmols or natomspermol when defining a selection."))
+        throw(ArgumentError("""\n
+            Set nmols or natomspermol when defining a selection.
+        
+        """))
     end
     if nmols != 0
         if natoms % nmols != 0
-            throw(ArgumentError("Number of atoms in selection must be a multiple of nmols."))
+            throw(ArgumentError("""\n
+                Number of atoms in selection must be a multiple of nmols.
+            
+            """))
         end
         natomspermol = div(natoms, nmols)
     else
         if natoms % natomspermol != 0
-            throw(ArgumentError(" Number of atoms in selection must be a multiple of natomspermols."))
+            throw(ArgumentError("""\n
+                Number of atoms in selection must be a multiple of natomspermols.
+            
+            """))
         end
         nmols = div(natoms, natomspermol)
     end
@@ -104,7 +116,7 @@ function atom_group(atsel::AtomSelection, group_name::String)
     atsel.custom_groups || _error_custom_groups() 
     igroup = findfirst(==(group_name), atsel.group_names)
     if isnothing(igroup)
-        throw(ArgumentError("""
+        throw(ArgumentError("""\n
             Could not find group with name $group_name.
 
         """))
@@ -270,7 +282,10 @@ AtomSelection
 
 """
 function AtomSelection(args...; kargs...) 
-    throw(ArgumentError("No constructor for AtomSelection with these arguments. Please check the documentation."))
+    throw(ArgumentError("""\n
+        No constructor for AtomSelection with these arguments. Please check the documentation.
+
+    """))
 end
 
 #
@@ -325,7 +340,6 @@ function AtomSelection(
             # Check if all group atoms indices belong to the current AtomSelection
             if any(!(i in indices) for i in inds)
                 throw(ArgumentError("""\n
-
                     Group atom indices not found in the the current AtomSelection main atomic indices.
 
                     In other words, the group_atom_indices vector contains atom indices that are not present 
@@ -345,7 +359,10 @@ function AtomSelection(
             end _file=nothing _line=nothing
         else
             if length(group_atom_indices) != length(group_names)
-                throw(ArgumentError("The vector of group atom indices has a different number of elements than the vector of group names."))
+                throw(ArgumentError("""\n
+                    The vector of group atom indices has a different number of elements than the vector of group names.
+
+                """))
             end
         end
     end
@@ -407,6 +424,7 @@ end
     @test_throws MethodError AtomSelection([1,2,3]; abc = 1)
     @test_throws ArgumentError AtomSelection([1,2,3], ["A", "B", "C"]; nmols = 1)
     @test_throws ArgumentError AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2,2],[3]])
+    @test_throws ArgumentError AtomSelection([1,2,3], nmols=1, group_names=["A","B"], group_atom_indices=[[1],[2,3],[2]])
 
     @test_logs (:warn,) AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]])
     @test_logs (:warn,) AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[2,1],[3]], group_names = ["A", "B"])
