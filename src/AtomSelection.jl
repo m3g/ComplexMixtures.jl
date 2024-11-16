@@ -581,7 +581,7 @@ end
 #
 # Functions for printing solvent and solute groups 
 #
-_round(x::Real; digits=2) = round(x; digits=digits)
+#_round(x::Real; digits=2) = round(x; digits=digits)
 _round(x::Integer; digits=nothing) = x
 _round(x::String; digits=nothing) = x
 @views function print_vector_summary(x::AbstractVector{T}; digits=2) where T
@@ -676,11 +676,11 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
     sg = SolventGroup(collect(eachresidue(pdb))[2])
     @test sg.atom_indices == [12 + i for i = 1:11]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
-    # If the input is an AtomSelection, consider the whole selection
-    atsel = AtomSelection([1,2,3], natomspermol=1)
 
     # error if the atomic selection itself is provided
+    atsel = AtomSelection([1,2,3], natomspermol=1)
     @test_throws ArgumentError SolventGroup(atsel)
+    @test_throws ArgumentError SoluteGroup(atsel)
 end
 
 
