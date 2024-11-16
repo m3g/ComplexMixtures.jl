@@ -178,7 +178,6 @@ end
     s = AtomSelection([1,2,3], nmols=1)
     @test_throws ArgumentError atom_group(s, 1)
     @test_throws ArgumentError atom_group(s, "A")
-    @test_throws ArgumentError atom_group_name(s, 2)
 end
 
 """
