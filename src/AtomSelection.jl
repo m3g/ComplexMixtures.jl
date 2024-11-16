@@ -328,6 +328,7 @@ end
 @testitem "AtomSelection - indices" begin
     using PDBTools
     using ComplexMixtures
+    using BenchmarkTools
     import Random: shuffle!
     pdbfile = ComplexMixtures.Testing.pdbfile
     atoms = readPDB(pdbfile, "protein and residue 2")
@@ -345,6 +346,9 @@ end
     @test s.custom_groups == false
     @test s.group_names == fill("C", length(indices))
     @test ComplexMixtures.natoms(s) == s.nmols * s.natomspermol
+
+    b = @benchmark AtomSelection($indices, nmols = 1, natomspermol = 11, group_names=$(String[]), group_atom_indices=$(Vector{Int}[])) samples=1 evals=1
+    @test b.allocs == 0
 
     # Test shuffled indices in the custom group
     s1 = AtomSelection(indices, nmols=1, group_atom_indices= [ findall(sel"resname ARG", atoms) ])
