@@ -388,7 +388,7 @@ function AtomSelection(
     atoms::AbstractVector{<:PDBTools.Atom}; 
     nmols::Integer = 0, 
     natomspermol::Integer = 0,
-    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}} = Vector{Int32}[],
+    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}} = Vector{Int}[],
     group_names::AbstractVector{<:AbstractString} = String[]
 )
     custom_groups = !isempty(group_atom_indices)

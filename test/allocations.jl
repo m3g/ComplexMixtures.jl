@@ -30,9 +30,11 @@
     @test b.allocs == 0
 
     protein = AtomSelection(prot_atoms, nmols = 1)
-    t_selection1 =
-        @benchmark AtomSelection($prot_atoms, nmols = 1) samples = 1 evals = 1
-    @test t_selection1.allocs < 100 
+    t_selection1A = @benchmark AtomSelection($prot_atoms, nmols = 1) samples = 1 evals = 1
+    @test t_selection1A.allocs < 1500 # one String per atom  name
+    n = String.(name.(prot_atoms))
+    t_selection1B = @benchmark AtomSelection($prot_atoms, nmols = 1, group_names=$n, group_atom_indices=$(Vector{Int}[])) samples = 1 evals = 1
+    @test t_selection1B.allocs == 2 
 
     tmao_atoms = select(atoms, "resname TMAO")
     tmao = AtomSelection(tmao_atoms, natomspermol = 14)
