@@ -1,9 +1,9 @@
 
 @testitem "Allocations" begin
+    using PDBTools
     using ComplexMixtures
-    using BenchmarkTools
     using ComplexMixtures.Testing
-    using ComplexMixtures, PDBTools
+    using BenchmarkTools
 
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
