@@ -69,7 +69,7 @@ natoms(atsel::AtomSelection) = length(atsel.indices)
     atom_group(atsel::AtomSelection, i::Int)
     atom_group(atsel::AtomSelection, groupname::String)
 
-Return the indices of the atoms that belong to a given group.
+Return the indices of the atoms that belong to a given group, when custom groups where defined.
 
 ## Example
 
@@ -96,13 +96,26 @@ julia> atom_group_name(atsel, 1)
 ```
 
 """
-atom_group(atsel::AtomSelection, i::Integer) = atsel.group_atom_indices[i]
+function atom_group(atsel::AtomSelection, i::Integer) 
+    atsel.custom_groups || _error_custom_groups() 
+    atsel.group_atom_indices[i]
+end
 function atom_group(atsel::AtomSelection, group_name::String) 
+    atsel.custom_groups || _error_custom_groups() 
     igroup = findfirst(==(group_name), atsel.group_names)
     if isnothing(igroup)
-        error("Could not find group with name $group_name.")
+        throw(ArgumentError("""
+            Could not find group with name $group_name.
+
+        """))
     end
     return atsel.group_atom_indices[igroup]
+end
+function _error_custom_groups()
+    throw(ArgumentError("""\n
+        Custom groups not defined in this AtomSelecction.
+
+    """))
 end
 
 """
@@ -133,8 +146,30 @@ julia> atom_group_names(atsel)
 ```
 
 """
-atom_group_name(atsel::AtomSelection, i::Int) = atsel.group_names[i]
-@doc (@doc atom_group_name) atom_group_names(atsel) = atsel.group_names
+function atom_group_name(atsel::AtomSelection, i::Int) 
+    atsel.custom_groups || _error_custom_groups()
+    atsel.group_names[i]
+end
+@doc (@doc atom_group_name) function atom_group_names(atsel) 
+    atsel.custom_groups || _error_custom_groups()
+    atsel.group_names
+end
+
+@testitem "atom_group" begin
+    using ComplexMixtures
+    s = AtomSelection([1,2,3], nmols=1, group_names=["A","B"], group_atom_indices=[[1],[2,3]])
+    @test atom_group(s, 1) == [1]
+    @test atom_group(s, "A") == [1]
+    @test atom_group(s, 2) == [2,3]
+    @test atom_group(s, "B") == [2,3]
+    @test atom_group_name(s, 1) == "A"
+    @test atom_group_name(s, 2) == "B"
+    @test_throws ArgumentError atom_group(s, "C")
+    s = AtomSelection([1,2,3], nmols=1)
+    @test_throws ArgumentError atom_group(s, 1)
+    @test_throws ArgumentError atom_group(s, "A")
+    @test_throws ArgumentError atom_group_name(s, 2)
+end
 
 """
 
@@ -344,9 +379,12 @@ end
     s = AtomSelection(indices, group_names = fill("C", length(indices)), nmols = 1, natomspermol = 11)
     @test s.custom_groups == false
     @test s.group_names == fill("C", length(indices))
+    @test_throws ArgumentError atom_group(s, "C")
     @test ComplexMixtures.natoms(s) == s.nmols * s.natomspermol
 
     # Test shuffled indices in the custom group
+    atoms = readPDB(pdbfile, "protein")
+    indices = index.(atoms)
     s1 = AtomSelection(indices, nmols=1, group_atom_indices= [ findall(sel"resname ARG", atoms) ])
     s2 = AtomSelection(indices, nmols=1, group_atom_indices= [ shuffle!(findall(sel"resname ARG", atoms)) ])
     @test atom_group(s1, 1) == atom_group(s2, 1)
@@ -363,6 +401,7 @@ end
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, nmols=2)
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, group_names=["A", "B"])
     @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, group_names=["A", "B", "C"])
+    @test_throws ArgumentError AtomSelection(Int[], nmols = 1, natomspermol = 11)
     
     @test_throws ArgumentError AtomSelection([1,2,3], ["A", "B", "C"])
     @test_throws MethodError AtomSelection([1,2,3]; abc = 1)
@@ -424,6 +463,7 @@ end
     @test s.natomspermol == 11
     @test s.nmols == 1
     @test ComplexMixtures.natoms(s) == s.nmols * s.natomspermol
+    @test_throws ArgumentError AtomSelection(select(atoms, "name XX"), nmols = 1, natomspermol = 11)
 
     # Test shuffled indices in the custom group
     s1 = AtomSelection(atoms, nmols=1, group_atom_indices= [ findall(sel"resname ARG", atoms) ])
