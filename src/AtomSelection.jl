@@ -159,11 +159,9 @@ julia> atom_group_names(atsel)
 
 """
 function atom_group_name(atsel::AtomSelection, i::Int) 
-    atsel.custom_groups || _error_custom_groups()
     atsel.group_names[i]
 end
 @doc (@doc atom_group_name) function atom_group_names(atsel) 
-    atsel.custom_groups || _error_custom_groups()
     atsel.group_names
 end
 
