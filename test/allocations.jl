@@ -24,10 +24,11 @@
     ) samples = 1 evals = 1
     @test t.allocs == 0
     
-    b = @benchmark AtomSelection($indices, nmols = 1, natomspermol = 11, group_names=$(String[]), group_atom_indices=$(Vector{Int}[])) samples=1 evals=1
+    prot_atoms = select(atoms, "protein")
+    indices = index.(prot_atoms)
+    b = @benchmark AtomSelection($(Int.(indices)), nmols = 1, natomspermol = 11, group_names=$(String[]), group_atom_indices=$(Vector{Int}[])) samples=1 evals=1
     @test b.allocs == 0
 
-    prot_atoms = select(atoms, "protein")
     protein = AtomSelection(prot_atoms, nmols = 1)
     t_selection1 =
         @benchmark AtomSelection($prot_atoms, nmols = 1) samples = 1 evals = 1
