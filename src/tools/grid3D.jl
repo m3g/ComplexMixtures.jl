@@ -69,8 +69,8 @@ function grid3D(
 
     # Building the grid with the nearest solute atom information
     igrid = 0
-    at = PDBTools.Atom() # to support PDBTools < 2 (which does not have a Atom{T} constructor)
-    grid = typeof(at)[]
+    AtomType = typeof(PDBTools.Atom()) # to support PDBTools < 2 (which does not have a Atom{T} constructor)
+    grid = AtomType[]
     grid_lock = ReentrantLock()
     silent || (p = Progress(prod(n); desc="Building grid..."))
     Threads.@threads for ix_inds in ChunkSplitters.chunks(1:n[1]; n=Threads.nthreads())
@@ -97,7 +97,7 @@ function grid3D(
                         r,
                     )
                     if cᵣ > 0
-                        gridpoint = typeof(at)(
+                        gridpoint = AtomType(
                             index = PDBTools.index(at),
                             index_pdb = PDBTools.index_pdb(at),
                             name = PDBTools.name(at),
