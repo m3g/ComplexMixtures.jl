@@ -446,13 +446,13 @@ function AtomSelection(
     group_names::AbstractVector{<:AbstractString} = String[]
 )
     custom_groups = !isempty(group_atom_indices)
-    indices = PDBTools.index.(atoms)
+    indices = [ Int64(PDBTools.index(at)) for at in atoms ]
     nmols, natomspermol = set_nmols_natomspermol(indices, nmols, natomspermol)
     if !custom_groups && isempty(group_names) 
         if nmols == 1
-            group_names = PDBTools.name.(atoms)
+            group_names = [ String(PDBTools.name(at)) for at in atoms ]
         else
-            group_names = PDBTools.name.(atoms[1:natomspermol])
+            group_names = [ String(PDBTools.name(atoms[i])) for i in 1:natomspermol ]
         end
     end
     return AtomSelection(
