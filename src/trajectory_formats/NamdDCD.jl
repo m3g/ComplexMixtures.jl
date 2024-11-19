@@ -10,13 +10,13 @@
 #$(TYPEDFIELDS)
 #
 #"""
-struct NamdDCD{T<:AbstractVector} <: Trajectory
+struct NamdDCD{T<:AbstractVector, ST<:Stream{<:FortranFile}} <: Trajectory
 
     #
     # Mandatory data for things to work
     #
     filename::String
-    stream::Stream{<:FortranFile} # special type of stream required for reading DCD files
+    stream::ST # special type of stream required for reading DCD files
     nframes::Int64
 
     # Data structures of the solute and solvent 
@@ -98,7 +98,7 @@ function NamdDCD(
         solvent,
         zeros(T, ComplexMixtures.natoms(solute)), # solute atom coordinates
         zeros(T, ComplexMixtures.natoms(solvent)), # solvent atom coordinates
-        lastatom,
+        Int(lastatom),
         unitcell_read, # auxiliary vector to read unitcell data
         zeros(Float32, lastatom), # auxiliary x
         zeros(Float32, lastatom), # auxiliary y

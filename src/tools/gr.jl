@@ -1,5 +1,5 @@
 """
-    gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binstep::Float64)
+    gr(r::AbstractVector{<:Real}, count::AbstractVector{<:Real}, density::Real, binstep::Real)
 
 Computes the radial distribution function from the count data and the density.
 
@@ -8,7 +8,7 @@ This is exactly a conventional g(r) if a single atom was chosen as the solute an
 Returns both the g(r) and the kb(r)
 
 """
-function gr(r::Vector{Float64}, count::Vector{Float64}, density::Float64, binstep::Float64)
+function gr(r::AbstractVector{<:Real}, count::AbstractVector{<:Real}, density::Real, binstep::Real)
     nbins = length(r)
     gr = zeros(nbins)
     kb = zeros(nbins)

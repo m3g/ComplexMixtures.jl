@@ -1,12 +1,12 @@
 #
-#    atom_type(iatom::Int, natomspermol::Int; first = 1)
+#    atom_type(iatom::Integer, natomspermol::Integer; first::Integer = 1)
 #
 # Given the index of the atom in the vector of coordinates of the solute or the solvent,
 # returns the type of the atom, that is, the index of this atom within the molecule
 # (goes from 1 to natomspermol). The `first` argument is the index of the first Atom
 # in the molecule. The default value is 1.
 #
-atom_type(iatom::Int, natomspermol::Int; first::Int = 1) = mod1(iatom - first + 1, natomspermol)
+atom_type(iatom::Integer, natomspermol::Integer; first::Integer = 1) = mod1(iatom - first + 1, natomspermol)
 
 @testitem "atom_type" begin
     using ComplexMixtures: atom_type
@@ -14,6 +14,7 @@ atom_type(iatom::Int, natomspermol::Int; first::Int = 1) = mod1(iatom - first + 
     @test atom_type(4, 3) == 1
     @test atom_type(5, 3) == 2
     @test atom_type(6, 3) == 3
+    @test atom_type(Int32(6), 3) == 3
 end
 
 # Function that updates the MD counters of the groups (or atoms) of the solute
@@ -39,7 +40,7 @@ end
 #
 # Function that updates the minimum-distance counters in `R`
 #
-function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::Float64)
+function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::AbstractFloat)
     for md in system.list
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
@@ -61,8 +62,9 @@ function update_counters!(R::Result, system::AbstractParticleSystem, frame_weigh
     end
     return R
 end
+
 # Update counters for the ideal gas distributions
-function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::Float64, ::Val{:random})
+function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::AbstractFloat, ::Val{:random})
     for md in system.list
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
