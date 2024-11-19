@@ -30,7 +30,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Plotting = "Plots"
 
 [compat]
-Aqua = "0.8"
+Aqua = "0.8.9"
 BenchmarkTools = "1"
 CellListMap = "0.8.30, 0.9"
 Chemfiles = "0.10.3"
