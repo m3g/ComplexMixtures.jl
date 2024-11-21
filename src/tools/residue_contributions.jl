@@ -360,7 +360,7 @@ function _custom_group_error_for_ResidueContributions()
         Please read the documention, by typing: ? ResidueContribution
 
         The computation of contributions of each residue requires independent atom contributions to 
-        accumulate be stored, and thus custom groups are not supported. 
+        be stored, and thus custom groups are not supported. 
 
     """))
 end
