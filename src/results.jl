@@ -130,7 +130,8 @@ function Result(
     nbins = setbin(options.cutoff, options.binstep)
 
     # If frame weights are provided, the length of the weights vector has to at least
-    # of the of number of the last frame to be read
+    # of the of number of the last frame to be read, and the sum of the weights of the
+    # frames to be considered must be greater than zero
     if !isempty(frame_weights)
         if length(frame_weights) < trajectory_data.lastframe_read
             throw(ArgumentError(chomp("""\n
