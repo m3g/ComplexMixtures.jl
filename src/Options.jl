@@ -95,7 +95,13 @@ function Options(;
     if lastframe > 0 && lastframe < firstframe
         throw(ArgumentError("in MDDF options: lastframe must be greater or equal to firstframe. "))
     end
+    if n_random_samples < 1
+        throw(ArgumentError("""\n 
+            in MDDF options: n_random_samples must be greater than 0. 
+            To skip the normalization of the distribution, use the coordination_number(...) function instead of mddf(...).
 
+        """))
+    end
 
     if !isnothing(bulk_range) && any(!isnothing, (dbulk, cutoff, usecutoff))
         throw(ArgumentError("""\n
@@ -221,6 +227,7 @@ end
     @test_throws ArgumentError Options(bulk_range = (12.0, 10.0), cutoff=15.0)
     @test_throws ArgumentError Options(bulk_range = (12.0, 10.0), usecutoff=false)
     @test_throws ArgumentError Options(dbulk = 10.0, cutoff = 15.0, usecutoff = false)
+    @test_throws ArgumentError Options(n_random_samples=0)
 
 end
 
