@@ -141,6 +141,13 @@ function Result(
             
             """)))
         end
+        range_considered = options.firstframe:options.stride:trajectory_data.lastframe_read
+        if sum(frame_weights[i] for i in range_considered) <= 0.0
+            throw(ArgumentError("""\n
+                The sum of the frame weights must be greater than zero for the frames that will be considered: $(range_considered)
+
+            """))
+        end
     else
         frame_weights = ones(trajectory_data.lastframe_read)
     end
@@ -183,6 +190,8 @@ end
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
     @test_throws ArgumentError mddf(trajectory, Options(irefatom = 1000))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 5), frame_weights = [1.0, 1.0, 1.0])
+    options = Options(firstframe=2, lastframe=5, stride=2)
+    @test_throws ArgumentError mddf(trajectory, options, frame_weights = [1.0, 0.0, 1.0, 0.0, 1.0])
 end
 
 #
