@@ -65,7 +65,7 @@ function, can be used to compute coordination numbers without the normalization
 required for the MDDF:
 
 ```@docs
-coordination_number(::Trajectory, ::Options)
+coordination_number(::String)
 ```
 
 This function can be useful if the normalization is not possible or meaningful.

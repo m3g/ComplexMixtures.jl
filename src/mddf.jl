@@ -514,7 +514,7 @@ julia> results = coordination_number(trajectory_file, solute, solvent, options);
 ```
 
 """
-function coordination_number end
+function coordination_number(::String, args...; kargs...) end
 
 function coordination_number(
     trajectory_file::String, 
@@ -540,6 +540,11 @@ function coordination_number(
     _coordination_number_call_error(;kargs...)
     trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; coordination_number_only=true, kargs...)
+end
+
+function coordination_number(traj::Trajectory, options::Options=Options(); kargs...)
+    _coordination_number_call_error(;kargs...)
+    return mddf(traj, options; coordination_number_only=true, kargs...)
 end
 
 function _coordination_number_call_error(;kargs...) 
