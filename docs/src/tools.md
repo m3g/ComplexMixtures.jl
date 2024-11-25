@@ -34,18 +34,24 @@ contributions of all solvent atoms is the coordination number of the solute).
 In the following example we compute the coordination number of the atoms of `residue 50` (which belongs to the solute - a protein) with the solvent atoms of TMAO, as a function of the distance. The plot produced will show side by side the residue contribution to the MDDF and the corresponding coordination number.
 
 ```julia
-using ComplexMixtures, PDBTools
-using Plots, EasyFit
+# Load necessary packages
+using ComplexMixtures, PDBTools 
+# Load data structure and previously computed results from a mddf calculation 
 pdb = read_pdb("test/data/NAMD/structure.pdb")
 R = load("test/data/NAMD/protein_tmao.json")
+# Define which is the solute
 solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1)
+# We intend to compute the contributions of residue 50 only
 residue50 = PDBTools.select(pdb, "residue 50")
 # Compute the group contribution to the MDDF
 residue50_contribution = contributions(R, SoluteGroup(residue50))
 # Now compute the coordination number
 residue50_coordination = coordination_number(R, SoluteGroup(residue50))
+#
 # Plot with twin y-axis
-plot(R.d, movavg(residue50_contribution,n=10).x,
+#
+using Plots 
+plot(R.d, residue50_contribution,
     xaxis="distance / Å", 
     yaxis="MDDF contribution", 
     linewidth=2, label=nothing, color=1
