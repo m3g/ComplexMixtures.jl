@@ -522,7 +522,7 @@ function coordination_number(
     solvent::AtomSelection, 
     options::Options; 
     trajectory_format::String="",
-    chemfiles::Bools=false,
+    chemfiles::Bool=false,
     kargs...)
     _coordination_number_call_error(;kargs...)
     trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
@@ -534,7 +534,7 @@ function coordination_number(
     solute_and_solvent::AtomSelection, 
     options::Options; 
     trajectory_format::String="",
-    chemfiles::Bools=false,
+    chemfiles::Bool=false,
     kargs...
 )
     _coordination_number_call_error(;kargs...)
