@@ -20,14 +20,9 @@ tmao = select(atoms, "resname TMAO")
 solute = AtomSelection(protein, nmols=1)
 solvent = AtomSelection(tmao, natomspermol=14)
 
-# Setup the Trajectory structure: this will define which
-# coordinates are used to compute the MDDF when reading
-# the trajectory file.
-trajectory = Trajectory("./trajectory.dcd", solute, solvent)
-
-# Run the calculation and get results: this is the computationally
-# intensive part of the calculation.
-results = mddf(trajectory, Options(bulk_range=(8.0, 12.0)))
+# Run the calculation over the trajectory.dcd file and get results: 
+# this is the computationally intensive part of the calculation.
+results = mddf("./trajectory.dcd", solute, solvent, Options(bulk_range=(8.0, 12.0)))
 
 # Save the results to recover them later if required
 save(results, "./results.json")

@@ -18,22 +18,21 @@ trajectory_file = "./traj_Glyc.dcd"
 glyc = select(system, "resname GLLM")
 water = select(system, "water")
 
-# Compute Glycerol-Glycerol auto correlation mddf 
-solute = AtomSelection(glyc, natomspermol=14)
-trajectory = Trajectory(trajectory_file, solute) # solute and solvent are the same
+# Compute Glycerol-Glycerol auto correlation mddf: first we initialize the 
+# AtomSelection object, informing the number of atoms per molecule of Glycerol
+glyc_selection = AtomSelection(glyc, natomspermol=14)
 
 # We define a large solute domain (large dbulk) to obtain a good convergence
 # for the KB integral. The mddf converges at much shorter distances.   
 options = Options(bulk_range=(20.0, 25.0))
-mddf_glyc = mddf(trajectory, options)
+mddf_glyc = mddf(trajectory_file, glyc_selection, options)
 
 # Save results for later analysis
 save(mddf_glyc, "./mddf_glyc.json")
 
-# Compute water-glycerol mddf
+# Compute water-glycerol mddf: glyc_selection is the solute, and water is the solvent
 solvent = AtomSelection(water, natomspermol=3)
-trajectory = Trajectory(trajectory_file, solute, solvent)
-mddf_glyc_water = mddf(trajectory, options)
+mddf_glyc_water = mddf(trajectory_file, glyc_selection, solvent, options)
 
 # Save results for later analysis
 save(mddf_glyc_water, "./mddf_glyc_water.json")

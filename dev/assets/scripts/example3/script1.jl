@@ -26,16 +26,13 @@ solute = AtomSelection(popc, nmols=1)
 # Compute water-POPC distribution and KB integral 
 solvent = AtomSelection(water, natomspermol=3)
 
-# Set the trajectory structure
-trajectory = Trajectory(trajectory_file, solute, solvent)
-
 # We want to get reasonably converged KB integrals, which usually
 # require large solute domains. Distribution functions converge 
 # rapidly (~10Angs or less), on the other side.
 options = Options(bulk_range=(15.0, 20.0))
 
 # Compute the mddf and associated properties
-mddf_water_POPC = mddf(trajectory, options)
+mddf_water_POPC = mddf(trajectory_file, solute, solvent, options)
 
 # Save results to file for later use
 save(mddf_water_POPC, "./mddf_water_POPC.json")
@@ -43,8 +40,7 @@ println("Results saved to ./mddf_water_POPC.json file")
 
 # Compute ethanol-POPC distribution and KB integral 
 solvent = AtomSelection(ethanol, natomspermol=9)
-traj = Trajectory(trajectory_file, solute, solvent)
-mddf_ethanol_POPC = mddf(traj, options)
+mddf_ethanol_POPC = mddf(trajectory_file, solute, solvent, options)
 
 # Save results for later use
 save(mddf_ethanol_POPC, "./mddf_ethanol_POPC.json")
