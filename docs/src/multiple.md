@@ -26,7 +26,7 @@ The calculation on the multiple trajectories is then performed in a
 simple loop, such as
 
 ```julia
-atoms = PDBTools.readPDB("./system.pdb")
+atoms = PDBTools.read_pdb("./system.pdb")
 solute = AtomSelection(atoms,"protein",nmols=1)
 solvent = AtomSelection(atoms,"resname TMAO",natomspermol=14)
 options = Options(bulk_range=(8.0, 12.0))

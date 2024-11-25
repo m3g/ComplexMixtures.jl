@@ -21,7 +21,7 @@ For example, here we define a protein of a system as the solute:
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+julia> atoms = read_pdb(ComplexMixtures.Testing.pdbfile);
 
 julia> protein = select(atoms, "protein");
 
@@ -62,7 +62,7 @@ For example, the solute can be defined with:
 ```julia
 using ComplexMixtures, PDBTools
 
-atoms = readPDB("system.pdb")
+atoms = read_pdb("system.pdb")
 
 indices, names = select_with_vmd("./system.pdb", "protein", vmd="/usr/bin/vmd")
 
@@ -112,7 +112,7 @@ Here, we illustrate this feature by presselecting the acidic and basic residues 
 ```julia
 julia> using ComplexMixtures, PDBTools
 
-julia> atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+julia> atoms = read_pdb(ComplexMixtures.Testing.pdbfile);
 
 julia> protein = select(atoms, "protein");
 

@@ -18,7 +18,7 @@ using:
 
 ```julia
 using PDBTools, ComplexMixtures
-atoms = readPDB("system.pdb")
+atoms = read_pdb("system.pdb")
 protein = select(atoms,"protein")
 water = select(atoms,"water")
 solute = AtomSelection(protein,nmols=1)
@@ -93,7 +93,7 @@ with `PDBTools` can be used. For example, this will retrieve the contribution
 of the acidic residues of a protein to total MDDF:
 ```julia
 using PDBTools
-atoms = readPDB("system.pdb")
+atoms = read_pdb("system.pdb")
 acidic_residues = select(atoms, "acidic")
 acidic_contributions = contributions(results, SoluteGroup(acidic_residues))
 ```

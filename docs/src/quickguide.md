@@ -91,7 +91,7 @@ solvent selections, and running the calculation on the trajectory.
 To define the protein as the solute, we will use the PDBTools package,
 which provides a handy selection syntax. First, read the PDB file using 
 ```julia
-atoms = readPDB("./system.pdb")
+atoms = read_pdb("./system.pdb")
 ```
 Then, let us select the protein atoms (here we are using the `PDBTools.select` function):
 ```julia
