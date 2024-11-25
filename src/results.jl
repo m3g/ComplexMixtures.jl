@@ -130,7 +130,8 @@ function Result(
     nbins = setbin(options.cutoff, options.binstep)
 
     # If frame weights are provided, the length of the weights vector has to at least
-    # of the of number of the last frame to be read
+    # of the of number of the last frame to be read, and the sum of the weights of the
+    # frames to be considered must be greater than zero
     if !isempty(frame_weights)
         if length(frame_weights) < trajectory_data.lastframe_read
             throw(ArgumentError(chomp("""\n
@@ -140,6 +141,13 @@ function Result(
                              last frame to be read: $(trajectory_data.lastframe_read)
             
             """)))
+        end
+        range_considered = options.firstframe:options.stride:trajectory_data.lastframe_read
+        if sum(frame_weights[i] for i in range_considered) <= 0.0
+            throw(ArgumentError("""\n
+                The sum of the frame weights must be greater than zero for the frames that will be considered: $(range_considered)
+
+            """))
         end
     else
         frame_weights = ones(trajectory_data.lastframe_read)
@@ -183,6 +191,8 @@ end
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
     @test_throws ArgumentError mddf(trajectory, Options(irefatom = 1000))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe = 5), frame_weights = [1.0, 1.0, 1.0])
+    options = Options(firstframe=2, lastframe=5, stride=2)
+    @test_throws ArgumentError mddf(trajectory, options, frame_weights = [1.0, 0.0, 1.0, 0.0, 1.0])
 end
 
 #
