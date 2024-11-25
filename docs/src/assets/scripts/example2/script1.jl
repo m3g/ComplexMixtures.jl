@@ -24,14 +24,11 @@ acr = select(system, "resname FACR or resname ACR or resname LACR")
 solute = AtomSelection(acr, nmols=1)
 solvent = AtomSelection(dmf, natomspermol=12)
 
-# Set the trajectory structure
-trajectory = Trajectory(trajectory_file, solute, solvent)
-
 # Use a large dbulk distance for better KB convergence
 options = Options(bulk_range=(20.0, 25.0))
 
 # Compute the mddf and associated properties
-results = mddf(trajectory, options)
+results = mddf(trajectory_file, solute, solvent, options)
 
 # Save results to file for later use
 save(results, "./mddf.json")

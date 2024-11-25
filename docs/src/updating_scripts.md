@@ -35,15 +35,16 @@ h_contributions = contributions(R, SolventGroup(h_indexes))
 ```
 
 ## Frame weights
-`frame_weights` is now an option of the `mddf` execution. That is previously,
+
+`frame_weights` is an option of the `mddf` execution. That is previously,
 they were defined in the `Options` data structure, and now they are passed
 to the `mddf` function.
 - Before:
 ```julia
 options = Options(frame_weights=[1.0, 2.0], bulk_range=(8.0, 12.0))
-results = mddf(trajectory, options)
+results = mddf(trajectory_file, solute, solvent, options)
 ```
 - Now:
 ```julia
-results = mddf(trajectory, options; frame_weights=[1.0, 2.0])
+results = mddf(trajectory_file, solute, solvent, options; frame_weights=[1.0, 2.0])
 ```

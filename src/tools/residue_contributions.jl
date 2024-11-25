@@ -70,7 +70,7 @@ julia> rc = load("residue_contributions.json", ResidueContributions);
 ```julia
 using ComplexMixtures, PDBTools, Plots
 ...
-result = mddf(traj, options)
+result = mddf(trajectory_file, solute, solvent, options)
 rc = ResidueContributions(result, select(atoms, "protein"))
 contourf(rc) # plots a contour map
 ```
@@ -82,7 +82,7 @@ Slicing, or indexing, the residue contributions returns a new `ResidueContributi
 ```julia
 using ComplexMixtures, PDBTools, Plots
 ...
-result = mddf(traj, options)
+result = mddf(trajectory_file, solute, solvent, options)
 rc = ResidueContributions(result, select(atoms, "protein"))
 rc_7 = rc[7] # contributions of residue 7
 rc_range = rc[10:50] # slice the residue contributions
@@ -95,10 +95,10 @@ contourf(rc_range) # plots a contour map of the selected residues
 using ComplexMixtures, PDBTools, Plots
 ...
 # first simulation (for example, low temperature):
-result1 = mddf(traj2, options)
+result1 = mddf(trajectory_file1, solute, solvent, options)
 rc1 = ResidueContributions(result1, select(atoms, "protein"))
 # second simulation (for example, high temperature):
-result2 = mddf(traj2, options)
+result2 = mddf(trajectory_file2, solute, solvent, options)
 rc2 = ResidueContributions(result2, select(atoms, "protein"))
 # difference of the residue contributions between the two simulations:
 rc_diff = rc2 - rc1

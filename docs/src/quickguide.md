@@ -140,7 +140,7 @@ are automatically recognized.
 If default options are used (as the bin size of the histograms, read all
 frames without skipping any), just run the `mddf` with:
 ```julia
-results = mddf(trajectory, Options(bulk_range=(8.0, 12.0)))
+results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
 
 ```
 Some optional parameters for the computation are available in the

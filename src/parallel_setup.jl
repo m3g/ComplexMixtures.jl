@@ -40,7 +40,7 @@ function parallel_setup(options::Options, R::Result, low_memory::Bool)
             To reduce memory requirements, consider:
 
             - Use the `low_memory = true` option in the call to `mddf`.
-              For example: `mddf(traj, options; low_memory = true)`
+              For example: `mddf(trajectory_file, solute, solvent, options; low_memory = true)`
             - Using the predefinition of custom groups of atoms in the solute and solvent.
               See: https://m3g.github.io/ComplexMixtures.jl/stable/selection/#predefinition-of-groups
             - Reducing the number of threads, with the `Options(nthreads=N)` parameter.

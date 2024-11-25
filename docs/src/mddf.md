@@ -15,7 +15,7 @@ mddf
 The `mddf` functions is run with, for example:
 
 ```julia
-results = mddf(trajectory, Options(bulk_range=(10.0, 15.0)))  
+results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(10.0, 15.0)))  
 ```
 
 The MDDF along with other results, like the corresponding KB integrals,
@@ -33,7 +33,7 @@ considered. Adjust stride with:
 
 ```julia
 options = Options(stride=5, bulk_range=(10.0, 15.0))
-results = mddf(trajectory, options)
+results = mddf(trajectory_file, solute, solvent, options)
 ```
 
 !!! note

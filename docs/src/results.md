@@ -9,7 +9,7 @@ the MDDF, KB integrals, and atomic contributions. The following section
 will assume that the computation was performed by calling the `mddf`
 function with 
 ```julia
-results = mddf(trajectory, Options(bulk_range=(8.0, 12.0)))
+results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
 ``` 
 such that the `results` variable contain the `Result` data structure. By
 default, the histograms contain 500 bins (`binstep=0.002` and

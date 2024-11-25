@@ -110,7 +110,7 @@ end
     mddf(
         trajectory_file::String, 
         solute::AtomSelection,
-        solvent::AtomSelection, # optional: if omitted, a self-correlation will be computed
+        solvent::AtomSelection, # optional: if omitted, an auto-correlation will be computed
         options::Options=Options(); # optional: if omitted, default options will be used
         # optional keywords:
         trajectory_format="", 
@@ -447,7 +447,7 @@ end
     coordination_number(
         trajectory_file::String, 
         solute::AtomSelection,
-        solvent::AtomSelection, # optional: if omitted, a self-correlation will be computed
+        solvent::AtomSelection, # optional: if omitted, an auto-correlation will be computed
         options::Options=Options(); # optional: if omitted, default options will be used
         # optional keywords:
         trajectory_format="", 

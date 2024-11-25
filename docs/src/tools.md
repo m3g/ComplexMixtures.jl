@@ -278,7 +278,7 @@ where:
 Example:
 ```julia
 ...
-R = mddf(trajectory, options)
+R = mddf(trajectory_file, solute, solvent, options)
 g, kb = ComplexMixtures.gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)
 ```
 
@@ -296,7 +296,7 @@ using the `overview` function. Examples:
 ```julia-repl
 ...
 
-julia> results = mddf(trajectory, Options(bulk_range=(8.0, 12.0)))
+julia> results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
 
 julia> results
 --------------------------------------------------------------------------------

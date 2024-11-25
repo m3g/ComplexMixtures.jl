@@ -27,8 +27,7 @@ solvent = AtomSelection(water,natomspermol=3)
 
 The MDDF calculation is executed with:
 ```julia
-trajectory = Trajectory("trajectory.dcd",solute,solvent)
-results = mddf(trajectory, Options(bulk_range=(8.0, 12.0)))
+results = mddf("trajectory.dcd", solute, solvent, Options(bulk_range=(8.0, 12.0)))
 ```
 
 ## Atomic contributions in the result data structure
