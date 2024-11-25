@@ -514,7 +514,15 @@ julia> results = coordination_number(trajectory_file, solute, solvent, options);
 ```
 
 """
-function coordination_number(::String, args...; kargs...) end
+function coordination_number(::String, args...; kargs...) 
+    throw(ArgumentError("""\n
+        Invalid arguments for the `coordination_number` function.
+        Plese check the documentation for the correct call signature, by typing:
+
+        julia> ? coordination_number
+    
+    """))
+end
 
 function coordination_number(
     trajectory_file::String, 
@@ -600,6 +608,9 @@ end
     # Test wrong frame_weights input
     @test_throws ArgumentError mddf(trajectory_file, protein, water, Options(); frame_weights=[1.0], trajectory_format)
 
+    # The coordination_number(::String, args...; kargs...) is a placeholder for the docs only
+    @test_throws ArgumentError coordination_number("string.txt", 1.0)
+
     # Self correlation
     atoms = readPDB("$data_dir/toy/self_monoatomic.pdb")
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
@@ -621,6 +632,8 @@ end
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
+        @test sum(R.md_count) ≈ 1.0
+        R = coordination_number(trajectory_file, atom, options; low_memory, trajectory_format)
         @test sum(R.md_count) ≈ 1.0
     end
 
