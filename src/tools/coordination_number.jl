@@ -2,59 +2,102 @@
     coordination_number(R::Result) = R.coordination_number
     coordination_number(R::Result, s::Union{SoluteGroup,SolventGroup})
 
-Computes the coordination number of a given group of atoms of the solute or solvent
+Here, the coordination number is the number of molecules of the solvent that are within a certain distance from the solute.
 
-atomic contributions to the MDDF. 
 If no group is defined (first call above), the coordination number of the whole solute or solvent is returned.
 
-If the `group_contributions` to the `mddf` are computed previously with the `contributions` function, the result can be used
-to compute the coordination number by calling `coordination_number(R::Result, group_contributions)`.
+If a group is defined (second call above), the contributions of this group of atoms to the coordination number are 
+returned, as a function of the distance to the solute: 
 
-Otherwise, the coordination number can be computed directly with the second call, where:
-
-`s` is the solute or solvent selection (type `ComplexMixtures.AtomSelection`)
-
-`atom_contributions` is the `R.solute_atom` or `R.solvent_atom` arrays of the `Result` structure
-
-`R` is the `Result` structure,
-
-and the last argument is the selection of atoms from the solute to be considered, given as a list of indices, list of atom names, 
-or a selection following the syntax of `PDBTools`, or vector of `PDBTools.Atom`s, or a `PDBTools.Residue`
+- `R` are the results obtained, that is, a `Result` data structure,
+- `s` is the solute or solvent selection (of type `ComplexMixtures.AtomSelection`)
 
 # Examples
 
-In the following example we compute the coordination number of the atoms of residue 50 (of the solute) with the solvent atoms of TMAO,
-as a function of the distance. Finally, we show the average number of TMAO molecules within 5 Angstroms of residue 50. 
-The `findlast(<(5), R.d)` part of the code below returns the index of the last element of the `R.d` array that is smaller than 5 Angstroms.
+## Coordination number of a subgroup of atoms of the solute
 
-## Precomputing the group contributions Using the `contributions` function
+Here we compute the coordination number of the atoms of the Alanine residues of a protein,
+relative to the solvent (TMAO), as a function of the distance. For simplicity, the 
+coordination number at 5 Å is shown. We use, in this case, the `SoluteGroup` type to define the group of atoms,
+providing `select(ats, "resname ALA")` as the selection of atoms of the solute. `select` is a 
+function from the `PDBTools` package. 
 
-```julia
-using ComplexMixtures, PDBTools
-pdb = readPDB("test/data/NAMD/structure.pdb");
-R = load("test/data/NAMD/protein_tmao.json");
-solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1);
-residue50 = PDBTools.select(pdb, "residue 50");
-# Compute the group contributions to the MDDF
-residue50_contribution = contributions(solute, R.solute_atom, residue50);
-# Now compute the coordination number
-residue50_coordination = coordination_number(R, residue50_contribution)
-# Output the average number of TMAO molecules within 5 Angstroms of residue 50
-residue50_coordination[findlast(<(5), R.d)]
+```jldoctest
+julia> using ComplexMixtures, PDBTools
+
+julia> using ComplexMixtures.Testing: data_dir
+
+julia> ats = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
+
+julia> solute = AtomSelection(select(ats, "protein"); nmols=1);
+
+julia> solvent = AtomSelection(select(ats, "resname TMAO"); natomspermol=14);
+
+julia> R = mddf(
+           joinpath(data_dir,"NAMD/trajectory.dcd"), 
+           solute, 
+           solvent, 
+           Options(bulk_range=(8.0,12.0), silent=true)
+        );
+
+julia> i5 = findfirst(>=(5), R.d) # index for distance ≈ 5 Å
+251
+
+julia> ala_residues = select(ats, "resname ALA");
+
+julia> coordination_number(R, SoluteGroup(ala_residues))[i5]
+0.45
 ```
 
-## Without precomputing the `group_contribution`
+Alternatively to the use of the `PDBTools.select` function, an array with the indices of the
+atoms of the protein can be used to define the solute group, as, for example:
 
-```julia
-using ComplexMixtures, PDBTools
-pdb = readPDB("test/data/NAMD/structure.pdb");
-R = load("test/data/NAMD/protein_tmao.json");
-solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1);
-residue50 = PDBTools.select(pdb, "residue 50");
-# Compute the coordination number
-residue50_coordination = coordination_number(solute, R.solute_atom, R, group)
-# Output the average number of TMAO molecules within 5 Angstroms of residue 50
-residue50_coordination[findlast(<(5), R.d)]
+```julia-repl
+julia> ala_indices = findall(at -> resname(at) == "ALA", ats);
+
+julia> coordination_number(R, SoluteGroup(ala_indices))[i5]
+0.45
+```
+
+A similar syntax can be used to compute contributions of the solvent atoms to the MDDF.
+
+## Coordination numbers if the groups are predefined
+
+If group contributions were precomputed, the name of the group can be used to compute the coordination number:
+
+```jldoctest
+julia> using ComplexMixtures, PDBTools
+
+julia> using ComplexMixtures.Testing: data_dir
+
+julia> ats = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
+
+julia> solute = AtomSelection(
+           select(ats, "protein"); 
+           nmols=1,
+           # predefinition of the group of atoms:
+           group_atom_indices = [ findall(at -> resname(at) == "ALA", ats) ],
+           group_names = ["alanine residues"]
+        )
+AtomSelection 
+    1463 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1463
+    Number of groups: 1
+
+julia> solvent = AtomSelection(select(ats, "resname TMAO"); natomspermol=14);
+
+julia> R = mddf(
+           joinpath(data_dir,"NAMD/trajectory.dcd"), 
+           solute, 
+           solvent, 
+           Options(bulk_range=(8.0,12.0), silent=true)
+        );
+
+julia> i5 = findfirst(>=(5), R.d) # index for distance ≈ 5 Å
+251
+
+julia> coordination_number(R, SoluteGroup("alanine residues"))[i5]
+0.45
 ```
 
 """
