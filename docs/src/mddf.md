@@ -60,17 +60,27 @@ to set.
 
 ## Coordination numbers only
 
+The coordination number is the unnormalized count of how many molecules of the solvent
+are within a given distance to the solute. Coordination numbers can be computed 
+for systems where the normalization of the distribution functions is not possible
+(or needed) because of an ill definition of an ideal-gas state. For example, 
+in highly heterogeneous systems, on in systems with only a few molecules of the 
+"solvent", the density of the bulk solution might not be properly defined.   
+
+In these cases, nevertheless, coordination numbers can be computed and still 
+provide valuable information about the molecular structure of the system. Coordination
+number can be computed also from the results obtained from a `mddf` run, as explained in 
+the [corresponding section of the Tools menu](@ref coordination_number).
+
 The `coordination_number` function, called with the same arguments as the `mddf`
 function, can be used to compute coordination numbers without the normalization
-required for the MDDF:
+required for the MDDF, providing (possibly much) faster computations when the 
+normalization is not possible or required:
 
 ```@docs
 coordination_number(::String)
 ```
 
-This function can be useful if the normalization is not possible or meaningful.
-The computation is much faster if the normalization is not necessary.
-
 !!! note 
-    The `mddf`, `kb`, and random count parameters will be empty when using 
+    The `mddf`, `kb`, and random count parameters will be filled with zeros when using 
     this options, and are meaningless. 
