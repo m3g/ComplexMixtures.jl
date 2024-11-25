@@ -93,7 +93,7 @@ The script to compute the MDDFs as associated data from within python is, then:
     To change the options of the calculation, set the `Options` structure accordingly and pass it as a parameter to `mddf`. For example:
     ```python
     options = cm.Options(bulk_range=(8.0, 12.0))
-    results = cm.mddf(trajectory, options)
+    results = cm.mddf(trajectory_file, solute, solvent, options)
     ```
     The complete set of options available is described [here](@ref options).
 

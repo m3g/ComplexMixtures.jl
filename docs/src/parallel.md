@@ -47,7 +47,7 @@ There are different ways to deal with this issue:
 4. Increase the frequency of garbage collection calls:
    ```julia
    options = Options(GC=true, GC_threshold=0.5)
-   R = mddf(trajectory, options)
+   R = mddf(trajectory_file, solute, solvent, options)
    ```     
    The `GC_threshold=0.5` indicates that if the free memory is smaller than 50%
    of the total memory of the machine, a garbage-collection run will occur. The  

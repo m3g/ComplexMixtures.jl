@@ -6,7 +6,7 @@ to obtain the MDDF. These options can be defined by the user and passed to the
 
 ```julia
 options = Options(lastframe=1000, bulk_range=(8.0, 12.0))
-results = mddf(trajectory, options)
+results = mddf(trajectory_file, solute, solvent, options)
 ```
 
 ## Frame ranges and histogram properties
@@ -108,7 +108,7 @@ optional parameter `frame_weights`.
 
 For example:
 ```julia-repl
-julia> results = mddf(trajectory, options; frame_weights=[0.0, 1.0, 2.0])
+julia> results = mddf(trajectory_file, solute, solvent, options; frame_weights=[0.0, 1.0, 2.0])
 ```
 The code above will assign a larger weight to the third frame of the trajectory.
 These weights are relative (meaning that `[0.0, 1.0, 2.0]` would produce 
@@ -134,7 +134,7 @@ number may still be an interesting information to be retrieved from the
 simulations. To run the computation to compute coordination numbers only, do:
 
 ```julia-repl
-julia> results = mddf(trajectory, options; coordination_number_only = true)
+julia> results = mddf(trajectory_file, solute, solvent, options; coordination_number_only = true)
 ```
 
 !!! note    

@@ -108,38 +108,53 @@ end
 
 """     
     mddf(
-        trajectory::Trajectory, 
-        options::Options; 
+        trajectory_file::String, 
+        solute::AtomSelection,
+        solvent::AtomSelection, # optional: if omitted, an auto-correlation will be computed
+        options::Options=Options(); # optional: if omitted, default options will be used
+        # optional keywords:
+        trajectory_format="", 
         frame_weights = Float64[], 
-        coordination_number_only = false,
-        low_memory = false,
+        coordination_number_only = false, 
+        low_memory = false, 
+        chemfiles = false,
     )
 
 Computes the minimum-distance distribution function, atomic contributions, and 
-KB integrals, given the `Trajectory` structure of the simulation and, optionally, parameters
-given as a second argument of the `Options` type. This is the main function of the `ComplexMixtures` 
-package. 
+KB integrals, given the trajectory file name, and the definition of the solute and
+solvent groups of atoms as `AtomSelection` data structures. If the `solvent` parameter
+is omitted, a self-correlation will be computed.
+
+This is the main function of the `ComplexMixtures` package. 
 
 The `options` parameter is optional. If not set, the default `Options()` structure will be used.
 
 ### Optional execution keywords
 
-The `frame_weights` keyword is an array
-of weights for each frame of the trajectory. If this is provided, the MDDF will be computed as a weighted
-average of the MDDFs of each frame. This can be used to study the solvation dependency in perturbed 
-ensembles. 
+- `trajectory_format` is a string that defines the format of the trajectory file. If not provided, the format
+   will be guessed from the file extension, and the `Chemfiles` library will be used to read the trajectory. 
 
-The `coordination_number_only`, is a boolean that, if set to `true`, will compute only the
-site-counts and coordination numbers of the solvent molecules around the solute, and not the MDDF, RDF, or KB integrals. 
-This is useful when the normalization of the distribution is not possible or needed, for instance when
-the bulk solutio is not properly defined. The computation is much faster in this case. 
+- `frame_weights` is an array of weights for each frame of the trajectory. If this is provided, the MDDF will be computed as a weighted
+  average of the MDDFs of each frame. This can be used to study the solvation dependency in perturbed 
+  ensembles.
 
-The `low_memory` can be set to `true` to reduce the memory requirements of the computation. This will
-parallelize the computation of the minimum distances at a lower level, reducing the memory
-requirements at the expense of some performance. 
+- `coordination_number_only` is a boolean that, if set to `true`, will compute only the
+  site-counts and coordination numbers of the solvent molecules around the solute, and not the MDDF, RDF, or KB integrals. 
+  This is useful when the normalization of the distribution is not possible or needed, for instance when
+  the bulk solution is not properly defined. The computation is much faster in this case. The call to `mddf` with this
+  option is equivalent to direct the call to `coordination_number`.
+
+- `low_memory` can be set to `true` to reduce the memory requirements of the computation. This will
+  parallelize the computation of the minimum distances at a lower level, reducing the memory
+  requirements at the expense of some performance.
+
+- `chemfiles` is a boolean that, if set to `true`, will use try to use the `Chemfiles` library to read the trajectory file. 
+  independently of the file extension. By default, PDB and DCD trajectories are read by specific readers.
 
 !!! compat
-    The `low_memory` option was introduced in v2.4.0.
+    The current call signature was introduced in version 2.9.0. The previous call signature with the 
+    previous construction of the `Trajectory` object, is still available, but it is no longer recommended 
+    because it more prone to user-level solute and solvent configuration errors. 
 
 ### Examples
 
@@ -148,22 +163,46 @@ julia> using ComplexMixtures, PDBTools
 
 julia> using ComplexMixtures.Testing: data_dir
 
-julia> dir = "\$data_dir/NAMD";
-
-julia> atoms = readPDB("\$dir/structure.pdb");
+julia> atoms = readPDB(joinpath(data_dir,"NAMD/structure.pdb"));
 
 julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
 julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
 
-julia> trajectory = Trajectory("\$dir/trajectory.dcd",solute,solvent);
-
 julia> options = Options(lastframe=10, bulk_range=(10.0, 15.0));
 
-julia> results = mddf(trajectory, options)
+julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
+
+julia> results = mddf(trajectory_file, solute, solvent, options);
 ```
 
 """
+function mddf end
+
+function mddf(
+    trajectory_file::String, 
+    solute::AtomSelection, 
+    solvent::AtomSelection, 
+    options::Options; 
+    trajectory_format::String="",
+    chemfiles::Bool=false,
+    kargs...)
+    trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
+    return mddf(trajectory, options; kargs...)
+end
+
+function mddf(
+    trajectory_file::String, 
+    solute_and_solvent::AtomSelection, 
+    options::Options; 
+    trajectory_format::String="",
+    chemfiles::Bool=false,
+    kargs...
+)
+    trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
+    return mddf(trajectory, options; kargs...)
+end
+
 function mddf(
     trajectory::Trajectory, options::Options=Options();
     frame_weights=Float64[],
@@ -409,28 +448,114 @@ function coordination_number_frame!(
     return r_chunk
 end
 
+
 """     
     coordination_number(
-        trajectory::Trajectory, options::Options;
-        kargs...
+        trajectory_file::String, 
+        solute::AtomSelection,
+        solvent::AtomSelection, # optional: if omitted, an auto-correlation will be computed
+        options::Options=Options(); # optional: if omitted, default options will be used
+        # optional keywords:
+        trajectory_format="", 
+        frame_weights = Float64[], 
+        low_memory = false, 
     )
 
-Computes the coordination numbers for each solute molecule in the trajectory, given the `Trajectory`.
-This is an auxiliary function of the `ComplexMixtures` package, which is used to compute 
-coordination numbers when the normalization of the distribution is not possible or needed. 
+Computes the minimum-distance coordination number and atomic contributions,
+given the trajectory file name, and the definition of the solute and
+solvent groups of atoms as `AtomSelection` data structures. If the `solvent` parameter
+is omitted, a self-coordination number will be computed.
 
 The output is a `Result` structure, which contains the data as the result of a call to `mddf`, except
 that all counters which require normalization of the distribution will be zero. In summary, this result
 data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
 
-The keyword arguments are the same as for the `mddf` function, and are passed to it.
-This function is a wrapper around `mddf` with the `coordination_number_only` keyword set to `true`.
+The `options` parameter is optional. If not set, the default `Options()` structure will be used.
+
+### Optional execution keywords
+
+- `trajectory_format` is a string that defines the format of the trajectory file. If not provided, the format
+   will be guessed from the file extension, and the `Chemfiles` library will be used to read the trajectory. 
+
+- `frame_weights` is an array of weights for each frame of the trajectory. If this is provided, the MDDF will be computed as a weighted
+  average of the MDDFs of each frame. This can be used to study the solvation dependency in perturbed 
+  ensembles.
+
+- `low_memory` can be set to `true` to reduce the memory requirements of the computation. This will
+  parallelize the computation of the minimum distances at a lower level, reducing the memory
+  requirements at the expense of some performance.
+
+- `chemfiles` is a boolean that, if set to `true`, will use try to use the `Chemfiles` library to read the trajectory file. 
+  independently of the file extension. By default, PDB and DCD trajectories are read by specific readers.
+
+!!! compat
+    The current call signature was introduced in version 2.9.0. The previous call signature with the 
+    previous construction of the `Trajectory` object, is still available, but it is no longer recommended 
+    because it more prone to user-level solute and solvent configuration errors. 
+
+### Examples
+
+```julia-repl
+julia> using ComplexMixtures, PDBTools
+
+julia> using ComplexMixtures.Testing: data_dir
+
+julia> atoms = readPDB(joinpath(data_dir,"NAMD/structure.pdb"));
+
+julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
+
+julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
+
+julia> options = Options(lastframe=10, bulk_range=(10.0, 15.0));
+
+julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
+
+julia> results = coordination_number(trajectory_file, solute, solvent, options);
+```
 
 """
+function coordination_number(::String, args...; kargs...) 
+    throw(ArgumentError("""\n
+        Invalid arguments for the `coordination_number` function.
+        Plese check the documentation for the correct call signature, by typing:
+
+        julia> ? coordination_number
+    
+    """))
+end
+
 function coordination_number(
-    trajectory::Trajectory, options::Options=Options();
+    trajectory_file::String, 
+    solute::AtomSelection, 
+    solvent::AtomSelection, 
+    options::Options; 
+    trajectory_format::String="",
+    chemfiles::Bool=false,
+    kargs...)
+    _coordination_number_call_error(;kargs...)
+    trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
+    return mddf(trajectory, options; coordination_number_only=true, kargs...)
+end
+
+function coordination_number(
+    trajectory_file::String, 
+    solute_and_solvent::AtomSelection, 
+    options::Options; 
+    trajectory_format::String="",
+    chemfiles::Bool=false,
     kargs...
 )
+    _coordination_number_call_error(;kargs...)
+    trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
+    return mddf(trajectory, options; coordination_number_only=true, kargs...)
+end
+
+function coordination_number(traj::Trajectory, options::Options=Options(); kargs...)
+    _coordination_number_call_error(;kargs...)
+    return mddf(traj, options; coordination_number_only=true, kargs...)
+end
+
+function _coordination_number_call_error(;kargs...) 
     if haskey(kargs, :coordination_number_only)
         throw(ArgumentError("""\n
             The keyword argument `coordination_number_only` is not allowed in the `coordination_number` function.
@@ -438,7 +563,7 @@ function coordination_number(
             
         """))
     end
-    return mddf(trajectory, options; coordination_number_only=true, kargs...)
+    return nothing
 end
 
 @testitem "mddf - toy system" begin
@@ -450,8 +575,8 @@ end
     atoms = readPDB("$data_dir/toy/cross.pdb")
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
-
+    trajectory_file = "$data_dir/toy/cross.pdb"
+    trajectory_format = "PDBTraj"
     for nthreads in [1,2], lastframe in [1, 2], low_memory in [true, false]
         options = Options(;
             seed=321,
@@ -461,7 +586,7 @@ end
             n_random_samples=10^5,
             lastframe,
         )
-        R = mddf(traj, options; low_memory)
+        R = mddf(trajectory_file, protein, water, options; trajectory_format, low_memory)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
@@ -470,7 +595,7 @@ end
         @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
         @test sum(R.md_count) ≈ 1
         @test sum(R.coordination_number) ≈ 51
-        C = coordination_number(traj, options; low_memory)
+        C = coordination_number(trajectory_file, protein, water, options; trajectory_format, low_memory)
         @test C.volume.total == R.volume.total
         @test C.volume.domain ≈ 0.0
         @test C.density.solute ≈ 1 / C.volume.total
@@ -481,12 +606,16 @@ end
     end
 
     # Test wrong frame_weights input
-    @test_throws ArgumentError mddf(traj, Options(), frame_weights=[1.0])
+    @test_throws ArgumentError mddf(trajectory_file, protein, water, Options(); frame_weights=[1.0], trajectory_format)
+
+    # The coordination_number(::String, args...; kargs...) is a placeholder for the docs only
+    @test_throws ArgumentError coordination_number("string.txt", 1.0)
 
     # Self correlation
     atoms = readPDB("$data_dir/toy/self_monoatomic.pdb")
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
-    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format="PDBTraj")
+    trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+    trajectory_format = "PDBTraj"
     # without atoms in the bulk
     for nthreads in [1,2], low_memory in [false, true]
         options = Options(;
@@ -497,12 +626,14 @@ end
             n_random_samples=10^5,
             lastframe=1,
         )
-        R = mddf(traj, options; low_memory)
+        R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
+        @test sum(R.md_count) ≈ 1.0
+        R = coordination_number(trajectory_file, atom, options; low_memory, trajectory_format)
         @test sum(R.md_count) ≈ 1.0
     end
 
@@ -511,38 +642,38 @@ end
     #
     # Read only first frame
     for low_memory in [false, true]
-        local traj
+        local trajectory_file
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, lastframe=1)
-        traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format="PDBTraj")
-        R1 = mddf(traj, options; low_memory)
-        R2 = mddf(traj, options; frame_weights=[1.0, 0.0], low_memory)
+        trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+        R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
+        R2 = mddf(trajectory_file, atom, options; frame_weights=[1.0, 0.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
         @test R1.rdf_count == R2.rdf_count
         # Read only last frame
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
-        R1 = mddf(traj, options; low_memory)
+        R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
-        R2 = mddf(traj, options; frame_weights=[0.0, 1.0], low_memory)
+        R2 = mddf(trajectory_file, atom, options; frame_weights=[0.0, 1.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
         @test R1.rdf_count == R2.rdf_count
         # Use equal weights
-        R1 = mddf(traj, options; low_memory)
-        R2 = mddf(traj, options; frame_weights=[0.3, 0.3], low_memory)
+        R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
+        R2 = mddf(trajectory_file, atom, options; frame_weights=[0.3, 0.3], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
         @test R1.rdf_count == R2.rdf_count
         # Check with the duplicated-first-frame trajectory 
-        traj = Trajectory("$data_dir/toy/self_monoatomic_duplicated_first_frame.pdb", atom, format="PDBTraj")
+        trajectory_file = "$data_dir/toy/self_monoatomic_duplicated_first_frame.pdb"
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=1, lastframe=3)
-        R1 = mddf(traj, options; low_memory)
-        traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", atom, format="PDBTraj")
+        R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
+        trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
-        R2 = mddf(traj, options; frame_weights=[2.0, 1.0], low_memory)
+        R2 = mddf(trajectory_file, atom, options; frame_weights=[2.0, 1.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
         @test R1.rdf_count == R2.rdf_count
         # Test some different weights
-        R2 = mddf(traj, Options(silent=true); frame_weights=[2.0, 1.0], low_memory)
+        R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=[2.0, 1.0], low_memory, trajectory_format)
         @test sum(R2.md_count) ≈ 2 / 3
-        R2 = mddf(traj, Options(silent=true); frame_weights=[1.0, 2.0], low_memory)
+        R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=[1.0, 2.0], low_memory, trajectory_format)
         @test sum(R2.md_count) ≈ 1 / 3
 
         # only with atoms in the bulk
@@ -554,7 +685,7 @@ end
             n_random_samples=10^5,
             firstframe=2,
         )
-        R = mddf(traj, options; low_memory)
+        R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
@@ -570,7 +701,7 @@ end
             silent=true,
             n_random_samples=10^5,
         )
-        R = mddf(traj, options; low_memory)
+        R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
@@ -589,16 +720,16 @@ end
     atoms = readPDB(pdbfile)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
+    trajectory_file = "$data_dir/NAMD/trajectory.dcd"
 
     # Throw error in incorrect call to coordination_number
-    @test_throws ArgumentError coordination_number(traj, Options(); coordination_number_only=true)
+    @test_throws ArgumentError coordination_number(trajectory_file, protein, tmao, Options(); coordination_number_only=true)
+    @test_throws ArgumentError coordination_number(trajectory_file, tmao, Options(); coordination_number_only=true)
 
     # Throw insufficent memory error
-    @test_throws ErrorException mddf(traj, Options(nthreads=10^10))
+    @test_throws ErrorException mddf(trajectory_file, protein, tmao, Options(nthreads=10^10))
 
     for nthreads in [1,2], low_memory in [true, false]
-        local traj
         options = Options(;
             seed=1, 
             stride=1, 
@@ -608,8 +739,7 @@ end
             silent=true
         )
         # Test actual system: cross correlation
-        traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
-        R = mddf(traj, options; low_memory)
+        R = mddf("$data_dir/NAMD/trajectory.dcd", protein, tmao, options; low_memory)
         # Deterministic
         @test R.volume.total ≈ 603078.4438609097
         @test sum(R.md_count) ≈ 25.250000000000007
@@ -626,8 +756,7 @@ end
         @test R.kb_rdf[end] ≈ -6360.471034166915 rtol = 0.5
 
         # Self correlation
-        traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
-        R = mddf(traj, options; low_memory)
+        R = mddf("$data_dir/NAMD/trajectory.dcd", tmao, options; low_memory)
         # Deterministic
         @test R.volume.total ≈ 603078.4438609097
         @test sum(R.md_count) ≈ 2.8939226519337016
@@ -648,21 +777,19 @@ end
         # Test varying frame weights: the trajectory below has 3 frames
         # extracted from NAMD/trajectory.dcd, and the 2 first frames are the
         # first frame duplicated.
-        traj1 = Trajectory("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao)
-        R1 = mddf(traj1, Options(); low_memory)
-        traj2 = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
-        R2 = mddf(traj2, Options(lastframe=2); frame_weights=[2.0, 1.0], low_memory)
+        R1 = mddf("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao, Options(); low_memory)
+        R2 = mddf("$data_dir/NAMD/trajectory.dcd", tmao, Options(lastframe=2); frame_weights=[2.0, 1.0], low_memory)
         @test R2.md_count ≈ R1.md_count
         @test all(R2.solute_group_count == R1.solute_group_count)
         @test all(R2.solvent_group_count == R1.solvent_group_count)
-        R2 = mddf(traj2, Options(lastframe=2); frame_weights=[0.5, 0.25], low_memory)
+        R2 = mddf("$data_dir/NAMD/trajectory.dcd", tmao, Options(lastframe=2); frame_weights=[0.5, 0.25], low_memory)
         @test R2.md_count ≈ R1.md_count
         @test all(R2.solute_group_count == R1.solute_group_count)
         @test all(R2.solvent_group_count == R1.solvent_group_count)
         @test R2.volume.total ≈ R1.volume.total
         # Varying weights with stride
-        R1 = mddf(traj1, Options(firstframe=2, lastframe=3); low_memory)
-        R2 = mddf(traj1, Options(lastframe=3, stride=2); frame_weights=[1.0, 100.0, 1.0], low_memory)
+        R1 = mddf("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao, Options(firstframe=2, lastframe=3); low_memory)
+        R2 = mddf("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao, Options(lastframe=3, stride=2); frame_weights=[1.0, 100.0, 1.0], low_memory)
         @test R2.md_count ≈ R1.md_count
         @test all(R2.solute_group_count == R1.solute_group_count)
         @test all(R2.solvent_group_count == R1.solvent_group_count)

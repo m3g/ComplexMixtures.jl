@@ -87,7 +87,7 @@ and the same distribution function, decomposed into the contributions of the hyd
     To change the options of the calculation, set the `Options` structure accordingly and pass it as a parameter to `mddf`. For example:
     ```julia
     options = Options(bulk_range=(10.0, 15.0), stride=5)
-    mddf(trajectory, options)
+    mddf(trajectory_file, solute, solvent, options)
     ```
     The complete set of options available is described [here](@ref options).
 

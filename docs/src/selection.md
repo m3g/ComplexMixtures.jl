@@ -21,7 +21,7 @@ For example, here we define a protein of a system as the solute:
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+julia> atoms = read_pdb(ComplexMixtures.Testing.pdbfile);
 
 julia> protein = select(atoms, "protein");
 
@@ -62,7 +62,7 @@ For example, the solute can be defined with:
 ```julia
 using ComplexMixtures, PDBTools
 
-atoms = readPDB("system.pdb")
+atoms = read_pdb("system.pdb")
 
 indices, names = select_with_vmd("./system.pdb", "protein", vmd="/usr/bin/vmd")
 
@@ -112,7 +112,7 @@ Here, we illustrate this feature by presselecting the acidic and basic residues 
 ```julia
 julia> using ComplexMixtures, PDBTools
 
-julia> atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+julia> atoms = read_pdb(ComplexMixtures.Testing.pdbfile);
 
 julia> protein = select(atoms, "protein");
 
@@ -152,9 +152,7 @@ With these group selections predefined, the contributions of these groups to the
 can be retrived directly from the result data structure with, for example:
 
 ```julia-repl
-julia> trajectory = Trajectory(trajectory_file, solute, solvent)
-
-julia> result = mddf(trajectory, Options(bulk_range=(8.0, 12.0)));
+julia> result = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)));
 
 julia> acidic_residue_contributions = contributions(result, SoluteGroup("acidic residues"))
 ```

@@ -26,14 +26,13 @@ The calculation on the multiple trajectories is then performed in a
 simple loop, such as
 
 ```julia
-atoms = PDBTools.readPDB("./system.pdb")
+atoms = PDBTools.read_pdb("./system.pdb")
 solute = AtomSelection(atoms,"protein",nmols=1)
 solvent = AtomSelection(atoms,"resname TMAO",natomspermol=14)
 options = Options(bulk_range=(8.0, 12.0))
 for file in trajectory_files
-    trajectory = Trajectory(file,solute,solvent)
     # compute the MDDF data and push the result to the results array
-    push!(results, mddf(trajectory, options))
+    push!(results, mddf(trajectory_file, solute, solvent, options))
 end
 ```
 
