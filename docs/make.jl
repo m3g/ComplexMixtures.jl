@@ -22,7 +22,6 @@ makedocs(
         " ◦ POPC membrane in water/ethanol" => "example3.md",
         " ◦ Water/Glycerol mixture" => "example4.md",
         "Set solute and solvent" => "selection.md",
-        "Loading the trajectory" => "trajectory.md",
         "Computing the MDDF" => "mddf.md",
         "Results" => "results.md",
         "Atomic and group contributions" => "contributions.md",
