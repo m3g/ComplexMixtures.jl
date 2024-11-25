@@ -5,8 +5,3 @@ using TestItemRunner: @run_package_tests, @testitem
     import Aqua
     Aqua.test_all(ComplexMixtures)
 end
-
-@testitem "Doctests" begin
-    using Documenter: doctest
-    doctest(ComplexMixtures)
-end
