@@ -117,6 +117,7 @@ end
         frame_weights = Float64[], 
         coordination_number_only = false, 
         low_memory = false, 
+        chemfiles = false,
     )
 
 Computes the minimum-distance distribution function, atomic contributions, and 
@@ -146,6 +147,9 @@ The `options` parameter is optional. If not set, the default `Options()` structu
 - `low_memory` can be set to `true` to reduce the memory requirements of the computation. This will
   parallelize the computation of the minimum distances at a lower level, reducing the memory
   requirements at the expense of some performance.
+
+- `chemfiles` is a boolean that, if set to `true`, will use try to use the `Chemfiles` library to read the trajectory file. 
+  independently of the file extension. By default, PDB and DCD trajectories are read by specific readers.
 
 !!! compat
     The current call signature was introduced in version 2.9.0. The previous call signature with the 
@@ -181,8 +185,9 @@ function mddf(
     solvent::AtomSelection, 
     options::Options; 
     trajectory_format::String="",
+    chemfiles::Bool=false,
     kargs...)
-    trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format)
+    trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; kargs...)
 end
 
@@ -191,9 +196,10 @@ function mddf(
     solute_and_solvent::AtomSelection, 
     options::Options; 
     trajectory_format::String="",
+    chemfiles::Bool=false,
     kargs...
 )
-    trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format)
+    trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; kargs...)
 end
 
@@ -479,6 +485,9 @@ The `options` parameter is optional. If not set, the default `Options()` structu
   parallelize the computation of the minimum distances at a lower level, reducing the memory
   requirements at the expense of some performance.
 
+- `chemfiles` is a boolean that, if set to `true`, will use try to use the `Chemfiles` library to read the trajectory file. 
+  independently of the file extension. By default, PDB and DCD trajectories are read by specific readers.
+
 !!! compat
     The current call signature was introduced in version 2.9.0. The previous call signature with the 
     previous construction of the `Trajectory` object, is still available, but it is no longer recommended 
@@ -513,9 +522,10 @@ function coordination_number(
     solvent::AtomSelection, 
     options::Options; 
     trajectory_format::String="",
+    chemfiles::Bools=false,
     kargs...)
     _coordination_number_call_error(;kargs...)
-    trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format)
+    trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
 
@@ -524,10 +534,11 @@ function coordination_number(
     solute_and_solvent::AtomSelection, 
     options::Options; 
     trajectory_format::String="",
+    chemfiles::Bools=false,
     kargs...
 )
     _coordination_number_call_error(;kargs...)
-    trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format)
+    trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
 
