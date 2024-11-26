@@ -51,7 +51,7 @@ julia> results = load(data_dir*"/NAMD/Protein_in_Glycerol/protein_glyc.json");
 
 julia> rc = ResidueContributions(results, select(atoms, "protein"); silent=true)
 
-          Residue Contributions
+          Residue Contributions - 274 residues.
      3.51 █     █      █     █            █
      3.27 █              █   █
      3.03 █     █    █       █            █       █       █                █
