@@ -1,3 +1,8 @@
+# These are type parameters necessary for indexing and iterating properly when a single
+# residue contribution is selected, to iterate ver the contributions of such residue.
+struct SingleResidueContribution end
+struct MultipleResidueContribution end
+
 """
     ResidueContributions (data structure)
 
@@ -89,6 +94,29 @@ rc_range = rc[10:50] # slice the residue contributions
 contourf(rc_range) # plots a contour map of the selected residues
 ```
 
+## Single-residue contributions
+
+When the contributions of a single residue are computed, or a single-residue contribution is retrieved from
+a `ResidueContributions` object, the indexing and iteration over that object occurs over the contributions of that residue:
+
+```julia
+using ComplexMixtures, PDBTools, Plots
+...
+result = mddf(trajectory_file, solute, solvent, options)
+rc = ResidueContributions(result, select(atoms, "protein"))
+rc7 = rc[7] # contributions of residue 7
+# iterate over the contributions of residue 7
+rc7[1] # contribution of the first distance
+rc7[end] # contribution of the last distance
+```
+
+This is particular useful to retrieve the contributions from all residues at a given distance:
+
+```julia
+rc = ResidueContributions(result, select(atoms, "protein"))
+rc_last_distance = [ r[end] for r in rc ]
+```
+
 ## Arithmetic operations
 
 ```julia
@@ -113,7 +141,7 @@ rc4 = rc2 / 2
     Saving and loading was introduced in v2.8.0.
 
 """
-@kwdef struct ResidueContributions
+@kwdef struct ResidueContributions{N<:Union{SingleResidueContribution, MultipleResidueContribution}}
     Version::VersionNumber = pkgversion(@__MODULE__)
     d::Vector{Float64}
     residue_contributions::Vector{Vector{Float64}}
@@ -174,7 +202,8 @@ function ResidueContributions(
         serial=false,
     )
 
-    return ResidueContributions(;
+    N = length(resnums) == 1 ? SingleResidueContribution : MultipleResidueContribution
+    return ResidueContributions{N}(;
         d=results.d[idmin:idmax],
         residue_contributions=[rc[idmin:idmax] for rc in rescontrib],
         resnums=resnums,
@@ -197,23 +226,52 @@ import Base: ==
     rc1.d == rc2.d && rc1.xticks == rc2.xticks && rc1.resnums == rc2.resnums &&
     rc1.residue_contributions == rc2.residue_contributions
 
-function Base.copy(rc::ResidueContributions)
-    return ResidueContributions(
+function Base.copy(rc::RCType) where {RCType<:ResidueContributions}
+    return RCType(
         d=copy(rc.d),
         residue_contributions=[copy(v) for v in rc.residue_contributions],
         resnums=copy(rc.resnums),
         xticks=(copy(rc.xticks[1]), copy(rc.xticks[2])),
     )
 end
-function Base.getindex(rc::ResidueContributions, r::AbstractRange)
-    return ResidueContributions(
+
+
+# 
+# Indexing and iteration of MultipleResidueContribution objects: iterate over residues
+#
+function Base.getindex(rc::ResidueContributions{MultipleResidueContribution}, r::AbstractRange)
+    N = length(r) == 1 ? SingleResidueContribution : MultipleResidueContribution
+    return ResidueContributions{N}(
         d=rc.d,
         residue_contributions=[rc.residue_contributions[i] for i in r],
         resnums=rc.resnums[r],
         xticks=(rc.xticks[1][r], rc.xticks[2][r]),
     )
 end
-Base.getindex(rc::ResidueContributions, i) = rc[i:i]
+Base.length(rc::ResidueContributions{MultipleResidueContribution}) = length(rc.residue_contributions)
+Base.getindex(rc::ResidueContributions{MultipleResidueContribution}, i) = rc[i:i]
+Base.firstindex(rc::ResidueContributions{MultipleResidueContribution}) = 1
+Base.lastindex(rc::ResidueContributions{MultipleResidueContribution}) = length(rc.residue_contributions)
+function Base.iterate(rc::ResidueContributions{MultipleResidueContribution}, state=firstindex(rc))
+    if state > length(rc)
+        return nothing
+    end
+    return rc[state], state + 1
+end
+
+#
+# Indexing and iteration of SingleResidueContribution objects: iterate over the contributions of a single residue
+#
+Base.length(rc::ResidueContributions{SingleResidueContribution}) = length(first(rc.residue_contributions))
+Base.getindex(rc::ResidueContributions{SingleResidueContribution}, i) = first(rc.residue_contributions)[i]
+Base.firstindex(rc::ResidueContributions{SingleResidueContribution}) = firstindex(first(rc.residue_contributions)) 
+Base.lastindex(rc::ResidueContributions{SingleResidueContribution}) = length(first(rc.residue_contributions))
+function Base.iterate(rc::ResidueContributions{SingleResidueContribution}, state=firstindex(first(rc.residue_contributions)))
+    if state > length(first(rc.residue_contributions))
+        return nothing
+    end
+    return first(rc.residue_contributions)[state], state + 1
+end
 
 import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
@@ -257,7 +315,9 @@ function *(rc1::ResidueContributions, rc2::ResidueContributions)
     return rc_new
 end
 
+#
 # Arithmetic operations with scalars
+#
 function *(rc::ResidueContributions, x::Real)
     rc2 = copy(rc)
     for v in rc2.residue_contributions
@@ -306,9 +366,9 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
     if _testing_show_method[]
-        print(io, "\n          Residue Contributions\n")
+        print(io, "\n          Residue Contributions - $(length(rc)) residues.\n")
     else
-        printstyled(io, "\n          Residue Contributions\n", bold=true)
+        printstyled(io, "\n          Residue Contributions - $(length(rc)) residues.\n", bold=true)
     end
     m = rc.residue_contributions
     clims, colorscale = _set_clims_and_colorscale!(rc)
@@ -410,7 +470,7 @@ function load(filename::String, ::Type{ResidueContributions})
     _check_version(filename)
     rc = try
         open(filename, "r") do io
-            JSON3.read(io, ResidueContributions)
+            JSON3.read(io, ResidueContributions{MultipleResidueContribution})
         end
     catch
         throw(ArgumentError("""\n
@@ -418,7 +478,12 @@ function load(filename::String, ::Type{ResidueContributions})
 
         """))
     end
-    return rc
+    # Converto to SingleResidueContribution if a single contribution was read
+    return if length(rc) == 1
+        rc[1]
+    else
+        rc
+    end
 end
 
 @testitem "ResidueContribution" begin
@@ -473,10 +538,11 @@ end
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
     # version issues
-    rc_future = ResidueContributions(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    N = ComplexMixtures.MultipleResidueContribution
+    rc_future = ResidueContributions{N}(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
     save(tmpfile, rc_future)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
-    rc_past = ResidueContributions(Version=v"1.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    rc_past = ResidueContributions{N}(Version=v"1.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
     save(tmpfile, rc_past)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
@@ -488,6 +554,17 @@ end
     rc2 = rc[2:10]
     @test rc2.resnums == 2:10
     @test rc2 == ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"))
+    @test firstindex(rc) == 1
+    @test lastindex(rc) == 104
+    @test length(rc) == 104
+    @test firstindex(rc1) == 1
+    @test lastindex(rc1) == 101
+    @test length(rc1) == 101
+
+    # Test iterators
+    @test count(true for r in rc) == 104
+    @test count(true for r in rc1) == 101
+    @test [ r[end] for r in rc ] == [ r[end] for r in rc.residue_contributions ]
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
