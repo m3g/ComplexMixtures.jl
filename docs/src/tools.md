@@ -104,7 +104,7 @@ One nice way to visualize the accumulation or depletion of a solvent around a ma
 Here, one can see that Glycerol accumulates on Asp76 and on the proximity of hydrogen-bonding residues (Serine residues mostly). This figure was obtained by extracting from atomic contributions of the protein the contribution of each residue to the MDDF, coordination numbers or minimum-distance counts. 
 
 !!! compat
-    All features described in this section are only available in v2.8.0 or greater.
+    All features described in this section are only available in v2.10.0 or greater.
 
 The computation of the contributions of each residue can be performed with the convenience function `ResidueContributions`, which
 creates an object containing the contributions of the residues to the mddf (or coordination numbers, or minimum-distance counts), the 
@@ -171,6 +171,31 @@ Finally, it is also possible to renormalize the contributions by multiplication 
 ```julia
 rc2 = rc / 15
 rc2 = 2 * rc
+```
+
+When the contributions of a single residue are computed, or a single-residue contribution is retrieved from
+a `ResidueContributions` object, the indexing and iteration over that object occurs over the contributions of that residue:
+
+```julia
+using ComplexMixtures, PDBTools, Plots
+...
+result = mddf(trajectory_file, solute, solvent, options)
+rc = ResidueContributions(result, select(atoms, "protein"))
+rc7 = rc[7] # contributions of residue 7
+# iterate over the contributions of residue 7
+rc7[1] # contribution of the first distance
+rc7[end] # contribution of the last distance
+```
+
+This is particular useful to retrieve the contributions from all residues at a given distance:
+
+```julia
+rc = ResidueContributions(result, select(atoms, "protein"))
+rc_last_distance = [ r[end] for r in rc ] 
+# or, equivalently
+rc_last_distance = last.(rc)
+# compute the maximum contribution of each residue:
+max_c = maximum.(rc)
 ```
 
 ### Saving and loading a ResidueContributions object

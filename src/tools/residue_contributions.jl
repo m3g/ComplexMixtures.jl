@@ -1,3 +1,8 @@
+# These are type parameters necessary for indexing and iterating properly when a single
+# residue contribution is selected, to iterate ver the contributions of such residue.
+struct SingleResidueContribution end
+struct MultipleResidueContribution end
+
 """
     ResidueContributions (data structure)
 
@@ -46,7 +51,7 @@ julia> results = load(data_dir*"/NAMD/Protein_in_Glycerol/protein_glyc.json");
 
 julia> rc = ResidueContributions(results, select(atoms, "protein"); silent=true)
 
-          Residue Contributions
+          Residue Contributions - 274 residues.
      3.51 █     █      █     █            █
      3.27 █              █   █
      3.03 █     █    █       █            █       █       █                █
@@ -77,16 +82,44 @@ contourf(rc) # plots a contour map
 
 ## Slicing
 
-Slicing, or indexing, the residue contributions returns a new `ResidueContributions` object with the selected residues:
+A slice of the residue contributions returns a new `ResidueContributions` object with the selected residues:
 
 ```julia
 using ComplexMixtures, PDBTools, Plots
 ...
 result = mddf(trajectory_file, solute, solvent, options)
 rc = ResidueContributions(result, select(atoms, "protein"))
-rc_7 = rc[7] # contributions of residue 7
 rc_range = rc[10:50] # slice the residue contributions
 contourf(rc_range) # plots a contour map of the selected residues
+```
+
+## Single-residue contributions
+
+When the contributions of a single residue are computed, or a single-residue contribution is retrieved from
+a `ResidueContributions` object, the indexing and iteration over that object occurs over the contributions of that residue:
+
+```julia
+using ComplexMixtures, PDBTools, Plots
+...
+result = mddf(trajectory_file, solute, solvent, options)
+rc = ResidueContributions(result, select(atoms, "protein"))
+rc60 = rc[60] # contributions of residue 60 only
+# index and iterate over the contributions of residue 7
+rc60[1] # contribution at the first distance (equivalent to first(rc60))
+rc60[end] # contribution at the last distance (equivalent to last(rc60))
+count(>(0.01), rc60) # number of distances with contributions greater than 0.01
+findmax(rc60) # index and value of maximum contribution
+```
+
+This is particular useful to retrieve the contributions from all residues at a given distance:
+
+```julia
+rc = ResidueContributions(result, select(atoms, "protein"))
+rc_last_distance = [ c[end] for c in rc ]
+# or, equivalently
+rc_last_distance = last.(rc)
+# index and value of maximum contribution at each distance, for all residues
+findmax.(rc60)
 ```
 
 ## Arithmetic operations
@@ -110,10 +143,10 @@ rc4 = rc2 / 2
 
 !!! compat
     Slicing, indexing, and multiplication and divison by scalars were introduces in v2.7.0.
-    Saving and loading was introduced in v2.8.0.
+    Saving and loading was introduced in v2.8.0. Iterators were introduced in v2.10.0.
 
 """
-@kwdef struct ResidueContributions
+@kwdef struct ResidueContributions{N<:Union{SingleResidueContribution, MultipleResidueContribution}}
     Version::VersionNumber = pkgversion(@__MODULE__)
     d::Vector{Float64}
     residue_contributions::Vector{Vector{Float64}}
@@ -174,7 +207,8 @@ function ResidueContributions(
         serial=false,
     )
 
-    return ResidueContributions(;
+    N = length(resnums) == 1 ? SingleResidueContribution : MultipleResidueContribution
+    return ResidueContributions{N}(;
         d=results.d[idmin:idmax],
         residue_contributions=[rc[idmin:idmax] for rc in rescontrib],
         resnums=resnums,
@@ -197,23 +231,54 @@ import Base: ==
     rc1.d == rc2.d && rc1.xticks == rc2.xticks && rc1.resnums == rc2.resnums &&
     rc1.residue_contributions == rc2.residue_contributions
 
-function Base.copy(rc::ResidueContributions)
-    return ResidueContributions(
+function Base.copy(rc::RCType) where {RCType<:ResidueContributions}
+    return RCType(
         d=copy(rc.d),
         residue_contributions=[copy(v) for v in rc.residue_contributions],
         resnums=copy(rc.resnums),
         xticks=(copy(rc.xticks[1]), copy(rc.xticks[2])),
     )
 end
-function Base.getindex(rc::ResidueContributions, r::AbstractRange)
-    return ResidueContributions(
+
+
+# 
+# Indexing and iteration of MultipleResidueContribution objects: iterate over residues
+#
+function Base.getindex(rc::ResidueContributions{MultipleResidueContribution}, r::AbstractRange)
+    N = length(r) == 1 ? SingleResidueContribution : MultipleResidueContribution
+    return ResidueContributions{N}(
         d=rc.d,
         residue_contributions=[rc.residue_contributions[i] for i in r],
         resnums=rc.resnums[r],
         xticks=(rc.xticks[1][r], rc.xticks[2][r]),
     )
 end
-Base.getindex(rc::ResidueContributions, i) = rc[i:i]
+Base.length(rc::ResidueContributions{MultipleResidueContribution}) = length(rc.residue_contributions)
+Base.getindex(rc::ResidueContributions{MultipleResidueContribution}, i) = rc[i:i]
+Base.firstindex(rc::ResidueContributions{MultipleResidueContribution}) = 1
+Base.lastindex(rc::ResidueContributions{MultipleResidueContribution}) = length(rc.residue_contributions)
+Base.keys(rc::ResidueContributions{MultipleResidueContribution}) = firstindex(rc):lastindex(rc)
+function Base.iterate(rc::ResidueContributions{MultipleResidueContribution}, state=firstindex(rc))
+    if state > length(rc)
+        return nothing
+    end
+    return rc[state], state + 1
+end
+
+#
+# Indexing and iteration of SingleResidueContribution objects: iterate over the contributions of a single residue
+#
+Base.length(rc::ResidueContributions{SingleResidueContribution}) = length(first(rc.residue_contributions))
+Base.getindex(rc::ResidueContributions{SingleResidueContribution}, i) = first(rc.residue_contributions)[i]
+Base.firstindex(rc::ResidueContributions{SingleResidueContribution}) = firstindex(first(rc.residue_contributions)) 
+Base.lastindex(rc::ResidueContributions{SingleResidueContribution}) = length(first(rc.residue_contributions))
+Base.keys(rc::ResidueContributions{SingleResidueContribution}) = firstindex(rc):lastindex(rc)
+function Base.iterate(rc::ResidueContributions{SingleResidueContribution}, state=firstindex(first(rc.residue_contributions)))
+    if state > length(first(rc.residue_contributions))
+        return nothing
+    end
+    return first(rc.residue_contributions)[state], state + 1
+end
 
 import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
@@ -256,8 +321,26 @@ function *(rc1::ResidueContributions, rc2::ResidueContributions)
     end
     return rc_new
 end
+function _isless_error()
+    throw(ArgumentError("""\n
+        Invalid operation on ResidueContributions object. Perhaps you meant apply the operation 
+        to the residue contributions of a single residue, or to broadcast the operation?
 
+        Examples: Incorrect                      Correct 
+                  findmax(rc)           vs.      findmax(rc[1]) *or* findmax.(rc)
+                  maximum(rc)           vs.      maximum(rc[1]) *or() maximum.(rc) 
+                  count(>(0.01), rc)    vs.      count(>(0.01), rc[1]) *or* count.(>(0.01), rc)
+
+
+    """))
+end
+Base.isless(::ResidueContributions, ::ResidueContributions) = _isless_error()
+Base.isless(::Real, ::ResidueContributions) = _isless_error()
+Base.isless(::ResidueContributions, ::Real) = _isless_error()
+
+#
 # Arithmetic operations with scalars
+#
 function *(rc::ResidueContributions, x::Real)
     rc2 = copy(rc)
     for v in rc2.residue_contributions
@@ -305,10 +388,12 @@ function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, col
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
+    n_residues = length(rc.residue_contributions)
+    plural = n_residues == 1 ? "" : "s"
     if _testing_show_method[]
-        print(io, "\n          Residue Contributions\n")
+        print(io, "\n          Residue Contributions - $n_residues residue$plural.\n")
     else
-        printstyled(io, "\n          Residue Contributions\n", bold=true)
+        printstyled(io, "\n          Residue Contributions - $n_residues residue$plural.\n", bold=true)
     end
     m = rc.residue_contributions
     clims, colorscale = _set_clims_and_colorscale!(rc)
@@ -410,7 +495,7 @@ function load(filename::String, ::Type{ResidueContributions})
     _check_version(filename)
     rc = try
         open(filename, "r") do io
-            JSON3.read(io, ResidueContributions)
+            JSON3.read(io, ResidueContributions{MultipleResidueContribution})
         end
     catch
         throw(ArgumentError("""\n
@@ -418,7 +503,12 @@ function load(filename::String, ::Type{ResidueContributions})
 
         """))
     end
-    return rc
+    # Converto to SingleResidueContribution if a single contribution was read
+    return if length(rc.residue_contributions) == 1
+        rc[1]
+    else
+        rc
+    end
 end
 
 @testitem "ResidueContribution" begin
@@ -462,10 +552,16 @@ end
           rcc.residue_contributions[104]
 
     # save and load
+    # a full set of residue contributions
     tmpfile = tempname() * ".json"
     save(tmpfile, rc)
     rc_load = load(tmpfile, ResidueContributions)
     @test rc == rc_load
+    # a single residue contribution
+    save(tmpfile, rc[1])
+    rc_load = load(tmpfile, ResidueContributions)
+    @test rc[1] == rc_load
+
     tmpfile = tempname()
     open(tmpfile, "w") do io
         println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
@@ -473,10 +569,23 @@ end
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
     # version issues
-    rc_future = ResidueContributions(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    N = ComplexMixtures.MultipleResidueContribution
+    rc_future = ResidueContributions{N}(
+        Version=v"1000.0.0", 
+        d=rc.d, 
+        residue_contributions=rc.residue_contributions, 
+        resnums=rc.resnums, 
+        xticks=rc.xticks
+    )
     save(tmpfile, rc_future)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
-    rc_past = ResidueContributions(Version=v"1.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    rc_past = ResidueContributions{N}(
+        Version=v"1.0.0", 
+        d=rc.d, 
+        residue_contributions=rc.residue_contributions, 
+        resnums=rc.resnums, 
+        xticks=rc.xticks
+    )
     save(tmpfile, rc_past)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
@@ -488,6 +597,26 @@ end
     rc2 = rc[2:10]
     @test rc2.resnums == 2:10
     @test rc2 == ResidueContributions(result, select(atoms, "protein and resnum > 1 and resnum < 11"))
+    @test firstindex(rc) == 1
+    @test lastindex(rc) == 104
+    @test length(rc) == 104
+    @test firstindex(rc1) == 1
+    @test lastindex(rc1) == 101
+    @test length(rc1) == 101
+
+    # Test iterators
+    rc = ResidueContributions(result, select(atoms, "protein"); type=:coordination_number)
+    rc1 = rc[1]
+    @test count(true for r in rc) == 104
+    @test count(true for r in rc1) == 101
+    @test [ r[end] for r in rc ] == [ r[end] for r in rc.residue_contributions ]
+    @test last.(rc) == [ r[end] for r in rc ]
+    @test first.(findmax.(rc[3:4])) ≈ [ 8.8, 4.0 ]
+    @test last.(findmax.(rc[3:4])) == [ 101, 101 ]
+    @test findfirst.(>=(0.5), rc[3:4]) == [8, 18]
+    @test_throws ArgumentError findmax(rc) 
+    @test_throws ArgumentError count(>(0.01), rc) 
+    @test_throws ArgumentError count(<(0.01), rc) 
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
