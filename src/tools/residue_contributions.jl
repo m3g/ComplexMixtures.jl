@@ -388,10 +388,12 @@ function _set_clims_and_colorscale!(rc::ResidueContributions; clims=nothing, col
 end
 
 function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
+    n_residues = length(rc.residue_contributions)
+    plural = n_residues == 1 ? "" : "s"
     if _testing_show_method[]
-        print(io, "\n          Residue Contributions - $(length(rc)) residues.\n")
+        print(io, "\n          Residue Contributions - $n_residues residue$plural.\n")
     else
-        printstyled(io, "\n          Residue Contributions - $(length(rc)) residues.\n", bold=true)
+        printstyled(io, "\n          Residue Contributions - $n_residues residue$plural.\n", bold=true)
     end
     m = rc.residue_contributions
     clims, colorscale = _set_clims_and_colorscale!(rc)
@@ -502,7 +504,7 @@ function load(filename::String, ::Type{ResidueContributions})
         """))
     end
     # Converto to SingleResidueContribution if a single contribution was read
-    return if length(rc) == 1
+    return if length(rc.residue_contributions) == 1
         rc[1]
     else
         rc
@@ -550,10 +552,16 @@ end
           rcc.residue_contributions[104]
 
     # save and load
+    # a full set of residue contributions
     tmpfile = tempname() * ".json"
     save(tmpfile, rc)
     rc_load = load(tmpfile, ResidueContributions)
     @test rc == rc_load
+    # a single residue contribution
+    save(tmpfile, rc[1])
+    rc_load = load(tmpfile, ResidueContributions)
+    @test rc[1] == rc_load
+
     tmpfile = tempname()
     open(tmpfile, "w") do io
         println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
@@ -608,6 +616,7 @@ end
     @test findfirst.(>=(0.5), rc[3:4]) == [8, 18]
     @test_throws ArgumentError findmax(rc) 
     @test_throws ArgumentError count(>(0.01), rc) 
+    @test_throws ArgumentError count(<(0.01), rc) 
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
