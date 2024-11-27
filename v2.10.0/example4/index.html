@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>◦ Water/Glycerol mixture · ComplexMixtures.jl</title><meta name="title" content="◦ Water/Glycerol mixture · ComplexMixtures.jl"/><meta property="og:title" content="◦ Water/Glycerol mixture · ComplexMixtures.jl"/><meta property="twitter:title" content="◦ Water/Glycerol mixture · ComplexMixtures.jl"/><meta name="description" content="Documentation for ComplexMixtures.jl."/><meta property="og:description" content="Documentation for ComplexMixtures.jl."/><meta property="twitter:description" content="Documentation for ComplexMixtures.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="ComplexMixtures.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="ComplexMixtures.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">ComplexMixtures.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../installation/">Installation</a></li><li><a class="tocitem" href="../parallel/">Parallel execution</a></li><li><a class="tocitem" href="../quickguide/">Quick Guide</a></li><li><a class="tocitem" href="../examples/">Examples:</a></li><li><a class="tocitem" href="../example1/">◦ Protein in water/glycerol</a></li><li><a class="tocitem" href="../example2/">◦ Polyacrylamide in DMF</a></li><li><a class="tocitem" href="../example3/">◦ POPC membrane in water/ethanol</a></li><li class="is-active"><a class="tocitem" href>◦ Water/Glycerol mixture</a><ul class="internal"><li><a class="tocitem" href="#data-example4"><span>Data, packages, and execution</span></a></li><li><a class="tocitem" href="#glyc_mddf-example4"><span>Glycerol-Glycerol and Water-Glycerol distribution functions</span></a></li><li><a class="tocitem" href="#glyc-groups-example4"><span>Glycerol group contributions to MDDFs</span></a></li><li><a class="tocitem" href="#map-example4"><span>2D map of group contributions</span></a></li></ul></li><li><a class="tocitem" href="../selection/">Set solute and solvent</a></li><li><a class="tocitem" href="../mddf/">Computing the MDDF</a></li><li><a class="tocitem" href="../results/">Results</a></li><li><a class="tocitem" href="../contributions/">Atomic and group contributions</a></li><li><a class="tocitem" href="../save/">Save and load</a></li><li><a class="tocitem" href="../multiple/">Multiple trajectories</a></li><li><a class="tocitem" href="../options/">Options</a></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../python/">From Python</a></li><li><a class="tocitem" href="../updating_scripts/">Updating scripts</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>◦ Water/Glycerol mixture</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>◦ Water/Glycerol mixture</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl/blob/main/docs/src/example4.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Glycerol/water-mixture"><a class="docs-heading-anchor" href="#Glycerol/water-mixture">Glycerol/water mixture</a><a id="Glycerol/water-mixture-1"></a><a class="docs-heading-anchor-permalink" href="#Glycerol/water-mixture" title="Permalink"></a></h1><p>This example illustrates the use of ComplexMixtures.jl to study the solution structure of a crowded (1:1 molar fraction) solution of glycerol in water. Here, we compute the distribution function and atomic contributions associated to the inter-species interactions (water-glycerol) and the glycerol-glycerol auto-correlation function. This example aims to illustrate how to obtain a detailed molecular picture of the solvation structures in an homogeneous mixture.</p><p>The system simulated consists of 1000 water molecules (red) and 1000 glycerol molecules (purple).</p><center>
+<img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Glycerol_in_Water/system.png" width=30%>
+</center><h3 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h3><ul><li><a href="#data-example4">Data, packages, and execution</a></li><li><a href="#glyc_mddf-example4">Glycerol-Glycerol and Water-Glycerol distribution functions</a></li><li><a href="#glyc-groups-example4">Glycerol group contributions to MDDFs</a></li><li><a href="#map-example4">2D map of group contributions</a></li></ul><h2 id="data-example4"><a class="docs-heading-anchor" href="#data-example4">Data, packages, and execution</a><a id="data-example4-1"></a><a class="docs-heading-anchor-permalink" href="#data-example4" title="Permalink"></a></h2><p>The files required to run this example are:</p><ul><li><a href="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Glycerol_in_Water/simulation/equilibrated.pdb">equilibrated.pdb</a>: The PDB file of the complete system.</li><li><a href="https://www.dropbox.com/scl/fi/ag7k2d7i9d7ivbd5zmtl9/traj_Glyc.dcd?rlkey=93i31a5ytlzb34ulzjz315eyq&amp;dl=0">traj_Glyc.dcd</a>: Trajectory file. This is a 200Mb file, necessary for running from scratch the calculations.</li></ul><p>To run the scripts, we suggest the following procedure:</p><ol><li>Create a directory, for example <code>example4</code>.</li><li>Copy the required data files above to this directory.</li><li>Launch <code>julia</code> in that directory: activate the directory environment, and install the required packages. This launching Julia and executing:<pre><code class="language-julia hljs">import Pkg 
+Pkg.activate(&quot;.&quot;)
+Pkg.add([&quot;ComplexMixtures&quot;, &quot;PDBTools&quot;, &quot;Plots&quot;, &quot;LaTeXStrings&quot;, &quot;EasyFit&quot;])
+exit()</code></pre></li><li>Copy the code of each script in to a file, and execute with:<pre><code class="language-julia hljs">julia -t auto script.jl</code></pre>Alternativelly (and perhaps preferrably), copy line by line the content of the script into the Julia REPL, to follow each step of the calculation.</li></ol><h2 id="glyc_mddf-example4"><a class="docs-heading-anchor" href="#glyc_mddf-example4">Glycerol-Glycerol and Water-Glycerol distribution functions</a><a id="glyc_mddf-example4-1"></a><a class="docs-heading-anchor-permalink" href="#glyc_mddf-example4" title="Permalink"></a></h2><p>The first and most simple analysis is the computation of the minimum-distance distribution functions between the components of the solution. In this example we focus on the distributions of the two components relative to the glycerol molecules. Thus, we display the glycerol auto-correlation function, and the water-glycerol correlation function in the first panel of the figure below. The second panel displays the KB integrals of the two components computed from each of these distributions.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using PDBTools
+using ComplexMixtures
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Load a PDB file of the system
+system = readPDB(&quot;./equilibrated.pdb&quot;)
+
+# The full trajectory file is available at: 
+# https://www.dropbox.com/scl/fi/ag7k2d7i9d7ivbd5zmtl9/traj_Glyc.dcd?rlkey=93i31a5ytlzb34ulzjz315eyq&amp;dl=0
+trajectory_file = &quot;./traj_Glyc.dcd&quot;
+
+# Select the atoms corresponding to glycerol and water (using PDBTools)
+glyc = select(system, &quot;resname GLLM&quot;)
+water = select(system, &quot;water&quot;)
+
+# Compute Glycerol-Glycerol auto correlation mddf: first we initialize the 
+# AtomSelection object, informing the number of atoms per molecule of Glycerol
+glyc_selection = AtomSelection(glyc, natomspermol=14)
+
+# We define a large solute domain (large dbulk) to obtain a good convergence
+# for the KB integral. The mddf converges at much shorter distances.   
+options = Options(bulk_range=(20.0, 25.0))
+mddf_glyc = mddf(trajectory_file, glyc_selection, options)
+
+# Save results for later analysis
+save(mddf_glyc, &quot;./mddf_glyc.json&quot;)
+
+# Compute water-glycerol mddf: glyc_selection is the solute, and water is the solvent
+solvent = AtomSelection(water, natomspermol=3)
+mddf_glyc_water = mddf(trajectory_file, glyc_selection, solvent, options)
+
+# Save results for later analysis
+save(mddf_glyc_water, &quot;./mddf_glyc_water.json&quot;)
+
+#
+# Plot the MDDFs 
+#
+Plots.default(
+    fontfamily=&quot;Computer Modern&quot;,
+    linewidth=2,
+    framestyle=:box,
+    grid=false,
+    label=nothing,
+)
+scalefontsizes();
+scalefontsizes(1.3)
+plot(layout=(2, 1))
+
+# glycerol-glycerol auto correlation
+x = mddf_glyc.d # distances
+y = movavg(mddf_glyc.mddf, n=10).x # the mddf (using movavg to smooth noise)
+plot!(x, y, label=&quot;Glycerol-Glycerol&quot;, subplot=1)
+
+# water-glycerol correlation
+x = mddf_glyc_water.d
+y = movavg(mddf_glyc_water.mddf, n=10).x
+plot!(x, y, label=&quot;Glycerol-Water&quot;, subplot=1)
+plot!(ylabel=&quot;MDDF&quot;, xlim=(1.5, 8), subplot=1)
+
+# Plot the KB integrals
+# glycrerol-glycerol
+y = movavg(mddf_glyc.kb, n=10).x
+plot!(x, y, subplot=2)
+
+# water-glycerol
+y = movavg(mddf_glyc_water.kb, n=10).x
+plot!(x, y, subplot=2)
+
+# plot settings
+plot!(
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=L&quot;\textrm{KB~/~cm^3~mol^{-1}}&quot;,
+    xlim=(0, 20),
+    subplot=2
+)
+
+# Save plot
+savefig(&quot;./mddf_kb.png&quot;)
+println(&quot;Plot saved to mddf_kb.png&quot;)
+
+</code></pre></details><br><p><img src="../assets/scripts/example4/mddf_kb.png" alt/></p><p>Both water and glycerol form hydrogen bonds with (other) glycerol molecules, as indicated by the peaks at ~1.8<span>$\mathrm{\AA}$</span>. The auto-correlation function of glycerol shows a more marked second peak corresponding to non-specific interactions, which (as we will show) are likely associated to interactions of its aliphatic groups.</p><p>The KB integrals in the second panel show similar values water and glycerol, with the KB integral for water being slightly greater. This means that glycerol molecules are (sightly, if the result is considered reliable) preferentially hydrated from a macroscopic standpoint.</p><h2 id="glyc-groups-example4"><a class="docs-heading-anchor" href="#glyc-groups-example4">Glycerol group contributions to MDDFs</a><a id="glyc-groups-example4-1"></a><a class="docs-heading-anchor-permalink" href="#glyc-groups-example4" title="Permalink"></a></h2><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using PDBTools
+using ComplexMixtures
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Load a PDB file of the system
+system = readPDB(&quot;./equilibrated.pdb&quot;)
+
+# Select the atoms corresponding to glycerol and water (using PDBTools)
+glyc = select(system, &quot;resname GLLM&quot;)
+water = select(system, &quot;water&quot;)
+
+# Load previously computed mddfs
+mddf_glyc = load(&quot;./mddf_glyc.json&quot;)
+mddf_glyc_water = load(&quot;./mddf_glyc_water.json&quot;)
+
+# Plot some group contributions to the MDDF. We select the atom names
+# corresponding to each type of group of the glycerol molecule.  
+hydroxyls = [&quot;O1&quot;, &quot;O2&quot;, &quot;O3&quot;, &quot;HO1&quot;, &quot;HO2&quot;, &quot;HO3&quot;]
+aliphatic = [&quot;C1&quot;, &quot;C2&quot;, &quot;C3&quot;, &quot;H11&quot;, &quot;H12&quot;, &quot;H2&quot;, &quot;H31&quot;, &quot;H32&quot;]
+
+#
+# Extract the contributions of these atoms to the MDDFs
+#
+# glycerol-glycerol
+mddf_glyc_hydroxyls = contributions(mddf_glyc, SoluteGroup(hydroxyls))
+mddf_glyc_aliphatic = contributions(mddf_glyc, SoluteGroup(aliphatic))
+# glycerol-water
+mddf_glyc_water_hydroxyls = contributions(mddf_glyc_water, SoluteGroup(hydroxyls))
+mddf_glyc_water_aliphatic = contributions(mddf_glyc_water, SoluteGroup(aliphatic))
+
+#
+# Plot the contributions
+#
+Plots.default(
+    fontfamily=&quot;Computer Modern&quot;,
+    linewidth=2,
+    framestyle=:box,
+    grid=false,
+    label=nothing,
+)
+scalefontsizes();
+scalefontsizes(1.2)
+plot(layout=(2, 1))
+
+#
+# Group contributions to glycerol-glycerol auto correlation
+#
+x = mddf_glyc.d # distances
+# Total mddf
+y = movavg(mddf_glyc.mddf; n=10).x
+plot!(x, y, label=&quot;Total&quot;, subplot=1)
+# Hydroxyls
+y = movavg(mddf_glyc_hydroxyls; n=10).x
+plot!(x, y, label=&quot;Hydroxyls&quot;, subplot=1)
+# Aliphatic
+y = movavg(mddf_glyc_aliphatic; n=10).x
+plot!(x, y, label=&quot;Aliphatic&quot;, subplot=1)
+
+#
+# Group contributions to glycerol-water correlation
+#
+x = mddf_glyc_water.d # distances
+# Total mddf
+y = movavg(mddf_glyc_water.mddf; n=10).x
+plot!(x, y, label=&quot;Total&quot;, subplot=2)
+# Hydroxyls
+y = movavg(mddf_glyc_water_hydroxyls; n=10).x
+plot!(x, y, label=&quot;Hydroxyls&quot;, subplot=2)
+# Aliphatic
+y = movavg(mddf_glyc_water_aliphatic; n=10).x
+plot!(x, y, label=&quot;Aliphatic&quot;, subplot=2)
+
+# plot settings
+plot!(ylabel=&quot;Glyc-Glyc MDDF&quot;, xlim=(1.0, 8.0), subplot=1)
+plot!(ylabel=&quot;Glyc-Water MDDF&quot;, xlim=(1.0, 8.0), subplot=2)
+plot!(xlabel=L&quot;\mathrm{Distance / \AA}&quot;, subplot=2)
+
+# Save figure
+savefig(&quot;./mddf_group_contributions.png&quot;)
+println(&quot;Plot saved to mddf_group_contributions.png&quot;)
+</code></pre></details><br><p><img src="../assets/scripts/example4/mddf_group_contributions.png" alt/></p><h2 id="map-example4"><a class="docs-heading-anchor" href="#map-example4">2D map of group contributions</a><a id="map-example4-1"></a><a class="docs-heading-anchor-permalink" href="#map-example4" title="Permalink"></a></h2><p>The above distributions can be split into the contributions of each glycerol chemical group. The 2D maps below display this decomposition.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using PDBTools
+using ComplexMixtures
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Load a PDB file of the system
+system = readPDB(&quot;./equilibrated.pdb&quot;)
+
+# Select the atoms corresponding to glycerol and water (using PDBTools)
+glyc = select(system, &quot;resname GLLM&quot;)
+water = select(system, &quot;water&quot;)
+
+# Load previously computed mddfs
+mddf_glyc = load(&quot;./mddf_glyc.json&quot;)
+mddf_glyc_water = load(&quot;./mddf_glyc_water.json&quot;)
+
+# 2D maps plot of group contributions
+
+# Glycerol groups
+groups = (
+    &quot;OH&quot; =&gt; [&quot;O1&quot;, &quot;HO1&quot;], # first hydroxyl
+    &quot;CH_2&quot; =&gt; [&quot;C1&quot;, &quot;H11&quot;, &quot;H12&quot;], # first CH2
+    &quot;OH&quot; =&gt; [&quot;O2&quot;, &quot;HO2&quot;], # second hydroxyl
+    &quot;CH&quot; =&gt; [&quot;C2&quot;, &quot;H2&quot;], # CH
+    &quot;CH_2&quot; =&gt; [&quot;C3&quot;, &quot;H31&quot;, &quot;H32&quot;], # second CH2
+    &quot;OH&quot; =&gt; [&quot;O3&quot;, &quot;HO3&quot;] # third hydroxyl
+)
+labels = latexstring.(&quot;\\textrm{$name}&quot; for (name, atoms) in groups)
+
+#
+# Contributions to Glycerol-Glycerol autocorrelation
+# First, create a vector of vectors, in which each component carries the
+# contributions of each Glycerol group to the MDDF
+#
+group_contrib = Vector{Float64}[] # empty vector of vectors
+for (name, atoms) in groups
+    push!(group_contrib, contributions(mddf_glyc, SolventGroup(atoms)))
+end
+
+# Convert output to a matrix to plot a 2D map
+group_contrib = stack(group_contrib)
+
+# The distance range to plot
+idmin = findfirst(d -&gt; d &gt; 1.5, mddf_glyc.d)
+idmax = findfirst(d -&gt; d &gt; 3.0, mddf_glyc.d)
+
+#
+# plot the map
+#
+Plots.default(
+    fontfamily=&quot;Computer Modern&quot;,
+    linewidth=2,
+    framestyle=:box,
+    grid=false,
+    label=nothing,
+)
+scalefontsizes();
+scalefontsizes(1.3)
+
+plot(layout=(2, 1))
+
+# map of contributions to the Glycerol-Glycerol autocorrelation
+contourf!(
+    1:length(groups),
+    mddf_glyc.d[idmin:idmax],
+    group_contrib[idmin:idmax, :],
+    color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    colorbar=:none, levels=5,
+    xticks=(1:length(groups), labels), xrotation=60,
+    ylabel=L&quot;r/\AA&quot;,
+    subplot=1
+)
+
+# Water-glycerol interactions (Glycerol contributions)
+group_contrib = Vector{Float64}[] # empty vector of vectors
+for (name, atoms) in groups
+    push!(group_contrib, contributions(mddf_glyc_water, SoluteGroup(atoms)))
+end
+
+# Convert output to a matrix to plot a 2D map
+group_contrib = stack(group_contrib)
+
+# map of the contributions of Glycerol groups to the Glycerol-Water correlation
+contourf!(
+    1:length(groups),
+    mddf_glyc_water.d[idmin:idmax],
+    group_contrib[idmin:idmax, :],
+    color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    colorbar=:none, levels=5,
+    xticks=(1:length(groups), labels), xrotation=60,
+    ylabel=L&quot;r/\AA&quot;,
+    subplot=2
+)
+plot!(
+    xlabel=&quot;Glycerol group&quot;,
+    bottommargin=0.5Plots.Measures.cm,
+    subplot=2
+)
+
+savefig(&quot;./GlycerolWater_map.png&quot;)
+println(&quot;Plot saved to GlycerolWater_map.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example4/GlycerolWater_map.png" alt/></p><p>The interesting result here is that the <span>$\mathrm{CH}$</span> group of glycerol is protected from both solvents. There is a strong density augmentation at the vicinity of hydroxyl groups, and the second peak of the MDDFs is clearly associated to interactions with the <span>$\mathrm{CH_2}$</span> groups.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example3/">« ◦ POPC membrane in water/ethanol</a><a class="docs-footer-nextpage" href="../selection/">Set solute and solvent »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Wednesday 27 November 2024 12:14">Wednesday 27 November 2024</span>. Using Julia version 1.10.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
