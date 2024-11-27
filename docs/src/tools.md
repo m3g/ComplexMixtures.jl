@@ -191,7 +191,11 @@ This is particular useful to retrieve the contributions from all residues at a g
 
 ```julia
 rc = ResidueContributions(result, select(atoms, "protein"))
-rc_last_distance = [ r[end] for r in rc ]
+rc_last_distance = [ r[end] for r in rc ] 
+# or, equivalently
+rc_last_distance = last.(rc)
+# compute the maximum contribution of each residue:
+max_c = maximum.(rc)
 ```
 
 ### Saving and loading a ResidueContributions object
