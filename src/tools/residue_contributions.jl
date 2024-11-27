@@ -151,7 +151,6 @@ rc4 = rc2 / 2
     d::Vector{Float64}
     residue_contributions::Vector{Vector{Float64}}
     resnums::Vector{Int}
-    resnames::Vector{String}
     xticks::Tuple{Vector{Int},Vector{String}}
 end
 
@@ -201,7 +200,6 @@ function ResidueContributions(
 
     # Obtain pretty labels for the residues in the x-axis (using PDBTools)
     resnums = PDBTools.resnum.(residues)
-    resnames = PDBTools.resname.(residues)
     xticks = PDBTools.residue_ticks(atoms;
         first=first(resnums),
         last=last(resnums),
@@ -213,7 +211,6 @@ function ResidueContributions(
     return ResidueContributions{N}(;
         d=results.d[idmin:idmax],
         residue_contributions=[rc[idmin:idmax] for rc in rescontrib],
-        resnames=resnames,
         resnums=resnums,
         xticks=xticks,
     )
@@ -232,13 +229,12 @@ end
 import Base: ==
 ==(rc1::ResidueContributions, rc2::ResidueContributions) =
     rc1.d == rc2.d && rc1.xticks == rc2.xticks && rc1.resnums == rc2.resnums &&
-    rc1.resnames == rc2.resnames && rc1.residue_contributions == rc2.residue_contributions
+    rc1.residue_contributions == rc2.residue_contributions
 
 function Base.copy(rc::RCType) where {RCType<:ResidueContributions}
     return RCType(
         d=copy(rc.d),
         residue_contributions=[copy(v) for v in rc.residue_contributions],
-        resnames=copy(rc.resnames),
         resnums=copy(rc.resnums),
         xticks=(copy(rc.xticks[1]), copy(rc.xticks[2])),
     )
@@ -253,7 +249,6 @@ function Base.getindex(rc::ResidueContributions{MultipleResidueContribution}, r:
     return ResidueContributions{N}(
         d=rc.d,
         residue_contributions=[rc.residue_contributions[i] for i in r],
-        resnames=rc.resnames[r],
         resnums=rc.resnums[r],
         xticks=(rc.xticks[1][r], rc.xticks[2][r]),
     )
@@ -284,7 +279,6 @@ function Base.iterate(rc::ResidueContributions{SingleResidueContribution}, state
     end
     return first(rc.residue_contributions)[state], state + 1
 end
-PDBTools.resname(rc::ResidueContributions{SingleResidueContribution}) = first(rc.resnames)
 
 import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
@@ -340,9 +334,9 @@ function _isless_error()
 
     """))
 end
-Base.isless(::Any, ::ResidueContributions) = _isless_error()
-Base.isless(::ResidueContributions, ::Any) = _isless_error()
-Base.isless(::T, ::T) where {T<:ResidueContributions{SingleResidueContribution}} = _isless_error()
+Base.isless(::ResidueContributions, ::ResidueContributions) = _isless_error()
+Base.isless(::Real, ::ResidueContributions) = _isless_error()
+Base.isless(::ResidueContributions, ::Real) = _isless_error()
 
 #
 # Arithmetic operations with scalars
@@ -568,10 +562,22 @@ end
 
     # version issues
     N = ComplexMixtures.MultipleResidueContribution
-    rc_future = ResidueContributions{N}(Version=v"1000.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    rc_future = ResidueContributions{N}(
+        Version=v"1000.0.0", 
+        d=rc.d, 
+        residue_contributions=rc.residue_contributions, 
+        resnums=rc.resnums, 
+        xticks=rc.xticks
+    )
     save(tmpfile, rc_future)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
-    rc_past = ResidueContributions{N}(Version=v"1.0.0", d=rc.d, residue_contributions=rc.residue_contributions, resnums=rc.resnums, xticks=rc.xticks)
+    rc_past = ResidueContributions{N}(
+        Version=v"1.0.0", 
+        d=rc.d, 
+        residue_contributions=rc.residue_contributions, 
+        resnums=rc.resnums, 
+        xticks=rc.xticks
+    )
     save(tmpfile, rc_past)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
 
@@ -589,7 +595,6 @@ end
     @test firstindex(rc1) == 1
     @test lastindex(rc1) == 101
     @test length(rc1) == 101
-    @test resname(rc[60]) == "PRO"
 
     # Test iterators
     @test count(true for r in rc) == 104
