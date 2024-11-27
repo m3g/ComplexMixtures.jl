@@ -82,14 +82,13 @@ contourf(rc) # plots a contour map
 
 ## Slicing
 
-Slicing, or indexing, the residue contributions returns a new `ResidueContributions` object with the selected residues:
+A slice of the residue contributions returns a new `ResidueContributions` object with the selected residues:
 
 ```julia
 using ComplexMixtures, PDBTools, Plots
 ...
 result = mddf(trajectory_file, solute, solvent, options)
 rc = ResidueContributions(result, select(atoms, "protein"))
-rc_7 = rc[7] # contributions of residue 7
 rc_range = rc[10:50] # slice the residue contributions
 contourf(rc_range) # plots a contour map of the selected residues
 ```
@@ -104,17 +103,23 @@ using ComplexMixtures, PDBTools, Plots
 ...
 result = mddf(trajectory_file, solute, solvent, options)
 rc = ResidueContributions(result, select(atoms, "protein"))
-rc7 = rc[7] # contributions of residue 7
-# iterate over the contributions of residue 7
-rc7[1] # contribution of the first distance
-rc7[end] # contribution of the last distance
+rc60 = rc[60] # contributions of residue 60 only
+# index and iterate over the contributions of residue 7
+rc60[1] # contribution at the first distance (equivalent to first(rc60))
+rc60[end] # contribution at the last distance (equivalent to last(rc60))
+count(>(0.01), rc60) # number of distances with contributions greater than 0.01
+findmax(rc60) # index and value of maximum contribution
 ```
 
 This is particular useful to retrieve the contributions from all residues at a given distance:
 
 ```julia
 rc = ResidueContributions(result, select(atoms, "protein"))
-rc_last_distance = [ r[end] for r in rc ]
+rc_last_distance = [ c[end] for c in rc ]
+# or, equivalently
+rc_last_distance = last.(rc)
+# index and value of maximum contribution at each distance, for all residues
+findmax.(rc60)
 ```
 
 ## Arithmetic operations
@@ -138,7 +143,7 @@ rc4 = rc2 / 2
 
 !!! compat
     Slicing, indexing, and multiplication and divison by scalars were introduces in v2.7.0.
-    Saving and loading was introduced in v2.8.0.
+    Saving and loading was introduced in v2.8.0. Iterators were introduced in v2.10.0.
 
 """
 @kwdef struct ResidueContributions{N<:Union{SingleResidueContribution, MultipleResidueContribution}}
@@ -146,6 +151,7 @@ rc4 = rc2 / 2
     d::Vector{Float64}
     residue_contributions::Vector{Vector{Float64}}
     resnums::Vector{Int}
+    resnames::Vector{String}
     xticks::Tuple{Vector{Int},Vector{String}}
 end
 
@@ -195,6 +201,7 @@ function ResidueContributions(
 
     # Obtain pretty labels for the residues in the x-axis (using PDBTools)
     resnums = PDBTools.resnum.(residues)
+    resnames = PDBTools.resname.(residues)
     xticks = PDBTools.residue_ticks(atoms;
         first=first(resnums),
         last=last(resnums),
@@ -206,6 +213,7 @@ function ResidueContributions(
     return ResidueContributions{N}(;
         d=results.d[idmin:idmax],
         residue_contributions=[rc[idmin:idmax] for rc in rescontrib],
+        resnames=resnames,
         resnums=resnums,
         xticks=xticks,
     )
@@ -224,12 +232,13 @@ end
 import Base: ==
 ==(rc1::ResidueContributions, rc2::ResidueContributions) =
     rc1.d == rc2.d && rc1.xticks == rc2.xticks && rc1.resnums == rc2.resnums &&
-    rc1.residue_contributions == rc2.residue_contributions
+    rc1.resnames == rc2.resnames && rc1.residue_contributions == rc2.residue_contributions
 
 function Base.copy(rc::RCType) where {RCType<:ResidueContributions}
     return RCType(
         d=copy(rc.d),
         residue_contributions=[copy(v) for v in rc.residue_contributions],
+        resnames=copy(rc.resnames),
         resnums=copy(rc.resnums),
         xticks=(copy(rc.xticks[1]), copy(rc.xticks[2])),
     )
@@ -244,6 +253,7 @@ function Base.getindex(rc::ResidueContributions{MultipleResidueContribution}, r:
     return ResidueContributions{N}(
         d=rc.d,
         residue_contributions=[rc.residue_contributions[i] for i in r],
+        resnames=rc.resnames[r],
         resnums=rc.resnums[r],
         xticks=(rc.xticks[1][r], rc.xticks[2][r]),
     )
@@ -252,6 +262,7 @@ Base.length(rc::ResidueContributions{MultipleResidueContribution}) = length(rc.r
 Base.getindex(rc::ResidueContributions{MultipleResidueContribution}, i) = rc[i:i]
 Base.firstindex(rc::ResidueContributions{MultipleResidueContribution}) = 1
 Base.lastindex(rc::ResidueContributions{MultipleResidueContribution}) = length(rc.residue_contributions)
+Base.keys(rc::ResidueContributions{MultipleResidueContribution}) = firstindex(rc):lastindex(rc)
 function Base.iterate(rc::ResidueContributions{MultipleResidueContribution}, state=firstindex(rc))
     if state > length(rc)
         return nothing
@@ -266,12 +277,14 @@ Base.length(rc::ResidueContributions{SingleResidueContribution}) = length(first(
 Base.getindex(rc::ResidueContributions{SingleResidueContribution}, i) = first(rc.residue_contributions)[i]
 Base.firstindex(rc::ResidueContributions{SingleResidueContribution}) = firstindex(first(rc.residue_contributions)) 
 Base.lastindex(rc::ResidueContributions{SingleResidueContribution}) = length(first(rc.residue_contributions))
+Base.keys(rc::ResidueContributions{SingleResidueContribution}) = firstindex(rc):lastindex(rc)
 function Base.iterate(rc::ResidueContributions{SingleResidueContribution}, state=firstindex(first(rc.residue_contributions)))
     if state > length(first(rc.residue_contributions))
         return nothing
     end
     return first(rc.residue_contributions)[state], state + 1
 end
+PDBTools.resname(rc::ResidueContributions{SingleResidueContribution}) = first(rc.resnames)
 
 import Base: -, +, /, *
 function -(rc1::ResidueContributions, rc2::ResidueContributions)
@@ -314,6 +327,22 @@ function *(rc1::ResidueContributions, rc2::ResidueContributions)
     end
     return rc_new
 end
+function _isless_error()
+    throw(ArgumentError("""\n
+        Invalid operation on ResidueContributions object. Perhaps you meant apply the operation 
+        to the residue contributions of a single residue, or to broadcast the operation?
+
+        Examples: Incorrect                      Correct 
+                  findmax(rc)           vs.      findmax(rc[1]) *or* findmax.(rc)
+                  maximum(rc)           vs.      maximum(rc[1]) *or() maximum.(rc) 
+                  count(>(0.01), rc)    vs.      count(>(0.01), rc[1]) *or* count.(>(0.01), rc)
+
+
+    """))
+end
+Base.isless(::Any, ::ResidueContributions) = _isless_error()
+Base.isless(::ResidueContributions, ::Any) = _isless_error()
+Base.isless(::T, ::T) where {T<:ResidueContributions{SingleResidueContribution}} = _isless_error()
 
 #
 # Arithmetic operations with scalars
@@ -565,6 +594,11 @@ end
     @test count(true for r in rc) == 104
     @test count(true for r in rc1) == 101
     @test [ r[end] for r in rc ] == [ r[end] for r in rc.residue_contributions ]
+    @test last.(rc) == [ r[end] for r in rc ]
+    @test first.(findmax.(rc[3:4])) ≈ [ 0.09254462465788318, 0.037371523587960476 ]
+    @test last.(findmax.(rc[3:4])) == [ 13, 31]
+    @test_throws ArgumentError findmax(rc) 
+    @test_throws ArgumentError count(>(0.01), rc) 
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)
