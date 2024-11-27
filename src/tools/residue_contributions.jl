@@ -589,6 +589,7 @@ end
     @test firstindex(rc1) == 1
     @test lastindex(rc1) == 101
     @test length(rc1) == 101
+    @test resname(rc[60]) == "PRO"
 
     # Test iterators
     @test count(true for r in rc) == 104
