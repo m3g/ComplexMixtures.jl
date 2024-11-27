@@ -597,12 +597,15 @@ end
     @test length(rc1) == 101
 
     # Test iterators
+    rc = ResidueContributions(result, select(atoms, "protein"); type=:coordination_number)
+    rc1 = rc[1]
     @test count(true for r in rc) == 104
     @test count(true for r in rc1) == 101
     @test [ r[end] for r in rc ] == [ r[end] for r in rc.residue_contributions ]
     @test last.(rc) == [ r[end] for r in rc ]
-    @test first.(findmax.(rc[3:4])) ≈ [ 0.09254462465788318, 0.037371523587960476 ]
-    @test last.(findmax.(rc[3:4])) == [ 13, 31]
+    @test first.(findmax.(rc[3:4])) ≈ [ 8.8, 4.0 ]
+    @test last.(findmax.(rc[3:4])) == [ 101, 101 ]
+    @test findfirst.(>=(0.5), rc[3:4]) == [8, 18]
     @test_throws ArgumentError findmax(rc) 
     @test_throws ArgumentError count(>(0.01), rc) 
 
