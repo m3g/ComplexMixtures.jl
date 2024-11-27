@@ -10,7 +10,7 @@
 #$(TYPEDFIELDS)
 #
 #"""
-struct NamdDCD{T<:AbstractVector, ST<:Stream{<:FortranFile}} <: Trajectory
+struct NamdDCD{T<:AbstractVector,ST<:Stream{<:FortranFile}} <: Trajectory
 
     #
     # Mandatory data for things to work
@@ -51,7 +51,7 @@ function NamdDCD(
     filename::String,
     solute::AtomSelection,
     solvent::AtomSelection;
-    T::Type = SVector{3,Float64},
+    T::Type=SVector{3,Float64},
 )
 
     st = FortranFile(filename)
@@ -179,7 +179,7 @@ function getunitcell(trajectory::NamdDCD)
         β = 90.0
         γ = 90.0
     end
-    return transpose(SMatrix{3,3}(Chemfiles.matrix(Chemfiles.UnitCell([A,B,C], [α, β, γ]))))  
+    return transpose(SMatrix{3,3}(Chemfiles.matrix(Chemfiles.UnitCell([A, B, C], [α, β, γ]))))
 end
 
 #

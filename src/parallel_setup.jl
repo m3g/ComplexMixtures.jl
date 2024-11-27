@@ -47,7 +47,7 @@ function parallel_setup(options::Options, R::Result, low_memory::Bool)
               Here, we suggest at most N=$(Int(fld(0.2 * total_memory, results_memory))).
 
             """
-        end _file = nothing _line = nothing
+        end _file=nothing _line=nothing
     end
     if nchunks * results_memory > total_memory
         throw(ErrorException("The memory required for the computation is larger than the total system memory."))

@@ -38,12 +38,12 @@ gr(R::Result) = gr(R.d, R.rdf_count, R.density.solvent_bulk, R.files[1].options.
     using PDBTools: readPDB, select
     using ComplexMixtures.Testing: data_dir
     atoms = readPDB("$data_dir/NAMD/structure.pdb")
-    options = Options(seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    OH2 = AtomSelection(select(atoms, "water and name OH2"), natomspermol = 1)
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+    OH2 = AtomSelection(select(atoms, "water and name OH2"), natomspermol=1)
     traj = Trajectory("$data_dir/Gromacs/trajectory.xtc", OH2)
     R = mddf(traj, options)
     gr1, kb1 = gr(R)
     @test R.rdf_count ≈ R.md_count
-    @test gr1[end] ≈ 1.0 rtol = 0.1 
-    @test kb1[end] ≈ 20.0 rtol = 0.1 
+    @test gr1[end] ≈ 1.0 rtol = 0.1
+    @test kb1[end] ≈ 20.0 rtol = 0.1
 end

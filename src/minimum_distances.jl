@@ -143,14 +143,14 @@ function minimum_distances!(
             (x, y, i, j, d2, list) ->
                 update_list!(i, j, d2, jref_atom, jnatomspermol, isolute, list),
             system;
-            update_lists = update_lists,
+            update_lists=update_lists,
         )
     else
         map_pairwise!(
             (x, y, i, j, d2, list) ->
                 update_list!(i, j, d2, jref_atom, jnatomspermol, list),
             system;
-            update_lists = update_lists,
+            update_lists=update_lists,
         )
     end
     return system.list
@@ -164,23 +164,23 @@ will be setup such that `xpositions` corresponds to one molecule of the solute, 
 
 =#
 function CellListMap.ParticleSystem(
-    trajectory::Trajectory, 
-    unitcell, 
-    options::Options, 
+    trajectory::Trajectory,
+    unitcell,
+    options::Options,
     parallel::Bool,
     nbatches::Tuple{Int,Int},
 )
     system = ParticleSystem(;
-        xpositions = zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
-        ypositions = zeros(SVector{3,Float64}, trajectory.solvent.nmols * trajectory.solvent.natomspermol),
+        xpositions=zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
+        ypositions=zeros(SVector{3,Float64}, trajectory.solvent.nmols * trajectory.solvent.natomspermol),
         unitcell,
-        cutoff = options.usecutoff ? options.cutoff : options.dbulk,
-        output = fill(zero(MinimumDistance), trajectory.solvent.nmols),
-        output_name = :list,
-        lcell = options.lcell,
+        cutoff=options.usecutoff ? options.cutoff : options.dbulk,
+        output=fill(zero(MinimumDistance), trajectory.solvent.nmols),
+        output_name=:list,
+        lcell=options.lcell,
         parallel, # true only if low_memory is set 
         nbatches,
-        autoswap = false, # The lists will be built for the solvent, always
+        autoswap=false, # The lists will be built for the solvent, always
     )
     return system
 end
@@ -193,14 +193,14 @@ end
     import CellListMap
 
     atoms = readPDB(Testing.pdbfile)
-    options = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
     # Cross-correlation
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
-    tmeta = ComplexMixtures.TrajectoryMetaData(traj, options) 
-    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1,1))
+    tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
+    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181)
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
@@ -210,13 +210,13 @@ end
     @test system.unitcell ≈ [84.42188262939453 0.0 0.0; 0.0 84.42188262939453 0.0; 0.0 0.0 84.42188262939453]
     @test system._box == CellListMap.Box(
         ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)),
-        10.0, lcell = options.lcell
+        10.0, lcell=options.lcell
     )
 
     # Auto-correlation
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
-    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1,1))
+    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181) # one molecule less
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
@@ -226,7 +226,7 @@ end
     @test system.unitcell ≈ [84.42188262939453 0.0 0.0; 0.0 84.42188262939453 0.0; 0.0 0.0 84.42188262939453]
     @test system._box == CellListMap.Box(
         ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)),
-        10.0, lcell = options.lcell
+        10.0, lcell=options.lcell
     )
 
 end

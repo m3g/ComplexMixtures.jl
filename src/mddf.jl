@@ -180,10 +180,10 @@ julia> results = mddf(trajectory_file, solute, solvent, options);
 function mddf end
 
 function mddf(
-    trajectory_file::String, 
-    solute::AtomSelection, 
-    solvent::AtomSelection, 
-    options::Options; 
+    trajectory_file::String,
+    solute::AtomSelection,
+    solvent::AtomSelection,
+    options::Options;
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...)
@@ -192,9 +192,9 @@ function mddf(
 end
 
 function mddf(
-    trajectory_file::String, 
-    solute_and_solvent::AtomSelection, 
-    options::Options; 
+    trajectory_file::String,
+    solute_and_solvent::AtomSelection,
+    options::Options;
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...
@@ -231,7 +231,7 @@ function mddf(
 
     # Skip initial frames if desired
     progress = Progress(options.firstframe; dt=1)
-    for _ in 1:options.firstframe - 1
+    for _ in 1:options.firstframe-1
         nextframe!(trajectory)
         if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
             GC.gc()
@@ -247,7 +247,7 @@ function mddf(
     # Print some information about this run
     if !options.silent
         title(R, trajectory.solute, trajectory.solvent, nthreads)
-        if low_memory 
+        if low_memory
             println("Running with low-memory option:")
             println("  - Parallel CellListMap can be used.")
             println("  - Number of parallel minimum-distance computations: $nchunks")
@@ -277,7 +277,7 @@ function mddf(
                 local compute, frame_weight
                 # Read frame coordinates
                 @lock read_lock begin
-                    iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options) 
+                    iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
                     if compute
                         # Read frame for computing 
                         # The solute coordinates must be read in intermediate arrays, because the 
@@ -514,48 +514,48 @@ julia> results = coordination_number(trajectory_file, solute, solvent, options);
 ```
 
 """
-function coordination_number(::String, args...; kargs...) 
+function coordination_number(::String, args...; kargs...)
     throw(ArgumentError("""\n
         Invalid arguments for the `coordination_number` function.
         Plese check the documentation for the correct call signature, by typing:
 
         julia> ? coordination_number
-    
+
     """))
 end
 
 function coordination_number(
-    trajectory_file::String, 
-    solute::AtomSelection, 
-    solvent::AtomSelection, 
-    options::Options; 
+    trajectory_file::String,
+    solute::AtomSelection,
+    solvent::AtomSelection,
+    options::Options;
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...)
-    _coordination_number_call_error(;kargs...)
+    _coordination_number_call_error(; kargs...)
     trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
 
 function coordination_number(
-    trajectory_file::String, 
-    solute_and_solvent::AtomSelection, 
-    options::Options; 
+    trajectory_file::String,
+    solute_and_solvent::AtomSelection,
+    options::Options;
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...
 )
-    _coordination_number_call_error(;kargs...)
+    _coordination_number_call_error(; kargs...)
     trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
 
 function coordination_number(traj::Trajectory, options::Options=Options(); kargs...)
-    _coordination_number_call_error(;kargs...)
+    _coordination_number_call_error(; kargs...)
     return mddf(traj, options; coordination_number_only=true, kargs...)
 end
 
-function _coordination_number_call_error(;kargs...) 
+function _coordination_number_call_error(; kargs...)
     if haskey(kargs, :coordination_number_only)
         throw(ArgumentError("""\n
             The keyword argument `coordination_number_only` is not allowed in the `coordination_number` function.
@@ -577,7 +577,7 @@ end
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     trajectory_file = "$data_dir/toy/cross.pdb"
     trajectory_format = "PDBTraj"
-    for nthreads in [1,2], lastframe in [1, 2], low_memory in [true, false]
+    for nthreads in [1, 2], lastframe in [1, 2], low_memory in [true, false]
         options = Options(;
             seed=321,
             StableRNG=true,
@@ -617,7 +617,7 @@ end
     trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
     trajectory_format = "PDBTraj"
     # without atoms in the bulk
-    for nthreads in [1,2], low_memory in [false, true]
+    for nthreads in [1, 2], low_memory in [false, true]
         options = Options(;
             seed=321,
             StableRNG=true,
@@ -729,12 +729,12 @@ end
     # Throw insufficent memory error
     @test_throws ErrorException mddf(trajectory_file, protein, tmao, Options(nthreads=10^10))
 
-    for nthreads in [1,2], low_memory in [true, false]
+    for nthreads in [1, 2], low_memory in [true, false]
         options = Options(;
-            seed=1, 
-            stride=1, 
-            StableRNG=true, 
-            nthreads, 
+            seed=1,
+            stride=1,
+            StableRNG=true,
+            nthreads,
             n_random_samples=100,
             silent=true
         )
