@@ -13,8 +13,8 @@ If they are not defined, the user can pass the names of the groups as strings in
 """
 function Base.write(
     filename::String, R::Result;
-    solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
-    solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
+    solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
+    solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
 )
 
     filename = expanduser(filename)
@@ -57,20 +57,20 @@ function Base.write(
             println(output, "# Using cutoff distance: $(R.cutoff)")
             println(output, @sprintf("# Average and standard deviation of bulk-gmd: %11.5f +/- %12.5f", bulkerror, sdbulkerror))
         end
-        println(output, 
-    """
-    #
-    # COLUMNS CORRESPOND TO:
-    #       0  Minimum distance to solute (dmin)
-    #       1  MDDF (md count normalized by md count of random-solute distribution)
-    #       2  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
-    #       3  Minimum distance site count for each dmin.
-    #       4  Minimum distance site count for each dmin for random solute distribution.
-    #       5  Cumulative number of molecules within dmin in the simulation (coordination number)
-    #       6  Cumulative number of molecules within dmin for random solute distribution.
-    #       7  Volume of the shell of distance dmin and width binstep.
-    #
-    #   0-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL""")
+        println(output,
+            """
+            #
+            # COLUMNS CORRESPOND TO:
+            #       0  Minimum distance to solute (dmin)
+            #       1  MDDF (md count normalized by md count of random-solute distribution)
+            #       2  Kirwood-Buff integral (cc/mol) computed [(1/bulkdensity)*(col(6)-col(7))].
+            #       3  Minimum distance site count for each dmin.
+            #       4  Minimum distance site count for each dmin for random solute distribution.
+            #       5  Cumulative number of molecules within dmin in the simulation (coordination number)
+            #       6  Cumulative number of molecules within dmin for random solute distribution.
+            #       7  Volume of the shell of distance dmin and width binstep.
+            #
+            #   0-DISTANCE         2-GMD      3-KB INT    4-MD COUNT  5-COUNT RAND      6-SUM MD    7-SUM RAND   8-SHELL VOL""")
         for i in eachindex(R.d)
             line = "  " * format(R.d[i])                                   #  0-DISTANCE
             line = line * "  " * format(R.mddf[i])                         #  1-GMD
@@ -92,7 +92,7 @@ function Base.write(
     """)
 
     # Solute and solvent contribution files
-    solute_file = write_group_contributions(R, filename, :solute, solute_group_names) 
+    solute_file = write_group_contributions(R, filename, :solute, solute_group_names)
     solvent_file = write_group_contributions(R, filename, :solvent, solvent_group_names)
 
     return filename, solute_file, solvent_file
@@ -126,8 +126,8 @@ end
 # Writting gmd per atom contributions for the solvent
 #
 function write_group_contributions(
-    R::Result, 
-    filename::String, 
+    R::Result,
+    filename::String,
     type::Symbol,
     group_names::AbstractVector{<:AbstractString},
 )
@@ -197,12 +197,12 @@ function write_group_contributions(
 
     return group_contributions_output
 end
- 
+
 # legacy order
 Base.write(
     R::Result, filename::String;
-    solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
-    solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
+    solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
+    solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
 ) = write(filename, R; solute_group_names, solvent_group_names)
 
 @testitem "write" begin
@@ -212,45 +212,45 @@ Base.write(
     using ComplexMixtures.Testing: data_dir
     atoms = readPDB("$data_dir/NAMD/structure.pdb")
     # Using or not bulk-range
-    options1 = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true, bulk_range=(8.0, 10.0))
-    options2 = Options(stride = 5, seed = 321, StableRNG = true, nthreads = 1, silent = true, dbulk=8.0, usecutoff=false)
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao, chemfiles = true)
+    options1 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, bulk_range=(8.0, 10.0))
+    options2 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, dbulk=8.0, usecutoff=false)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao, chemfiles=true)
     for options in (options1, options2)
         r = mddf(traj, options)
-        tmpfile = tempname()*".dat"
+        tmpfile = tempname() * ".dat"
         out1, out2, out3 = write(tmpfile, r)
         r_read = readdlm(out1, comments=true, comment_char='#')
         # Main output file
-        @test r.d ≈ r_read[:,1]
-        @test r.mddf ≈ r_read[:,2]
-        @test r.kb ≈ r_read[:,3] rtol = 1e-5
-        @test r.md_count ≈ r_read[:,4] 
-        @test r.md_count_random ≈ r_read[:,5] rtol = 1e-5
-        @test r.coordination_number ≈ r_read[:,6] rtol = 1e-5
-        @test r.coordination_number_random ≈ r_read[:,7] rtol = 1e-5
-        @test r.volume.shell ≈ r_read[:,8] rtol = 1e-5
+        @test r.d ≈ r_read[:, 1]
+        @test r.mddf ≈ r_read[:, 2]
+        @test r.kb ≈ r_read[:, 3] rtol = 1e-5
+        @test r.md_count ≈ r_read[:, 4]
+        @test r.md_count_random ≈ r_read[:, 5] rtol = 1e-5
+        @test r.coordination_number ≈ r_read[:, 6] rtol = 1e-5
+        @test r.coordination_number_random ≈ r_read[:, 7] rtol = 1e-5
+        @test r.volume.shell ≈ r_read[:, 8] rtol = 1e-5
         # Solute contributions
         r_read = readdlm(out2, comments=true, comment_char='#')
-        @test r.d ≈ r_read[:,1]
-        @test r.mddf ≈ r_read[:,2] 
+        @test r.d ≈ r_read[:, 1]
+        @test r.mddf ≈ r_read[:, 2]
         for i in eachindex(r.solute.group_names)
-            @test contributions(r, SoluteGroup([i])) ≈ r_read[:,i+2] rtol = 1e-5
+            @test contributions(r, SoluteGroup([i])) ≈ r_read[:, i+2] rtol = 1e-5
         end
         # Solvent contributions
         r_read = readdlm(out3, comments=true, comment_char='#')
-        @test r.d ≈ r_read[:,1]
-        @test r.mddf ≈ r_read[:,2] 
+        @test r.d ≈ r_read[:, 1]
+        @test r.mddf ≈ r_read[:, 2]
         for (i, name) in enumerate(atom_group_names(r.solvent))
-            @test contributions(r, SolventGroup([name])) ≈ r_read[:,i+2] rtol = 1e-5
+            @test contributions(r, SolventGroup([name])) ≈ r_read[:, i+2] rtol = 1e-5
         end
     end
     # legacy order of arguments 
     r = mddf(traj, options1)
-    tmpfile = tempname()*".dat"
+    tmpfile = tempname() * ".dat"
     out1, out2, out3 = write(r, tmpfile)
     r_read = readdlm(out1, comments=true, comment_char='#')
     # Main output file
-    @test r.d ≈ r_read[:,1]
+    @test r.d ≈ r_read[:, 1]
 end

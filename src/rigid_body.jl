@@ -161,10 +161,10 @@ end
     # Orthorhombic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     system = ParticleSystem(
-        positions = x,
-        cutoff = 0.1,
-        unitcell = SVector(10.0, 10.0, 10.0),
-        output = 0.0,
+        positions=x,
+        cutoff=0.1,
+        unitcell=SVector(10.0, 10.0, 10.0),
+        output=0.0,
     )
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
     system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
@@ -175,10 +175,10 @@ end
     # Triclinic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     system = ParticleSystem(
-        positions = x,
-        cutoff = 0.1,
-        unitcell = @SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0],
-        output = 0.0,
+        positions=x,
+        cutoff=0.1,
+        unitcell=@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0],
+        output=0.0,
     )
     @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, system, RNG))
     system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]

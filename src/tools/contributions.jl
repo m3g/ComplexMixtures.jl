@@ -103,7 +103,7 @@ function contributions(
                 Custom groups are defined. Cannot retrieve general group contributions. 
                 Please provide a group name or index.
                 For example, use SoluteGroup(1) or SoluteGroup("Group1_NAME")
-            """)) 
+            """))
         end
     else
         if isnothing(group.atom_indices) && isnothing(group.atom_names)

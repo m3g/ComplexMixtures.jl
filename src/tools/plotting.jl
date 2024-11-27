@@ -13,7 +13,7 @@ function contourf_per_residue(args...; kwargs...)
            Use `using Plots` before calling this function.
         2. The function was called with the wrong arguments. 
            Please read the documentation, by typing `? contourf_per_residue`.
-    
+
     """))
 end
 

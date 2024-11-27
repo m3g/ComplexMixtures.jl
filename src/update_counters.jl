@@ -6,7 +6,7 @@
 # (goes from 1 to natomspermol). The `first` argument is the index of the first Atom
 # in the molecule. The default value is 1.
 #
-atom_type(iatom::Integer, natomspermol::Integer; first::Integer = 1) = mod1(iatom - first + 1, natomspermol)
+atom_type(iatom::Integer, natomspermol::Integer; first::Integer=1) = mod1(iatom - first + 1, natomspermol)
 
 @testitem "atom_type" begin
     using ComplexMixtures: atom_type
@@ -24,7 +24,7 @@ function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSe
         itype = atom_type(iatom, sol.natomspermol)
         group_count[itype][ibin] += frame_weight
     else
-        iat = sol.indices[iatom] 
+        iat = sol.indices[iatom]
         for (igroup, indices) in enumerate(sol.group_atom_indices)
             ifind = searchsortedfirst(indices, iat)
             if ifind <= length(indices) && indices[ifind] == iat
@@ -45,7 +45,7 @@ function update_counters!(R::Result, system::AbstractParticleSystem, frame_weigh
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
         R.md_count[ibin] += frame_weight
-        if R.autocorrelation 
+        if R.autocorrelation
             # the atoms belong to the same set, so their contributions must be halved,
             # and contribute, both, to the solute count. The solute count is copied to the
             # solvent count in the `finalresults!` function.

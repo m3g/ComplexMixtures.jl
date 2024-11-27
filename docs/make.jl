@@ -6,12 +6,12 @@ using PDBTools
 using Plots
 push!(LOAD_PATH, "../src/")
 makedocs(
-    modules = [
-        ComplexMixtures, 
+    modules=[
+        ComplexMixtures,
         isdefined(Base, :get_extension) ? Base.get_extension(ComplexMixtures, :Plotting) : ComplexMixtures.Plotting,
     ],
-    sitename = "ComplexMixtures.jl",
-    pages = [
+    sitename="ComplexMixtures.jl",
+    pages=[
         "Introduction" => "index.md",
         "Installation" => "installation.md",
         "Parallel execution" => "parallel.md",
@@ -35,8 +35,8 @@ makedocs(
     ],
 )
 deploydocs(
-    repo = "github.com/m3g/ComplexMixtures.jl.git",
-    target = "build",
-    branch = "gh-pages",
-    versions = ["stable" => "v^", "v#.#"],
+    repo="github.com/m3g/ComplexMixtures.jl.git",
+    target="build",
+    branch="gh-pages",
+    versions=["stable" => "v^", "v#.#"],
 )

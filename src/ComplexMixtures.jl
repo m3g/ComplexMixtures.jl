@@ -20,7 +20,7 @@ using TestItems: @testitem
 
 
 # Data types
-export Trajectory, Options, Result 
+export Trajectory, Options, Result
 export AtomSelection, SoluteGroup, SolventGroup
 
 # Functions
@@ -31,7 +31,7 @@ export atom_group, atom_group_name, atom_group_names
 
 # Tools
 export ResidueContributions
-export contributions 
+export contributions
 export coordination_number
 export gr
 export grid3D

@@ -66,23 +66,23 @@ Create an Options object with the specified options.
 
 """
 function Options(;
-    firstframe::Int = 1,
-    lastframe::Int = -1,
-    stride::Int = 1,
-    irefatom::Int = -1,
-    n_random_samples::Int = 10,
-    binstep::Float64 = 0.02,
-    dbulk::Union{Nothing,Real} = nothing,
-    cutoff::Union{Nothing,Real} = nothing,
-    usecutoff::Union{Nothing,Bool} = nothing,
+    firstframe::Int=1,
+    lastframe::Int=-1,
+    stride::Int=1,
+    irefatom::Int=-1,
+    n_random_samples::Int=10,
+    binstep::Float64=0.02,
+    dbulk::Union{Nothing,Real}=nothing,
+    cutoff::Union{Nothing,Real}=nothing,
+    usecutoff::Union{Nothing,Bool}=nothing,
     bulk_range=nothing,
-    lcell::Int = 1,
-    GC::Bool = true,
-    GC_threshold::Float64 = 0.3,
-    seed::Int = 321,
-    StableRNG::Bool = false,
-    nthreads::Int = 0,
-    silent::Bool = false
+    lcell::Int=1,
+    GC::Bool=true,
+    GC_threshold::Float64=0.3,
+    seed::Int=321,
+    StableRNG::Bool=false,
+    nthreads::Int=0,
+    silent::Bool=false
 )
 
     # warning flag for default values of dbulk, cutoff, and usecutoff
@@ -90,7 +90,7 @@ function Options(;
 
     # Check for simple input errors
     if stride < 1
-       throw(ArgumentError("in MDDF options: stride cannot be less than 1. "))
+        throw(ArgumentError("in MDDF options: stride cannot be less than 1. "))
     end
     if lastframe > 0 && lastframe < firstframe
         throw(ArgumentError("in MDDF options: lastframe must be greater or equal to firstframe. "))
@@ -106,8 +106,8 @@ function Options(;
     if !isnothing(bulk_range) && any(!isnothing, (dbulk, cutoff, usecutoff))
         throw(ArgumentError("""\n
             The bulk_range argument implies that dbulk, cutoff, and usecutoff are not needed. 
-        
-        """)) 
+
+        """))
     end
     if all(isnothing, (bulk_range, dbulk, cutoff, usecutoff))
         dbulk = 10.0
@@ -159,7 +159,7 @@ function Options(;
             system size and correlations of the distribution function with, 
             for example: Options(bulk_range = (8.0, 12.0))
 
-        """ _file=nothing _line=nothing
+        """ _file = nothing _line = nothing
     end
     if usecutoff && dbulk >= cutoff
         throw(ArgumentError(" in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). "))
@@ -197,36 +197,36 @@ end
     @test o.dbulk == 10.0
     @test o.cutoff == 10.0
     @test o.usecutoff == false
-    o = Options(bulk_range = (10.0, 14.0))
+    o = Options(bulk_range=(10.0, 14.0))
     @test o.dbulk == 10.0
     @test o.cutoff == 14.0
     @test o.usecutoff == true
     o = Options(dbulk=10.0)
     @test o.dbulk == 10.0
     @test o.cutoff == 10.0
-    @test o.usecutoff == false 
-    o = Options(dbulk = 10.0, usecutoff = false)
+    @test o.usecutoff == false
+    o = Options(dbulk=10.0, usecutoff=false)
     @test o.dbulk == 10.0
     @test o.cutoff == 10.0
     @test o.usecutoff == false
-    o = Options(bulk_range = (10.0, 14.0))
+    o = Options(bulk_range=(10.0, 14.0))
     @test o.dbulk == 10.0
     @test o.cutoff == 14.0
     @test o.usecutoff == true
 
     # input errors
-    @test_throws ArgumentError Options(dbulk = 10.0, binstep = 0.3)
-    @test_throws ArgumentError Options(dbulk = 10.0, cutoff = 10.0, usecutoff = true)
-    @test_throws ArgumentError Options(dbulk = 6.0, cutoff = 10.0, binstep = 0.3, usecutoff = true)
-    @test_throws ArgumentError Options(dbulk = 8.0, cutoff = 10.0, binstep = 0.3, usecutoff = true)
-    @test_throws ArgumentError Options(bulk_range = (10.0, 12.0), binstep = 0.3)
-    @test_throws ArgumentError Options(stride = 0)
-    @test_throws ArgumentError Options(lastframe = 1, firstframe = 2)
-    @test_throws ArgumentError Options(bulk_range = (12.0, 10.0))
-    @test_throws ArgumentError Options(bulk_range = (12.0, 10.0), dbulk=8.0)
-    @test_throws ArgumentError Options(bulk_range = (12.0, 10.0), cutoff=15.0)
-    @test_throws ArgumentError Options(bulk_range = (12.0, 10.0), usecutoff=false)
-    @test_throws ArgumentError Options(dbulk = 10.0, cutoff = 15.0, usecutoff = false)
+    @test_throws ArgumentError Options(dbulk=10.0, binstep=0.3)
+    @test_throws ArgumentError Options(dbulk=10.0, cutoff=10.0, usecutoff=true)
+    @test_throws ArgumentError Options(dbulk=6.0, cutoff=10.0, binstep=0.3, usecutoff=true)
+    @test_throws ArgumentError Options(dbulk=8.0, cutoff=10.0, binstep=0.3, usecutoff=true)
+    @test_throws ArgumentError Options(bulk_range=(10.0, 12.0), binstep=0.3)
+    @test_throws ArgumentError Options(stride=0)
+    @test_throws ArgumentError Options(lastframe=1, firstframe=2)
+    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0))
+    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0), dbulk=8.0)
+    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0), cutoff=15.0)
+    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0), usecutoff=false)
+    @test_throws ArgumentError Options(dbulk=10.0, cutoff=15.0, usecutoff=false)
     @test_throws ArgumentError Options(n_random_samples=0)
 
 end

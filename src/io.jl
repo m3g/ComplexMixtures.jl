@@ -77,7 +77,7 @@ function _check_version(filename)
             You can pin the version of ComplexMixtures to the one you installed with:
 
             julia> import Pkg; Pkg.pkg"pin ComplexMixtures@$json_version"
-        
+
         """))
     end
     return nothing

@@ -103,7 +103,7 @@ julia> coordination_number(R, SoluteGroup("alanine residues"))[i5]
 """
 function coordination_number end
 coordination_number(R::Result) = R.coordination_number
-coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contributions(R, atsel; type = :coordination_number)
+coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contributions(R, atsel; type=:coordination_number)
 
 @testitem "coordination_number" begin
     using ComplexMixtures: coordination_number, contributions, mddf, Trajectory, Options, AtomSelection, load
@@ -112,9 +112,9 @@ coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contrib
 
     dir = "$data_dir/NAMD"
     atoms = readPDB("$dir/structure.pdb")
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
-    options = Options(lastframe = 1, seed = 321, StableRNG = true, nthreads = 1, silent = true, n_random_samples=200)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
+    options = Options(lastframe=1, seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=200)
     traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
     R = mddf(traj, options)
 

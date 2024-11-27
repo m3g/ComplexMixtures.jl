@@ -55,12 +55,12 @@ $(TYPEDFIELDS)
     custom_groups::Bool
     group_atom_indices::Vector{Vector{Int}}
     # Group (or atom) names.
-    group_names::Vector{String} 
+    group_names::Vector{String}
 end
 
 # AtomSelection show functions
 function Base.show(io::IO, atsel::AtomSelection)
-    (; nmols, natomspermol, custom_groups, group_atom_indices) = atsel 
+    (; nmols, natomspermol, custom_groups, group_atom_indices) = atsel
     ngroups = custom_groups ? length(group_atom_indices) : natomspermol
     print(io, chomp(
     """
@@ -108,12 +108,12 @@ julia> atom_group_name(atsel, 1)
 ```
 
 """
-function atom_group(atsel::AtomSelection, i::Integer) 
-    atsel.custom_groups || _error_custom_groups() 
+function atom_group(atsel::AtomSelection, i::Integer)
+    atsel.custom_groups || _error_custom_groups()
     atsel.group_atom_indices[i]
 end
-function atom_group(atsel::AtomSelection, group_name::String) 
-    atsel.custom_groups || _error_custom_groups() 
+function atom_group(atsel::AtomSelection, group_name::String)
+    atsel.custom_groups || _error_custom_groups()
     igroup = findfirst(==(group_name), atsel.group_names)
     if isnothing(igroup)
         throw(ArgumentError("""\n
@@ -158,24 +158,24 @@ julia> atom_group_names(atsel)
 ```
 
 """
-function atom_group_name(atsel::AtomSelection, i::Int) 
+function atom_group_name(atsel::AtomSelection, i::Int)
     atsel.group_names[i]
 end
-@doc (@doc atom_group_name) function atom_group_names(atsel) 
+@doc (@doc atom_group_name) function atom_group_names(atsel)
     atsel.group_names
 end
 
 @testitem "atom_group" begin
     using ComplexMixtures
-    s = AtomSelection([1,2,3], nmols=1, group_names=["A","B"], group_atom_indices=[[1],[2,3]])
+    s = AtomSelection([1, 2, 3], nmols=1, group_names=["A", "B"], group_atom_indices=[[1], [2, 3]])
     @test atom_group(s, 1) == [1]
     @test atom_group(s, "A") == [1]
-    @test atom_group(s, 2) == [2,3]
-    @test atom_group(s, "B") == [2,3]
+    @test atom_group(s, 2) == [2, 3]
+    @test atom_group(s, "B") == [2, 3]
     @test atom_group_name(s, 1) == "A"
     @test atom_group_name(s, 2) == "B"
     @test_throws ArgumentError atom_group(s, "C")
-    s = AtomSelection([1,2,3], nmols=1)
+    s = AtomSelection([1, 2, 3], nmols=1)
     @test_throws ArgumentError atom_group(s, 1)
     @test_throws ArgumentError atom_group(s, "A")
 end
@@ -278,7 +278,7 @@ AtomSelection
 ```
 
 """
-function AtomSelection(args...; kargs...) 
+function AtomSelection(args...; kargs...)
     throw(ArgumentError("""\n
         No constructor for AtomSelection with these arguments. Please check the documentation.
 
@@ -291,10 +291,10 @@ end
 #
 function AtomSelection(
     indices::Vector{<:Integer};
-    nmols::Integer = 0,
-    natomspermol::Integer = 0,
-    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}} = Vector{Int}[],
-    group_names::AbstractVector{<:AbstractString} = String[]
+    nmols::Integer=0,
+    natomspermol::Integer=0,
+    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}}=Vector{Int}[],
+    group_names::AbstractVector{<:AbstractString}=String[]
 )
 
     nmols, natomspermol = set_nmols_natomspermol(indices, nmols, natomspermol)
@@ -320,17 +320,16 @@ function AtomSelection(
                         Group indices are not sorted. The array will be sorted for faster search.
 
                     """
-                end _file=nothing _line=nothing
+                end _file = nothing _line = nothing
                 sort!(inds)
             end
 
             # Check if the groups have only unique entries
             if !(allunique(inds))
                 throw(ArgumentError("""\n
-                
                     Found repeated indices in custom group atom indices.
                     The group atom indices must have unique entries.
-                
+
                 """))
             end
 
@@ -353,7 +352,7 @@ function AtomSelection(
                     The group contributions will be only retrieved by the group indices.
 
                 """
-            end _file=nothing _line=nothing
+            end _file = nothing _line = nothing
         else
             if length(group_atom_indices) != length(group_names)
                 throw(ArgumentError("""\n
@@ -365,12 +364,12 @@ function AtomSelection(
     end
 
     return AtomSelection(
-        indices = indices,
-        nmols = nmols,
-        natomspermol = natomspermol,
-        custom_groups = custom_groups,
-        group_atom_indices = group_atom_indices,
-        group_names = group_names,
+        indices=indices,
+        nmols=nmols,
+        natomspermol=natomspermol,
+        custom_groups=custom_groups,
+        group_atom_indices=group_atom_indices,
+        group_names=group_names,
     )
 end
 
@@ -381,7 +380,7 @@ end
     pdbfile = ComplexMixtures.Testing.pdbfile
     atoms = readPDB(pdbfile, "protein and residue 2")
     indices = index.(atoms)
-    s = AtomSelection(indices, nmols = 1, natomspermol = 11)
+    s = AtomSelection(indices, nmols=1, natomspermol=11)
     @test s.indices == [12 + i for i = 1:11]
     @test s.group_names == String[]
     @test length(s.indices) == 11
@@ -390,7 +389,7 @@ end
     @test s.custom_groups == false
     @test s.group_names == String[]
     @test ComplexMixtures.natoms(s) == s.nmols * s.natomspermol
-    s = AtomSelection(indices, group_names = fill("C", length(indices)), nmols = 1, natomspermol = 11)
+    s = AtomSelection(indices, group_names=fill("C", length(indices)), nmols=1, natomspermol=11)
     @test s.custom_groups == false
     @test s.group_names == fill("C", length(indices))
     @test_throws ArgumentError atom_group(s, "C")
@@ -399,8 +398,8 @@ end
     # Test shuffled indices in the custom group
     atoms = readPDB(pdbfile, "protein")
     indices = index.(atoms)
-    s1 = AtomSelection(indices, nmols=1, group_atom_indices= [ findall(sel"resname ARG", atoms) ])
-    s2 = AtomSelection(indices, nmols=1, group_atom_indices= [ shuffle!(findall(sel"resname ARG", atoms)) ])
+    s1 = AtomSelection(indices, nmols=1, group_atom_indices=[findall(sel"resname ARG", atoms)])
+    s2 = AtomSelection(indices, nmols=1, group_atom_indices=[shuffle!(findall(sel"resname ARG", atoms))])
     @test atom_group(s1, 1) == atom_group(s2, 1)
 
 end
@@ -409,58 +408,58 @@ end
     import ComplexMixtures
     #using ComplexMixtures: AtomSelection
     using PDBTools: select, readPDB, Select
-    @test_throws ArgumentError AtomSelection([1,2,3])
-    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=2)
-    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, nmols=2)
-    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, nmols=2)
-    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, group_names=["A", "B"])
-    @test_throws ArgumentError AtomSelection([1,2,3]; natomspermol=1, group_names=["A", "B", "C"])
-    @test_throws ArgumentError AtomSelection(Int[], nmols = 1, natomspermol = 11)
-    
-    @test_throws ArgumentError AtomSelection([1,2,3], ["A", "B", "C"])
-    @test_throws MethodError AtomSelection([1,2,3]; abc = 1)
-    @test_throws ArgumentError AtomSelection([1,2,3], ["A", "B", "C"]; nmols = 1)
-    @test_throws ArgumentError AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2,2],[3]])
-    @test_throws ArgumentError AtomSelection([1,2,3], nmols=1, group_names=["A","B"], group_atom_indices=[[1],[2,3],[2]])
+    @test_throws ArgumentError AtomSelection([1, 2, 3])
+    @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=2)
+    @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=1, nmols=2)
+    @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=1, nmols=2)
+    @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=1, group_names=["A", "B"])
+    @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=1, group_names=["A", "B", "C"])
+    @test_throws ArgumentError AtomSelection(Int[], nmols=1, natomspermol=11)
 
-    @test_logs (:warn,) AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]])
-    @test_logs (:warn,) AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[2,1],[3]], group_names = ["A", "B"])
+    @test_throws ArgumentError AtomSelection([1, 2, 3], ["A", "B", "C"])
+    @test_throws MethodError AtomSelection([1, 2, 3]; abc=1)
+    @test_throws ArgumentError AtomSelection([1, 2, 3], ["A", "B", "C"]; nmols=1)
+    @test_throws ArgumentError AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[1, 2, 2], [3]])
+    @test_throws ArgumentError AtomSelection([1, 2, 3], nmols=1, group_names=["A", "B"], group_atom_indices=[[1], [2, 3], [2]])
+
+    @test_logs (:warn,) AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[1, 2], [3]])
+    @test_logs (:warn,) AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[2, 1], [3]], group_names=["A", "B"])
 
     pdb = readPDB(ComplexMixtures.Testing.pdbfile)
     @test_throws ArgumentError AtomSelection(
-            select(pdb, "protein and name CA"),
-            nmols = 1,
-            group_atom_indices = [ findall(Select("protein and name N"), pdb) ]
-        )
-    
+        select(pdb, "protein and name CA"),
+        nmols=1,
+        group_atom_indices=[findall(Select("protein and name N"), pdb)]
+    )
+
 end
 
 #
 # Initialize the structure providing a vector of PDBTools.Atom(s)
 #
 function AtomSelection(
-    atoms::AbstractVector{<:PDBTools.Atom}; 
-    nmols::Integer = 0, 
-    natomspermol::Integer = 0,
-    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}} = Vector{Int}[],
-    group_names::AbstractVector{<:AbstractString} = String[]
+    atoms::AbstractVector{<:PDBTools.Atom};
+    nmols::Integer=0,
+    natomspermol::Integer=0,
+    group_atom_indices::AbstractVector{<:AbstractVector{<:Integer}}=Vector{Int}[],
+    group_names::AbstractVector{<:AbstractString}=String[]
 )
     custom_groups = !isempty(group_atom_indices)
-    indices = [ Int64(PDBTools.index(at)) for at in atoms ]
+    indices = [Int64(PDBTools.index(at)) for at in atoms]
     nmols, natomspermol = set_nmols_natomspermol(indices, nmols, natomspermol)
-    if !custom_groups && isempty(group_names) 
+    if !custom_groups && isempty(group_names)
         if nmols == 1
-            group_names = [ String(PDBTools.name(at)) for at in atoms ]
+            group_names = [String(PDBTools.name(at)) for at in atoms]
         else
-            group_names = [ String(PDBTools.name(atoms[i])) for i in 1:natomspermol ]
+            group_names = [String(PDBTools.name(atoms[i])) for i in 1:natomspermol]
         end
     end
     return AtomSelection(
         indices;
-        nmols = nmols, 
-        natomspermol = natomspermol,
-        group_atom_indices = group_atom_indices,
-        group_names = group_names, 
+        nmols=nmols,
+        natomspermol=natomspermol,
+        group_atom_indices=group_atom_indices,
+        group_names=group_names,
     )
 end
 
@@ -470,7 +469,7 @@ end
     import Random: shuffle!
     pdbfile = ComplexMixtures.Testing.pdbfile
     atoms = PDBTools.readPDB(pdbfile, "protein and residue 2")
-    s = AtomSelection(atoms, nmols = 1, natomspermol = 11)
+    s = AtomSelection(atoms, nmols=1, natomspermol=11)
     @test s.indices == [12 + i for i = 1:11]
     @test s.custom_groups == false
     @test atom_group_names(s) == ["N", "HN", "CA", "HA", "CB", "HB1", "HB2", "SG", "HG1", "C", "O"]
@@ -478,11 +477,11 @@ end
     @test s.natomspermol == 11
     @test s.nmols == 1
     @test ComplexMixtures.natoms(s) == s.nmols * s.natomspermol
-    @test_throws ArgumentError AtomSelection(select(atoms, "name XX"), nmols = 1, natomspermol = 11)
+    @test_throws ArgumentError AtomSelection(select(atoms, "name XX"), nmols=1, natomspermol=11)
 
     # Test shuffled indices in the custom group
-    s1 = AtomSelection(atoms, nmols=1, group_atom_indices= [ findall(sel"resname ARG", atoms) ])
-    s2 = AtomSelection(atoms, nmols=1, group_atom_indices= [ shuffle!(findall(sel"resname ARG", atoms)) ])
+    s1 = AtomSelection(atoms, nmols=1, group_atom_indices=[findall(sel"resname ARG", atoms)])
+    s2 = AtomSelection(atoms, nmols=1, group_atom_indices=[shuffle!(findall(sel"resname ARG", atoms))])
     @test atom_group(s1, 1) == atom_group(s2, 1)
 end
 
@@ -581,16 +580,16 @@ end
 #_round(x::Real; digits=2) = round(x; digits=digits)
 _round(x::Integer; digits=nothing) = x
 _round(x::String; digits=nothing) = x
-@views function print_vector_summary(x::AbstractVector{T}; digits=2) where T
+@views function print_vector_summary(x::AbstractVector{T}; digits=2) where {T}
     if length(x) <= 4
-        return "[ "*join(_round.(x;digits), ", ")*" ]"
+        return "[ " * join(_round.(x; digits), ", ") * " ]"
     end
-    return "[ "*join(_round.(x[begin:begin+1];digits), ", ")*
-              ", ..., " *  
-            join(_round.(x[end-1:end];digits), ", ")*" ]"
+    return "[ " * join(_round.(x[begin:begin+1]; digits), ", ") *
+           ", ..., " *
+           join(_round.(x[end-1:end]; digits), ", ") * " ]"
 end
 
-function Base.show(io::IO, sg::Union{SoluteGroup, SolventGroup}) 
+function Base.show(io::IO, sg::Union{SoluteGroup,SolventGroup})
     type = sg isa SoluteGroup ? "Solute" : "Solvent"
     println(io, "$(type)Group defined by:")
     if !isnothing(sg.group_index)
@@ -645,7 +644,7 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
     sg = SoluteGroup(select(pdb, "protein and residue 2"))
     @test sg.atom_indices == [12 + i for i = 1:11]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
-    @test SoluteGroup([1,2,3]).atom_indices == [1,2,3]
+    @test SoluteGroup([1, 2, 3]).atom_indices == [1, 2, 3]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
     @test SoluteGroup("N").group_name == "N"
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
@@ -661,7 +660,7 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
     sg = SolventGroup(select(pdb, "protein and residue 2"))
     @test sg.atom_indices == [12 + i for i = 1:11]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
-    @test SolventGroup([1,2,3]).atom_indices == [1,2,3]
+    @test SolventGroup([1, 2, 3]).atom_indices == [1, 2, 3]
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
     @test SolventGroup("N").group_name == "N"
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
@@ -675,7 +674,7 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
     @test count(!isnothing, getfield(sg, field) for field in fieldnames(SoluteGroup)) == 1
 
     # error if the atomic selection itself is provided
-    atsel = AtomSelection([1,2,3], natomspermol=1)
+    atsel = AtomSelection([1, 2, 3], natomspermol=1)
     @test_throws ArgumentError SolventGroup(atsel)
     @test_throws ArgumentError SoluteGroup(atsel)
 end

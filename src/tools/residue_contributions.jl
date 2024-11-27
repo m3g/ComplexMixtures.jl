@@ -146,7 +146,7 @@ rc4 = rc2 / 2
     Saving and loading was introduced in v2.8.0. Iterators were introduced in v2.10.0.
 
 """
-@kwdef struct ResidueContributions{N<:Union{SingleResidueContribution, MultipleResidueContribution}}
+@kwdef struct ResidueContributions{N<:Union{SingleResidueContribution,MultipleResidueContribution}}
     Version::VersionNumber = pkgversion(@__MODULE__)
     d::Vector{Float64}
     residue_contributions::Vector{Vector{Float64}}
@@ -270,7 +270,7 @@ end
 #
 Base.length(rc::ResidueContributions{SingleResidueContribution}) = length(first(rc.residue_contributions))
 Base.getindex(rc::ResidueContributions{SingleResidueContribution}, i) = first(rc.residue_contributions)[i]
-Base.firstindex(rc::ResidueContributions{SingleResidueContribution}) = firstindex(first(rc.residue_contributions)) 
+Base.firstindex(rc::ResidueContributions{SingleResidueContribution}) = firstindex(first(rc.residue_contributions))
 Base.lastindex(rc::ResidueContributions{SingleResidueContribution}) = length(first(rc.residue_contributions))
 Base.keys(rc::ResidueContributions{SingleResidueContribution}) = firstindex(rc):lastindex(rc)
 function Base.iterate(rc::ResidueContributions{SingleResidueContribution}, state=firstindex(first(rc.residue_contributions)))
@@ -571,19 +571,19 @@ end
     # version issues
     N = ComplexMixtures.MultipleResidueContribution
     rc_future = ResidueContributions{N}(
-        Version=v"1000.0.0", 
-        d=rc.d, 
-        residue_contributions=rc.residue_contributions, 
-        resnums=rc.resnums, 
+        Version=v"1000.0.0",
+        d=rc.d,
+        residue_contributions=rc.residue_contributions,
+        resnums=rc.resnums,
         xticks=rc.xticks
     )
     save(tmpfile, rc_future)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
     rc_past = ResidueContributions{N}(
-        Version=v"1.0.0", 
-        d=rc.d, 
-        residue_contributions=rc.residue_contributions, 
-        resnums=rc.resnums, 
+        Version=v"1.0.0",
+        d=rc.d,
+        residue_contributions=rc.residue_contributions,
+        resnums=rc.resnums,
         xticks=rc.xticks
     )
     save(tmpfile, rc_past)
@@ -609,14 +609,14 @@ end
     rc1 = rc[1]
     @test count(true for r in rc) == 104
     @test count(true for r in rc1) == 101
-    @test [ r[end] for r in rc ] == [ r[end] for r in rc.residue_contributions ]
-    @test last.(rc) == [ r[end] for r in rc ]
-    @test first.(findmax.(rc[3:4])) ≈ [ 8.8, 4.0 ]
-    @test last.(findmax.(rc[3:4])) == [ 101, 101 ]
+    @test [r[end] for r in rc] == [r[end] for r in rc.residue_contributions]
+    @test last.(rc) == [r[end] for r in rc]
+    @test first.(findmax.(rc[3:4])) ≈ [8.8, 4.0]
+    @test last.(findmax.(rc[3:4])) == [101, 101]
     @test findfirst.(>=(0.5), rc[3:4]) == [8, 18]
-    @test_throws ArgumentError findmax(rc) 
-    @test_throws ArgumentError count(>(0.01), rc) 
-    @test_throws ArgumentError count(<(0.01), rc) 
+    @test_throws ArgumentError findmax(rc)
+    @test_throws ArgumentError count(>(0.01), rc)
+    @test_throws ArgumentError count(<(0.01), rc)
 
     # empty plot (just test if the show function does not throw an error)
     rc2 = copy(rc)

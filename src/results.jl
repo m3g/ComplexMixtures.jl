@@ -121,9 +121,9 @@ end
 #
 function Result(
     trajectory::Trajectory,
-    options::Options; 
-    trajectory_data::TrajectoryMetaData = TrajectoryMetaData(trajectory, options),
-    frame_weights::Vector{Float64} = Float64[]
+    options::Options;
+    trajectory_data::TrajectoryMetaData=TrajectoryMetaData(trajectory, options),
+    frame_weights::Vector{Float64}=Float64[]
 )
 
     # Number of bins of the histogram
@@ -136,10 +136,10 @@ function Result(
         if length(frame_weights) < trajectory_data.lastframe_read
             throw(ArgumentError(chomp("""\n
             The length of the frame_weights vector provided must at least the number of frames to be read.
-            
+
                 Input given: length(frame_weights) = $(length(frame_weights))
                              last frame to be read: $(trajectory_data.lastframe_read)
-            
+
             """)))
         end
         range_considered = options.firstframe:options.stride:trajectory_data.lastframe_read
@@ -154,29 +154,29 @@ function Result(
     end
 
     # Initialize group count arrays
-    solute_group_count = [ zeros(nbins) for _ in 1:trajectory_data.n_groups_solute ]
-    solvent_group_count = [ zeros(nbins) for _ in 1:trajectory_data.n_groups_solvent ]
+    solute_group_count = [zeros(nbins) for _ in 1:trajectory_data.n_groups_solute]
+    solvent_group_count = [zeros(nbins) for _ in 1:trajectory_data.n_groups_solvent]
 
     return Result(
-        nbins = nbins,
-        dbulk = options.dbulk,
-        cutoff = options.cutoff,
-        autocorrelation = isautocorrelation(trajectory),
-        solute = trajectory.solute,
-        solvent = trajectory.solvent,
-        solute_group_count = solute_group_count,
-        solvent_group_count = solvent_group_count, 
-        files = [
+        nbins=nbins,
+        dbulk=options.dbulk,
+        cutoff=options.cutoff,
+        autocorrelation=isautocorrelation(trajectory),
+        solute=trajectory.solute,
+        solvent=trajectory.solvent,
+        solute_group_count=solute_group_count,
+        solvent_group_count=solvent_group_count,
+        files=[
             TrajectoryFileOptions(
-                filename = trajectory.filename,
-                options = options,
-                irefatom = trajectory_data.irefatom, 
-                lastframe_read = trajectory_data.lastframe_read,
-                nframes_read = trajectory_data.nframes_read,
-                frame_weights = frame_weights,
+                filename=trajectory.filename,
+                options=options,
+                irefatom=trajectory_data.irefatom,
+                lastframe_read=trajectory_data.lastframe_read,
+                nframes_read=trajectory_data.nframes_read,
+                frame_weights=frame_weights,
             )
         ],
-        weights = [1.0],
+        weights=[1.0],
     )
 end
 
@@ -185,14 +185,14 @@ end
     using ComplexMixtures.Testing: data_dir
     using PDBTools: readPDB, select
     atoms = readPDB("$data_dir/NAMD/structure.pdb")
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
-    water = AtomSelection(select(atoms, "water"), natomspermol = 3)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
+    water = AtomSelection(select(atoms, "water"), natomspermol=3)
     trajectory = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao, water)
-    @test_throws ArgumentError mddf(trajectory, Options(lastframe = 100))
-    @test_throws ArgumentError mddf(trajectory, Options(irefatom = 1000))
-    @test_throws ArgumentError mddf(trajectory, Options(lastframe = 5), frame_weights = [1.0, 1.0, 1.0])
+    @test_throws ArgumentError mddf(trajectory, Options(lastframe=100))
+    @test_throws ArgumentError mddf(trajectory, Options(irefatom=1000))
+    @test_throws ArgumentError mddf(trajectory, Options(lastframe=5), frame_weights=[1.0, 1.0, 1.0])
     options = Options(firstframe=2, lastframe=5, stride=2)
-    @test_throws ArgumentError mddf(trajectory, options, frame_weights = [1.0, 0.0, 1.0, 0.0, 1.0])
+    @test_throws ArgumentError mddf(trajectory, options, frame_weights=[1.0, 0.0, 1.0, 0.0, 1.0])
 end
 
 #
@@ -217,9 +217,9 @@ to the correct weight relative to the random sample.
 =#
 function set_samples(R::Result)
     if R.autocorrelation
-        samples = (solvent_nmols = R.solvent.nmols - 1, random = R.files[1].options.n_random_samples)
+        samples = (solvent_nmols=R.solvent.nmols - 1, random=R.files[1].options.n_random_samples)
     else
-        samples = (solvent_nmols = R.solvent.nmols, random = R.files[1].options.n_random_samples)
+        samples = (solvent_nmols=R.solvent.nmols, random=R.files[1].options.n_random_samples)
     end
     return samples
 end
@@ -375,14 +375,14 @@ function _mddf_final_results!(R::Result, options::Options)
                     R.coordination_number_random[ibin-1] + R.md_count_random[ibin]
             end
         else
-            if !warned_already && !options.silent 
+            if !warned_already && !options.silent
                 @warn begin
                     """\n
                         Ideal-gas histogram bins with zero samples. 
                         Increase n_random_samples, number of trajectory frames, and/or bin size.
 
                     """
-                end _file=nothing _line=nothing
+                end _file = nothing _line = nothing
                 warned_already = true
             end
         end
@@ -422,7 +422,7 @@ function _coordination_number_final_results!(R::Result, options::Options)
                 (to remove this warning use `Options(silent=true)`)
 
             """
-        end _file=nothing _line=nothing
+        end _file = nothing _line = nothing
     end
 
     # Setup the distance vector
@@ -531,21 +531,21 @@ function Base.merge(results::Vector{<:Result})
     end
 
     # Initialize group counts
-    solute_group_count = [ zeros(results[1].nbins) for _ in 1:length(results[1].solute_group_count) ]
-    solvent_group_count = [ zeros(results[1].nbins) for _ in 1:length(results[1].solvent_group_count) ] 
+    solute_group_count = [zeros(results[1].nbins) for _ in 1:length(results[1].solute_group_count)]
+    solvent_group_count = [zeros(results[1].nbins) for _ in 1:length(results[1].solvent_group_count)]
 
     # Structure for merged results
     R = Result(
-        nbins = results[1].nbins,
-        dbulk = results[1].dbulk,
-        cutoff = results[1].cutoff,
-        autocorrelation = results[1].autocorrelation,
-        solute = results[1].solute,
-        solvent = results[1].solvent,
-        solute_group_count = solute_group_count,
-        solvent_group_count = solvent_group_count,
-        files = files,
-        weights = weights,
+        nbins=results[1].nbins,
+        dbulk=results[1].dbulk,
+        cutoff=results[1].cutoff,
+        autocorrelation=results[1].autocorrelation,
+        solute=results[1].solute,
+        solvent=results[1].solvent,
+        solute_group_count=solute_group_count,
+        solvent_group_count=solvent_group_count,
+        files=files,
+        weights=weights,
     )
 
     # Average results weighting the data considering the weights of the frames of each data set
@@ -556,12 +556,12 @@ function Base.merge(results::Vector{<:Result})
         w = sum_frame_weights(result) / tot_frame_weight
         if !(w ≈ R.weights[ifile]) && !warn
             warn = true
-            @warn begin 
+            @warn begin
                 """\n
                     Frame weights and file weights differ, because crustom frame weights were provided.
 
-                """ 
-             end _file=nothing _line=nothing
+                """
+            end _file = nothing _line = nothing
         end
         @. R.mddf += w * result.mddf
         @. R.kb += w * result.kb
@@ -599,34 +599,34 @@ end
 
     # Test simple three-molecule system
     atoms = readPDB("$data_dir/toy/cross.pdb")
-    protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
-    water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol = 3)
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
+    protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
+    water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
 
     options = Options(
-        seed = 321,
-        StableRNG = true,
-        nthreads = 1,
-        silent = true,
-        n_random_samples = 10^5,
-        lastframe = 1,
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
+        n_random_samples=10^5,
+        lastframe=1,
     )
     R1 = mddf(traj, options)
 
     options = Options(
-        seed = 321,
-        StableRNG = true,
-        nthreads = 1,
-        silent = true,
-        n_random_samples = 10^5,
-        firstframe = 2,
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
+        n_random_samples=10^5,
+        firstframe=2,
     )
     R2 = mddf(traj, options)
 
     R = merge([R1, R2])
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol = 0.01)
+    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
@@ -634,19 +634,19 @@ end
 
     # Test loading a saved merged file
     dir = mktempdir()
-    save(R,"$dir/merged.json")
+    save(R, "$dir/merged.json")
     R_save = load("$dir/merged.json")
-    @test isapprox(R, R_save, debug = true)
+    @test isapprox(R, R_save, debug=true)
 
     # Test merging files for which weights are provided for the frames
-    R2 = mddf(traj, options, frame_weights = [0.0, 2.0])
+    R2 = mddf(traj, options, frame_weights=[0.0, 2.0])
     @test R.weights == [0.5, 0.5]
     @test length(R.files) == 2
 
     # Two-atom system
     at1 = AtomSelection([1], nmols=1)
     at2 = AtomSelection([2], nmols=1)
-    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", at1, at2, format = "PDBTraj")
+    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", at1, at2, format="PDBTraj")
     R1 = mddf(traj, Options(lastframe=1))
     @test sum(R1.md_count) == 1
     R2 = mddf(traj, Options(firstframe=2))
@@ -657,24 +657,24 @@ end
     R1 = mddf(traj, Options(lastframe=1), frame_weights=[2.0])
     @test sum(R1.md_count) == 1
     R = merge([R1, R2])
-    @test sum(R.md_count) == 2/3
+    @test sum(R.md_count) == 2 / 3
     @test sum(sum.(R1.solute_group_count)) == 1
     @test sum(sum.(R1.solvent_group_count)) == 1
     @test sum(sum.(R2.solute_group_count)) == 0
     @test sum(sum.(R2.solvent_group_count)) == 0
-    @test sum(sum.(R.solute_group_count)) == 2/3
-    @test sum(sum.(R.solvent_group_count)) == 2/3
+    @test sum(sum.(R.solute_group_count)) == 2 / 3
+    @test sum(sum.(R.solvent_group_count)) == 2 / 3
 
     # Test throwing merging incompatible results
-    protein = AtomSelection(select(atoms, "protein and model 1"), nmols = 1)
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
+    protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
     R1 = mddf(traj, options)
     protein = AtomSelection(
-        select(atoms, "protein and model 1"), nmols = 1, 
-        group_names = ["acidic"],
-        group_atom_indices = [selindex(atoms, "protein and acidic")]
+        select(atoms, "protein and model 1"), nmols=1,
+        group_names=["acidic"],
+        group_atom_indices=[selindex(atoms, "protein and acidic")]
     )
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format = "PDBTraj")
+    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
     R2 = mddf(traj, options)
 
 
@@ -687,8 +687,8 @@ end
     atoms = readPDB(pdbfile)
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
-    solute = AtomSelection(protein, nmols = 1)
-    solvent = AtomSelection(tmao, natomspermol = 14)
+    solute = AtomSelection(protein, nmols=1)
+    solvent = AtomSelection(tmao, natomspermol=14)
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", solute, solvent)
     options = Options()
     # At this point we can only test an empty Result struct
@@ -784,7 +784,7 @@ function load(filename::String, ::Type{Result})
     _check_version(filename)
     R = try
         open(filename, "r") do io
-                JSON3.read(io, Result)
+            JSON3.read(io, Result)
         end
     catch
         throw(ArgumentError("""\n 
@@ -839,7 +839,7 @@ if the distribution function was computed for all molecules. Thus, the necessity
 to identify the types of atoms involved in a selection.   
 
 =#
-function which_types(s::AtomSelection, indices::AbstractVector{<:Integer}; warning = true)
+function which_types(s::AtomSelection, indices::AbstractVector{<:Integer}; warning=true)
     selected_types = Int[]
     ntypes = 0
     for i in indices
@@ -990,7 +990,7 @@ function Base.show(io::IO, ov::Overview)
    Long range RDF mean (expected 1.0): $long_range_mean_rdf ± $long_range_std_rdf
 
    $bars"""
-   )
+    )
 end
 
 """
@@ -1000,7 +1000,7 @@ Function that outputs the volumes and densities in the most natural units.
 """
 function overview(R::Result)
 
-    ov = Overview(R = R)
+    ov = Overview(R=R)
 
     # Molar volume of the solute domain
     ov.domain_molar_volume = R.volume.domain * units.Angs3tocm3permol

@@ -30,9 +30,8 @@ function Trajectory(
     filename::String,
     solute::AtomSelection,
     solvent::AtomSelection;
-    format::String = "",
-    chemfiles = false,
-
+    format::String="",
+    chemfiles=false,
 )
     filename = expanduser(filename) # expand tilde on Unix systems, to username
     if !chemfiles && (format == "dcd" || split(filename, '.')[end] == "dcd")
@@ -40,14 +39,14 @@ function Trajectory(
     elseif !chemfiles && format == "PDBTraj"
         trajectory = PDBTraj(filename, solute, solvent)
     else
-        trajectory = ChemFile(filename, solute, solvent, format = format)
+        trajectory = ChemFile(filename, solute, solvent, format=format)
     end
     return trajectory
 end
 
 # If only one selection is provided, assume that the solute and the solvent are the same
-Trajectory(filename::String, solvent::AtomSelection; format::String = "", chemfiles = false) =
-    Trajectory(filename, solvent, solvent, format = format, chemfiles = chemfiles)
+Trajectory(filename::String, solvent::AtomSelection; format::String="", chemfiles=false) =
+    Trajectory(filename, solvent, solvent, format=format, chemfiles=chemfiles)
 
 #=
     convert_unitcell(unitcell::Union{SVector{3}, SMatrix{3,3}})
@@ -56,15 +55,15 @@ Function to return the unit cell as a vector or matrix, depending on if
 the cell is diagonal or not, up to a relative precision of 1e-10 by default.
 
 =#
-function convert_unitcell(unitcell::AbstractMatrix; tol = 1e-10)
-    size(unitcell) == (3,3) || error("Unit cell must be a 3x3 matrix.")
+function convert_unitcell(unitcell::AbstractMatrix; tol=1e-10)
+    size(unitcell) == (3, 3) || error("Unit cell must be a 3x3 matrix.")
     s = minimum(diag(unitcell))
-    is_diag = all(unitcell[i,j] < tol*s for i in 1:3, j in 1:3 if i != j)
-    return is_diag ?  SVector{3}(diag(unitcell)) : SMatrix{3,3}(unitcell)
+    is_diag = all(unitcell[i, j] < tol * s for i in 1:3, j in 1:3 if i != j)
+    return is_diag ? SVector{3}(diag(unitcell)) : SMatrix{3,3}(unitcell)
 end
 
 # Version to ensure type stability when we know the type of the unit cell
-convert_unitcell(::SVector, unitcell::AbstractMatrix) = SVector{3}(unitcell[1,1], unitcell[2,2], unitcell[3,3])
+convert_unitcell(::SVector, unitcell::AbstractMatrix) = SVector{3}(unitcell[1, 1], unitcell[2, 2], unitcell[3, 3])
 convert_unitcell(::SMatrix, unitcell::AbstractMatrix) = SMatrix{3,3}(unitcell)
 
 @testitem "convert_unitcell" begin
@@ -106,8 +105,8 @@ end
     using StaticArrays
 
     atoms = readPDB(Testing.pdbfile)
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
     # NAMD DCD file
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
@@ -120,7 +119,7 @@ end
         "$(Testing.data_dir)/PDB/trajectory.pdb",
         protein,
         tmao,
-        format = "PDBTraj",
+        format="PDBTraj",
     )
     @test ComplexMixtures.natoms(traj.solute) == 1463
     @test ComplexMixtures.natoms(traj.solvent) == 2534
@@ -131,7 +130,7 @@ end
         "$(Testing.data_dir)/NAMD/trajectory.dcd",
         protein,
         tmao,
-        chemfiles = true,
+        chemfiles=true,
     )
     @test traj.nframes == 20
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
@@ -140,8 +139,8 @@ end
 
     # Chemfiles with Gromacs
     atoms = readPDB("$(Testing.data_dir)/Gromacs/system.pdb")
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    emi = AtomSelection(select(atoms, "resname EMI"), natomspermol = 20)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
+    emi = AtomSelection(select(atoms, "resname EMI"), natomspermol=20)
     traj = Trajectory("$(Testing.data_dir)/Gromacs/trajectory.xtc", protein, emi)
     @test traj.nframes == 26
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
@@ -179,7 +178,7 @@ function TrajectoryMetaData(trajectory::Trajectory, options::Options)
     firstframe!(trajectory)
 
     # Get unitcell from the trajectory: returns vector or matrix depending on the data
-    unitcell = convert_unitcell(getunitcell(trajectory)) 
+    unitcell = convert_unitcell(getunitcell(trajectory))
 
     # Set reference atom as the closest one to the center of coordinates of the molecule, as default
     if options.irefatom == -1
@@ -206,7 +205,7 @@ function TrajectoryMetaData(trajectory::Trajectory, options::Options)
 
     # Initialize the arrays that contain groups counts, depending on wheter
     # groups were defined or not in the input Options
-    n_groups_solute = if !trajectory.solute.custom_groups 
+    n_groups_solute = if !trajectory.solute.custom_groups
         trajectory.solute.natomspermol
     else
         length(trajectory.solute.group_atom_indices)
@@ -218,12 +217,12 @@ function TrajectoryMetaData(trajectory::Trajectory, options::Options)
     end
 
     return TrajectoryMetaData(
-        irefatom = irefatom,
-        lastframe_read = lastframe_read,
-        nframes_read = nframes_read,
-        n_groups_solute = n_groups_solute,
-        n_groups_solvent = n_groups_solvent,
-        unitcell = unitcell,
+        irefatom=irefatom,
+        lastframe_read=lastframe_read,
+        nframes_read=nframes_read,
+        n_groups_solute=n_groups_solute,
+        n_groups_solvent=n_groups_solvent,
+        unitcell=unitcell,
     )
 end
 
@@ -232,20 +231,20 @@ end
     using ComplexMixtures.Testing
     using PDBTools
     atoms = readPDB(Testing.pdbfile)
-    protein = AtomSelection(select(atoms, "protein"), nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"), nmols=1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
 
     options = Options()
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
     @test tmeta.irefatom == 1
-    @test tmeta.lastframe_read == 20 
+    @test tmeta.lastframe_read == 20
     @test tmeta.nframes_read == 20
     @test tmeta.n_groups_solute == 1463
     @test tmeta.n_groups_solvent == 14
     @test tmeta.unitcell ≈ [84.42188262939453, 84.42188262939453, 84.42188262939453]
 
-    options = Options(;irefatom = 2, lastframe = 10, stride = 2)
+    options = Options(; irefatom=2, lastframe=10, stride=2)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
     @test tmeta.irefatom == 2
     @test tmeta.lastframe_read == 10

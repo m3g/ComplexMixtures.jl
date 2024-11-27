@@ -41,13 +41,13 @@ Examples of how the grid can be visualized are provided in the user guide of `Co
 
 """
 function grid3D(
-    result::Result, 
-    atoms, 
-    output_file::Union{Nothing,String} = nothing; 
-    dmin=1.5, 
-    dmax=5.0, 
+    result::Result,
+    atoms,
+    output_file::Union{Nothing,String}=nothing;
+    dmin=1.5,
+    dmax=5.0,
     step=0.5,
-    silent = false,
+    silent=false,
 )
 
     if result.solute.custom_groups
@@ -98,19 +98,19 @@ function grid3D(
                     )
                     if cᵣ > 0
                         gridpoint = AtomType(
-                            index = PDBTools.index(at),
-                            index_pdb = PDBTools.index_pdb(at),
-                            name = PDBTools.name(at),
-                            chain = PDBTools.chain(at),
-                            resname = PDBTools.resname(at),
-                            resnum = PDBTools.resnum(at),
-                            x = x,
-                            y = y,
-                            z = z,
-                            occup = r,
-                            beta = cᵣ,
-                            model = PDBTools.model(at),
-                            segname = PDBTools.segname(at),
+                            index=PDBTools.index(at),
+                            index_pdb=PDBTools.index_pdb(at),
+                            name=PDBTools.name(at),
+                            chain=PDBTools.chain(at),
+                            resname=PDBTools.resname(at),
+                            resnum=PDBTools.resnum(at),
+                            x=x,
+                            y=y,
+                            z=z,
+                            occup=r,
+                            beta=cᵣ,
+                            model=PDBTools.model(at),
+                            segname=PDBTools.segname(at),
                         )
                         if rgrid < 0
                             @lock grid_lock begin
@@ -118,7 +118,7 @@ function grid3D(
                                 push!(grid, gridpoint)
                             end
                         elseif r < rgrid
-                            @lock grid_lock begin 
+                            @lock grid_lock begin
                                 grid[igrid] = gridpoint
                             end
                         end
@@ -155,14 +155,14 @@ end
     atoms = readPDB("$dir/structure.pdb")
 
     # Test argument error: no custom groups can be defined
-    protein = AtomSelection(select(atoms, "protein"); group_atom_indices = [ findall(sel"resname ARG", atoms) ], nmols = 1)
-    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol = 14)
+    protein = AtomSelection(select(atoms, "protein"); group_atom_indices=[findall(sel"resname ARG", atoms)], nmols=1)
+    tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     options = Options(
-        stride = 5, 
-        seed = 321, 
-        StableRNG = true, 
-        nthreads = 1, 
-        silent = true,
+        stride=5,
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
         n_random_samples=100,
     )
     traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
@@ -170,20 +170,20 @@ end
     @test_throws ArgumentError grid3D(R, atoms, tempname())
 
     # Test properties of the grid around a specific residue
-    solute = AtomSelection(select(atoms, "protein and residue 46"), nmols = 1)
+    solute = AtomSelection(select(atoms, "protein and residue 46"), nmols=1)
     solvent = AtomSelection(select(atoms, "water"), natomspermol=3)
     traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
-    grid_file = tempname()*".pdb"
+    grid_file = tempname() * ".pdb"
     options = Options(
-        stride = 5, 
-        seed = 321, 
-        StableRNG = true, 
-        nthreads = 1, 
-        silent = true,
+        stride=5,
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
     )
     R = mddf(traj, options)
     grid = grid3D(R, atoms, grid_file)
-    @test length(grid) ≈ 1539 atol=3
+    @test length(grid) ≈ 1539 atol = 3
     c05 = filter(at -> beta(at) > 0.5, grid)
     @test length(c05) == 14
     @test all(at -> element(at) == "O", c05)
@@ -191,11 +191,11 @@ end
 
     # Test if the file was properly written
     grid_read = readPDB(grid_file)
-    for property in [:name, :resname, :chain, :resnum ]
+    for property in [:name, :resname, :chain, :resnum]
         @test all(p -> getproperty(first(p), property) == getproperty(last(p), property), zip(grid, grid_read))
     end
-    for property in [ :x, :y, :z, :occup, :beta ]
-        @test all(p -> isapprox(getproperty(first(p), property),getproperty(last(p), property),atol=1e-2), zip(grid, grid_read))
+    for property in [:x, :y, :z, :occup, :beta]
+        @test all(p -> isapprox(getproperty(first(p), property), getproperty(last(p), property), atol=1e-2), zip(grid, grid_read))
     end
 end
 
