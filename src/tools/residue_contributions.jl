@@ -425,7 +425,12 @@ function Base.show(io::IO, ::MIME"text/plain", rc::ResidueContributions)
     end
     print(io, "         ")
     for i in 1:rstride*8:length(rc.xticks[1])
-        tick = "$(PDBTools.oneletter(rc.xticks[2][i][1:3]))$(rc.resnums[i])"
+        _tick = rc.xticks[2][i]
+        _resname = PDBTools.oneletter(_tick[1:min(lastindex(_tick),3)])
+        if _resname == "X"
+            _resname = _tick[1:1]
+        end
+        tick = "$_resname$(rc.resnums[i])"
         tick *= repeat(" ", 8 - length(tick))
         print(io, tick)
     end

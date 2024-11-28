@@ -81,13 +81,23 @@ function Plots.contourf(
     tick_range = 1:step:length(rc.xticks[1])
     tick_marks = rc.xticks[1][tick_range]
     tick_labels = rc.xticks[2][tick_range]
+    tick_resnums = rc.resnums[tick_range]
+    warned = false
     xticks = if oneletter
         for i in eachindex(tick_labels)
-            resnum = "$(rc.resnums[i])"
+            resnum = "$(tick_resnums[i])"
             # The following will allow custom residue names to be identified
             # in the tick label string, by removing the residue number
             residue_name = string(strip(tick_labels[i][1:(first(findlast(resnum, tick_labels[i]))-1)]))
-            tick_labels[i] = PDBTools.oneletter(residue_name) * resnum
+            one_letter_code = PDBTools.oneletter(residue_name)
+            if one_letter_code == "X"
+                if !warned 
+                    @warn "One-letter code for residue(s) not found. Using full residue name." _file=nothing _line=nothing
+                    warned = true
+                end
+                one_letter_code = residue_name
+            end
+            tick_labels[i] = one_letter_code * resnum
         end
         (tick_marks, tick_labels)
     else
