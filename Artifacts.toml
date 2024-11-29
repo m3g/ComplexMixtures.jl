@@ -1,0 +1,6 @@
+[ComplexMixtures]
+git-tree-sha1 = "2cf6fc71d1ba95a6be329ab65a56563c2bfcc225"
+
+    [[ComplexMixtures.download]]
+    sha256 = "f6937893ed1df4790d1ba2456a76a1f8d2f0c3af70ca7e3e912d9b7121979465"
+    url = "https://github.com/m3g/TestingDataRepository/raw/refs/heads/main/ComplexMixtures.tar.gz"
