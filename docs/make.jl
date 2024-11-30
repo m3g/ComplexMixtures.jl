@@ -28,6 +28,7 @@ makedocs(
         "Save and load" => "save.md",
         "Multiple trajectories" => "multiple.md",
         "Options" => "options.md",
+        "Density maps" => "density_maps.md",
         "Tools" => "tools.md",
         "From Python" => "python.md",
         "Updating scripts" => "updating_scripts.md",
