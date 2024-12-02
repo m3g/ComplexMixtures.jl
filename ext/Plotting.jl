@@ -27,7 +27,7 @@ This function requires loading the `Plots` package.
 
 # Optional arguments
 
-- `step`: The step of the residue ticks in the x-axis of the plot. Default is 1.
+- `step`: The step of the residue ticks in the x-axis of the plot. Default is 1 or will be set to show at most 20 ticks labels.
 - `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
 
@@ -67,7 +67,7 @@ julia> plt = contourf(rc; step=5, size=(800,400), title="Title", clims=(-0.1, 0.
 """
 function Plots.contourf(
     rc::ResidueContributions;
-    step::Int=1,
+    step::Union{Nothing,Integer}=nothing,
     oneletter=false,
     xlabel="Residue",
     ylabel="r / Å",
@@ -78,12 +78,14 @@ function Plots.contourf(
 
     # Plot a contour curves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
-    tick_range = firstindex(rc.xticks[1]):step:lastindex(rc.xticks[1])
-    if step == 1 && length(tick_range) > 25
-        step = length(rc.resnums) ÷ 25 
+    input_step = isnothing(step) ? 1 : step
+    tick_range = firstindex(rc.xticks[1]):input_step:lastindex(rc.xticks[1])
+    nticks = 20
+    if isnothing(step) && length(tick_range) > nticks
+        step = length(rc.resnums) ÷ nticks
         @warn """\n
             Consider using a step to set the number of residue ticks in the plot. 
-            step will be set to $step to display 25 residue ticks.
+            - step will be set to $step to display $nticks residue ticks.
 
         """ _line=nothing _file=nothing
         tick_range = first(tick_range):step:last(tick_range)
