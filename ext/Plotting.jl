@@ -76,9 +76,18 @@ function Plots.contourf(
     kargs...
 )
 
-    # Plot a contour courves with the density at each distance from each residue
+    # Plot a contour curves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
-    tick_range = 1:step:length(rc.xticks[1])
+    tick_range = firstindex(rc.xticks[1]):step:lastindex(rc.xticks[1])
+    if step == 1 && length(tick_range) > 25
+        step = length(rc.resnums) ÷ 25 
+        @warn """\n
+            Consider using a step to set the number of residue ticks in the plot. 
+            step will be set to $step to display 25 residue ticks.
+
+        """ _line=nothing _file=nothing
+        tick_range = first(tick_range):step:last(tick_range)
+    end
     tick_marks = rc.xticks[1][tick_range]
     tick_labels = rc.xticks[2][tick_range]
     tick_resnums = rc.resnums[tick_range]
@@ -110,10 +119,20 @@ function Plots.contourf(
         levels = 12
     end
 
+    # density to plot
+    rc_range = 1:length(rc)
+    if length(rc_range) > 2000 
+        rc_step = length(rc_range) ÷ 2000
+        rc_range = 1:rc_step:length(rc)
+        @warn """\n
+            The number of residues to plot is too large. Will plot every $rc_step residues.
+
+        """ _line=nothing _file=nothing
+    end
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(
-        rc.resnums,
-        rc.d, hcat(rc.residue_contributions...);
+        rc_range,
+        rc.d, hcat(rc[rc_range].residue_contributions...);
         color=Plots.cgrad(colorscale),
         linewidth=1,
         linecolor=:black,

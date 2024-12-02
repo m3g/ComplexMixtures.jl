@@ -201,8 +201,6 @@ function ResidueContributions(
     # Obtain pretty labels for the residues in the x-axis (using PDBTools)
     resnums = PDBTools.resnum.(residues)
     xticks = PDBTools.residue_ticks(atoms;
-        first=first(resnums),
-        last=last(resnums),
         oneletter=false,
         serial=false,
     )
