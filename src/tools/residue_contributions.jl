@@ -217,11 +217,24 @@ function ResidueContributions(
 end
 
 function _check_identity_of_residues(rc1::ResidueContributions, rc2::ResidueContributions)
-    if rc1.xticks != rc2.xticks
-        throw(ArgumentError("The residues in the two ResidueContributions objects differ."))
-    end
     if rc1.d != rc2.d
-        throw(ArgumentError("The distances in the two ResidueContributions objects differ."))
+        throw(ArgumentError("""\n
+            Cannot operate on these contributions: the distance vectors in the two ResidueContributions objects differ.
+
+        """))
+    end
+    if length(rc1) != length(rc2)
+        throw(ArgumentError("""\n
+            Cannot operate on these contributions: the number of residues in the two ResidueContributions objects differ.
+
+        """))
+    end
+    if rc1.xticks[2] != rc2.xticks[2]
+        @warn """\n
+            The residue tick labels in the two ResidueContributions objects differ. 
+            The resulting tick labels will be from the first object. 
+
+        """ _file=nothing _line=nothing
     end
     return nothing
 end
@@ -662,6 +675,9 @@ end
     @test_throws ArgumentError rc - rc2
     @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein and resname XXX"))
     @test_throws ArgumentError ResidueContributions(result, SoluteGroup("ALA"))
+
+    # Sum contributions of different, but compatible, objects (throws a warning message):
+    @test sum(rc[1:10] + rc[11:20]).residue_contributions ≈ sum(rc[1:20]).residue_contributions
 
     acidic_residues = select(atoms, "protein and acidic")
     basic_residues = select(atoms, "protein and basic")
