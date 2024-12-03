@@ -16,9 +16,11 @@ using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
         xlabel="Residue",
         ylabel="r / Å",
     )
+    contour(rc::ResidueContributions, args...; kargs...)
+    heatmap(rc::ResidueContributions, args...; kargs...)
 
-Plot the contribution of each residue to the solute-solvent pair distribution function as a contour plot.
-This function requires loading the `Plots` package.
+Plot the contribution of each residue to the solute-solvent pair distribution function as a 2D density map.
+This function requires loading the `Plots` package. The calling syntax for `contour` and `heatmap` is the same as for `contourf`.
 
 # Arguments
 
@@ -27,7 +29,7 @@ This function requires loading the `Plots` package.
 
 # Optional arguments
 
-- `step`: The step of the residue ticks in the x-axis of the plot. Default is 1.
+- `step`: The step of the residue ticks in the x-axis of the plot. Default is 1 or will be set to show at most 20 ticks labels.
 - `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
 
@@ -59,15 +61,22 @@ julia> plt = contourf(rc; step=5, size=(800,400), title="Title", clims=(-0.1, 0.
 ```
 
 !!! compat
-    This function requires loading the `Plots` package and is available in
-    ComplexMixtures v2.5.0 or greater.
+    This function requires loading the `Plots` package.
 
-    Support for all `Plots.contourf` parameters was introduced in ComplexMixtures v2.6.0.
+    Support for all `Plots.contourf` parameters was introduced in ComplexMixtures v2.6.0, and support for
+    `contour` and `heatmap` were introduced in ComplexMixtures v2.11.0. 
 
 """
-function Plots.contourf(
+Plots.contourf, Plots.contour, Plots.heatmap
+
+Plots.contourf(rc::ResidueContributions, args...; kargs...) = _density2D(Plots.contourf, rc, args...; kargs...)
+Plots.contour(rc::ResidueContributions, args...; kargs...) = _density2D(Plots.contour, rc, args...; kargs...)
+Plots.heatmap(rc::ResidueContributions, args...; kargs...) = _density2D(Plots.heatmap, rc, args...; kargs...)
+
+function _density2D(
+    plot_type::Function,
     rc::ResidueContributions;
-    step::Int=1,
+    step::Union{Nothing,Integer}=nothing,
     oneletter=false,
     xlabel="Residue",
     ylabel="r / Å",
@@ -76,9 +85,20 @@ function Plots.contourf(
     kargs...
 )
 
-    # Plot a contour courves with the density at each distance from each residue
+    # Plot a contour curves with the density at each distance from each residue
     # colors, linewidths, etc. are defined here and can be tuned
-    tick_range = 1:step:length(rc.xticks[1])
+    input_step = isnothing(step) ? 1 : step
+    tick_range = firstindex(rc.xticks[1]):input_step:lastindex(rc.xticks[1])
+    nticks = 50
+    if isnothing(step) && length(tick_range) > nticks
+        step = length(rc.resnums) ÷ nticks
+        @warn """\n
+            Consider using a step to set the number of residue ticks in the plot. 
+            - step will be set to $step to display $nticks residue ticks.
+
+        """ _line=nothing _file=nothing
+        tick_range = first(tick_range):step:last(tick_range)
+    end
     tick_marks = rc.xticks[1][tick_range]
     tick_labels = rc.xticks[2][tick_range]
     tick_resnums = rc.resnums[tick_range]
@@ -110,10 +130,20 @@ function Plots.contourf(
         levels = 12
     end
 
+    # density to plot
+    rc_range = 1:length(rc)
+    if length(rc_range) > 2000 
+        rc_step = length(rc_range) ÷ 2000
+        rc_range = 1:rc_step:length(rc)
+        @warn """\n
+            The number of residues to plot is too large. Will plot every $rc_step residues.
+
+        """ _line=nothing _file=nothing
+    end
     Plots.default(fontfamily="Computer Modern")
-    plt = Plots.contourf(
-        rc.resnums,
-        rc.d, hcat(rc.residue_contributions...);
+    plt = plot_type(
+        rc.xticks[1][rc_range],
+        rc.d, hcat(rc[rc_range].residue_contributions...);
         color=Plots.cgrad(colorscale),
         linewidth=1,
         linecolor=:black,
