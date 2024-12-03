@@ -80,7 +80,7 @@ function Plots.contourf(
     # colors, linewidths, etc. are defined here and can be tuned
     input_step = isnothing(step) ? 1 : step
     tick_range = firstindex(rc.xticks[1]):input_step:lastindex(rc.xticks[1])
-    nticks = 20
+    nticks = 50
     if isnothing(step) && length(tick_range) > nticks
         step = length(rc.resnums) ÷ nticks
         @warn """\n
@@ -133,7 +133,7 @@ function Plots.contourf(
     end
     Plots.default(fontfamily="Computer Modern")
     plt = Plots.contourf(
-        rc_range,
+        rc.xticks[1][rc_range],
         rc.d, hcat(rc[rc_range].residue_contributions...);
         color=Plots.cgrad(colorscale),
         linewidth=1,
