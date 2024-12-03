@@ -16,9 +16,11 @@ using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
         xlabel="Residue",
         ylabel="r / Å",
     )
+    contour(rc::ResidueContributions, args...; kargs...)
+    heatmap(rc::ResidueContributions, args...; kargs...)
 
-Plot the contribution of each residue to the solute-solvent pair distribution function as a contour plot.
-This function requires loading the `Plots` package.
+Plot the contribution of each residue to the solute-solvent pair distribution function as a 2D density map.
+This function requires loading the `Plots` package. The calling syntax for `contour` and `heatmap` is the same as for `contourf`.
 
 # Arguments
 
@@ -59,13 +61,20 @@ julia> plt = contourf(rc; step=5, size=(800,400), title="Title", clims=(-0.1, 0.
 ```
 
 !!! compat
-    This function requires loading the `Plots` package and is available in
-    ComplexMixtures v2.5.0 or greater.
+    This function requires loading the `Plots` package.
 
-    Support for all `Plots.contourf` parameters was introduced in ComplexMixtures v2.6.0.
+    Support for all `Plots.contourf` parameters was introduced in ComplexMixtures v2.6.0, and support for
+    `contour` and `heatmap` were introduced in ComplexMixtures v2.11.0. 
 
 """
-function Plots.contourf(
+Plots.contourf, Plots.contour, Plots.heatmap
+
+Plots.contourf(rc::ResidueContributions, args...; kargs...) = _density2D(Plots.contourf, rc, args...; kargs...)
+Plots.contour(rc::ResidueContributions, args...; kargs...) = _density2D(Plots.contour, rc, args...; kargs...)
+Plots.heatmap(rc::ResidueContributions, args...; kargs...) = _density2D(Plots.heatmap, rc, args...; kargs...)
+
+function _density2D(
+    plot_type::Function,
     rc::ResidueContributions;
     step::Union{Nothing,Integer}=nothing,
     oneletter=false,
@@ -132,7 +141,7 @@ function Plots.contourf(
         """ _line=nothing _file=nothing
     end
     Plots.default(fontfamily="Computer Modern")
-    plt = Plots.contourf(
+    plt = plot_type(
         rc.xticks[1][rc_range],
         rc.d, hcat(rc[rc_range].residue_contributions...);
         color=Plots.cgrad(colorscale),
