@@ -42,7 +42,7 @@ The output of `ResidueContributions` is by default shown as a simple unicode plo
 </center>
 ```
 
-The `ResidueContribution` object can be used to produce a high-quality contour plot using the `Plots.contourf` function:
+The `ResidueContribution` object can be used to produce a high-quality contour plot using the `Plots.contourf` (or `contour`, or `heatmap`) function:
 
 ```@docs
 Plots.contourf(::ResidueContributions)
@@ -192,6 +192,7 @@ save(::String, ::ResidueContributions)
     
     The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. 
     
+
 ## [3D density map around a macromolecule](@id grid3D)
 
 Three-dimensional representations of the distribution functions can also be obtained from the MDDF results. These 3D representations are obtained from the fact that the MDDFs can be decomposed into the contributions of each solute atom, and that each point in space is closest to a single solute atom as well. Thus, each point in space can be associated to one solute atom, and the contribution of that atom to the MDDF at the corresponding distance can be obtained.   
@@ -225,3 +226,4 @@ In the figure on the left, the points in space around the protein are selected w
 Clicking on those points we obtain which are the atoms of the protein contributing to the MDDF at that region. In particular, the arrow on the right points to the strongest red region, which corresponds to an Aspartic acid. These residues are shown explicitly under the density (represented as a transparent surface) on the figure in the center.   
 
 The figure on the right displays, overlapped with the hydrogen-bonding residues, the most important contributions to the second peak of the distribution, corresponding to distances from the protein between 2.0 and 3.5Å. Notably, the regions involved are different from the ones forming hydrogen bonds, indicating that non-specific interactions with the protein (and not a second solvation shell) are responsible for the second peak. 
+
