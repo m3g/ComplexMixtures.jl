@@ -12,11 +12,11 @@ using PDBTools
 
 # Chemical groups of the polymer monomers, defined by the atom types:
 groups = (
-    "CH_3" => ["CF", "HF1", "HF2", "HF3"], # methyles
+    "CH_{3L}" => ["CF", "HF1", "HF2", "HF3"], # left-terminal methyl
     "CO" => ["OE1", "CD"], # carbonyl
     "NH_2" => ["NE2", "HE22", "HE21"], # amine 
     "CHCH_2" => ["C", "H2", "H1", "CA", "HA"], # backbone
-    "CH_3" => ["CL", "HL1", "HL2", "HL3"], # terminal methyles
+    "CH_{3R}" => ["CL", "HL1", "HL2", "HL3"], # right-terminal methyles
 )
 
 system = readPDB("./equilibrated.pdb")
@@ -27,14 +27,12 @@ results = load("./mddf.json")
 # each chemical group of each polymer mer independently
 group_contribs = Vector{Float64}[]
 labels = LaTeXString[]
-for (imer, mer) in enumerate(eachresidue(acr))
+for mer in eachresidue(acr)
     for (group_label, group_atoms) in groups
-        # only first residue has a terminal CH3
-        if imer != 1 && group_label == "CH_3"
+        if resnum(mer) != 1 && group_label == "CH_{3L}" # first residue only
             continue
         end
-        # only last residue has a terminal CH3
-        if imer != 5 && group_label == "CH_3"
+        if resnum(mer) != 5 && group_label == "CH_{3R}" # last residue only
             continue
         end
         # Filter the atoms of this mer that belong to the group
