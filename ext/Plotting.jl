@@ -29,7 +29,7 @@ This function requires loading the `Plots` package. The calling syntax for `cont
 
 # Optional arguments
 
-- `step`: The step of the residue ticks in the x-axis of the plot. Default is 1 or will be set to show at most 20 ticks labels.
+- `step`: The step of the residue ticks in the x-axis of the plot. Default is 1 or will be set to show at most 50 ticks labels.
 - `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
 - `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
 
