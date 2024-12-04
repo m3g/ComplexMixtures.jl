@@ -189,13 +189,3 @@ julia> overview = overview(results);
 julia> overview.solute_molar_volume
 657.5051512801567
 ```
-
-## Legacy 
-
-The legacy function `contourf_per_residue` provides a direct way to produce contour plots:
-
-```@docs
-contourf_per_residue(::Result, ::AbstractVector{PDBTools.Atom})
-```
-
-
