@@ -35,7 +35,6 @@ export contributions
 export coordination_number
 export gr
 export grid3D
-export contourf_per_residue
 
 # Module for testing
 include("./Testing.jl")
@@ -83,7 +82,6 @@ include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 include("./tools/write.jl")
-include("./tools/plotting.jl")
 
 # Precompilation directives
 include("precompile.jl")

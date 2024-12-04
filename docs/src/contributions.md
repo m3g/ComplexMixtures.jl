@@ -1,3 +1,7 @@
+```@meta
+CollapsedDocStrings = true
+```
+
 # [Atomic and group contributions](@id contributions)
 
 One of the interesting features of Minimum-Distance distributions is
@@ -37,8 +41,16 @@ the contributions of every type of atom of the solute and the solvent.
 These contributions can be retrieved using the `contributions` function,
 with the `SoluteGroup` and `SolventGroup` selectors.
 
-For example, if the MDDF of water (solvent) relative to a solute was computed,
-and water has atom names `OH2, H1, H2`, one can retrieve the contributions
+```@docs
+contributions
+SolventGroup
+SoluteGroup
+```
+
+### Example: computing the oxygen contributions of water
+
+Here we show the MDDF of water (solvent) relative to a solute.
+Water molecules have atom names `OH2, H1, H2`, one can retrieve the contributions
 of the oxygen atom with:
 
 ```julia
@@ -140,8 +152,3 @@ hydrogen-bonding distances, but much less in general. Of course all
 selection options could be used, to obtain the contributions of specific
 types of residues, atoms, the backbone, the side-chains, etc. 
 
-## Reference functions
-
-```@docs
-contributions
-```

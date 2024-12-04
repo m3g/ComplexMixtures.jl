@@ -163,96 +163,7 @@ function _density2D(
     return plt
 end
 
-#
-# This is a legacy function, will probably be deprecated some day.
-#
-ComplexMixtures.contourf_per_residue(rc::ResidueContributions; kwargs...) = Plots.contourf(rc; kwargs...)
-"""
-    contourf_per_residue(
-        results::Result, atoms::AbstractVector{<:PDBTools.Atom}; 
-        residue_range=nothing, 
-        dmin=1.5, dmax=3.5, 
-        oneletter=false,
-        xlabel="Residue",
-        ylabel="r / Å",
-        type=:mddf,
-        clims=nothing,
-        colorscale=:tempo,
-    )
-
-Plot the contribution of each residue to the solute-solvent pair distribution function as a contour plot.
-This function requires loading the `Plots` package.
-
-# Arguments
-
-- `results::Result`: The result of a `mddf` call.
-- `atoms::AbstractVector{<:Atom}`: The atoms of the solute.
-
-# Optional arguments
-
-- `residue_range`: The range of residues to plot. Default is all residues. Use
-  a step to plot every `n` residues, e.g., `1:2:30`.
-- `dmin::Real`: The minimum distance to plot. Default is `1.5`.
-- `dmax::Real`: The maximum distance to plot. Default is `3.5`.
-- `oneletter::Bool`: Use one-letter residue codes. Default is `false`. One-letter codes are only available for the 20 standard amino acids.
-- `xlabel` and `ylabel`: Labels for the x and y axes. Default is `"Residue"` and `"r / Å"`.
-- `type::Symbol`: That data to plot. Default is `:mddf` for MDDF contributions. Options are `:coordination_number`, and `:mddf_count`.
-- `clims`: The color limits for the contour plot.
-- `colorscale`: The color scale for the contour plot. Default is `:tempo`. We suggest `:bwr` if the zero
-  is at the middle of the color scale (use `clims` to adjust the color limits).
-
-# Example
-
-```julia-repl
-julia> using ComplexMixtures, Plots, PDBTools
-
-julia> results = load("mddf.json")
-
-julia> atoms = readPDB("system.pdb", "protein")
-
-julia> plt = contourf_per_residue(results, atoms; oneletter=true)
-```
-
-This will produce a plot with the contribution of each residue to the solute-solvent pair distribution function,
-as a contour plot, with the residues in the x-axis and the distance in the y-axis.
-
-The resulting plot can customized using the standard mutating `plot!` function, for example, 
-
-```julia-repl
-julia> plot!(plt, size=(800, 400), title="Contribution per residue")
-```
-
-!!! compat
-    This function requires loading the `Plots` package and is available in 
-    ComplexMixtures v2.2.0 or greater.
-
-    The `type` and `clims` arguments, and the support for a step in `xticks_range` were introduced in ComplexMixtures v2.3.0.
-
-"""
-function ComplexMixtures.contourf_per_residue(
-    results::Result, atoms::AbstractVector{<:Atom};
-    residue_range::AbstractRange=resnum(first(atoms)):resnum(last(atoms)),
-    dmin=1.5, dmax=3.5,
-    type=:mddf,
-    kargs...
-)
-    first_atom = findfirst(at -> resnum(at) == first(residue_range), atoms)
-    last_atom = findfirst(at -> resnum(at) == last(residue_range), atoms)
-    if isnothing(first_atom) || isnothing(last_atom)
-        throw(ArgumentError("""\n
-
-            The residue_range $residue_range is out of bounds.
-
-            The first and last residue numbers of the selection are: $(resnum(first(atoms))) and $(resnum(last(atoms))).
-
-        """
-        ))
-    end
-    rc = ResidueContributions(results, atoms[first_atom:last_atom]; dmin, dmax, type)
-    return Plots.contourf(rc; step=step(residue_range), kargs...)
-end
-
-@testitem "contourf/contourf_per_residue" begin
+@testitem "contourf" begin
     using ComplexMixtures
     using ComplexMixtures.Testing
     using Plots
@@ -308,24 +219,29 @@ end
 
     # Slice and plot
     rc2 = rc[10:5:20]
-    plt = contourf_per_residue(results, protein; residue_range=50:2:70)
+    plt = contourf(rc2)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
-    plt = contourf_per_residue(results, protein; residue_range=50:75, oneletter=true)
+    plt = contourf(rc2, oneletter=true)
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
-    plt = contourf_per_residue(results, protein; residue_range=50:75)
+    plt = contourf(rc[1:25])
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
-    plt = contourf_per_residue(results, protein; residue_range=50:2:70)
+    plt = contourf(rc[1:2:25])
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
-    @test_throws ArgumentError contourf_per_residue(results, SoluteGroup("ALA"))
-    @test_throws ArgumentError contourf_per_residue(results, protein; residue_range=50:80)
+    plt = contour(rc[1:2:25])
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+
+    plt = heatmap(rc[1:2:25])
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
 
 end
 

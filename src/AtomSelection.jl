@@ -189,7 +189,7 @@ The structure can be initialized in different ways:
 
 1. Initialize the structure providing a vector of PDBTools.Atom(s).
 
-```
+
     AtomSelection(
         atoms::AbstractVector{<:PDBTools.Atom}; 
         nmols::Integer = 0, 
@@ -197,7 +197,6 @@ The structure can be initialized in different ways:
         group_atom_indices::Union{Nothing,Vector{<:Vector{<:Int}}} = nothing,
         group_names::Vector{<:AbstractString} = String[]
     ) 
-```
 
 The indices of the atoms will be retrived from the
 indices of the atoms as defined in the PDB file, thus the PDB file must correspond to the same
@@ -236,7 +235,7 @@ julia> length(atom_group_names(atsel))
 
 2. Lower level: initialize the structure providing the index of atoms and groups.
 
-```
+
     AtomSelection(
         indices::AbstractVector{<:Integer};
         nmols::Int = 0,
@@ -244,7 +243,6 @@ julia> length(atom_group_names(atsel))
         group_atom_indices::Union{Nothing,AbstractVector{<:AbstractVector{<:Int}}} = nothing,
         group_names::AbstractVector{<:AbstractString} = String[]
     )
-```
 
 Construct an AtomSelection structure from the most low-level information: the index of atoms and groups.
 

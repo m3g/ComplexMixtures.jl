@@ -1,3 +1,7 @@
+```@meta
+CollapsedDocStrings = true
+```
+
 # [Options](@id options)
 
 There are some options to control what exactly is going to be computed

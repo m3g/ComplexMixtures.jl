@@ -1,3 +1,7 @@
+```@meta
+CollapsedDocStrings = true
+```
+
 # Working with multiple trajectories
 
 Very commonly, one has multiple trajectories of the same system, and we
@@ -52,6 +56,10 @@ trajectory. That is, if the first trajectory had 2000 frames, and the
 second and third trajectories have 1000 frames each, the first
 trajectory will have a weight of 0.5 on the final results. The `merge` function
 can be used to merge previously merged results with new results as well.
+
+```@docs
+merge
+```
 
 !!! tip
 
