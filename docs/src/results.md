@@ -181,9 +181,6 @@ The complete data available is:
 
 ```@docs
 Result
-load(::String, ::Type{Result})
-save(::String, ::Result)
-merge(::Vector{Result})
 overview(::Result)
 ComplexMixtures.Density
 ```

@@ -1,3 +1,6 @@
+```@meta
+CollapsedDocStrings = true
+```
 
 # [Solute and solvent selections](@id selections)
 
@@ -7,6 +10,15 @@ system. These subsets are defined by the `AtomSelection` data structures.
 To construct a `AtomSelection` data structure, one needs to provide, at least,
 the (1-based) indices of the atoms that belong to the selection, and either
 the number of atoms of each molecule or the number of molecules in the selection.
+
+```@docs
+AtomSelection
+AtomSelection(::Any)
+```
+
+Alternatively, and more practically, atom selections defined by the `PDBTools`
+package, which can interface with the selection syntax of `VMD`, can be used,
+as described in the following sections.
 
 ## Using the PDBTools package
 
@@ -157,17 +169,8 @@ julia> result = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 
 julia> acidic_residue_contributions = contributions(result, SoluteGroup("acidic residues"))
 ```
 
-## Reference functions
-
-```@autodocs
-Modules = [ComplexMixtures]
-Pages = ["AtomSelection.jl"]
+```@docs
+atom_group
+atom_group_name
+atom_group_names
 ```
-
-
-
-
-
-
-
-

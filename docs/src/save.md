@@ -1,3 +1,7 @@
+```@meta
+CollapsedDocStrings = true
+```
+
 # [Save and load results](@id save)
 
 Three functions serve the purpose of saving and loading the results
@@ -12,6 +16,10 @@ where `results` is the output data structure of the `mddf()`
 calculation, and `results.json` is the output file to be created. The
 file is written in `JSON` format, thus is not naturally human-readable.
 
+```@docs
+save(::String, ::Result)
+```
+
 ## Load saved data
 
 ```julia
@@ -19,6 +27,10 @@ results = load("results.json")
 ```
 The `load` function reads the output of the `save` function above,
 and restores the results data structure.
+
+```@docs
+load(::String, ::Type{Result})
+```
 
 ## Write data in a human-readable format
 
