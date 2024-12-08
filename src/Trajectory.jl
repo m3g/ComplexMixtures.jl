@@ -3,8 +3,7 @@
 
 Trajectory constructor data type. 
 
-Defaults to reading with the Chemfiles infrastructure, except for DCD and PDB trajectory
-files, if the "PDBTraj" option is provided.
+Defaults to reading with the Chemfiles infrastructure, except for DCD and PDB trajectory files, if the "PDBTraj" option is provided.
 
 See memory issue (https://github.com/chemfiles/Chemfiles.jl/issues/44)
 
@@ -21,6 +20,9 @@ end
 stream(traj::Trajectory) = traj.stream.st
 set_stream!(traj::Trajectory, st) = traj.stream.st = st
 
+# Trajectory formats
+const trajectory_formats = String[]
+
 # Include specific predefined trajectory types
 include("./trajectory_formats/ChemFiles.jl")
 include("./trajectory_formats/NamdDCD.jl")
@@ -33,20 +35,28 @@ function Trajectory(
     format::String="",
     chemfiles=false,
 )
+    if !isempty(format) && !(format in trajectory_formats)
+        throw(ArgumentError("""\n
+            Trajectory format not properly set: $format 
+            Available trajectory formats: $(join(trajectory_formats, ", "))
+
+        """))
+    end
     filename = expanduser(filename) # expand tilde on Unix systems, to username
-    if !chemfiles && (format == "dcd" || split(filename, '.')[end] == "dcd")
-        trajectory = NamdDCD(filename, solute, solvent)
-    elseif !chemfiles && format == "PDBTraj"
-        trajectory = PDBTraj(filename, solute, solvent)
+    file_extension = filename[findlast(==('.'), filename)+1:end]
+    trajectory = if !chemfiles && (format == "dcd" || file_extension == "dcd")
+        NamdDCD(filename, solute, solvent)
+    elseif !chemfiles && (format == "PDBTraj" || file_extension =="pdb")
+        PDBTraj(filename, solute, solvent)
     else
-        trajectory = ChemFile(filename, solute, solvent, format=format)
+        ChemFile(filename, solute, solvent, format=format)
     end
     return trajectory
 end
 
 # If only one selection is provided, assume that the solute and the solvent are the same
 Trajectory(filename::String, solvent::AtomSelection; format::String="", chemfiles=false) =
-    Trajectory(filename, solvent, solvent, format=format, chemfiles=chemfiles)
+    Trajectory(filename, solvent, solvent; format, chemfiles)
 
 #=
     convert_unitcell(unitcell::Union{SVector{3}, SMatrix{3,3}})
@@ -108,6 +118,9 @@ end
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
+    # Throw if trajectory type is not available
+    @test_throws ArgumentError Trajectory("$(Testing.data_dir)/PDB/trajectory.pdb", protein, tmao; format="XXX")
+
     # NAMD DCD file
     traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
     @test traj.nframes == 20
@@ -124,6 +137,9 @@ end
     @test ComplexMixtures.natoms(traj.solute) == 1463
     @test ComplexMixtures.natoms(traj.solvent) == 2534
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.47962951660156, 84.47962951660156, 84.47962951660156)
+    # Test determining format from file extension
+    traj = Trajectory("$(Testing.data_dir)/PDB/trajectory.pdb", protein, tmao)
+    @test ComplexMixtures.natoms(traj.solute) == 1463
 
     # Chemfiles with NAMD
     traj = Trajectory(

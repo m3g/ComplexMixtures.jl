@@ -1,3 +1,6 @@
+# Add this format to list of available files
+push!(trajectory_formats, "PDBTraj")
+
 #"""
 #
 #$(TYPEDEF)

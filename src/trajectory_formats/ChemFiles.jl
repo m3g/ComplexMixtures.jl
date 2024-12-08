@@ -5,6 +5,9 @@
 #
 import Chemfiles
 
+# Add this format to list of available formats 
+push!(trajectory_formats, "Chemfiles")
+
 #"""
 #
 #$(TYPEDEF)
