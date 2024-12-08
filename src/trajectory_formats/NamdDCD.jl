@@ -1,3 +1,6 @@
+# Add this format to list of available formats
+push!(trajectory_formats, "dcd")
+
 #
 # Structure to contain DCD trajectories produces with Namd. 
 #

@@ -183,7 +183,7 @@ function mddf(
     trajectory_file::String,
     solute::AtomSelection,
     solvent::AtomSelection,
-    options::Options;
+    options::Options=Options();
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...)
@@ -194,7 +194,7 @@ end
 function mddf(
     trajectory_file::String,
     solute_and_solvent::AtomSelection,
-    options::Options;
+    options::Options=Options();
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...
@@ -528,7 +528,7 @@ function coordination_number(
     trajectory_file::String,
     solute::AtomSelection,
     solvent::AtomSelection,
-    options::Options;
+    options::Options=Options();
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...)
@@ -540,7 +540,7 @@ end
 function coordination_number(
     trajectory_file::String,
     solute_and_solvent::AtomSelection,
-    options::Options;
+    options::Options=Options();
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...
@@ -607,9 +607,6 @@ end
 
     # Test wrong frame_weights input
     @test_throws ArgumentError mddf(trajectory_file, protein, water, Options(); frame_weights=[1.0], trajectory_format)
-
-    # The coordination_number(::String, args...; kargs...) is a placeholder for the docs only
-    @test_throws ArgumentError coordination_number("string.txt", 1.0)
 
     # Self correlation
     atoms = readPDB("$data_dir/toy/self_monoatomic.pdb")
@@ -709,6 +706,38 @@ end
         @test R.density.solvent ≈ 2 / R.volume.total
         @test R.density.solvent_bulk ≈ 0.5 / R.volume.bulk
     end
+end
+
+@testitem "mddf - available methods" begin
+    using ComplexMixtures
+    using PDBTools: readPDB, select
+    using ComplexMixtures.Testing: data_dir
+    atoms = readPDB("$data_dir/toy/cross.pdb")
+    protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
+    water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
+    trajectory_file = "$data_dir/toy/cross.pdb"
+    
+    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
+    t = Trajectory(trajectory_file, atom; format="PDBTraj")
+
+    options = Options()
+    trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
+    r1 = mddf(trajectory_file, atom, atom)
+    r2 = mddf(trajectory_file, atom, atom, Options())
+    @test coordination_number(r1) ≈ coordination_number(r2)
+    r1 = mddf(trajectory_file, atom)
+    r2 = mddf(trajectory_file, atom, Options())
+    @test coordination_number(r1) ≈ coordination_number(r2)
+    r1 = coordination_number(trajectory_file, atom, atom)
+    r2 = coordination_number(trajectory_file, atom, atom, Options())
+    @test coordination_number(r1) ≈ coordination_number(r2)
+    r1 = coordination_number(trajectory_file, atom)
+    r2 = coordination_number(trajectory_file, atom, Options())
+    @test coordination_number(r1) ≈ coordination_number(r2)
+
+    # The coordination_number(::String, args...; kargs...) is a placeholder for the docs only
+    @test_throws ArgumentError coordination_number("string.txt", 1.0)
 
 end
 
