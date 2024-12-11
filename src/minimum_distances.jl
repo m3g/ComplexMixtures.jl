@@ -180,7 +180,6 @@ function CellListMap.ParticleSystem(
         lcell=options.lcell,
         parallel, # true only if low_memory is set 
         nbatches,
-        autoswap=false, # The lists will be built for the solvent, always
     )
     return system
 end
