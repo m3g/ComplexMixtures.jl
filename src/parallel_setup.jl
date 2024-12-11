@@ -19,7 +19,7 @@ function parallel_setup(options::Options, R::Result, low_memory::Bool)
     # Set the number of chunks and CellListMap parameters for low-memory option
     #
     nchunks, parallel_cl, nbatches_cl = if low_memory
-        nchunks = max(1, min(nthreads, Int(fld(0.2 * total_memory, results_memory))))
+        nchunks = max(1, min(nthreads, Int(fld(0.05 * total_memory, results_memory))))
         nthreads_per_chunk = Int(fld(nthreads, nchunks))
         (nchunks, true, (min(8,nthreads_per_chunk), nthreads_per_chunk))
     else
