@@ -10,14 +10,17 @@
         y::TestShowString;
         f64 = (x1,x2) -> isapprox(x1,x2,rtol=1e-3),
         i64 = (x1,x2) -> x1 == x2, 
+        assertion_error = true,
     )
         match(f,x1,x2) = begin
             if !f(x1,x2)
-                throw(AssertionError("""
-
-                    show method equality failed with $x1 ($(typeof(x1))) == $x2 ($(typeof(x2)))")
-
-                """))
+                if assertion_error
+                    throw(AssertionError("""
+    
+                        show method equality failed with $x1 ($(typeof(x1))) == $x2 ($(typeof(x2)))")
+    
+                    """))
+                end
                 return false
             end
             return true
