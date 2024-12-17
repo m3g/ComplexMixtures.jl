@@ -5,3 +5,5 @@ using TestItemRunner: @run_package_tests, @testitem
     import Aqua
     Aqua.test_all(ComplexMixtures)
 end
+
+include("./show_methods.jl")
