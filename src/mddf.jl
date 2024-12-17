@@ -254,11 +254,14 @@ function mddf(
             println("  - Each minimum-distance computation will use $(nbatches_cl[2]) threads.")
         end
     end
-    progress = Progress(R.files[1].nframes_read; dt=1, enabled=!options.silent)
 
     # Frames to be read and frames for which the MDDF will be computed
     to_read_frames = options.firstframe:R.files[1].lastframe_read
     to_compute_frames = options.firstframe:options.stride:R.files[1].lastframe_read
+    progress = Progress(
+        count(i -> isempty(frame_weights) ? true : !iszero(frame_weights[i]), to_compute_frames); 
+        dt=1, enabled=!options.silent
+    )
 
     # Loop over the trajectory
     read_lock = ReentrantLock()
@@ -283,7 +286,6 @@ function mddf(
                     if iszero(frame_weight)
                         nframes_read += 1
                         compute = false
-                        next!(progress)
                     end
                     if compute
                         # Read frame for computing 
