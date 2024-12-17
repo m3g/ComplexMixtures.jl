@@ -230,13 +230,13 @@ function mddf(
     firstframe!(trajectory)
 
     # Skip initial frames if desired
-    progress = Progress(options.firstframe; dt=1)
+    progress = Progress(options.firstframe; dt=1, enabled=!options.silent)
     for _ in 1:options.firstframe-1
         nextframe!(trajectory)
         if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
             GC.gc()
         end
-        options.silent || next!(progress)
+        next!(progress)
     end
     iframe = options.firstframe - 1
 
@@ -253,8 +253,8 @@ function mddf(
             println("  - Number of parallel minimum-distance computations: $nchunks")
             println("  - Each minimum-distance computation will use $(nbatches_cl[2]) threads.")
         end
-        progress = Progress(R.files[1].nframes_read; dt=1)
     end
+    progress = Progress(R.files[1].nframes_read; dt=1, enabled=!options.silent)
 
     # Frames to be read and frames for which the MDDF will be computed
     to_read_frames = options.firstframe:R.files[1].lastframe_read
@@ -278,6 +278,13 @@ function mddf(
                 # Read frame coordinates
                 @lock read_lock begin
                     iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
+                    # Read weight of this frame, skip calculation if the frame weight is zero
+                    frame_weight = r_chunk.files[1].frame_weights[iframe]
+                    if iszero(frame_weight)
+                        nframes_read += 1
+                        compute = false
+                        next!(progress)
+                    end
                     if compute
                         # Read frame for computing 
                         # The solute coordinates must be read in intermediate arrays, because the 
@@ -287,10 +294,8 @@ function mddf(
                         @. buff_chunk.solvent_read = trajectory.x_solvent
                         unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
                         update_unitcell!(system_chunk, unitcell)
-                        # Read weight of this frame. 
-                        frame_weight = r_chunk.files[1].frame_weights[iframe]
                         # Display progress bar
-                        options.silent || next!(progress)
+                        next!(progress)
                     end
                 end # release reading lock
                 #
