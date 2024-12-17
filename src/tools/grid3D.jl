@@ -72,10 +72,10 @@ function grid3D(
     AtomType = typeof(PDBTools.Atom()) # to support PDBTools < 2 (which does not have a Atom{T} constructor)
     grid = AtomType[]
     grid_lock = ReentrantLock()
-    silent || (p = Progress(prod(n); desc="Building grid..."))
+    p = Progress(prod(n); desc="Building grid...", enabled=!silent)
     Threads.@threads for ix_inds in ChunkSplitters.chunks(1:n[1]; n=Threads.nthreads())
         for ix in ix_inds, iy in 1:n[2], iz in 1:n[3]
-            silent || next!(p)
+            next!(p)
             x = lims.xmin[1] - dmax + step * (ix - 1)
             y = lims.xmin[2] - dmax + step * (iy - 1)
             z = lims.xmin[3] - dmax + step * (iz - 1)

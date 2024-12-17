@@ -91,19 +91,21 @@ end
 # reading of the coordinates by Chemfiles
 #
 function goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
+    frame_weight = 1.0
     compute = false
     while iframe < R.files[1].lastframe_read && !compute
         nextframe!(trajectory)
         iframe += 1
-        if iframe in to_compute_frames
+        frame_weight = isempty(R.files[1].frame_weights) ? 1.0 : R.files[1].frame_weights[iframe]
+        if iframe in to_compute_frames && !iszero(frame_weight)
             compute = true
-        end
-        # Run GC if memory is getting full: this is related to issues with Chemfiles reading scheme
-        if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
-            GC.gc()
+            # Run GC if memory is getting full: this is related to issues with Chemfiles reading scheme
+            if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+                GC.gc()
+            end
         end
     end
-    return iframe, compute
+    return iframe, frame_weight, compute
 end
 
 """     
@@ -230,13 +232,13 @@ function mddf(
     firstframe!(trajectory)
 
     # Skip initial frames if desired
-    progress = Progress(options.firstframe; dt=1)
+    progress = Progress(options.firstframe; dt=1, enabled=!options.silent)
     for _ in 1:options.firstframe-1
         nextframe!(trajectory)
         if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
             GC.gc()
         end
-        options.silent || next!(progress)
+        next!(progress)
     end
     iframe = options.firstframe - 1
 
@@ -253,12 +255,15 @@ function mddf(
             println("  - Number of parallel minimum-distance computations: $nchunks")
             println("  - Each minimum-distance computation will use $(nbatches_cl[2]) threads.")
         end
-        progress = Progress(R.files[1].nframes_read; dt=1)
     end
 
     # Frames to be read and frames for which the MDDF will be computed
     to_read_frames = options.firstframe:R.files[1].lastframe_read
     to_compute_frames = options.firstframe:options.stride:R.files[1].lastframe_read
+    progress = Progress(
+        count(i -> isempty(frame_weights) ? true : !iszero(frame_weights[i]), to_compute_frames); 
+        dt=1, enabled=!options.silent
+    )
 
     # Loop over the trajectory
     read_lock = ReentrantLock()
@@ -272,12 +277,11 @@ function mddf(
             buff_chunk = Buffer(trajectory, R)
             r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
             # Reset the number of frames read by each chunk
-            nframes_read = 0
             for _ in frame_range
                 local compute, frame_weight
                 # Read frame coordinates
                 @lock read_lock begin
-                    iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
+                    iframe, frame_weight, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
                     if compute
                         # Read frame for computing 
                         # The solute coordinates must be read in intermediate arrays, because the 
@@ -285,19 +289,17 @@ function mddf(
                         # minimum distances
                         @. buff_chunk.solute_read = trajectory.x_solute
                         @. buff_chunk.solvent_read = trajectory.x_solvent
+                        # Read weight of this frame
                         unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
                         update_unitcell!(system_chunk, unitcell)
-                        # Read weight of this frame. 
-                        frame_weight = r_chunk.files[1].frame_weights[iframe]
                         # Display progress bar
-                        options.silent || next!(progress)
+                        next!(progress)
                     end
                 end # release reading lock
                 #
                 # Perform MDDF computation
                 #
                 if compute
-                    nframes_read += 1
                     # Compute distances in this frame and update results
                     if !coordination_number_only
                         mddf_frame!(r_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
