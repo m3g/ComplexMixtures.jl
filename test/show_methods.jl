@@ -28,6 +28,10 @@
         all_match = true
         for (f1, f2) in zip(sfields, ssfields)
             !all_match && break
+            if ispath(f1)
+                all_match = last(split(f1)) == last(split(f2))
+                continue
+            end
             value = tryparse(Int, f1)
             if !isnothing(value)
                 all_match = match(i64, value, tryparse(Int, f2))
@@ -164,5 +168,34 @@
         Density of solvent in bulk: 0.0 
         """
     )
+
+    @test test_show(
+        SoluteGroup(select(atoms, "protein and residue 2")),
+        """
+        SoluteGroup defined by:
+        atom_indices: [ 10 ] - 1 atoms
+        """
+    )
+
+    @test test_show(
+        SolventGroup(select(atoms, "protein and residue 2")),
+        """
+        SolventGroup defined by:
+        atom_indices: [ 10 ] - 1 atoms
+        """
+    )
+
+    @test test_show(
+        Trajectory(trajectory_file, protein, water),
+        """
+        Trajectory in PDB format with:
+            2 frames.
+            Solute contains 1 atoms.
+            Solvent contains 9 atoms.
+            Unit cell in current frame: [  30.00 0 0; 0  30.00 0; 0 0  30.00 ]
+        """
+    )
+
+
 
 end
