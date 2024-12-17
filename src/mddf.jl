@@ -91,19 +91,21 @@ end
 # reading of the coordinates by Chemfiles
 #
 function goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
+    frame_weight = 1.0
     compute = false
     while iframe < R.files[1].lastframe_read && !compute
         nextframe!(trajectory)
         iframe += 1
-        if iframe in to_compute_frames
+        frame_weight = isempty(R.files[1].frame_weights) ? 1.0 : R.files[1].frame_weights[iframe]
+        if iframe in to_compute_frames && !iszero(frame_weight)
             compute = true
-        end
-        # Run GC if memory is getting full: this is related to issues with Chemfiles reading scheme
-        if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
-            GC.gc()
+            # Run GC if memory is getting full: this is related to issues with Chemfiles reading scheme
+            if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+                GC.gc()
+            end
         end
     end
-    return iframe, compute
+    return iframe, frame_weight, compute
 end
 
 """     
@@ -279,12 +281,7 @@ function mddf(
                 local compute, frame_weight
                 # Read frame coordinates
                 @lock read_lock begin
-                    iframe, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
-                    # Read weight of this frame, skip calculation if the frame weight is zero
-                    frame_weight = r_chunk.files[1].frame_weights[iframe]
-                    if iszero(frame_weight)
-                        compute = false
-                    end
+                    iframe, frame_weight, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
                     if compute
                         # Read frame for computing 
                         # The solute coordinates must be read in intermediate arrays, because the 
@@ -292,6 +289,7 @@ function mddf(
                         # minimum distances
                         @. buff_chunk.solute_read = trajectory.x_solute
                         @. buff_chunk.solvent_read = trajectory.x_solvent
+                        # Read weight of this frame
                         unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
                         update_unitcell!(system_chunk, unitcell)
                         # Display progress bar
