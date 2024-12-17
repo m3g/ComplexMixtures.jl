@@ -4,8 +4,8 @@
         x, s::String; 
         f64 = (x1,x2) -> isapprox(x1,x2,rtol=1e-3),
         i64 = (x1,x2) -> x1 == x2, 
-        rep = Dict{String,String}(),
         vector_simplify = true,
+        repl = Dict(),
     )
         match(f,x1,x2) = begin
             if !f(x1,x2)
@@ -17,27 +17,31 @@
         buff = IOBuffer()
         show(buff, MIME"text/plain"(), x)
         ss = String(take!(buff))
-        s = replace(s, rep...)
-        ss = replace(ss, rep...)
-        if vector_simplify
-            s = replace(s, r"\[(\S+).* (\S+)\]" => s"[ \1 \2 ]")
-            ss = replace(ss, r"\[(\S+).* (\S+)\]" => s"[ \1 \2 ]")
+        # Custom substitutions
+        s = replace(s, repl...)
+        ss = replace(ss, repl...)
+        # add spaces between digits and other characters (except dots), to interpret them as numbers
+        s = replace(s, r"(?<=\d)(?=[^\d.])|(?<=[^\d.])(?=\d)" => s" ")
+        ss = replace(ss, r"(?<=\d)(?=[^\d.])|(?<=[^\d.])(?=\d)" => s" ")
+        if vector_simplify # keep only first and last array elements
+            s = replace(s, r"\[ (\S+).* (\S+)\ ]" => s"[ \1 \2 ]")
+            ss = replace(ss, r"\[ (\S+).* (\S+)\ ]" => s"[ \1 \2 ]")
         end
         sfields = split(s)
         ssfields = split(ss)
         all_match = true
         for (f1, f2) in zip(sfields, ssfields)
             !all_match && break
-            if ispath(f1)
+            if ispath(f1) # only compares the last entry for paths
                 all_match = last(split(f1)) == last(split(f2))
                 continue
             end
-            value = tryparse(Int, f1)
+            value = tryparse(Int, f1) # test if f1 can be interpreted as an integer
             if !isnothing(value)
                 all_match = match(i64, value, tryparse(Int, f2))
                 continue
             end
-            value = tryparse(Float64, f1)
+            value = tryparse(Float64, f1) # test if f1 can be interpreted as a float
             if !isnothing(value)
                 all_match = match(f64, value, tryparse(Float64,f2))
                 continue
@@ -147,7 +151,8 @@
         Long range RDF mean (expected 1.0): 0.0 ± 0.0
         
         --------------------------------------------------------------------------------
-        """
+        """,
+        repl = Dict(r"Version.*" => "Version")
     )
 
     @test test_show(
@@ -195,7 +200,5 @@
             Unit cell in current frame: [  30.00 0 0; 0  30.00 0; 0 0  30.00 ]
         """
     )
-
-
 
 end
