@@ -9,7 +9,11 @@
     )
         match(f,x1,x2) = begin
             if !f(x1,x2)
-                println("show method test failed with $x1 ($(typeof(x1))) == $x2 ($(typeof(x2)))")
+                @warn """
+
+                    show method test failed with $x1 ($(typeof(x1))) == $x2 ($(typeof(x2)))")
+
+                """
                 return false
             end
             return true
@@ -120,7 +124,7 @@
         R,
         """
         --------------------------------------------------------------------------------
-        MDDF Overview - ComplexMixtures - Version 2.11.4-DEV
+        MDDF Overview - ComplexMixtures - Version 2.11.3
         --------------------------------------------------------------------------------
         
         Solvent properties:
