@@ -275,7 +275,6 @@ function mddf(
             buff_chunk = Buffer(trajectory, R)
             r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
             # Reset the number of frames read by each chunk
-            nframes_read = 0
             for _ in frame_range
                 local compute, frame_weight
                 # Read frame coordinates
@@ -284,7 +283,6 @@ function mddf(
                     # Read weight of this frame, skip calculation if the frame weight is zero
                     frame_weight = r_chunk.files[1].frame_weights[iframe]
                     if iszero(frame_weight)
-                        nframes_read += 1
                         compute = false
                     end
                     if compute
@@ -304,7 +302,6 @@ function mddf(
                 # Perform MDDF computation
                 #
                 if compute
-                    nframes_read += 1
                     # Compute distances in this frame and update results
                     if !coordination_number_only
                         mddf_frame!(r_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
