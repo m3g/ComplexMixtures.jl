@@ -106,7 +106,7 @@
         n_random_samples=10^5,
         lastframe,
     )
-    R = mddf(trajectory_file, protein, water, options; trajectory_format, low_memory)
+    R = coordination_number(trajectory_file, protein, water, options; trajectory_format, low_memory)
 
     @test test_show(
         R,
@@ -121,17 +121,17 @@
         Simulation concentration: 0.18450433782524045 mol L⁻¹
         Molar volume: 5419.9267713 cm³ mol⁻¹
         
-        Concentration in bulk: 0.14554918900655386 mol L⁻¹
-        Molar volume in bulk: 6870.52952218766 cm³ mol⁻¹
+        Concentration in bulk: 0.0 mol L⁻¹
+        Molar volume in bulk: Inf cm³ mol⁻¹
         
         Solute properties:
         ------------------
         
         Simulation Concentration: 0.061501445941746814 mol L⁻¹
-        Estimated solute partial molar volume: -4351.808252662979 cm³ mol⁻¹
+        Estimated solute partial molar volume: -Inf cm³ mol⁻¹
         
         Bulk range: >= 10.0 Å
-        Molar volume of the solute domain: 2518.72126952468 cm³ mol⁻¹
+        Molar volume of the solute domain: 0.0 cm³ mol⁻¹
         
         Auto-correlation: false
         
@@ -139,8 +139,8 @@
         
            /home/leandro/.julia/dev/ComplexMixtures/test/data/toy/cross.pdb - w = 1.0
         
-        Long range MDDF mean (expected 1.0): 8.468734342118449 ± 60.478860184581805
-        Long range RDF mean (expected 1.0): 10.48765202283445 ± 74.89681630453485
+        Long range MDDF mean (expected 1.0): 0.0 ± 0.0
+        Long range RDF mean (expected 1.0): 0.0 ± 0.0
         
         --------------------------------------------------------------------------------
         """
@@ -150,9 +150,9 @@
         R.volume,
         """
         Total volume: 27000.0
-        Bulk volume: 22817.565
-        Domain volume: 4182.435
-        Shell volumes: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.045, 0.045, 0.0  …  24.03, 24.66, 24.12, 23.31, 26.19, 26.28, 23.31, 23.085, 25.515, 24.165]
+        Bulk volume: 0.0
+        Domain volume: 0.0
+        Shell volumes: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         """
     )
 
@@ -161,7 +161,7 @@
         """
         Density of solute: 3.7037037037037037e-5
         Density of solvent: 0.00011111111111111112
-        Density of solvent in bulk: 8.765177178195833e-5
+        Density of solvent in bulk: 0.0 
         """
     )
 
