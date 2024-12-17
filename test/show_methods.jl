@@ -10,6 +10,7 @@
         y::TestShowString;
         f64 = (x1,x2) -> isapprox(x1,x2,rtol=1e-3),
         i64 = (x1,x2) -> x1 == x2, 
+        path = (x1,x2) -> last(splitpath(x1)) == last(splitpath(x2)),
         assertion_error = true,
     )
         match(f,x1,x2) = begin
@@ -33,8 +34,8 @@
         all_match = true
         for (f1, f2) in zip(sfields, ssfields)
             !all_match && break
-            if ispath(f2) # only compares the last entry for paths
-                all_match = last(split(f1)) == last(split(f2))
+            if ispath(f2) || ispath(f1) # only compares the last entry for paths
+                all_match = match(path, last(splitpath(f1)), last(splitpath(f2)))
                 continue
             end
             value = tryparse(Int, f1) # test if f1 can be interpreted as an integer
