@@ -32,7 +32,7 @@
         all_match = true
         for (f1, f2) in zip(sfields, ssfields)
             !all_match && break
-            if ispath(f1) # only compares the last entry for paths
+            if ispath(f2) # only compares the last entry for paths
                 all_match = last(split(f1)) == last(split(f2))
                 continue
             end
