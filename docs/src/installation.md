@@ -77,7 +77,8 @@ using LaTeXStrings
 # etc ... 
 ```
 
-And the script can be run with `julia -t auto script.jl` (where `-t auto` allows for multi-threading), or included in julia with `julia> include("./scritp.jl")`, as described in the next section.
+And the script can be run with `julia -t auto script.jl` (where `-t auto` allows for multi-threading), 
+or included in julia with `julia> include("./script.jl")`, as described in the next section.
 
 !!! tip
     By loading the package with 
