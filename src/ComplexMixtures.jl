@@ -16,7 +16,7 @@ using Printf: @sprintf
 using ProgressMeter: Progress, next!
 using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
 using Statistics: mean, std
-using TestItems: @testitem
+using TestItems: @testitem, @testmodule
 
 
 # Data types
