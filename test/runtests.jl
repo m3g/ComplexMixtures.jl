@@ -1,4 +1,5 @@
-using TestItemRunner: @run_package_tests, @testitem
+using TestItemRunner
+using TestItems
 
 @testmodule AllocTest begin
     # This module defines the Allocs struct and the comparison operators
