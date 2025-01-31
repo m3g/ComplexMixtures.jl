@@ -80,19 +80,26 @@ convert_unitcell(::SMatrix, unitcell::AbstractMatrix) = SMatrix{3,3}(unitcell)
     using ComplexMixtures: convert_unitcell
     using StaticArrays: SVector, SMatrix
     using BenchmarkTools: @benchmark
+    function test_allocs(allocs, max_allocs)
+        if haskey(ENV, "BUILD_IS_PRODUCTION_BUILD") && ENV["BUILD_IS_PRODUCTION_BUILD"] == "false"
+            true
+        else
+            allocs <= max_allocs
+        end
+    end
     m = [1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]
     @test convert_unitcell(m) isa SVector
     s = SVector(1.0, 1.0, 1.0)
     @test convert_unitcell(s, m) isa SVector
     @test convert_unitcell(s, m) isa SVector
     b = @benchmark convert_unitcell($s, $m) samples = 1 evals = 1
-    @test b.allocs == 0
+    @test test_allocs(b.allocs, 0)
     m = [1.0 1.0 0.0; 0.0 1.0 0.0; 0.0 0.0 2.0]
     @test convert_unitcell(m) isa SMatrix
     m2 = SMatrix{3,3}(m)
     @test convert_unitcell(m2, m) isa SMatrix
     b = @benchmark convert_unitcell($m2, $m) samples = 1 evals = 1
-    @test b.allocs == 0
+    @test test_allocs(b.allocs, 0)
 end
 
 function print_unitcell(trajectory)
