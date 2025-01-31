@@ -1,7 +1,7 @@
 """
     grid3D(
         result::Result, atoms, output_file::Union{Nothing,String} = nothing; 
-        dmin=1.5, ddax=5.0, step=0.5, silent = false,
+        dmin=1.5, dmax=5.0, step=0.5, silent = false,
     )
 
 This function builds the grid of the 3D density function and fills an array of
