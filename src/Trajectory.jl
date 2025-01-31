@@ -76,21 +76,11 @@ end
 convert_unitcell(::SVector, unitcell::AbstractMatrix) = SVector{3}(unitcell[1, 1], unitcell[2, 2], unitcell[3, 3])
 convert_unitcell(::SMatrix, unitcell::AbstractMatrix) = SMatrix{3,3}(unitcell)
 
-@testitem "convert_unitcell" begin
+@testitem "convert_unitcell" setup=[AllocTest] begin
     using ComplexMixtures: convert_unitcell
     using StaticArrays: SVector, SMatrix
     using BenchmarkTools: @benchmark
-
-    @kwdef struct Allocs
-        prodbuild::Bool = haskey(ENV, "BUILD_IS_PRODUCTION_BUILD") && ENV["BUILD_IS_PRODUCTION_BUILD"] == "true"
-        allocs::Int
-    end
-    Allocs(allocs::Int) = Allocs(; allocs)
-    import Base: ==, >, <
-    ==(a::Int, b::Allocs) = b.prodbuild ? a == b.allocs : true
-    <(a::Int, b::Allocs) = b.prodbuild ? a < b.allocs : true
-    ==(a::Allocs, b::Int) = a.prodbuild ? a.allocs == b : true
-    <(a::Allocs, b::Int) = a.prodbuild ? a.allocs < b : true
+    using .AllocTest: Allocs
 
     m = [1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]
     @test convert_unitcell(m) isa SVector

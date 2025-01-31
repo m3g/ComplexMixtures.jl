@@ -1,25 +1,13 @@
 
-@testitem "Allocations" begin
+@testitem "Allocations" setup=[AllocTest] begin
     using PDBTools
     using ComplexMixtures
     using ComplexMixtures.Testing
     using BenchmarkTools
-
-    @kwdef struct Allocs
-        prodbuild::Bool = haskey(ENV, "BUILD_IS_PRODUCTION_BUILD") && ENV["BUILD_IS_PRODUCTION_BUILD"] == "true"
-        allocs::Int
-    end
-    Allocs(allocs::Int) = Allocs(; allocs)
-    import Base: ==, >, <
-    ==(a::Int, b::Allocs) = b.prodbuild ? a == b.allocs : true
-    <(a::Int, b::Allocs) = b.prodbuild ? a < b.allocs : true
-    ==(a::Allocs, b::Int) = a.prodbuild ? a.allocs == b : true
-    <(a::Allocs, b::Int) = a.prodbuild ? a.allocs < b : true
-
+    using .AllocTest: Allocs
 
     dir = "$(Testing.data_dir)/NAMD"
     atoms = readPDB("$dir/structure.pdb")
-
     options = Options(
         lastframe=1,
         nthreads=1,
