@@ -10,8 +10,8 @@ CollapsedDocStrings = true
 ## [Computing radial distribution functions](@id radial_distribution)
 
 The distributions returned by the `mddf` function (the `mddf` and
-`rdf` vectors), are normalized by the random reference state or
-using a site count based on the numerical integration of the volume
+`rdf` vectors), are normalized by the random reference state. This
+is equivalent to  a site count based on the numerical integration of the volume
 corresponding to each minimum-distance to the solute. 
 
 If, however, the
