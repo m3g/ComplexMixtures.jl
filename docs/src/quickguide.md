@@ -1,9 +1,9 @@
 
 # Quick Guide
 
-Of course, follow the [installation](@ref Installation) instructions first. 
-A complete working example is shown below, and in the section that follows each 
-command is described in detail.
+First, follow the [installation](@ref Installation) instructions. 
+Below is a complete working example, followed by detailed descriptions 
+of each command.
 
 ## Basic example
 
