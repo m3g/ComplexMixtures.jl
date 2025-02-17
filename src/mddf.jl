@@ -516,16 +516,6 @@ julia> results = coordination_number(trajectory_file, solute, solvent, options);
 ```
 
 """
-function coordination_number(::String, args...; kargs...)
-    throw(ArgumentError("""\n
-        Invalid arguments for the `coordination_number` function.
-        Plese check the documentation for the correct call signature, by typing:
-
-        julia> ? coordination_number
-
-    """))
-end
-
 function coordination_number(
     trajectory_file::String,
     solute::AtomSelection,
