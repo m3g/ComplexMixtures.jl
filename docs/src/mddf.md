@@ -78,7 +78,7 @@ required for the MDDF, providing (possibly much) faster computations when the
 normalization is not possible or required:
 
 ```@docs
-coordination_number(::String)
+coordination_number(::String, ::AtomSelection, ::AtomSelection, ::Options)
 ```
 
 !!! note 

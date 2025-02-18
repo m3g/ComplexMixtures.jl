@@ -30,9 +30,10 @@ export save, load, write, merge
 export atom_group, atom_group_name, atom_group_names
 
 # Tools
+import MolSimToolkitShared: coordination_number
+export coordination_number
 export ResidueContributions
 export contributions
-export coordination_number
 export gr
 export grid3D
 
