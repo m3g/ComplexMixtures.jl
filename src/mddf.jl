@@ -629,7 +629,18 @@ end
         @test sum(R.md_count) ≈ 1.0
         R = coordination_number(trajectory_file, atom, options; low_memory, trajectory_format)
         @test sum(R.md_count) ≈ 1.0
+
     end
+
+    # Test interruption
+    current_dir = pwd()
+    test_dir = tempname()
+    mkdir(test_dir)
+    cd(test_dir)
+    touch("stop_complexmixtures")
+    R_interrupt = mddf(trajectory_file, atom)
+    @test sum(R_interrupt.md_count) == 0.0
+    cd(current_dir)
 
     #
     # Test varying frame weights
