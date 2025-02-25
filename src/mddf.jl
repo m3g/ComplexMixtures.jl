@@ -278,6 +278,11 @@ function mddf(
             r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
             # Reset the number of frames read by each chunk
             for _ in frame_range
+                # interrupt handler
+                if isfile("stop_complexmixtures") 
+                    @info "From thread id: $(Threads.threadid()): stop_complexmixtures file found. Exiting."
+                    break
+                end
                 local compute, frame_weight
                 # Read frame coordinates
                 @lock read_lock begin
