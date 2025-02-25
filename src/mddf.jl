@@ -278,6 +278,11 @@ function mddf(
             r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
             # Reset the number of frames read by each chunk
             for _ in frame_range
+                # interrupt handler
+                if isfile("stop_complexmixtures") 
+                    @info "From thread id: $(Threads.threadid()): stop_complexmixtures file found. Exiting."
+                    break
+                end
                 local compute, frame_weight
                 # Read frame coordinates
                 @lock read_lock begin
@@ -624,7 +629,18 @@ end
         @test sum(R.md_count) ≈ 1.0
         R = coordination_number(trajectory_file, atom, options; low_memory, trajectory_format)
         @test sum(R.md_count) ≈ 1.0
+
     end
+
+    # Test interruption
+    current_dir = pwd()
+    test_dir = tempname()
+    mkdir(test_dir)
+    cd(test_dir)
+    touch("stop_complexmixtures")
+    R_interrupt = mddf(trajectory_file, atom)
+    @test sum(R_interrupt.md_count) == 0.0
+    cd(current_dir)
 
     #
     # Test varying frame weights

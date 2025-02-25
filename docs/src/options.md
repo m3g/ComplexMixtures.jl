@@ -190,5 +190,23 @@ Modules = [ComplexMixtures]
 Pages = ["Trajectory.jl"]
 ```
 
+## Stop a computation
+
+To stop a running calculation without loosing the Julia REPL state, add a file named
+```
+stop_complexmixtures
+```
+in the same directory from where the computation was launched. This will interrupt the 
+computations in each parallel task as soon as the file is detected. **The partial
+results will be returned and are, thus, invalid.** Remove the file to restart
+a calculation. The content of the file is not important, thus it can be created
+by the `touch stop_complexmixtures` linux command. 
+
+!!! compat
+    The `stop_complexmixtures` feature was added in v2.12.0
+
+
+
+
 
 
