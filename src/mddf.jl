@@ -189,6 +189,8 @@ function mddf(
     trajectory_format::String="",
     chemfiles::Bool=false,
     kargs...)
+    options.silent || println(bars)
+    options.silent || println("Opening trajectory ...")
     trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; kargs...)
 end
@@ -201,6 +203,8 @@ function mddf(
     chemfiles::Bool=false,
     kargs...
 )
+    options.silent || println(bars)
+    options.silent || println("Opening trajectory ...")
     trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
     return mddf(trajectory, options; kargs...)
 end
