@@ -226,4 +226,3 @@ function getnframes(st::FortranFile; show_progress)
         next!(prog)
     end
 end
-getnframes(traj::NamdDCD; show_progress) = getnframes(stream(traj); show_progress)
