@@ -52,4 +52,9 @@
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
+    # Test show_progress path
+    traj = Trajectory("$dir/trajectory.dcd", protein, tmao; show_progress=true)
+    @test traj.nframes == 20
+    traj = Trajectory("$dir/trajectory.dcd", protein, tmao; show_progress=false)
+    @test traj.nframes == 20
 end
