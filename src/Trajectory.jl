@@ -34,6 +34,7 @@ function Trajectory(
     solvent::AtomSelection;
     format::String="",
     chemfiles=false,
+    show_progress=true,
 )
     if !isempty(format) && !(format in trajectory_formats)
         throw(ArgumentError("""\n
@@ -45,7 +46,7 @@ function Trajectory(
     filename = expanduser(filename) # expand tilde on Unix systems, to username
     file_extension = filename[findlast(==('.'), filename)+1:end]
     trajectory = if !chemfiles && (format == "dcd" || file_extension == "dcd")
-        NamdDCD(filename, solute, solvent)
+        NamdDCD(filename, solute, solvent; show_progress)
     elseif !chemfiles && (format == "PDBTraj" || file_extension =="pdb")
         PDBTraj(filename, solute, solvent)
     else
@@ -55,8 +56,8 @@ function Trajectory(
 end
 
 # If only one selection is provided, assume that the solute and the solvent are the same
-Trajectory(filename::String, solvent::AtomSelection; format::String="", chemfiles=false) =
-    Trajectory(filename, solvent, solvent; format, chemfiles)
+Trajectory(filename::String, solvent::AtomSelection; format::String="", chemfiles=false, show_progress=true) =
+    Trajectory(filename, solvent, solvent; format, chemfiles, show_progress)
 
 #=
     convert_unitcell(unitcell::Union{SVector{3}, SMatrix{3,3}})

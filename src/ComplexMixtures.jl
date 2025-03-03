@@ -13,7 +13,7 @@ using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using LinearAlgebra: norm, cross, dot, diag
 using FortranFiles: FortranFile, rewind, FString, read, close
 using Printf: @sprintf
-using ProgressMeter: Progress, next!
+using ProgressMeter: Progress, ProgressUnknown, next!
 using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
 using Statistics: mean, std
 using TestItems: @testitem, @testmodule

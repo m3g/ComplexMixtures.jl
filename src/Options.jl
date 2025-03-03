@@ -213,6 +213,10 @@ end
     @test o.dbulk == 10.0
     @test o.cutoff == 14.0
     @test o.usecutoff == true
+    o = Options(cutoff=12.0, usecutoff=true)
+    @test o.cutoff == 12.0
+    o = Options(dbulk=10.0, usecutoff=true)
+    @test o.cutoff == 14.0
 
     # input errors
     @test_throws ArgumentError Options(dbulk=10.0, binstep=0.3)
@@ -228,7 +232,8 @@ end
     @test_throws ArgumentError Options(bulk_range=(12.0, 10.0), usecutoff=false)
     @test_throws ArgumentError Options(dbulk=10.0, cutoff=15.0, usecutoff=false)
     @test_throws ArgumentError Options(n_random_samples=0)
-
+    @test_throws ArgumentError Options(bulk_range=[1.0])
+    @test_throws ArgumentError Options(cutoff=12.0)
 end
 
 function Base.show(io::IO, o::Options)
