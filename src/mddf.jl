@@ -231,7 +231,7 @@ function mddf(
     # Compute some meta-data from the trajectory file and the options,
     # to allow parallel creation of the Result, and ParticleSystem
     # data structures
-    options.silent || println("Evaluate trajectory length and go to first frame ...")
+    options.silent || println("Evaluate trajectory meta-data and go to first frame ...")
     trajectory_data = TrajectoryMetaData(trajectory, options)
 
     # Structure in which the final results will be stored
