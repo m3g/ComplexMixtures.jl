@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         version:
-          - '1.9.0'
+          - '1.10.0'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
