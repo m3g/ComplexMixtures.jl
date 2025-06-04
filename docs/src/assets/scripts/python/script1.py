@@ -5,7 +5,7 @@
 import ComplexMixtures as cm
 
 # Load the pdb file of the system using `PDBTools`:
-atoms = cm.readPDB("./system.pdb")
+atoms = cm.read_pdb("./system.pdb")
 
 # Create arrays of atoms with the protein and Glycerol atoms, 
 # using the `select` function of the `PDBTools` package:
