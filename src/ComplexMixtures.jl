@@ -7,8 +7,7 @@ import PrecompileTools
 import Random
 import StructTypes
 
-import CellListMap
-using CellListMap: AbstractParticleSystem, ParticleSystem, update_unitcell!, map_pairwise!
+using CellListMap: CellListMap, AbstractParticleSystem, ParticleSystem, update_unitcell!, map_pairwise!
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using LinearAlgebra: norm, cross, dot, diag
 using FortranFiles: FortranFile, rewind, FString, read, close
@@ -17,7 +16,6 @@ using ProgressMeter: Progress, ProgressUnknown, next!
 using StaticArrays: SVector, SMatrix, @SMatrix, MMatrix
 using Statistics: mean, std
 using TestItems: @testitem, @testmodule
-
 
 # Data types
 export Trajectory, Options, Result

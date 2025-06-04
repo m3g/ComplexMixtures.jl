@@ -13,5 +13,8 @@ PrecompileTools.@setup_workload begin
         R = mddf(trajectory_file, solute, solvent, options)
         rc = ResidueContributions(R, prot; silent=true)
         R = mddf(trajectory_file, solvent, options)
+        tmpfile = tempname()
+        save(tmpfile, R)
+        load(tmpfile)
     end
 end

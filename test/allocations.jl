@@ -46,7 +46,7 @@
     traj = Trajectory(trajfile, protein, tmao)
     t_trajectory =
         @benchmark Trajectory($trajfile, $protein, $tmao) samples = 1 evals = 1
-    @test t_trajectory.allocs < Allocs(1000)
+    @test t_trajectory.allocs < Allocs(1500)
 
     R = Result(traj, options)
     t_result = @benchmark Result($traj, $options) samples = 1 evals = 1

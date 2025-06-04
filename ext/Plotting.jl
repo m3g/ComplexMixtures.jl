@@ -1,12 +1,11 @@
 module Plotting
 
 using TestItems: @testitem
+
 import Plots
-import ComplexMixtures
-import PDBTools
-using ComplexMixtures: Result, SoluteGroup, SolventGroup, contributions,
+using ComplexMixtures: ComplexMixtures, Result, SoluteGroup, SolventGroup, contributions,
     ResidueContributions, _set_clims_and_colorscale!
-using PDBTools: Residue, residue_ticks, Atom, eachresidue, resnum
+using PDBTools: PDBTools, Residue, residue_ticks, Atom, eachresidue, resnum
 
 """
     contourf(
