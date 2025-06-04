@@ -7,7 +7,8 @@
 #
 # Author: L. Martinez / IQ-Unicamp, 2023.
 #
-# This script is adapted to version 2.0 of ComplexMixtures.jl
+# This script is adapted to version 2.13 of ComplexMixtures.jl
+# and full functionality requires PDBTools.jl v3.0.0 or greater
 #
 import sys
 
@@ -45,8 +46,11 @@ except :
 #
 
 # From PDBTools
-readPDB = jl.pdb.readPDB
+read_pdb = jl.pdb.read_pdb
 select = jl.pdb.select
+select_with_vmd = jl.pdb.select_with_vmd
+# Legacy compatibility
+readPDB = jl.pdb.read_pdb
 
 # From ComplexMixtures
 AtomSelection = jl.cm.AtomSelection
@@ -72,25 +76,3 @@ def mddf(*args, **kwargs) :
 # Covert python lists to julia arrays
 def list(python_list) :
     return jl.map(jl.identity, python_list)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    
-
-    
-    
-
-
