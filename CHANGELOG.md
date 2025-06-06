@@ -13,3 +13,4 @@ ComplexMixtures.jl Changelog
 Version 2.13.1
 -------------
 - ![INFO][badge-info] Update python script, following the new selection features of PDBTools.jl 3.1.0.
+- ![INFO][badge-info] set version to 2.13.1
