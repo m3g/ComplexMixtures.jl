@@ -230,8 +230,8 @@ end
         group_atom_indices=[
             findall(Select("acidic"), protein),
             findall(Select("basic"), protein),
-            findall(Select("polar"), protein),
-            findall(Select("nonpolar"), protein),
+            findall(Select("polar and not resname GLY and not resname CYS"), protein),
+            findall(Select("nonpolar or resname GLY or resname CYS"), protein),
         ]
     )
     solvent = AtomSelection(tmao, natomspermol=14)
