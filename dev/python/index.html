@@ -70,9 +70,9 @@ glyc = cm.select(atoms, &quot;resname GLYC&quot;)
 # load previously computed MDDF results
 results = cm.load(&quot;./glyc50.json&quot;)
 
-# Select atoms by name
-hydroxyls = cm.list([&quot;O1&quot;,&quot;O2&quot;,&quot;O3&quot;,&quot;H1&quot;,&quot;H2&quot;,&quot;H3&quot;])
-aliphatic = cm.list([&quot;C1&quot;,&quot;C2&quot;,&quot;HA&quot;,&quot;HB&quot;,&quot;HC&quot;,&quot;HD&quot;])
+# Select GLYC subgroups by atoms by name
+hydroxyls = cm.select(glyc, &quot;name O1 O2 O3 H1 H2 H3&quot;)
+aliphatic = cm.select(glyc, &quot;name C1 C2 HA HB HC HD&quot;)
 
 # Extract the contributions of the Glycerol hydroxyls and aliphatic groups
 hydr_contributions = cm.contributions(results, cm.SolventGroup(hydroxyls))
@@ -88,19 +88,21 @@ plt.ylabel(&quot;MDDF&quot;)
 plt.savefig(&quot;group_contributions.png&quot;)
 
 #
-# Note: to select more complex groups of atoms, you can use the `select_with_vmd` function,
-# which allows you to use VMD-style selection strings. For using so, you need to have
-# VMD installed and available in your PATH, or provide it with the `vmd` keyword.
-# 
-# See: https://m3g.github.io/PDBTools.jl/stable/selections/#Using-VMD
+# Extract the contributions of specific residues in the protein
 #
-# For example, to select a specific subset or residues in the proetein, you can do:
-#
-my_selection = cm.select_with_vmd(atoms, &quot;protein and resid 2 5 7&quot;)
+my_selection = cm.select(atoms, &quot;protein and residue 2 5 7&quot;)
 residue_contributions = cm.contributions(results, cm.SoluteGroup(my_selection))
 plt.plot(results.d, results.mddf, label=&quot;Total MDDF&quot;)
 plt.plot(results.d, hydr_contributions, label=&quot;Residue contributions&quot;)
 plt.legend()
 plt.xlabel(&quot;distance / Angs&quot;)
 plt.ylabel(&quot;MDDF&quot;)
-plt.savefig(&quot;residue_contributions.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/python/group_contributions.png" alt/></p><p>Despite the low sampling, it is clear that hydroxyl groups contribute to the greter peak of the distribution, at hydrogen-bonding distances, as expected. The contributions of the aliphatic groups to the MDDF occurs at longer distances, associated to non-specific interactions. </p><div class="admonition is-info" id="Note-9fcc405d82cd0ede"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-9fcc405d82cd0ede" title="Permalink"></a></header><div class="admonition-body"><p>The syntax here diverges from the Julia-only examples by requiring the lists of names to be converted to Julia arrays, which happens by using the <code>cm.list(python_list)</code> function calls.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../parallel/">« Parallel execution</a><a class="docs-footer-nextpage" href="../quickguide/">Quick Guide »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.4 on <span class="colophon-date" title="Friday 6 June 2025 01:06">Friday 6 June 2025</span>. Using Julia version 1.10.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plt.savefig(&quot;residue_contributions.png&quot;)
+
+#
+# Note: to select more complex groups of atoms, you can use the `select_with_vmd` function,
+# which allows you to use VMD-style selection strings. For using so, you need to have
+# VMD installed and available in your PATH, or provide it with the `vmd` keyword.
+# 
+# See: https://m3g.github.io/PDBTools.jl/stable/selections/#Using-VMD
+#</code></pre></details><br><p><img src="../assets/scripts/python/group_contributions.png" alt/></p><p>Despite the low sampling, it is clear that hydroxyl groups contribute to the greter peak of the distribution, at hydrogen-bonding distances, as expected. The contributions of the aliphatic groups to the MDDF occurs at longer distances, associated to non-specific interactions. </p><div class="admonition is-info" id="Note-9fcc405d82cd0ede"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-9fcc405d82cd0ede" title="Permalink"></a></header><div class="admonition-body"><p>The syntax here diverges from the Julia-only examples by requiring the lists of names to be converted to Julia arrays, which happens by using the <code>cm.list(python_list)</code> function calls.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../parallel/">« Parallel execution</a><a class="docs-footer-nextpage" href="../quickguide/">Quick Guide »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.4 on <span class="colophon-date" title="Friday 6 June 2025 12:02">Friday 6 June 2025</span>. Using Julia version 1.10.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
