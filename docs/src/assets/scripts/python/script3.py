@@ -10,9 +10,9 @@ glyc = cm.select(atoms, "resname GLYC")
 # load previously computed MDDF results
 results = cm.load("./glyc50.json")
 
-# Select atoms by name
-hydroxyls = cm.list(["O1","O2","O3","H1","H2","H3"])
-aliphatic = cm.list(["C1","C2","HA","HB","HC","HD"])
+# Select GLYC subgroups by atoms by name
+hydroxyls = cm.select(glyc, "name O1 O2 O3 H1 H2 H3")
+aliphatic = cm.select(glyc, "name C1 C2 HA HB HC HD")
 
 # Extract the contributions of the Glycerol hydroxyls and aliphatic groups
 hydr_contributions = cm.contributions(results, cm.SolventGroup(hydroxyls))
@@ -28,15 +28,9 @@ plt.ylabel("MDDF")
 plt.savefig("group_contributions.png")
 
 #
-# Note: to select more complex groups of atoms, you can use the `select_with_vmd` function,
-# which allows you to use VMD-style selection strings. For using so, you need to have
-# VMD installed and available in your PATH, or provide it with the `vmd` keyword.
-# 
-# See: https://m3g.github.io/PDBTools.jl/stable/selections/#Using-VMD
+# Extract the contributions of specific residues in the protein
 #
-# For example, to select a specific subset or residues in the proetein, you can do:
-#
-my_selection = cm.select_with_vmd(atoms, "protein and resid 2 5 7")
+my_selection = cm.select(atoms, "protein and residue 2 5 7")
 residue_contributions = cm.contributions(results, cm.SoluteGroup(my_selection))
 plt.plot(results.d, results.mddf, label="Total MDDF")
 plt.plot(results.d, hydr_contributions, label="Residue contributions")
@@ -44,3 +38,11 @@ plt.legend()
 plt.xlabel("distance / Angs")
 plt.ylabel("MDDF")
 plt.savefig("residue_contributions.png")
+
+#
+# Note: to select more complex groups of atoms, you can use the `select_with_vmd` function,
+# which allows you to use VMD-style selection strings. For using so, you need to have
+# VMD installed and available in your PATH, or provide it with the `vmd` keyword.
+# 
+# See: https://m3g.github.io/PDBTools.jl/stable/selections/#Using-VMD
+#
