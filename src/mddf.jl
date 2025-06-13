@@ -188,7 +188,8 @@ function mddf(
     options::Options=Options();
     trajectory_format::String="",
     chemfiles::Bool=false,
-    kargs...)
+    kargs...
+)
     options.silent || println(bars)
     options.silent || println("Opening trajectory ...")
     trajectory = Trajectory(
