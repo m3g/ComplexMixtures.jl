@@ -211,18 +211,19 @@ function getnframes(st::FortranFile; show_progress)
     prog = ProgressUnknown(desc="Finding number of frames: ", enabled=show_progress)
     firstframe!(st)
     nframes = 0
-    while true
+    while true 
         try
             read(st, Float64) # pbc data
             read(st, Float32) # x
             read(st, Float32) # y
             read(st, Float32) # z
             nframes = nframes + 1
+            next!(prog)
         catch
-            firstframe!(st)
-            println()
-            return nframes
+            finish!(prog)
+            break
         end
-        next!(prog)
     end
+    firstframe!(st)
+    return nframes
 end
