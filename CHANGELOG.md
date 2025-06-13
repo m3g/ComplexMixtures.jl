@@ -13,6 +13,7 @@ ComplexMixtures.jl Changelog
 Version 2.13.2
 -------------
 - ![ENHANCEMENT][badge-enhancement] Improve progress meter of frame count in DCD files.
+- ![INFO][badge-info] set version to 2.13.2
 
 Version 2.13.1
 -------------
