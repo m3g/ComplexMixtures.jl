@@ -10,6 +10,10 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.13.2
+-------------
+- ![ENHANCEMENT][badge-enhancement] Improve progress meter of frame count in DCD files.
+
 Version 2.13.1
 -------------
 - ![INFO][badge-info] Update python script, following the new selection features of PDBTools.jl 3.1.0.
