@@ -10,6 +10,10 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.14.2
+-------------
+- ![INFO][badge-info] Remove deprecated `which_types` function.
+
 Version 2.14.1
 -------------
 - ![ENHANCEMENT][badge-enhancement] When `lastframe` is set and using `DCD` trajectory file, the initial trajectory reading will stop at `lastframe`. 
