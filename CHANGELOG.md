@@ -10,6 +10,10 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.14.0
+-------------
+- ![FEATURE][badge-feature] Support for general 1-dimensional arrays as `frame_weights`. 
+
 Version 2.13.2
 -------------
 - ![ENHANCEMENT][badge-enhancement] Improve progress meter of frame count in DCD files.

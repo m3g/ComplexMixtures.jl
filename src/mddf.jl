@@ -653,6 +653,26 @@ end
     @test sum(R_interrupt.md_count) == 0.0
     cd(current_dir)
 
+    # Different frame_weight input types
+    trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
+    R1 = mddf(trajectory_file, atom, options; trajectory_format)
+    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+    R2 = mddf(trajectory_file, atom, options; frame_weights=[0.0, 1.0], trajectory_format)
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    # Test different input types for frame_weights 
+    R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=BitVector((0, 1)), trajectory_format)
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=[false, true], trajectory_format)
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=[0 1], trajectory_format)
+    @test R1.md_count == R2.md_count
+    @test R1.rdf_count == R2.rdf_count
+    @test_throws ArgumentError mddf(trajectory_file, atom, Options(silent=true); frame_weights=[0 1; 0 1], trajectory_format)
+
     #
     # Test varying frame weights
     #
