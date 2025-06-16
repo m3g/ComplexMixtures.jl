@@ -369,17 +369,11 @@ function _mddf_final_results!(R::Result, options::Options)
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
     warned_already = false
+    R.coordination_number = cumsum(R.md_count)
+    R.coordination_number_random = cumsum(R.md_count_random)
     for ibin = 1:R.nbins
         if R.md_count_random[ibin] > 0.0
             R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
-            if ibin == 1
-                R.coordination_number[ibin] = R.md_count[ibin]
-                R.coordination_number_random[ibin] = R.md_count_random[ibin]
-            else
-                R.coordination_number[ibin] = R.coordination_number[ibin-1] + R.md_count[ibin]
-                R.coordination_number_random[ibin] =
-                    R.coordination_number_random[ibin-1] + R.md_count_random[ibin]
-            end
         else
             if !warned_already && !options.silent
                 @warn begin
