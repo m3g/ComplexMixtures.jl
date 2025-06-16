@@ -369,8 +369,8 @@ function _mddf_final_results!(R::Result, options::Options)
     # Computing the distribution functions and KB integrals, from the MDDF and from the RDF
     #
     warned_already = false
-    R.coordination_number = cumsum(R.md_count)
-    R.coordination_number_random = cumsum(R.md_count_random)
+    cumsum!(R.coordination_number, R.md_count)
+    cumsum!(R.coordination_number_random, R.md_count_random)
     for ibin = 1:R.nbins
         if R.md_count_random[ibin] > 0.0
             R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
@@ -446,16 +446,10 @@ function _coordination_number_final_results!(R::Result, options::Options)
 
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
+
     # Coordination numbers
-    for ibin = 1:R.nbins
-        if ibin == 1
-            R.coordination_number[ibin] = R.md_count[ibin]
-            R.sum_rdf_count[ibin] = R.rdf_count[ibin]
-        else
-            R.coordination_number[ibin] = R.coordination_number[ibin-1] + R.md_count[ibin]
-            R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
-        end
-    end
+    cumsum!(R.coordination_number, R.md_count)
+    cumsum!(R.sum_rdf_count, R.rdf_count)
 
     return R
 end
