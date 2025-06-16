@@ -58,7 +58,7 @@ function NamdDCD(
     show_progress::Bool=true,
 )
 
-    st = FortranFile(filename)
+    st = FortranFile(filename, "r")
 
     # Read header
     IntVec = zeros(Int, 17)
@@ -122,7 +122,7 @@ end
 #
 # Function that opens the trajectory stream
 #
-opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.filename))
+opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.filename, "r"))
 
 #
 # Function that closes the IO Stream of the trajectory
