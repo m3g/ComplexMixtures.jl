@@ -10,7 +10,7 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 2.14.2
+Version 2.14.2-DEV
 -------------
 - ![INFO][badge-info] Remove deprecated `which_types` function.
 
