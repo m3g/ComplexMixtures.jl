@@ -13,6 +13,7 @@ ComplexMixtures.jl Changelog
 Version 2.14.0
 -------------
 - ![FEATURE][badge-feature] Support for general 1-dimensional arrays as `frame_weights`. 
+- ![INFO][badge-info] set version to 2.14.0
 
 Version 2.13.2
 -------------
