@@ -123,7 +123,7 @@ function Result(
     trajectory::Trajectory,
     options::Options;
     trajectory_data::TrajectoryMetaData=TrajectoryMetaData(trajectory, options),
-    frame_weights::Vector{Float64}=Float64[]
+    frame_weights::AbstractArray{<:Real}=Float64[]
 )
 
     # Number of bins of the histogram
@@ -133,6 +133,12 @@ function Result(
     # of the of number of the last frame to be read, and the sum of the weights of the
     # frames to be considered must be greater than zero
     if !isempty(frame_weights)
+        if count(>(1), size(frame_weights)) > 1
+            throw(ArgumentError(chomp("""\n
+                The frame_weights provided must be one-dimensional, but a $(size(frame_weights))-dimensional array was given.
+
+            """)))
+        end
         if length(frame_weights) < trajectory_data.lastframe_read
             throw(ArgumentError(chomp("""\n
             The length of the frame_weights vector provided must at least the number of frames to be read.
@@ -173,7 +179,7 @@ function Result(
                 irefatom=trajectory_data.irefatom,
                 lastframe_read=trajectory_data.lastframe_read,
                 nframes_read=trajectory_data.nframes_read,
-                frame_weights=frame_weights,
+                frame_weights=[Float64(frame_weights[i]) for i in eachindex(frame_weights)],
             )
         ],
         weights=[1.0],
