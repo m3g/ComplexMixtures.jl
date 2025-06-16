@@ -194,7 +194,10 @@ function mddf(
     options.silent || println("Opening trajectory ...")
     trajectory = Trajectory(
         trajectory_file, solute, solvent; 
-        format=trajectory_format, chemfiles, show_progress=!options.silent
+        format=trajectory_format, 
+        chemfiles, 
+        show_progress=!options.silent,
+        lastframe=options.lastframe,
     )
     return mddf(trajectory, options; kargs...)
 end
@@ -211,7 +214,10 @@ function mddf(
     options.silent || println("Opening trajectory ...")
     trajectory = Trajectory(
         trajectory_file, solute_and_solvent; 
-        format=trajectory_format, chemfiles, show_progress=!options.silent
+        format=trajectory_format, 
+        chemfiles, 
+        show_progress=!options.silent,
+        lastframe=options.lastframe,
     )
     return mddf(trajectory, options; kargs...)
 end
@@ -541,7 +547,10 @@ function coordination_number(
     chemfiles::Bool=false,
     kargs...)
     _coordination_number_call_error(; kargs...)
-    trajectory = Trajectory(trajectory_file, solute, solvent; format=trajectory_format, chemfiles)
+    trajectory = Trajectory(
+        trajectory_file, solute, solvent; 
+        format=trajectory_format, chemfiles, lastframe=options.lastframe,
+    )
     return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
 
@@ -554,7 +563,10 @@ function coordination_number(
     kargs...
 )
     _coordination_number_call_error(; kargs...)
-    trajectory = Trajectory(trajectory_file, solute_and_solvent; format=trajectory_format, chemfiles)
+    trajectory = Trajectory(
+        trajectory_file, solute_and_solvent; 
+        format=trajectory_format, chemfiles, lastframe=options.lastframe,
+    )
     return mddf(trajectory, options; coordination_number_only=true, kargs...)
 end
 
@@ -678,7 +690,7 @@ end
     #
     # Read only first frame
     for low_memory in [false, true]
-        local trajectory_file
+        local trajectory_file, options, R1, R2
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, lastframe=1)
         trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)

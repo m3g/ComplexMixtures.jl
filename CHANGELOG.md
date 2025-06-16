@@ -10,6 +10,12 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.14.1
+-------------
+- ![ENHANCEMENT][badge-enhancement] When `lastframe` is set and using `DCD` trajectory file, the initial trajectory reading will stop at `lastframe`. 
+- ![BUGFIX][badge-bugfix] Fix bug in the final update of `coordination_number` when the random site count was zero (only appearing in very small trajectory tests).
+- ![INFO][badge-info] set version to 2.14.1
+
 Version 2.14.0
 -------------
 - ![FEATURE][badge-feature] Support for general 1-dimensional arrays as `frame_weights`. 

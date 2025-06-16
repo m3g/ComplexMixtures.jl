@@ -56,9 +56,10 @@ function NamdDCD(
     solvent::AtomSelection;
     T::Type=SVector{3,Float64},
     show_progress::Bool=true,
+    lastframe::Int=-1,
 )
 
-    st = FortranFile(filename)
+    st = FortranFile(filename, "r")
 
     # Read header
     IntVec = zeros(Int, 17)
@@ -85,7 +86,7 @@ function NamdDCD(
     read(st, unitcell_read)
     firstframe!(st)
 
-    nframes = getnframes(st; show_progress)
+    nframes = getnframes(st; show_progress, lastframe)
     lastatom = max(maximum(solute.indices), maximum(solvent.indices))
 
     # setup the trajectory struct that contains the stream
@@ -122,7 +123,7 @@ end
 #
 # Function that opens the trajectory stream
 #
-opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.filename))
+opentraj!(trajectory::NamdDCD) = set_stream!(trajectory, FortranFile(trajectory.filename, "r"))
 
 #
 # Function that closes the IO Stream of the trajectory
@@ -207,11 +208,11 @@ firstframe!(trajectory::NamdDCD) = firstframe!(stream(trajectory))
 # Sometimes the DCD files contains a wrong number of frames in the header, so to
 # get the actual number of frames, it is better to read it
 #
-function getnframes(st::FortranFile; show_progress)
+function getnframes(st::FortranFile; show_progress, lastframe)
     prog = ProgressUnknown(desc="Finding number of frames: ", enabled=show_progress)
     firstframe!(st)
     nframes = 0
-    while true 
+    while (lastframe < 0) || (nframes < lastframe)
         try
             read(st, Float64) # pbc data
             read(st, Float32) # x
