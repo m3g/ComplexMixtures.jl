@@ -10,10 +10,11 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 2.14.2-DEV
+Version 2.14.2
 -------------
 - ![ENHANCEMENT][badge-enhancement] Better finalizer position for DCD frame counter progress meter.
 - ![INFO][badge-info] Remove deprecated `which_types` function.
+- ![INFO][badge-info] set version to 2.14.2
 
 Version 2.14.1
 -------------
