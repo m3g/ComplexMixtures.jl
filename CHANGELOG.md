@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.14.2-DEV
 -------------
+- ![ENHANCEMENT][badge-enhancement] Better finalizer position for DCD frame counter progress meter.
 - ![INFO][badge-info] Remove deprecated `which_types` function.
 
 Version 2.14.1

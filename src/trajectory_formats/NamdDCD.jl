@@ -221,10 +221,10 @@ function getnframes(st::FortranFile; show_progress, lastframe)
             nframes = nframes + 1
             next!(prog)
         catch
-            finish!(prog)
             break
         end
     end
+    finish!(prog)
     firstframe!(st)
     return nframes
 end
