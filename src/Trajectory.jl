@@ -69,8 +69,8 @@ the cell is diagonal or not, up to a relative precision of 1e-10 by default.
 =#
 function convert_unitcell(unitcell::AbstractMatrix; tol=1e-10)
     size(unitcell) == (3, 3) || error("Unit cell must be a 3x3 matrix.")
-    s = minimum(diag(unitcell))
-    is_diag = all(unitcell[i, j] < tol * s for i in 1:3, j in 1:3 if i != j)
+    s = abs(minimum(diag(unitcell))) # minimum diagonal element
+    is_diag = all(abs(unitcell[i, j]) < tol * s for i in 1:3, j in 1:3 if i != j)
     return is_diag ? SVector{3}(diag(unitcell)) : SMatrix{3,3}(unitcell)
 end
 
