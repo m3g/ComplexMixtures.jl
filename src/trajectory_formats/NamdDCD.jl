@@ -192,7 +192,7 @@ end
 #
 function firstframe!(st::FortranFile)
     # rewind
-    rewind(st)
+    seekstart(st)
     # skip header
     read(st)
     read(st)
