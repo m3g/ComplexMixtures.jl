@@ -13,6 +13,7 @@ ComplexMixtures.jl Changelog
 Version 2.14.3-DEV
 -------------
 - ![BUGFIX][badge-bugfix] fix diagonal unitcell test for when cell is not orthorhombic and contains negative vector entries.
+- ![INFO][badge-info] Update FortranFiles dependency to 0.6.2 and use `seekstart` instead of `rewind`. 
 
 Version 2.14.2
 -------------
