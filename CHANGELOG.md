@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.14.4-DEV
 -------------
+- ![ENHANCEMENT][badge-enhancement] Read chemfiles trajectories in place.
 
 Version 2.14.3
 -------------
