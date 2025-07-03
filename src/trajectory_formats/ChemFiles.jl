@@ -25,6 +25,7 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     filename::String
     format::AbstractString
     stream::Stream{<:Chemfiles.Trajectory} # mutable such that we can close it and open it again
+    frame::Chemfiles.Frame
     nframes::Int64
 
     # Solute and solvent data
@@ -80,6 +81,7 @@ function ChemFile(
         filename, # trajectory file name 
         format, # trajectory format, is provided by the user
         stream,
+        frame,
         nframes,
         solute,
         solvent,
@@ -111,9 +113,9 @@ function nextframe!(trajectory::ChemFile{T}) where {T}
 
     st = stream(trajectory)
 
-    frame = Chemfiles.read(st)
-    positions = Chemfiles.positions(frame)
-    trajectory.unitcell .= transpose(SMatrix{3,3}(Chemfiles.matrix(Chemfiles.UnitCell(frame))))
+    Chemfiles.read!(st, trajectory.frame)
+    positions = Chemfiles.positions(trajectory.frame)
+    trajectory.unitcell .= transpose(SMatrix{3,3}(Chemfiles.matrix(Chemfiles.UnitCell(trajectory.frame))))
 
     # Save coordinates of solute and solvent in trajectory arrays (of course this could be avoided,
     # but the code in general is more clear aftwerwards by doing this)
