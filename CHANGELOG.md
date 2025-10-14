@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.14.5-DEV
 -------------
+- ![INFO][badge-info] Update publication list.
 
 Version 2.14.4
 -------------
