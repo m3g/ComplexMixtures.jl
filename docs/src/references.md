@@ -10,8 +10,16 @@ If this package was useful to you, please cite the following papers:
 
 ## Applications and examples
 
+* A. F. Pereira, L. Martínez, **Osmolyte Structural and Thermodynamic Effects Across the Protein Folding Landscape**, *JACS Au*, 2025. [[Full Text]](https://doi.org/10.1021/jacsau.5c00813). 
+
+```@raw html
+<a href="https://pubs.acs.org/toc/jpcbfk/129/27"><img style="float: right" src="../assets/2025_jpcb_capa.png" width="20%"></a>
+```
+
+* V. Piccoli, L. Martínez, **Cation Hydrophobicity Effects on Protein Solvation in Aqueous Ionic Liquids**, *J. Phys. Chem. B*, 129 (27) 6765-6776, 2025. [[Full Text]](https://pubs.acs.org/doi/10.1021/acs.jpcb.5c00779). 
+
 * F. C. Ramos, L. Martínez, **Molecular dynamics and solvation structures of the β-glucosidase from Humicola insolens (BGHI) in aqueous solutions containing glucose**
-  *Int. J. Biol. Macromol.* 2024. [[Full Text]](https://doi.org/10.1016/j.ijbiomac.2024.138210)
+  *Int. J. Biol. Macromol.* 286 (138210) 2025. [[Full Text]](https://doi.org/10.1016/j.ijbiomac.2024.138210)
 
 * V. Piccoli, L. Martínez, **Competitive Effects of Anions on Protein Solvation by Aqueous Ionic Liquids.** 
   *J. Phys. Chem. B* 128, 7792-7802, 2024. [[Full Text]](https://pubs.acs.org/doi/10.1021/acs.jpcb.4c03735)
