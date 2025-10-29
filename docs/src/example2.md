@@ -4,7 +4,7 @@ In this example we illustrate how the solvation structure of a polymer can be st
 
 ```@raw html
 <center>
-<img width=30% src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/system.png">
+<img width=30% src="../figures/poly_dmf_system.png">
 </center>
 ```
 
