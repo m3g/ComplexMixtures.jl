@@ -13,8 +13,8 @@ The structures of DMF and of the polyacrylamide segment are:
 ```@raw html
 <center>
 <table><tr>
-<td><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/simulation/dmf.png" height=100px></td>
-<td><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/simulation/polyacrylamide.png" height=100px></td>
+<td><img src="../figures/dmf.png" height=100px></td>
+<td><img src="../figures/polyacrylamide.png" height=100px></td>
 </tr>
 <tr>
 <td align=center>DMF</td>

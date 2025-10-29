@@ -11,7 +11,7 @@ The following examples consider a system composed a protein solvated by a mixtur
 
 ```@raw html
 <center>
-<img width=50% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Data/system.png">
+<img width=50% src="../figures/prot_glyc_system.png">
 </center>
 ```
 

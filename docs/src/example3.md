@@ -4,7 +4,7 @@ In this example ComplexMixtures.jl is used to study the interactions of a POPC m
 
 ```@raw html
 <center>
-<img width=50% src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/system.png">
+<img width=50% src="../figures/popc_water_ethanol_system.png">
 </center>
 ```
 

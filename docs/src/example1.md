@@ -4,7 +4,7 @@ The following examples consider a system composed a protein solvated by a mixtur
 
 ```@raw html
 <center>
-<img width=50% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Data/system.png">
+<img width=50% src="../figures/prot_glyc_system.png">
 </center>
 ```
 Image of the system of the example: a protein solvated by a mixture of glycreol (green) and water, at a concentration of 50%vv. 
@@ -155,7 +155,7 @@ Therefore, by filtering the 3D density map at each distance one can visualize ov
 
 ```@raw html
 <center>
-<img width=100% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density3D/density3D_final.png">
+<img width=100% src="../figures/density3D_final.png">
 </center>
 ```
 

@@ -5,7 +5,7 @@ This example illustrates the use of ComplexMixtures.jl to study the solution str
 The system simulated consists of 1000 water molecules (red) and 1000 glycerol molecules (purple).
 ```@raw html
 <center>
-<img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Glycerol_in_Water/system.png" width=30%>
+<img src="../figures/glyc_wat_system.png" width=30%>
 </center>
 ```
 

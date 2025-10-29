@@ -58,7 +58,7 @@ This figure illustrates one of the main features of minimum-distance distributio
 
 ```@raw html
 <center>
-<img width=60% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Polyacrylamide_in_DMF/results/mddf_groups.png">
+<img width=60% src="./figures/mddf_groups.png">
 <br>
 <b>Minimum distance distribution function and its decomposition into the chemical
 groups of the solvent (top) and solute (bottom) molecules.<br><br></b> 
@@ -69,7 +69,7 @@ Decomposition of the total MDDF into the contributions of the solute atoms (in t
 
 ```@raw html
 <center>
-<img width=70% src="https://github.com/m3g/ComplexMixturesExamples/raw/main/Protein_in_Glycerol/Density2D/density2D.png">
+<img width=70% src="./figures/density2D.png">
 <br>
 <b>Density map of a solvent in the vicinity of each protein residue.</b> 
 </center>
