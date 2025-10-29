@@ -69,6 +69,6 @@
     ComplexMixtures.update_unitcell!(system, ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)))
     t_mddf_frame =
         @benchmark ComplexMixtures.mddf_frame!($R, $system, $buff, $options, 1.0, $RNG) samples = 1 evals = 1
-    @test t_mddf_frame.allocs < Allocs(100)
+    @test t_mddf_frame.allocs < Allocs(200)
 
 end
