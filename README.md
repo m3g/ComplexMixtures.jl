@@ -38,7 +38,7 @@ provides a size and shape-independent distribution which is very natural
 to interpret in terms of molecular interactions.   
 
 <table align="center"><tr><td align=center>
-<img width=65% src="../figures/mddf_atom_contrib.png">
+<img width=65% src="https://m3g.github.io/ComplexMixtures.jl/stable/figures/mddf_atom_contrib.png">
 </td>
 </tr><td align=center><b>Minimum-distance distribution function and its decomposition into molecular groups.</b> 
 </td></tr></table>
@@ -55,7 +55,7 @@ of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
 <table align="center"><tr><td align=center>
-<img width=85% src="../figures/density2D.png">
+<img width=85% src="https://m3g.github.io/ComplexMixtures.jl/stable/figures/density2D.png">
 </td>
 </tr><td align=center><b>
 Density map of a solvent in the vicinity of each protein residue.
