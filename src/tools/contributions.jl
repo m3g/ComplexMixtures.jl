@@ -38,9 +38,9 @@ Returns the contributions of the atoms of the solute or solvent to the MDDF, coo
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> dir = ComplexMixtures.Testing.data_dir*"/Gromacs";
+julia> dir = ComplexMixtures.data_dir*"/Gromacs";
 
-julia> atoms = readPDB(dir*"/system.pdb");
+julia> atoms = read_pdb(dir*"/system.pdb");
 
 julia> protein = select(atoms, "protein");
 
@@ -219,9 +219,9 @@ end
 
 @testitem "contributions" begin
     using ComplexMixtures
+    using ComplexMixtures: data_dir
     using PDBTools
-    using ComplexMixtures.Testing: data_dir
-    atoms = readPDB("$data_dir/PDB/trajectory.pdb", "model 1")
+    atoms = read_pdb("$data_dir/PDB/trajectory.pdb", "model 1")
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
     solute = AtomSelection(
@@ -291,11 +291,11 @@ end
 @testitem "custom group contributions" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load,
         SoluteGroup, SolventGroup, contributions
-    using PDBTools: readPDB, select, Select, iswater, chain, resnum
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select, Select, iswater, chain, resnum
 
     dir = "$data_dir/NAMD"
-    atoms = readPDB("$dir/structure.pdb")
+    atoms = read_pdb("$dir/structure.pdb")
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     #
@@ -404,12 +404,12 @@ end
 @testitem "shuffled indices custom group contributions" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load,
         SoluteGroup, SolventGroup, contributions
-    using PDBTools: readPDB, select, Select, iswater, chain, resnum
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select, Select, iswater, chain, resnum
     import Random: shuffle!
 
     dir = "$data_dir/NAMD"
-    atoms = readPDB("$dir/structure.pdb")
+    atoms = read_pdb("$dir/structure.pdb")
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     #

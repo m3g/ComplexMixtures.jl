@@ -114,26 +114,26 @@ end
 
 @testitem "Trajectory" begin
     using ComplexMixtures
-    using ComplexMixtures.Testing
+    using ComplexMixtures: pdb_file_example, data_dir
     using PDBTools
     using StaticArrays
 
-    atoms = readPDB(Testing.pdbfile)
+    atoms = read_pdb(pdb_file_example)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
     # Throw if trajectory type is not available
-    @test_throws ArgumentError Trajectory("$(Testing.data_dir)/PDB/trajectory.pdb", protein, tmao; format="XXX")
+    @test_throws ArgumentError Trajectory("$data_dir/PDB/trajectory.pdb", protein, tmao; format="XXX")
 
     # NAMD DCD file
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
     @test traj.nframes == 20
     @test traj.lastatom == 4012
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
 
     # PDB file
     traj = Trajectory(
-        "$(Testing.data_dir)/PDB/trajectory.pdb",
+        "$data_dir/PDB/trajectory.pdb",
         protein,
         tmao,
         format="PDBTraj",
@@ -142,12 +142,12 @@ end
     @test ComplexMixtures.natoms(traj.solvent) == 2534
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.47962951660156, 84.47962951660156, 84.47962951660156)
     # Test determining format from file extension
-    traj = Trajectory("$(Testing.data_dir)/PDB/trajectory.pdb", protein, tmao)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", protein, tmao)
     @test ComplexMixtures.natoms(traj.solute) == 1463
 
     # Chemfiles with NAMD
     traj = Trajectory(
-        "$(Testing.data_dir)/NAMD/trajectory.dcd",
+        "$data_dir/NAMD/trajectory.dcd",
         protein,
         tmao,
         chemfiles=true,
@@ -158,10 +158,10 @@ end
     @test ComplexMixtures.natoms(traj.solvent) == 2534
 
     # Chemfiles with Gromacs
-    atoms = readPDB("$(Testing.data_dir)/Gromacs/system.pdb")
+    atoms = read_pdb("$data_dir/Gromacs/system.pdb")
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol=20)
-    traj = Trajectory("$(Testing.data_dir)/Gromacs/trajectory.xtc", protein, emi)
+    traj = Trajectory("$data_dir/Gromacs/trajectory.xtc", protein, emi)
     @test traj.nframes == 26
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
     @test ComplexMixtures.natoms(traj.solute) == 1231
@@ -248,12 +248,12 @@ end
 
 @testitem "TrajectoryMetaData" begin
     using ComplexMixtures
-    using ComplexMixtures.Testing
+    using ComplexMixtures: pdb_file_example, data_dir
     using PDBTools
-    atoms = readPDB(Testing.pdbfile)
+    atoms = read_pdb(pdb_file_example)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
 
     options = Options()
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)

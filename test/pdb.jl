@@ -1,13 +1,13 @@
 
 @testitem "PDB" begin
     using ComplexMixtures: AtomSelection, Options, mddf, Trajectory, load
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select
     #
     # Tests with trajectory given in a PDB file
     #
     dir = "$data_dir/PDB"
-    atoms = readPDB("$dir/trajectory.pdb", "model 1")
+    atoms = read_pdb("$dir/trajectory.pdb", "model 1")
     options = Options(stride=1, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     # Example 1: protein-tmao

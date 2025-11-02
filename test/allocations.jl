@@ -1,13 +1,13 @@
 
 @testitem "Allocations" setup=[AllocTest] begin
-    using PDBTools
     using ComplexMixtures
-    using ComplexMixtures.Testing
+    using ComplexMixtures: data_dir
+    using PDBTools
     using BenchmarkTools
     using .AllocTest: Allocs
 
-    dir = "$(Testing.data_dir)/NAMD"
-    atoms = readPDB("$dir/structure.pdb")
+    dir = "$data_dir/NAMD"
+    atoms = read_pdb("$dir/structure.pdb")
     options = Options(
         lastframe=1,
         nthreads=1,

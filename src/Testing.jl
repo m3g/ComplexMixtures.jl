@@ -1,11 +1,4 @@
-#
-# Module that provides some global functions for testing
-#
-module Testing
-
 const src_dir = @__DIR__
-const test_dir = normpath("$src_dir/../test")
+const test_dir = joinpath(src_dir,"../test")
 const data_dir = normpath("$test_dir/data")
-const pdbfile = normpath("$data_dir/NAMD/structure.pdb")
-
-end # module Testing
+const pdb_file_example = normpath("$data_dir/NAMD/structure.pdb")

@@ -36,8 +36,8 @@ export contributions
 export gr
 export grid3D
 
-# Module for testing
-include("./Testing.jl")
+# Testing data
+include("./testing.jl")
 
 # Input and Output data structures
 include("./io.jl")

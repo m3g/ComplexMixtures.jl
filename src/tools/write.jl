@@ -206,11 +206,11 @@ Base.write(
 ) = write(filename, R; solute_group_names, solvent_group_names)
 
 @testitem "write" begin
-    using DelimitedFiles
     using ComplexMixtures
+    using ComplexMixtures: data_dir
+    using DelimitedFiles
     using PDBTools
-    using ComplexMixtures.Testing: data_dir
-    atoms = readPDB("$data_dir/NAMD/structure.pdb")
+    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
     # Using or not bulk-range
     options1 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, bulk_range=(8.0, 10.0))
     options2 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, dbulk=8.0, usecutoff=false)

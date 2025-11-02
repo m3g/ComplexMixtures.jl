@@ -35,9 +35,9 @@ gr(R::Result) = gr(R.d, R.rdf_count, R.density.solvent_bulk, R.files[1].options.
 
 @testitem "Radial distribution" begin
     using ComplexMixtures: gr, mddf, Trajectory, Options, AtomSelection
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
-    atoms = readPDB("$data_dir/NAMD/structure.pdb")
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select
+    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
     options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
     OH2 = AtomSelection(select(atoms, "water and name OH2"), natomspermol=1)
     traj = Trajectory("$data_dir/Gromacs/trajectory.xtc", OH2)

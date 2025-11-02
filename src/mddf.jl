@@ -28,12 +28,12 @@ end
 @testitem "Buffer" begin
     using ComplexMixtures
     using PDBTools
-    using ComplexMixtures.Testing
-    atoms = readPDB(Testing.pdbfile)
+    using ComplexMixtures: pdb_file_example, data_dir
+    atoms = read_pdb(pdb_file_example)
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
     R = Result(traj, options)
     b0 = ComplexMixtures.Buffer(
         solute_read=similar(traj.x_solute),
@@ -163,9 +163,9 @@ The `options` parameter is optional. If not set, the default `Options()` structu
 ```julia-repl
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures.Testing: data_dir
+julia> using ComplexMixtures: data_dir
 
-julia> atoms = readPDB(joinpath(data_dir,"NAMD/structure.pdb"));
+julia> atoms = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
 
 julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
@@ -523,9 +523,9 @@ The `options` parameter is optional. If not set, the default `Options()` structu
 ```julia-repl
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures.Testing: data_dir
+julia> using ComplexMixtures: data_dir
 
-julia> atoms = readPDB(joinpath(data_dir,"NAMD/structure.pdb"));
+julia> atoms = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
 
 julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
@@ -589,11 +589,11 @@ end
 
 @testitem "mddf - toy system" begin
     using ComplexMixtures
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
+    using PDBTools: read_pdb, select
+    using ComplexMixtures: data_dir
 
     # Test simple three-molecule system: cross correlation
-    atoms = readPDB("$data_dir/toy/cross.pdb")
+    atoms = read_pdb("$data_dir/toy/cross.pdb")
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     trajectory_file = "$data_dir/toy/cross.pdb"
@@ -630,7 +630,7 @@ end
     @test_throws ArgumentError mddf(trajectory_file, protein, water, Options(); frame_weights=[1.0], trajectory_format)
 
     # Self correlation
-    atoms = readPDB("$data_dir/toy/self_monoatomic.pdb")
+    atoms = read_pdb("$data_dir/toy/self_monoatomic.pdb")
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
     trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
     trajectory_format = "PDBTraj"
@@ -762,9 +762,9 @@ end
 
 @testitem "mddf - available methods" begin
     using ComplexMixtures
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
-    atoms = readPDB("$data_dir/toy/cross.pdb")
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select
+    atoms = read_pdb("$data_dir/toy/cross.pdb")
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     trajectory_file = "$data_dir/toy/cross.pdb"
@@ -791,10 +791,10 @@ end
 
 @testitem "mddf - real system" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir, pdbfile
+    using ComplexMixtures: data_dir, pdb_file_example
+    using PDBTools: read_pdb, select
 
-    atoms = readPDB(pdbfile)
+    atoms = read_pdb(pdb_file_example)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     trajectory_file = "$data_dir/NAMD/trajectory.dcd"

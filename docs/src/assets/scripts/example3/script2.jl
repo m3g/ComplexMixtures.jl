@@ -20,7 +20,7 @@ scalefontsizes();
 scalefontsizes(1.3);
 
 # Read system PDB file
-system = readPDB("equilibrated.pdb")
+system = read_pdb("equilibrated.pdb")
 ethanol = select(system, "resname ETOH")
 
 # Load the pre-calculated MDDF of ethanol

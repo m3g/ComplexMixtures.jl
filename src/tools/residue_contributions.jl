@@ -43,9 +43,9 @@ A ResidueContributions object can be saved to a JSON file using the `save` funct
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures.Testing: data_dir; ComplexMixtures._testing_show_method[] = true; # testing mode
+julia> using ComplexMixtures: data_dir; ComplexMixtures._testing_show_method[] = true; # testing mode
 
-julia> atoms = readPDB(data_dir*"/NAMD/Protein_in_Glycerol/system.pdb");
+julia> atoms = read_pdb(data_dir*"/NAMD/Protein_in_Glycerol/system.pdb");
 
 julia> results = load(data_dir*"/NAMD/Protein_in_Glycerol/protein_glyc.json");
 
@@ -529,10 +529,10 @@ end
 
 @testitem "ResidueContribution" begin
     using ComplexMixtures
+    using ComplexMixtures: data_dir, pdb_file_example
     using PDBTools
-    using ComplexMixtures.Testing: data_dir, pdbfile
 
-    atoms = readPDB(pdbfile)
+    atoms = read_pdb(pdb_file_example)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, water)
