@@ -420,7 +420,7 @@ end
     renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
 
 Renormalizes the Result structure `R` to a different bulk density of the solvent.
-The `unit` argument can be either "mol/L" or "sites/Angs3" (default is "mol/L").
+The `unit` argument can be either `"mol/L"` or `"sites/Angs3"` (default is `"mol/L"`).
 
 This function does not modify the input Result structure, but returns a new one.
 
