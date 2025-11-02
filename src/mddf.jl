@@ -368,7 +368,7 @@ function mddf_frame!(
     # Sum up the volume of this frame
     update_volume!(r_chunk, system, frame_weight)
 
-    # Random set of solute molecules to use as reference for the ideal gas distributions
+    # Random set of *solute* molecules to use as references for the ideal gas distributions
     for i in eachindex(buff.ref_solutes)
         buff.ref_solutes[i] = rand(RNG, 1:r_chunk.solute.nmols)
     end
@@ -395,7 +395,8 @@ function mddf_frame!(
         # at this point with acceptable memory requirements
         update_counters!(r_chunk, system, frame_weight)
 
-        # If this molecule was chosen as a reference molecule for the ideal gas distribution, compute it
+        # If this molecule was chosen as a reference molecule for the ideal gas distribution, compute
+        # the random distribution around this molecule. 
         # (as many times as needed, as the reference molecules may be repeated - particularly because
         # there may be only one solute molecule, in which case all distributions will be created for
         # the same solute molecule).
