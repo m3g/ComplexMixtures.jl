@@ -26,6 +26,7 @@ export mddf
 export overview
 export save, load, write, merge
 export atom_group, atom_group_name, atom_group_names
+export renormalize
 
 # Tools
 import MolSimToolkitShared: coordination_number

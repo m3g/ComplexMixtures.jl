@@ -363,10 +363,10 @@ function _mddf_final_results!(R::Result, options::Options)
     # distribution, because we have to take into consieration the available volume which is
     # occupied by the solute
     density_fix = R.density.solvent_bulk / R.density.solvent
-    return renormalize!(R, options, density_fix)
+    return renormalize!(R, density_fix; silent=options.silent)
 end
 
-function renormalize!(R::Result, options::Options, density_fix::Real)
+function renormalize!(R::Result, density_fix::Number; silent)
     R.md_count_random .= density_fix * R.md_count_random
     R.rdf_count_random .= density_fix * R.rdf_count_random
 
@@ -379,7 +379,7 @@ function renormalize!(R::Result, options::Options, density_fix::Real)
         if R.md_count_random[ibin] > 0.0
             R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
         else
-            if !warned_already && !options.silent
+            if !warned_already && !silent
                 @warn begin
                     """\n
                         Ideal-gas histogram bins with zero samples. 
@@ -414,6 +414,44 @@ function renormalize!(R::Result, options::Options, density_fix::Real)
 
     end
     return R
+end
+
+"""
+    renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
+
+Renormalizes the Result structure `R` to a different bulk density of the solvent.
+The `unit` argument can be either "mol/L" or "sites/Angs3" (default is "mol/L").
+
+This function does not modify the input Result structure, but returns a new one.
+
+The utility of this function lies in situations where the bulk density cannot be 
+estimated from the simulation. For example, in simulations of zeolites, MOFs, etc,
+where the solvent is confined within a porous material and there's no bulk region.
+
+Typically, one would compute the MDDF and renormalize the distribution using the 
+density of the solvent in the simulation box, or the density of pure solvent.
+
+The `silent` keyword argument controls whether warnings are printed associated to
+bins with zero samples in the ideal-gas histogram.
+
+"""
+function renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
+    if unit == "mol/L"
+        bulk_density = bulk_density / units.SitesperAngs3tomolperL  
+    elseif unit == "sites/Angs3" 
+    else
+        throw(ArgumentError("""\n
+            Concentration unit must be "mol/L" or "sites/Angs3".
+
+        """))
+    end
+    R_new = deepcopy(R) # better define a custom copy function
+    density_fix = bulk_density / r.density.solvent_bulk 
+    return renormalize!(R_new, density_fix; silent)
+end
+
+@testitem "renormalize" begin
+
 end
 
 function _coordination_number_final_results!(R::Result, options::Options)
