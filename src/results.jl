@@ -363,6 +363,10 @@ function _mddf_final_results!(R::Result, options::Options)
     # distribution, because we have to take into consieration the available volume which is
     # occupied by the solute
     density_fix = R.density.solvent_bulk / R.density.solvent
+    return renormalize!(R, options, density_fix)
+end
+
+function renormalize!(R::Result, options::Options, density_fix::Real)
     R.md_count_random .= density_fix * R.md_count_random
     R.rdf_count_random .= density_fix * R.rdf_count_random
 
@@ -409,7 +413,6 @@ function _mddf_final_results!(R::Result, options::Options)
             (R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
     end
-
     return R
 end
 
