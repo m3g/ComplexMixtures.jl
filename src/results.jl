@@ -446,16 +446,38 @@ function renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; sile
         bulk_density = bulk_density / units.SitesperAngs3tomolperL  
     end
     R_new = deepcopy(R) # better define a custom copy function
-    density_fix = bulk_density / r.density.solvent_bulk 
+    density_fix = bulk_density / R.density.solvent_bulk 
     return renormalize!(R_new, density_fix; silent)
 end
 
 @testitem "renormalize" begin
     using ComplexMixtures 
-    using ComplexMixtures: test_dir
-    #R = load(joinpath(test_dir,"NAMD/protein_tmao.json"))
+    using ComplexMixtures: data_dir, units
+    R = load(joinpath(data_dir,"NAMD/protein_tmao.json"))
+    @test R.density.solvent != R.density.solvent_bulk
+    new_density = 2 * R.density.solvent_bulk * units.SitesperAngs3tomolperL
+    R_new = renormalize(R, new_density)
+    @test R_new.mddf ≈ 0.5 * R.mddf
+    @test R_new.rdf ≈ 0.5 * R.rdf
+    @test R_new.kb ≈ 
+        units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
+        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb) .- R.coordination_number_random)
+    @test R_new.kb_rdf ≈ 
+        units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
+        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_rdf) .- R.sum_rdf_count_random)
 
+    new_density = 2 * R.density.solvent_bulk
+    R_new = renormalize(R, new_density, "sites/Angs3")
+    @test R_new.mddf ≈ 0.5 * R.mddf
+    @test R_new.rdf ≈ 0.5 * R.rdf
+    @test R_new.kb ≈ 
+        units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
+        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb) .- R.coordination_number_random)
+    @test R_new.kb_rdf ≈ 
+        units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
+        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_rdf) .- R.sum_rdf_count_random)
 
+    @test_throws ArgumentError renormalize(R, new_density, "wrong_units") 
 end
 
 function _coordination_number_final_results!(R::Result, options::Options)
