@@ -114,3 +114,16 @@ julia> overview = overview(results);
 julia> overview.solute_molar_volume
 657.5051512801567
 ```
+
+## [Renormalization of bulk density](@id renormalize)
+
+The `renormalize` function allows to renormalize the Result structure to a different bulk density of the solvent. This is useful in cases where the bulk density cannot be estimated from the simulation, for example in simulations of zeolites, MOFs, etc, where the solvent is confined within a porous material and there's no bulk region.
+
+```@docs
+renormalize
+```
+
+In these situations the computation of KB integrals, apparent molar volumes, and preferential interactions might not be meaningful, but the MDDF and RDF can still provide useful information about the local structure of the solvent around the solute.
+
+
+

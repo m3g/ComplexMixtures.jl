@@ -12,7 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.15.0-DEV
 -------------
-- ![FEATURE][badge-feature] Provide tools to compute the normalization with different bulk densities, as using the bulk density as the total simulation density, or a custom density.
+- ![FEATURE][badge-feature] Implement the `renormalize` function to compute the normalization with different bulk densities, as using the bulk density as the total simulation density, or a custom density.
 - ![INFO][badge-info] Update publication list.
 
 Version 2.14.4
