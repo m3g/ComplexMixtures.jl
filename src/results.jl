@@ -424,12 +424,22 @@ The `unit` argument can be either `"mol/L"` or `"sites/Angs3"` (default is `"mol
 
 This function does not modify the input Result structure, but returns a new one.
 
-The utility of this function lies in situations where the bulk density cannot be 
-estimated from the simulation. For example, in simulations of zeolites, MOFs, etc,
-where the solvent is confined within a porous material and there's no bulk region.
+# Example
 
-Typically, one would compute the MDDF and renormalize the distribution using the 
-density of the solvent in the simulation box, or the density of pure solvent.
+In the following example we multiply the density of the bulk solvent by 2, causing
+the decrease of the MDDF by a factor of 2. The KB integrals will be also updated 
+accordingly.
+
+```jldoctest
+julia> using ComplexMixtures
+
+julia> R = load(ComplexMixtures.data_dir*"/NAMD/protein_tmao.json");
+
+julia> R_new = renormalize(R, 2*R.density.solvent_bulk, "sites/Angs3");
+
+julia> R_new.mddf ≈ 0.5 * R.mddf
+true
+```
 
 The `silent` keyword argument controls whether warnings are printed associated to
 bins with zero samples in the ideal-gas histogram.
