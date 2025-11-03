@@ -4,7 +4,7 @@ using PDBTools
 using ComplexMixtures
 
 # PDB file of the system simulated
-atoms = readPDB("./system.pdb")
+atoms = read_pdb("./system.pdb")
 
 # Load results of a ComplexMixtures run
 results = load("./glyc50_results.json")

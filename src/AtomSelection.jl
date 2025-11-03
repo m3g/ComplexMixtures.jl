@@ -213,9 +213,9 @@ stored.
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> pdbfile = ComplexMixtures.Testing.pdbfile;
+julia> pdbfile = ComplexMixtures.pdb_file_example;
 
-julia> atoms = PDBTools.readPDB(pdbfile, "resname TMAO");
+julia> atoms = PDBTools.read_pdb(pdbfile, "resname TMAO");
 
 julia> atsel = AtomSelection(atoms, natomspermol=14)
 AtomSelection 
@@ -375,8 +375,8 @@ end
     using PDBTools
     using ComplexMixtures
     import Random: shuffle!
-    pdbfile = ComplexMixtures.Testing.pdbfile
-    atoms = readPDB(pdbfile, "protein and residue 2")
+    pdbfile = ComplexMixtures.pdb_file_example
+    atoms = read_pdb(pdbfile, "protein and residue 2")
     indices = index.(atoms)
     s = AtomSelection(indices, nmols=1, natomspermol=11)
     @test s.indices == [12 + i for i = 1:11]
@@ -394,7 +394,7 @@ end
     @test ComplexMixtures.natoms(s) == s.nmols * s.natomspermol
 
     # Test shuffled indices in the custom group
-    atoms = readPDB(pdbfile, "protein")
+    atoms = read_pdb(pdbfile, "protein")
     indices = index.(atoms)
     s1 = AtomSelection(indices, nmols=1, group_atom_indices=[findall(sel"resname ARG", atoms)])
     s2 = AtomSelection(indices, nmols=1, group_atom_indices=[shuffle!(findall(sel"resname ARG", atoms))])
@@ -405,7 +405,7 @@ end
 @testitem "AtomSelection - argument errors" begin
     import ComplexMixtures
     #using ComplexMixtures: AtomSelection
-    using PDBTools: select, readPDB, Select
+    using PDBTools: select, read_pdb, Select
     @test_throws ArgumentError AtomSelection([1, 2, 3])
     @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=2)
     @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=1, nmols=2)
@@ -423,7 +423,7 @@ end
     @test_logs (:warn,) AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[1, 2], [3]])
     @test_logs (:warn,) AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[2, 1], [3]], group_names=["A", "B"])
 
-    pdb = readPDB(ComplexMixtures.Testing.pdbfile)
+    pdb = read_pdb(ComplexMixtures.pdb_file_example)
     @test_throws ArgumentError AtomSelection(
         select(pdb, "protein and name CA"),
         nmols=1,
@@ -465,8 +465,8 @@ end
     using ComplexMixtures
     using PDBTools
     import Random: shuffle!
-    pdbfile = ComplexMixtures.Testing.pdbfile
-    atoms = PDBTools.readPDB(pdbfile, "protein and residue 2")
+    pdbfile = ComplexMixtures.pdb_file_example
+    atoms = PDBTools.read_pdb(pdbfile, "protein and residue 2")
     s = AtomSelection(atoms, nmols=1, natomspermol=11)
     @test s.indices == [12 + i for i = 1:11]
     @test s.custom_groups == false
@@ -517,7 +517,7 @@ See the `contributions` help entry for additional information.
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> atoms = PDBTools.readPDB(ComplexMixtures.Testing.pdbfile, "protein"); 
+julia> atoms = PDBTools.read_pdb(ComplexMixtures.pdb_file_example, "protein"); 
 
 julia> SoluteGroup(select(atoms, "protein and resname ASP")) # vector of PDBTools.Atom(s)
 SoluteGroup defined by:
@@ -634,9 +634,9 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
 
 @testitem "SoluteGroup and SolventGroup" begin
     using ComplexMixtures
-    using PDBTools: readPDB, select, name, eachresidue
-    using ComplexMixtures.Testing: pdbfile
-    pdb = readPDB(pdbfile)
+    using PDBTools: read_pdb, select, name, eachresidue
+    using ComplexMixtures: pdb_file_example
+    pdb = read_pdb(pdb_file_example)
     @test fieldnames(SoluteGroup) == fieldnames(SolventGroup)
 
     sg = SoluteGroup(select(pdb, "protein and residue 2"))

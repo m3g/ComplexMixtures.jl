@@ -26,6 +26,7 @@ export mddf
 export overview
 export save, load, write, merge
 export atom_group, atom_group_name, atom_group_names
+export renormalize
 
 # Tools
 import MolSimToolkitShared: coordination_number
@@ -35,8 +36,11 @@ export contributions
 export gr
 export grid3D
 
-# Module for testing
-include("./Testing.jl")
+# Testing data
+const src_dir = @__DIR__
+const test_dir = joinpath(src_dir,"../test")
+const data_dir = normpath("$test_dir/data")
+const pdb_file_example = normpath("$data_dir/NAMD/structure.pdb")
 
 # Input and Output data structures
 include("./io.jl")
@@ -81,6 +85,7 @@ include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 include("./tools/write.jl")
+include("./tools/renormalize.jl")
 
 # Precompilation directives
 include("precompile.jl")

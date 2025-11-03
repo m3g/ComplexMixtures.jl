@@ -17,7 +17,7 @@ using LaTeXStrings
 # The example output file is available at:
 # 
 # Load PDB file of the system
-atoms = readPDB("./system.pdb")
+atoms = read_pdb("./system.pdb")
 
 # Select the protein and the GLYC molecules
 protein = select(atoms, "protein")

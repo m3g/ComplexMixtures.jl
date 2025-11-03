@@ -19,7 +19,7 @@ groups = (
     "CH_{3R}" => ["CL", "HL1", "HL2", "HL3"], # right-terminal methyles
 )
 
-system = readPDB("./equilibrated.pdb")
+system = read_pdb("./equilibrated.pdb")
 acr = select(system, "resname FACR or resname ACR or resname LACR")
 results = load("./mddf.json")
 

@@ -8,7 +8,7 @@ using LaTeXStrings
 using EasyFit: movavg
 
 # Load a PDB file of the system
-system = readPDB("./equilibrated.pdb")
+system = read_pdb("./equilibrated.pdb")
 
 # Select the atoms corresponding to glycerol and water (using PDBTools)
 glyc = select(system, "resname GLLM")

@@ -12,7 +12,7 @@ using EasyFit: movavg
 trajectory_file = "./traj_POPC.dcd"
 
 # Load a PDB file of the system
-system = readPDB("./equilibrated.pdb")
+system = read_pdb("./equilibrated.pdb")
 
 # Select the atoms corresponding to glycerol and water
 popc = select(system, "resname POPC")

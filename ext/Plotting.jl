@@ -44,7 +44,7 @@ julia> using ComplexMixtures, Plots, PDBTools
 
 julia> results = load("mddf.json")
 
-julia> atoms = readPDB("system.pdb", "protein")
+julia> atoms = read_pdb("system.pdb", "protein")
 
 julia> rc = ResidueContributions(results, atoms; oneletter=true)
 
@@ -164,12 +164,12 @@ end
 
 @testitem "contourf" begin
     using ComplexMixtures
-    using ComplexMixtures.Testing
+    using ComplexMixtures: data_dir
     using Plots
     using PDBTools
     # Load example output file (computed in the previous script)
-    protein = readPDB(joinpath(Testing.data_dir, "Gromacs/system.pdb"), "protein")
-    results = load(joinpath(Testing.data_dir, "Gromacs/protein_EMI.json"))
+    protein = read_pdb(joinpath(data_dir, "Gromacs/system.pdb"), "protein")
+    results = load(joinpath(data_dir, "Gromacs/protein_EMI.json"))
     tmpplot = tempname() * ".png"
 
     # Add some strange residue names to the protein

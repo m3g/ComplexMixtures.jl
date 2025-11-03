@@ -2,7 +2,7 @@ using ComplexMixtures, PDBTools
 const CM = ComplexMixtures
 
 dir = "$(@__DIR__ )/data/NAMD"
-atoms = readPDB("$dir/structure.pdb")
+atoms = read_pdb("$dir/structure.pdb")
 protein = AtomSelection(select(atoms, "protein"), nmols=1)
 tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 water = AtomSelection(select(atoms, "water"), natomspermol=3)

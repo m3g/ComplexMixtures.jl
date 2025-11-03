@@ -1,15 +1,15 @@
 
 @testitem "NAMD with ChemFiles" begin
     using ComplexMixtures
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select
 
     #
     # Tests with NAMD-DCD trajectory
     #
 
     dir = "$data_dir/NAMD"
-    atoms = readPDB("$dir/structure.pdb")
+    atoms = read_pdb("$dir/structure.pdb")
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, bulk_range=(8.0, 10.0))
 
     # Example 1: protein-tmao

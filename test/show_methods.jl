@@ -1,12 +1,11 @@
 @testitem "show methods" begin
-
     using ShowMethodTesting
     using ComplexMixtures
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select
 
     # Test simple three-molecule system: cross correlation
-    atoms = readPDB("$data_dir/toy/cross.pdb")
+    atoms = read_pdb("$data_dir/toy/cross.pdb")
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     trajectory_file = "$data_dir/toy/cross.pdb"

@@ -166,15 +166,15 @@ end
 
 @testitem "getunitcell" begin
     using ComplexMixtures
-    using ComplexMixtures.Testing
+    using ComplexMixtures: pdb_file_example, data_dir
     using PDBTools
     using StaticArrays
 
-    atoms = readPDB(Testing.pdbfile)
+    atoms = read_pdb(pdb_file_example)
     options = Options(stride=4, seed=321, StableRNG=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
     ComplexMixtures.opentraj!(traj)
     ComplexMixtures.firstframe!(traj)
     ComplexMixtures.nextframe!(traj)

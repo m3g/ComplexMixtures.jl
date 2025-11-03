@@ -25,7 +25,7 @@ function from the `PDBTools` package.
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures.Testing: data_dir
+julia> using ComplexMixtures: data_dir
 
 julia> ats = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
 
@@ -68,7 +68,7 @@ If group contributions were precomputed, the name of the group can be used to co
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures.Testing: data_dir
+julia> using ComplexMixtures: data_dir
 
 julia> ats = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
 
@@ -107,11 +107,11 @@ coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contrib
 
 @testitem "coordination_number" begin
     using ComplexMixtures: coordination_number, contributions, mddf, Trajectory, Options, AtomSelection, load
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
+    using PDBTools: read_pdb, select
+    using ComplexMixtures: data_dir
 
     dir = "$data_dir/NAMD"
-    atoms = readPDB("$dir/structure.pdb")
+    atoms = read_pdb("$dir/structure.pdb")
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     options = Options(lastframe=1, seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=200)

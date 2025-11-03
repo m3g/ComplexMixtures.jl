@@ -30,7 +30,7 @@ The output PDB has the following characteristics:
 ```julia-repl
 julia> using ComplexMixtures, PDBTools
 
-julia> atoms = readPDB("./system.pdb");
+julia> atoms = read_pdb("./system.pdb");
 
 julia> R = ComplexMixtures.load("./results.json");
 
@@ -150,9 +150,9 @@ end
 @testitem "grid3D" begin
     using PDBTools
     using ComplexMixtures
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
     dir = "$data_dir/NAMD"
-    atoms = readPDB("$dir/structure.pdb")
+    atoms = read_pdb("$dir/structure.pdb")
 
     # Test argument error: no custom groups can be defined
     protein = AtomSelection(select(atoms, "protein"); group_atom_indices=[findall(sel"resname ARG", atoms)], nmols=1)
@@ -190,7 +190,7 @@ end
     @test all(at -> occup(at) < 2.0, c05)
 
     # Test if the file was properly written
-    grid_read = readPDB(grid_file)
+    grid_read = read_pdb(grid_file)
     for property in [:name, :resname, :chain, :resnum]
         @test all(p -> getproperty(first(p), property) == getproperty(last(p), property), zip(grid, grid_read))
     end

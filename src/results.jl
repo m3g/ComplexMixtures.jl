@@ -188,9 +188,9 @@ end
 
 @testitem "input: argument errors" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
-    using ComplexMixtures.Testing: data_dir
-    using PDBTools: readPDB, select
-    atoms = readPDB("$data_dir/NAMD/structure.pdb")
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select
+    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
     trajectory = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao, water)
@@ -363,6 +363,10 @@ function _mddf_final_results!(R::Result, options::Options)
     # distribution, because we have to take into consieration the available volume which is
     # occupied by the solute
     density_fix = R.density.solvent_bulk / R.density.solvent
+    return renormalize!(R, density_fix; silent=options.silent)
+end
+
+function renormalize!(R::Result, density_fix::Number; silent)
     R.md_count_random .= density_fix * R.md_count_random
     R.rdf_count_random .= density_fix * R.rdf_count_random
 
@@ -375,7 +379,7 @@ function _mddf_final_results!(R::Result, options::Options)
         if R.md_count_random[ibin] > 0.0
             R.mddf[ibin] = R.md_count[ibin] / R.md_count_random[ibin]
         else
-            if !warned_already && !options.silent
+            if !warned_already && !silent
                 @warn begin
                     """\n
                         Ideal-gas histogram bins with zero samples. 
@@ -409,7 +413,6 @@ function _mddf_final_results!(R::Result, options::Options)
             (R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
     end
-
     return R
 end
 
@@ -588,11 +591,11 @@ end
 
 @testitem "merge" begin
     using ComplexMixtures: mddf, merge
-    using PDBTools: readPDB, select, selindex
-    using ComplexMixtures.Testing: data_dir
+    using PDBTools: read_pdb, select, selindex
+    using ComplexMixtures: data_dir
 
     # Test simple three-molecule system
-    atoms = readPDB("$data_dir/toy/cross.pdb")
+    atoms = read_pdb("$data_dir/toy/cross.pdb")
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
     traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
@@ -676,9 +679,9 @@ end
 
 @testitem "Result - empty" begin
     #using ComplexMixtures: Result, Trajectory, Options, AtomSelection
-    using ComplexMixtures.Testing: data_dir, pdbfile
-    using PDBTools: readPDB, select, name
-    atoms = readPDB(pdbfile)
+    using ComplexMixtures: data_dir, pdb_file_example
+    using PDBTools: read_pdb, select, name
+    atoms = read_pdb(pdb_file_example)
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
     solute = AtomSelection(protein, nmols=1)
@@ -792,7 +795,7 @@ load(filename::String) = load(filename, Result)
 
 @testitem "Result - load/save" begin
     using ComplexMixtures: load
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
     r1 = load("$data_dir/NAMD/protein_tmao.json")
     tmp = tempname()
     save(r1, tmp)

@@ -187,18 +187,18 @@ end
 
 @testitem "build ParticleSystem" begin
     using ComplexMixtures
+    using ComplexMixtures: pdb_file_example, data_dir
     using PDBTools
-    using ComplexMixtures.Testing
     using StaticArrays
     import CellListMap
 
-    atoms = readPDB(Testing.pdbfile)
+    atoms = read_pdb(pdb_file_example)
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
     # Cross-correlation
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
     system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0
@@ -214,7 +214,7 @@ end
     )
 
     # Auto-correlation
-    traj = Trajectory("$(Testing.data_dir)/NAMD/trajectory.dcd", tmao)
+    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
     system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0

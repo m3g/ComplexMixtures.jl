@@ -1,13 +1,13 @@
 @testitem "Gromacs" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
-    using PDBTools: readPDB, select
-    using ComplexMixtures.Testing: data_dir
+    using ComplexMixtures: data_dir
+    using PDBTools: read_pdb, select
 
     #
     # Tests with Gromacs-XSC trajectory
     #
     dir = "$data_dir/Gromacs"
-    atoms = readPDB("$dir/system.pdb")
+    atoms = read_pdb("$dir/system.pdb")
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     # Example 1: protein-EMIM
