@@ -10,6 +10,9 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.15.1-DEV
+--------------
+
 Version 2.15.0
 --------------
 - ![FEATURE][badge-feature] Implement the `renormalize` function to compute the normalization with different bulk densities, as using the bulk density as the total simulation density, or a custom density.
