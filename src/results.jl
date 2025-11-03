@@ -469,12 +469,15 @@ end
     R_new = renormalize(R, new_density)
     @test R_new.mddf ≈ 0.5 * R.mddf
     @test R_new.rdf ≈ 0.5 * R.rdf
+    @test contributions(R, SolventGroup(["H11", "H12", "H13", "H21", "H22", "H23"])) ≈ 
+          2*contributions(R_new, SolventGroup(["H11", "H12", "H13", "H21", "H22", "H23"]))
     @test R_new.kb ≈ 
         units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
         (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb) .- R.coordination_number_random)
     @test R_new.kb_rdf ≈ 
         units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
         (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_rdf) .- R.sum_rdf_count_random)
+#    @test contributions(R, SoluteGroup("protein and name CA")))
 
     new_density = 2 * R.density.solvent_bulk
     R_new = renormalize(R, new_density, "sites/Angs3")
