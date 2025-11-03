@@ -477,7 +477,6 @@ end
     @test R_new.kb_rdf ≈ 
         units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
         (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_rdf) .- R.sum_rdf_count_random)
-#    @test contributions(R, SoluteGroup("protein and name CA")))
 
     new_density = 2 * R.density.solvent_bulk
     R_new = renormalize(R, new_density, "sites/Angs3")
