@@ -119,6 +119,8 @@ julia> overview.solute_molar_volume
 
 The `renormalize` function allows to renormalize the Result structure to a different bulk density of the solvent. This is useful in cases where the bulk density cannot be estimated from the simulation, for example in simulations of zeolites, MOFs, etc, where the solvent is confined within a porous material and there's no bulk region.
 
+Under the hood, the function rescales the site count of the reference (ideal gas) distribution used for normalization.
+
 ```@docs
 renormalize
 ```
