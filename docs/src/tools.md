@@ -121,16 +121,11 @@ The `renormalize` function allows to renormalize the `Result` structure to a dif
 
 Under the hood, the function rescales the site count of the reference (ideal gas) distribution used for normalization.
 
+Typically, the MDDF would be computed with an arbitrary bulk region and renormalized using the density of the solvent in the complete simulation box, or the density of pure solvent.
+
 ```@docs
 renormalize
 ```
-
-Typically, one would compute the MDDF and renormalize the distribution using the 
-density of the solvent in the simulation box, or the density of pure solvent.
-
-The utility of this function lies in situations where the bulk density cannot be 
-estimated from the simulation. For example, in simulations of zeolites, MOFs, etc,
-where the solvent is confined within a porous material and there's no bulk region.
 
 !!! warning 
     In these situations the computation of KB integrals, apparent molar volumes, and preferential interactions might not be meaningful, but the MDDF and RDF can still provide useful information about the local structure of the solvent around the solute.
