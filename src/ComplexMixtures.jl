@@ -82,6 +82,7 @@ include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 include("./tools/write.jl")
+include("./tools/renormalize.jl")
 
 # Precompilation directives
 include("precompile.jl")
