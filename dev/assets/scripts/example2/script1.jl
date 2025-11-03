@@ -12,7 +12,7 @@ using EasyFit: movavg
 trajectory_file = "./traj_Polyacry.dcd"
 
 # Load a PDB file of the system
-system = readPDB("./equilibrated.pdb")
+system = read_pdb("./equilibrated.pdb")
 
 # Select the atoms corresponding DMF molecules
 dmf = select(system, "resname DMF")

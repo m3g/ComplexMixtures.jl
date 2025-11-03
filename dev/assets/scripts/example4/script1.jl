@@ -8,7 +8,7 @@ using LaTeXStrings
 using EasyFit: movavg
 
 # Load a PDB file of the system
-system = readPDB("./equilibrated.pdb")
+system = read_pdb("./equilibrated.pdb")
 
 # The full trajectory file is available at: 
 # https://www.dropbox.com/scl/fi/ag7k2d7i9d7ivbd5zmtl9/traj_Glyc.dcd?rlkey=93i31a5ytlzb34ulzjz315eyq&dl=0

@@ -8,7 +8,7 @@ using PDBTools
 using Plots
 
 # Load PDB file of the system
-atoms = readPDB("./system.pdb")
+atoms = read_pdb("./system.pdb")
 
 # Select the protein and the TMAO molecules
 protein = select(atoms, "protein")

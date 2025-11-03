@@ -20,7 +20,7 @@ scalefontsizes();
 scalefontsizes(1.3);
 
 # Read system PDB file
-system = readPDB("equilibrated.pdb")
+system = read_pdb("equilibrated.pdb")
 
 # Load the pre-calculated MDDF of water
 mddf_water_POPC = load("mddf_water_POPC.json")
