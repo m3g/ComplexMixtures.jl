@@ -197,5 +197,6 @@ end
     for property in [:x, :y, :z, :occup, :beta]
         @test all(p -> isapprox(getproperty(first(p), property), getproperty(last(p), property), atol=1e-2), zip(grid, grid_read))
     end
+    rm(grid_file)
 end
 

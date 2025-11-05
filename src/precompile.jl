@@ -16,5 +16,6 @@ PrecompileTools.@setup_workload begin
         tmpfile = tempname()
         save(tmpfile, R)
         load(tmpfile)
+        rm(tmpfile)
     end
 end

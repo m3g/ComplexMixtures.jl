@@ -29,10 +29,10 @@
 
     # Save and load a coordination-number run
     C = coordination_number(traj)
-    temp_output = tempname()
     save(C, temp_output)
     C_read = load(temp_output)
     @test C_read ≈ C
+    rm(temp_output)
 
     # Example 2: water-tmao
     # save(R,"$dir/water_tmao.json")

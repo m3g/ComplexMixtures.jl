@@ -242,6 +242,7 @@ end
     savefig(plt, tmpplot)
     @test isfile(tmpplot)
 
+    rm(tmpplot)
 end
 
 end # module Plotting
