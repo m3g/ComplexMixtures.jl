@@ -188,7 +188,6 @@ end
     @test length(c05) == 14
     @test all(at -> element(at) == "O", c05)
     @test all(at -> occup(at) < 2.0, c05)
-    rm(grid_file)
 
     # Test if the file was properly written
     grid_read = read_pdb(grid_file)
@@ -198,5 +197,6 @@ end
     for property in [:x, :y, :z, :occup, :beta]
         @test all(p -> isapprox(getproperty(first(p), property), getproperty(last(p), property), atol=1e-2), zip(grid, grid_read))
     end
+    rm(grid_file)
 end
 
