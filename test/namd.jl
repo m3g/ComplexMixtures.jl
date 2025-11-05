@@ -26,6 +26,7 @@
     save(R, temp_output)
     R_load = load(temp_output)
     @test R_load ≈ R_save
+    rm(temp_output)
 
     # Example 2: water-tmao
     # save(R,"$dir/water_tmao.json")

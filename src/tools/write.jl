@@ -245,6 +245,7 @@ Base.write(
         for (i, name) in enumerate(atom_group_names(r.solvent))
             @test contributions(r, SolventGroup([name])) ≈ r_read[:, i+2] rtol = 1e-5
         end
+        rm(tmpfile)
     end
     # legacy order of arguments 
     r = mddf(traj, options1)
@@ -253,4 +254,5 @@ Base.write(
     r_read = readdlm(out1, comments=true, comment_char='#')
     # Main output file
     @test r.d ≈ r_read[:, 1]
+    rm(tmpfile)
 end

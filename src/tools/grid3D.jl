@@ -188,6 +188,7 @@ end
     @test length(c05) == 14
     @test all(at -> element(at) == "O", c05)
     @test all(at -> occup(at) < 2.0, c05)
+    rm(grid_file)
 
     # Test if the file was properly written
     grid_read = read_pdb(grid_file)

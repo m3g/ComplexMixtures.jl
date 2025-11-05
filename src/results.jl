@@ -809,11 +809,13 @@ load(filename::String) = load(filename, Result)
     # Test throwing an error incompatible versions of ComplexMixtures
     @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_new.json")
     @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_old.json")
+    rm(tmp)
     tmpfile = tempname()
     open(tmpfile, "w") do io
         println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
     end
     @test_throws ArgumentError load(tmpfile)
+    rm(tmpfile)
 end
 
 #=

@@ -577,6 +577,7 @@ end
     save(tmpfile, rc[1])
     rc_load = load(tmpfile, ResidueContributions)
     @test rc[1] == rc_load
+    rm(tmpfile)
 
     tmpfile = tempname()
     open(tmpfile, "w") do io
@@ -604,6 +605,7 @@ end
     )
     save(tmpfile, rc_past)
     @test_throws ArgumentError load(tmpfile, ResidueContributions)
+    rm(tmpfile)
 
     # indexing
     rc = ResidueContributions(result, select(atoms, "protein"))
