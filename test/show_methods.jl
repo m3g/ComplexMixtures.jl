@@ -12,28 +12,28 @@
     trajectory_format = "PDBTraj"
 
     @test parse_show(Options()) ≈ """
-         --------------------------------------------------------------------------------
+        --------------------------------------------------------------------------------
          Options - ComplexMixtures 
          --------------------------------------------------------------------------------
          Trajectory frames: 
-             First frame to be considered: firstframe =  1  
-             Last frame to be considered (- 1  is last): lastframe = - 1 
-             Stride: stride =  1 
+             First frame to be considered: firstframe = 1 
+             Last frame to be considered (-1 is last): lastframe = -1
+             Stride: stride = 1
         
          Bulk region, cutoff, and histogram:
-             Bin step of histogram: binstep =  0.02 
-             Bulk range: >=  10.0 
-             (dbulk =  10.0 , cutoff =  10.0 , usecutoff = false)
+             Bin step of histogram: binstep = 0.02
+             Bulk range: >= 10.0
+             (dbulk = 10.0, cutoff = 10.0, usecutoff = false)
         
          Computation details: 
-             Reference atom for random rotations: irefatom = - 1 
-             Number of random samples per frame: n_random_samples =  10 
-             Linked cell partition: lcell =  1 
+             Reference atom for random rotations: irefatom = -1
+             Number of random samples per frame: n_random_samples = 10
+             Linked cell partition: lcell = 1
              Force garbage collection: GC = true
-             Memory threshold for GC: GC_threshold =  0.3 
-             Seed for random number generator:  321 
+             Memory threshold for GC: GC_threshold = 0.3
+             Seed for random number generator: 321
              Use stable random number generator: StableRNG = false 
-             Number of threads to use ( 0  is all): nthreads =  0 
+             Number of threads to use (0 is all): nthreads = 0
              Silent output: false
          --------------------------------------------------------------------------------
         """
