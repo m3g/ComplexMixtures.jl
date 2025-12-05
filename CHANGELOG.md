@@ -12,7 +12,9 @@ ComplexMixtures.jl Changelog
 
 Version 2.15.1-DEV
 --------------
+- ![ENHANCEMENT][badge-enhancement] Provide some better error messages for group contribution retrieval argument errors.
 - ![INFO][badge-info] Update version of ShowMethodTesting and adjust tests.
+- ![INFO][badge-info] Update PDBTools compat requirement to 3.
 - ![INFO][badge-info] Remove testing temporary files.
 
 Version 2.15.0
