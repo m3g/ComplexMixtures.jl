@@ -15,7 +15,7 @@ function _index_not_found_error(i, atsel)
 end
 function _name_not_found_error(name, atsel)
     throw(ArgumentError("""\n
-            Atom (or group) name $name not found in atom selection. 
+            Atom (or group) name "$name" not found in atom selection. 
             Group names list: $(print_vector_summary(atsel.group_names)).
 
         """))
@@ -101,15 +101,28 @@ function contributions(
         if isnothing(group.group_index) && isnothing(group.group_name)
             throw(ArgumentError("""\n
                 Custom groups are defined. Cannot retrieve general group contributions. 
+
                 Please provide a group name or index.
-                For example, use SoluteGroup(1) or SoluteGroup("Group1_NAME")
+
+                Group (or atom) names available: $(print_vector_summary(atsel.group_names))
+
+                For example, use SoluteGroup(1) or SoluteGroup($(atsel.group_names[1]))
             """))
         end
     else
         if isnothing(group.atom_indices) && isnothing(group.atom_names)
             throw(ArgumentError("""\n
-                No custom groups are defined. Please provide vectors of *atomic* indices or names.
+                The "$(group.group_name)" string identifier of the group was set, but no custom group names were defined. 
+
+                Please provide vectors of *atomic* indices or names.
                 For example, to get the contribution of atoms 1, 2 and 3, use SoluteGroup([1,2,3]). 
+
+                Perhaps the intention was to provide a PDBTools selection? 
+                For example, replace "$(group.group_name)" by
+                
+                    select(atoms, "$(group.group_name)") ?
+
+                where `atoms` is the PDBTools vector of atoms of the system.
 
             """))
         end
@@ -224,6 +237,20 @@ end
     atoms = read_pdb("$data_dir/PDB/trajectory.pdb", "model 1")
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
+
+    # No custom groups
+    solute = AtomSelection(protein, nmols=1)
+    solvent = AtomSelection(tmao, natomspermol=14)
+    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
+    results = mddf(traj)
+    @test sum(contributions(results, SoluteGroup(select(protein, "acidic")); type=:md_count)) ≈ 4.4
+    @test sum(contributions(results, SoluteGroup(select(protein, "basic")); type=:md_count)) ≈ 2.4
+    @test sum(contributions(results, SoluteGroup(select(protein, "polar and not resname GLY and not resname CYS")); type=:md_count)) ≈ 20.0
+    @test sum(contributions(results, SoluteGroup(select(protein, "nonpolar or resname GLY or resname CYS")); type=:md_count)) ≈ 9.4
+    @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type=:md_count)) ≈ 29.4 / length(eachresidue(tmao))
+    @test_throws "replace \"acidic\" by" contributions(results, SoluteGroup("acidic"))
+
+    # With custom groups
     solute = AtomSelection(
         protein, nmols=1;
         group_names=["acidic", "basic", "polar", "nonpolar"],
@@ -307,7 +334,7 @@ end
         group_atom_indices=[
             findall(Select("water and residue 301 and name H1"), atoms),
             findall(Select("water and residue 301 and name H2"), atoms),
-            findall(Select("water and residue 301 and name OH2"), atoms)
+            findall(Select("water and residue 301 and name OH2"), atoms),
         ],
         group_names=["H1", "H2", "OH2"]
     )
@@ -317,9 +344,11 @@ end
         group_atom_indices=[
             findall(Select("water and name H1 and not residue 301"), atoms),
             findall(Select("water and name H2 and not residue 301"), atoms),
-            findall(Select("water and name OH2 and not residue 301"), atoms)
+            findall(Select("water and name OH2 and not residue 301"), atoms),
+            findall(Select("water and name OH2 and not residue 301 302"), atoms),
+            findall(Select("water and name OH2 and not residue 301 303"), atoms),
         ],
-        group_names=["H1", "H2", "OH2"]
+        group_names=["H1", "H2", "OH2", "OH2_2", "OH_3"]
     )
     traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
     R = mddf(traj)
@@ -343,6 +372,8 @@ end
           contributions(R, SoluteGroup("H2")) +
           contributions(R, SoluteGroup("OH2")) ≈
           R.mddf
+
+    @test_throws "available: [ H1, H2, ..., OH2_2, OH_3 ]" contributions(R, SolventGroup(select(atoms, "resname OH2")))
 
     # Group contributions in autocorrelation computation
     solute = AtomSelection(
