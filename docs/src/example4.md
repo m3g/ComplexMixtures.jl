@@ -18,15 +18,15 @@ The system simulated consists of 1000 water molecules (red) and 1000 glycerol mo
 
 ## [Data, packages, and execution](@id data-example4)
 
-The files required to run this example are:
+The files required to run this example are available at [[this link]](https://zenodo.org/records/17202344/files/example4.zip?download=1), and are: 
 
-- [equilibrated.pdb](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Glycerol_in_Water/simulation/equilibrated.pdb): The PDB file of the complete system.
-- [traj_Glyc.dcd](https://www.dropbox.com/scl/fi/ag7k2d7i9d7ivbd5zmtl9/traj_Glyc.dcd?rlkey=93i31a5ytlzb34ulzjz315eyq&dl=0): Trajectory file. This is a 200Mb file, necessary for running from scratch the calculations.
+- `equilibrated.pdb`: The PDB file of the complete system.
+- `traj_Glyc.dcd`: Trajectory file. This is a 200Mb file, necessary for running from scratch the calculations.
 
 To run the scripts, we suggest the following procedure:
 
 1. Create a directory, for example `example4`.
-2. Copy the required data files above to this directory.
+2. Unzip and copy the required data files above to this directory.
 3. Launch `julia` in that directory: activate the directory environment, and install the required packages. This launching Julia and executing:
    ```julia
    import Pkg 

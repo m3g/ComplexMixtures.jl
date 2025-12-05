@@ -18,15 +18,15 @@ Image of the system of the example: a protein solvated by a mixture of glycreol 
 
 ## [Data, packages, and execution](@id data-example1)
 
-The files required to run this example are:
+The files required to run this example are available at [[this link]](https://zenodo.org/records/17202344/files/example1.zip?download=1), and are: 
 
-- [system.pdb](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Protein_in_Glycerol/Data/system.pdb): The PDB file of the complete system.
-- [glyc50_traj.dcd](https://www.dropbox.com/scl/fi/zfq4o21dkttobg2pqd41m/glyc50_traj.dcd?rlkey=el3k6t0fx6w5yiqktyx96gzg6&dl=0): Trajectory file. This is a 1GB file, necessary for running from scratch the calculations.
+- `system.pdb`: The PDB file of the complete system.
+- `glyc50_traj.dcd`: Trajectory file. This is a 1GB file, necessary for running from scratch the calculations.
 
 To run the scripts, we suggest the following procedure:
 
 1. Create a directory, for example `example1`.
-2. Copy the required data files above to this directory.
+2. Unzip and copy the required data files above to this directory.
 3. Launch `julia` in that directory, activate the directory environment, and install the required packages. 
    This is done by launching Julia and executing:
    ```julia

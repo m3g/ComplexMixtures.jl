@@ -33,15 +33,15 @@ The structures of DMF and of the polyacrylamide segment are:
 
 ## [Data, packages, and execution](@id data-example2)
 
-The files required to run this example are:
+The files required to run this example are available at [[this link]](https://zenodo.org/records/17202344/files/example2.zip?download=1), and are: 
 
-- [equilibrated.pdb](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/simulation/equilibrated.pdb): The PDB file of the complete system.
-- [traj_Polyacry.dcd](https://www.dropbox.com/scl/fi/jwafhgxaxuzsybw3y8txd/traj_Polyacry.dcd?rlkey=p4bn65m0pkuebpfm0hf158cdm&dl=0): Trajectory file. This is a 275Mb file, necessary for running from scratch the calculations.
+- `equilibrated.pdb`: The PDB file of the complete system.
+- `traj_Polyacry.dcd`: Trajectory file. This is a 275Mb file, necessary for running from scratch the calculations.
 
 To run the scripts, we suggest the following procedure:
 
 1. Create a directory, for example `example2`.
-2. Copy the required data files above to this directory.
+2. Unzip and copy the required data files above to this directory.
 3. Launch `julia` in that directory: activate the directory environment, and install the required packages. This launching Julia and executing:
    ```julia
    import Pkg 
