@@ -192,7 +192,7 @@ Pages = ["Trajectory.jl"]
 
 ## Stop a computation
 
-To stop a running calculation without loosing the Julia REPL state, add a file named
+To stop a running calculation without losing the Julia REPL state, add a file named
 ```
 stop_complexmixtures
 ```

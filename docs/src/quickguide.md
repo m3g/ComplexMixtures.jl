@@ -49,7 +49,7 @@ where `-t auto` will launch `julia` with multi-threading. It is highly recommend
     Some newer CPUs have "fast" and "slow" cores, designed for performance or energy savings. Thus
     using all cores, with `-t auto`, may not be the best strategy for optimal performance. Experimenting
     with different number of cores using `-t N` where `N` is the number of cores used is always necessary
-    for tunning performance.
+    for tuning performance.
 
 ## Detailed description of the example
 

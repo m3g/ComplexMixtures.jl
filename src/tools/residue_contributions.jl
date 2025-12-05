@@ -142,7 +142,7 @@ rc4 = rc2 / 2
 ```
 
 !!! compat
-    Slicing, indexing, and multiplication and divison by scalars were introduces in v2.7.0.
+    Slicing, indexing, and multiplication and division by scalars were introduces in v2.7.0.
     Saving and loading was introduced in v2.8.0. Iterators were introduced in v2.10.0.
 
 """
@@ -174,7 +174,7 @@ function ResidueContributions(
     # collect the list of residues (using PDBTools)
     residues = collect(PDBTools.eachresidue(atoms))
 
-    # Create matrix that will cotain the contribution per 
+    # Create matrix that will contain the contribution per 
     # residue as a function of the distance:
     # number of rows of the mddf histogram is (length(results.d)) and 
     # number of columns equal to the number of residues
@@ -458,7 +458,7 @@ function _custom_group_error_for_ResidueContributions()
 
         rc = ResidueContributions(result, PDBTools.select(atoms, "protein"))
 
-        Please read the documention, by typing: ? ResidueContribution
+        Please read the documentation, by typing: ? ResidueContribution
 
         The computation of contributions of each residue requires independent atom contributions to 
         be stored, and thus custom groups are not supported. 
@@ -477,7 +477,7 @@ Save the `ResidueContributions` object to a JSON file.
 
 ```julia
 using ComplexMixtures
-rc = ResidueContributions(resutls, SoluteGroup(protein))
+rc = ResidueContributions(results, SoluteGroup(protein))
 save("residue_contributions.json", rc)
 rc = load("residue_contributions.json", ResidueContributions)
 ```
@@ -500,7 +500,7 @@ Function to load the residue contributions saved into a JSON file into the `Resi
 
 ```julia
 using ComplexMixtures
-rc = ResidueContributions(resutls, SoluteGroup(protein))
+rc = ResidueContributions(results, SoluteGroup(protein))
 save("residue_contributions.json", rc)
 rc = load("residue_contributions.json", ResidueContributions)
 ```

@@ -20,7 +20,7 @@ struct Options
     cutoff::Float64
     usecutoff::Bool
 
-    # Linked cell length will be (cutoff/lcell), might be tunned for maximum
+    # Linked cell length will be (cutoff/lcell), might be tuned for maximum
     # performance
     lcell::Int
 

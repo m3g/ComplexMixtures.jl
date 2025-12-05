@@ -125,7 +125,7 @@ function atom_group(atsel::AtomSelection, group_name::String)
 end
 function _error_custom_groups()
     throw(ArgumentError("""\n
-        Custom groups not defined in this AtomSelecction.
+        Custom groups not defined in this AtomSelection.
 
     """))
 end
@@ -198,7 +198,7 @@ The structure can be initialized in different ways:
         group_names::Vector{<:AbstractString} = String[]
     ) 
 
-The indices of the atoms will be retrived from the
+The indices of the atoms will be retrieved from the
 indices of the atoms as defined in the PDB file, thus the PDB file must correspond to the same
 system as that of the simulation. 
 
@@ -249,7 +249,7 @@ Construct an AtomSelection structure from the most low-level information: the in
 Either the number of molecules (`nmols`) or the number of atoms per molecule (`natomspermol`) must be provided.
 
 Groups of atoms can be defined by providing a vector of vectors of atom indices (`group_atom_indices`), and a vector of group names (`group_names`).
-If `group_atom_indices` is set to `nothing`, the coordination numbers of each individual atoms wil be stored.
+If `group_atom_indices` is set to `nothing`, the coordination numbers of each individual atoms will be stored.
 
 ## Examples
 
@@ -489,10 +489,10 @@ end
 These structures are used to select groups of atoms to extract their contributions 
 from the MDDF results. 
 
-Most tipically, the groups are defined from a selection of atoms with the PDBTools package,
-or by providing directly the indices of teh atoms in the structure. 
+Most typically, the groups are defined from a selection of atoms with the PDBTools package,
+or by providing directly the indices of the atoms in the structure. 
 
-Alternativelly, if the groups were predefined, the groups can be selected by group index
+Alternatively, if the groups were predefined, the groups can be selected by group index
 or group name. 
 
 The possible constructors are:

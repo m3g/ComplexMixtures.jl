@@ -1,6 +1,6 @@
 #
-# Replace default random number generator by other that aleviates the
-# mutiple-threading problems
+# Replace default random number generator by other that alleviates the
+# multiple-threading problems
 #
 
 import RandomNumbers.Xorshifts as RndX

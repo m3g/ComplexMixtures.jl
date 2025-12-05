@@ -16,6 +16,7 @@ Version 2.15.1-DEV
 - ![INFO][badge-info] Update version of ShowMethodTesting and adjust tests.
 - ![INFO][badge-info] Update PDBTools compat requirement to 3.
 - ![INFO][badge-info] Remove testing temporary files.
+- ![INFO][badge-info] Store test files in Zenodo server instead of Dropbox.
 
 Version 2.15.0
 --------------
