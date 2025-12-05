@@ -10,6 +10,9 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.15.2-DEV
+--------------
+
 Version 2.15.1
 --------------
 - ![ENHANCEMENT][badge-enhancement] Provide some better error messages for group contribution retrieval argument errors.
