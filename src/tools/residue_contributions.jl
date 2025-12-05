@@ -174,7 +174,7 @@ function ResidueContributions(
     # collect the list of residues (using PDBTools)
     residues = collect(PDBTools.eachresidue(atoms))
 
-    # Create matrix that will cotain the contribution per 
+    # Create matrix that will contain the contribution per 
     # residue as a function of the distance:
     # number of rows of the mddf histogram is (length(results.d)) and 
     # number of columns equal to the number of residues
@@ -458,7 +458,7 @@ function _custom_group_error_for_ResidueContributions()
 
         rc = ResidueContributions(result, PDBTools.select(atoms, "protein"))
 
-        Please read the documention, by typing: ? ResidueContribution
+        Please read the documentation, by typing: ? ResidueContribution
 
         The computation of contributions of each residue requires independent atom contributions to 
         be stored, and thus custom groups are not supported. 

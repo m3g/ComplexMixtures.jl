@@ -39,7 +39,7 @@ To run the scripts, we suggest the following procedure:
    ```julia
    julia -t auto script.jl
    ```
-   Alternativelly (and perhaps preferrably), copy line by line the content of the script into
+   Alternatively (and perhaps preferably), copy line by line the content of the script into
    the Julia REPL, to follow each step of the calculation. For a more advanced Julia usage,
    we suggest the [VSCode IDE](https://code.visualstudio.com/) with the 
    [Julia Language Support](https://www.julia-vscode.org/docs/dev/gettingstarted/) extension. 

@@ -803,7 +803,7 @@ end
     @test_throws ArgumentError coordination_number(trajectory_file, protein, tmao, Options(); coordination_number_only=true)
     @test_throws ArgumentError coordination_number(trajectory_file, tmao, Options(); coordination_number_only=true)
 
-    # Throw insufficent memory error
+    # Throw insufficient memory error
     @test_throws ErrorException mddf(trajectory_file, protein, tmao, Options(nthreads=10^10))
 
     for nthreads in [1, 2], low_memory in [true, false]

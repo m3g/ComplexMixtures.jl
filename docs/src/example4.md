@@ -38,7 +38,7 @@ To run the scripts, we suggest the following procedure:
    ```julia
    julia -t auto script.jl
    ```
-   Alternativelly (and perhaps preferrably), copy line by line the content of the script into
+   Alternatively (and perhaps preferably), copy line by line the content of the script into
    the Julia REPL, to follow each step of the calculation.
 
 ## [Glycerol-Glycerol and Water-Glycerol distribution functions](@id glyc_mddf-example4)

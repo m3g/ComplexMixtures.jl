@@ -53,7 +53,7 @@ To run the scripts, we suggest the following procedure:
    ```julia
    julia -t auto script.jl
    ```
-   Alternativelly (and perhaps preferrably), copy line by line the content of the script into
+   Alternatively (and perhaps preferably), copy line by line the content of the script into
    the Julia REPL, to follow each step of the calculation.
 
 ## [MDDF and KB integrals](@id mddf-example2)
@@ -149,4 +149,4 @@ Molecules built with JSME: B. Bienfait and P. Ertl, JSME: a free molecule editor
 
 The system was built with [Packmol](http://m3g.iqm.unicamp.br/packmol).
 
-The simulations were perfomed with [NAMD](https://www.ks.uiuc.edu/Research/namd/), with [CHARMM36](https://www.charmm.org) parameters. 
+The simulations were performed with [NAMD](https://www.ks.uiuc.edu/Research/namd/), with [CHARMM36](https://www.charmm.org) parameters. 
