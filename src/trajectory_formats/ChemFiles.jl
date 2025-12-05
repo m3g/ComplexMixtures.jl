@@ -34,7 +34,7 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
 
     # Coordinates of the solute and solvent atoms in a frame (natoms,3) for each array:
     x_solute::Vector{T}  # natoms(solute) vectors of length 3 (preferentially static vectors)
-    x_solvent::Vector{T} # natoms(solvent) vectors of lenght 3 (preferentially static vectors)
+    x_solvent::Vector{T} # natoms(solvent) vectors of length 3 (preferentially static vectors)
 
     # unitcell
     unitcell::MMatrix{3,3,Float64,9}

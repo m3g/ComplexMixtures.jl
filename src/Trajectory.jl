@@ -223,7 +223,7 @@ function TrajectoryMetaData(trajectory::Trajectory, options::Options)
     # Close trajecotory
     closetraj!(trajectory)
 
-    # Initialize the arrays that contain groups counts, depending on wheter
+    # Initialize the arrays that contain groups counts, depending on whether
     # groups were defined or not in the input Options
     n_groups_solute = if !trajectory.solute.custom_groups
         trajectory.solute.natomspermol

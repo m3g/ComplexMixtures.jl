@@ -158,7 +158,7 @@ end
 
 #=
 
-Setup the periodic system from CellListMap, to compute minimimum distances. The system
+Setup the periodic system from CellListMap, to compute minimum distances. The system
 will be setup such that `xpositions` corresponds to one molecule of the solute, and 
 `ypositions` contains all coordinates of all atoms of the solvent. 
 

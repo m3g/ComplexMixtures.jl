@@ -69,7 +69,7 @@ or with, if `OH2` is the first atom in the molecule,
 ```julia
 H = contributions(results, SolventGroup([2, 3]))
 ```
-Each of these calls will return a vector of the constributions of these
+Each of these calls will return a vector of the contributions of these
 atoms to the total MDDF. 
 
 For example, here we plot the total MDDF and the Oxygen contributions: 

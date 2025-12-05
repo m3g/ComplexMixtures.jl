@@ -82,7 +82,7 @@ function Base.write(
             line = line * "  " * format(R.volume.shell[i])                 #  7-SHELL VOL
             println(output, line)
         end
-    end # file writting
+    end # file writing
 
     println("""
 
@@ -123,7 +123,7 @@ function set_group_names(R::Result, group_names::Union{Nothing,AbstractVector{<:
 end
 
 #
-# Writting gmd per atom contributions for the solvent
+# Writing gmd per atom contributions for the solvent
 #
 function write_group_contributions(
     R::Result,
@@ -143,7 +143,7 @@ function write_group_contributions(
         throw(ArgumentError("type must be either :solute or :solvent"))
     end
 
-    # Names of output files containing atomic contibutions
+    # Names of output files containing atomic contributions
     iext = findlast(==('.'), filename)
     if isnothing(iext)
         iext = length(filename) + 1
@@ -191,7 +191,7 @@ function write_group_contributions(
             end
             println(output, string)
         end
-    end # file writting
+    end # file writing
 
     println("Wrote solute group MDDF contributions to file: $group_contributions_output")
 

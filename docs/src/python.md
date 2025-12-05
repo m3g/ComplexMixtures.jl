@@ -1,7 +1,7 @@
 # [From Python](@id python)
 
 !!! note
-    Most features of the package are available through this Python interface. However, some flexibility may be reduced and, also, the tunning of the plot appearance is left to the user, as it is expected that he/she is fluent with some tools within Python if choosing this interface.
+    Most features of the package are available through this Python interface. However, some flexibility may be reduced and, also, the tuning of the plot appearance is left to the user, as it is expected that he/she is fluent with some tools within Python if choosing this interface.
 
     Python 3 or greater is required.
 
@@ -57,7 +57,7 @@ The files required to run this example are:
 - [system.pdb](https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Protein_in_Glycerol/Data/system.pdb): The PDB file of the complete system.
 - [glyc50_sample.dcd](https://www.dropbox.com/scl/fi/n3gtyotavo00jtz8bajti/glyc50_sample.dcd?rlkey=5ax8t4w7e0dr5w0n5g797p02j&dl=0): A 30Mb sample trajectory file. The [full trajectory](https://www.dropbox.com/scl/fi/zfq4o21dkttobg2pqd41m/glyc50_traj.dcd?rlkey=el3k6t0fx6w5yiqktyx96gzg6&dl=0) can also be used, but it is a 1GB file.
 
-To start, create a directory and copy the [`ComplexMixtures.py`](./assets/ComplexMixtures.py) file to it. Navigate into this directory, and, to start, set the number of threads that Julia will use, to run the calculations in parallel. Typically, in `bash`, this means defining teh following environment variable:
+To start, create a directory and copy the [`ComplexMixtures.py`](./assets/ComplexMixtures.py) file to it. Navigate into this directory, and, to start, set the number of threads that Julia will use, to run the calculations in parallel. Typically, in `bash`, this means defining the following environment variable:
 ```bash
 export JULIA_NUM_THREADS=8
 ```

@@ -146,7 +146,7 @@ AtomSelection
 
 In this example, then, the `solute` `AtomSelection` has two groups. The indices of the atoms
 of the groups are stored in the `group_atom_indices` vector and the group names in the `group_names`
-vector. The `atom_group` auxiliary function is the most practical way to retrive the indices of the
+vector. The `atom_group` auxiliary function is the most practical way to retrieve the indices of the
 atoms of the group.
 
 ```julia-repl
@@ -161,7 +161,7 @@ julia> atom_group(solute, "acidic residues")
 ```
 
 With these group selections predefined, the contributions of these groups to the MDDF or coordination numbers
-can be retrived directly from the result data structure with, for example:
+can be retrieved directly from the result data structure with, for example:
 
 ```julia-repl
 julia> result = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)));

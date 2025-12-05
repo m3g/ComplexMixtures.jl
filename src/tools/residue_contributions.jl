@@ -142,7 +142,7 @@ rc4 = rc2 / 2
 ```
 
 !!! compat
-    Slicing, indexing, and multiplication and divison by scalars were introduces in v2.7.0.
+    Slicing, indexing, and multiplication and division by scalars were introduces in v2.7.0.
     Saving and loading was introduced in v2.8.0. Iterators were introduced in v2.10.0.
 
 """
@@ -477,7 +477,7 @@ Save the `ResidueContributions` object to a JSON file.
 
 ```julia
 using ComplexMixtures
-rc = ResidueContributions(resutls, SoluteGroup(protein))
+rc = ResidueContributions(results, SoluteGroup(protein))
 save("residue_contributions.json", rc)
 rc = load("residue_contributions.json", ResidueContributions)
 ```
@@ -500,7 +500,7 @@ Function to load the residue contributions saved into a JSON file into the `Resi
 
 ```julia
 using ComplexMixtures
-rc = ResidueContributions(resutls, SoluteGroup(protein))
+rc = ResidueContributions(results, SoluteGroup(protein))
 save("residue_contributions.json", rc)
 rc = load("residue_contributions.json", ResidueContributions)
 ```
