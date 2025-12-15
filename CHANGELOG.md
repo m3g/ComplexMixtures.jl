@@ -10,8 +10,9 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 2.15.2-DEV
+Version 2.16.0-DEV
 --------------
+- ![FEATURE][badge-feature] The `grid3D` function now supports the `type` keyword argument, to choose from `:mddf` (default), `:coordination_number`, or `:md_count`, parameter that is passed to `contributions` to build the grid.
 
 Version 2.15.1
 --------------

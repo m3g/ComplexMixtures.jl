@@ -1,28 +1,32 @@
 """
     grid3D(
         result::Result, atoms, output_file::Union{Nothing,String} = nothing; 
-        dmin=1.5, dmax=5.0, step=0.5, silent = false,
+        dmin=1.5, dmax=5.0, step=0.5, silent = false, type = :mddf,
     )
 
 This function builds the grid of the 3D density function and fills an array of
 mutable structures of type Atom, containing the position of the atoms of 
 grid, the closest atom to that position, and distance. 
 
-`result` is a `ComplexMixtures.Result` object 
-`atoms` is a vector of `PDBTools.Atom`s with all the atoms of the system. 
-`output_file` is the name of the file where the grid will be written. If `nothing`, the grid is only returned as a matrix. 
+## Positional arguments
 
-`dmin` and `dmax` define the range of distance where the density grid will be built, and `step`
-defines how fine the grid must be. Be aware that fine grids involve usually a very large (hundreds
-of thousands points).
+- `result` is a `ComplexMixtures.Result` object 
+- `atoms` is a vector of `PDBTools.Atom`s with all the atoms of the system. 
+- `output_file` is the name of the file where the grid will be written. If `nothing`, the grid is only returned as a matrix. 
 
-`silent` is a boolean to suppress the progress bar.
+## Keyword (optional) arguments
+
+- `dmin` and `dmax` define the range of distance where the density grid will be built, and `step`
+    defines how fine the grid must be. Be aware that fine grids involve usually a very large (hundreds
+    of thousands points).
+- `silent` is a boolean to suppress the progress bar.
+- `type` can be `:mddf`, `:coordination_number`, or `:md_count`, depending on the data available or desired from the results.
 
 The output PDB has the following characteristics:
 
 - The positions of the atoms are grid points. 
-- The identity of the atoms correspond to the identity of the protein atom contributing to the MDDF at that point (the closest protein atom). 
-- The temperature-factor column (`beta`) contains the relative contribution of that atom to the MDDF at the corresponding distance. 
+- The identity of the atoms correspond to the identity of the protein atom contributing to the property at that point (the closest protein atom). 
+- The temperature-factor column (`beta`) contains the relative contribution of that atom to the property at the corresponding distance. 
 - The `occupancy` field contains the distance itself.
 
 ### Example
@@ -48,6 +52,7 @@ function grid3D(
     dmax=5.0,
     step=0.5,
     silent=false,
+    type=:mddf,
 )
 
     if result.solute.custom_groups
@@ -85,7 +90,7 @@ function grid3D(
                 if rgrid < 0 || r < rgrid
                     at = solute_atoms[iat]
                     # Get contribution of this atom to the MDDF
-                    c = contributions(result, SoluteGroup(SVector(PDBTools.index(at),)))
+                    c = contributions(result, SoluteGroup(SVector(PDBTools.index(at),)); type)
                     # Interpolate c at the current distance
                     iright = findfirst(d -> d > r, result.d)
                     ileft = iright - 1
@@ -190,6 +195,18 @@ end
     @test all(at -> occup(at) < 2.0, c05)
 
     # Test if the file was properly written
+    grid_read = read_pdb(grid_file)
+    for property in [:name, :resname, :chain, :resnum]
+        @test all(p -> getproperty(first(p), property) == getproperty(last(p), property), zip(grid, grid_read))
+    end
+    for property in [:x, :y, :z, :occup, :beta]
+        @test all(p -> isapprox(getproperty(first(p), property), getproperty(last(p), property), atol=1e-2), zip(grid, grid_read))
+    end
+    rm(grid_file)
+
+    # Test grid generation with coordination number only
+    R = coordination_number(traj, options)
+    grid = grid3D(R, atoms, grid_file; type=:coordination_number)
     grid_read = read_pdb(grid_file)
     for property in [:name, :resname, :chain, :resnum]
         @test all(p -> getproperty(first(p), property) == getproperty(last(p), property), zip(grid, grid_read))
