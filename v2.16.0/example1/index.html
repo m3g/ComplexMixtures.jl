@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Protein in water/glycerol · ComplexMixtures.jl</title><meta name="title" content="Protein in water/glycerol · ComplexMixtures.jl"/><meta property="og:title" content="Protein in water/glycerol · ComplexMixtures.jl"/><meta property="twitter:title" content="Protein in water/glycerol · ComplexMixtures.jl"/><meta name="description" content="Documentation for ComplexMixtures.jl."/><meta property="og:description" content="Documentation for ComplexMixtures.jl."/><meta property="twitter:description" content="Documentation for ComplexMixtures.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="ComplexMixtures.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="ComplexMixtures.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">ComplexMixtures.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Install and run</span><ul><li><a class="tocitem" href="../installation/">Installation</a></li><li><a class="tocitem" href="../parallel/">Parallel execution</a></li><li><a class="tocitem" href="../python/">From Python</a></li></ul></li><li><a class="tocitem" href="../quickguide/">Quick Guide</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../examples/">Running the examples</a></li><li class="is-active"><a class="tocitem" href>Protein in water/glycerol</a><ul class="internal"><li><a class="tocitem" href="#data-example1"><span>Data, packages, and execution</span></a></li><li><a class="tocitem" href="#mddf-example1"><span>MDDF, KB integrals, and group contributions</span></a></li><li><a class="tocitem" href="#2D-map-example1"><span>2D density map</span></a></li><li><a class="tocitem" href="#3D-map-example1"><span>3D density map</span></a></li></ul></li><li><a class="tocitem" href="../example2/">Polyacrylamide in DMF</a></li><li><a class="tocitem" href="../example3/">POPC membrane in water/ethanol</a></li><li><a class="tocitem" href="../example4/">Water/Glycerol mixture</a></li></ul></li><li><span class="tocitem">Setup and run</span><ul><li><a class="tocitem" href="../selection/">Set solute and solvent</a></li><li><a class="tocitem" href="../mddf/">Computing the MDDF</a></li><li><a class="tocitem" href="../save/">Save and load</a></li><li><a class="tocitem" href="../multiple/">Multiple trajectories</a></li><li><a class="tocitem" href="../options/">Options</a></li></ul></li><li><span class="tocitem">Analysis</span><ul><li><a class="tocitem" href="../results/">Results</a></li><li><a class="tocitem" href="../contributions/">Atomic and group contributions</a></li><li><a class="tocitem" href="../density_maps/">Density maps</a></li><li><a class="tocitem" href="../coordination_numbers/">Coordination numbers</a></li><li><a class="tocitem" href="../tools/">Tools</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Protein in water/glycerol</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Protein in water/glycerol</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl/blob/main/docs/src/example1.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Protein-in-water/glycerol"><a class="docs-heading-anchor" href="#Protein-in-water/glycerol">Protein in water/glycerol</a><a id="Protein-in-water/glycerol-1"></a><a class="docs-heading-anchor-permalink" href="#Protein-in-water/glycerol" title="Permalink"></a></h1><p>The following examples consider a system composed a protein solvated by a mixture of water and glycerol, built with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>. The simulations were performed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a> with periodic boundary conditions and a NPT ensemble at room temperature and pressure. Molecular pictures were produced with <a href="https://www.ks.uiuc.edu/Research/vmd/">VMD</a> and plots were produced with <a href="https://julialang.org">Julia</a>&#39;s <a href="http://docs.juliaplots.org/latest/">Plots</a> library.</p><center>
+<img width=50% src="../figures/prot_glyc_system.png">
+</center><p>Image of the system of the example: a protein solvated by a mixture of glycreol (green) and water, at a concentration of 50%vv. </p><h3 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h3><ul><li><a href="#data-example1">Data, packages, and execution</a></li><li><a href="#mddf-example1">MDDF, KB integrals, and group contributions</a></li><li><a href="#2D-map-example1">2D density map</a></li><li><a href="#3D-map-example1">3D density map</a></li></ul><h2 id="data-example1"><a class="docs-heading-anchor" href="#data-example1">Data, packages, and execution</a><a id="data-example1-1"></a><a class="docs-heading-anchor-permalink" href="#data-example1" title="Permalink"></a></h2><p>The files required to run this example are available at <a href="https://zenodo.org/records/17202344/files/example1.zip?download=1">[this link]</a>, and are: </p><ul><li><code>system.pdb</code>: The PDB file of the complete system.</li><li><code>glyc50_traj.dcd</code>: Trajectory file. This is a 1GB file, necessary for running from scratch the calculations.</li></ul><p>To run the scripts, we suggest the following procedure:</p><ol><li>Create a directory, for example <code>example1</code>.</li><li>Unzip and copy the required data files above to this directory.</li><li>Launch <code>julia</code> in that directory, activate the directory environment, and install the required packages.  This is done by launching Julia and executing:<pre><code class="language-julia hljs">import Pkg 
+Pkg.activate(&quot;.&quot;)
+Pkg.add([&quot;ComplexMixtures&quot;, &quot;PDBTools&quot;, &quot;Plots&quot;, &quot;LaTeXStrings&quot;, &quot;EasyFit&quot;])
+exit()</code></pre></li><li>Copy the code of each script in to a file, and execute with:<pre><code class="language-julia hljs">julia -t auto script.jl</code></pre>Alternatively (and perhaps preferably), copy line by line the content of the script into the Julia REPL, to follow each step of the calculation. For a more advanced Julia usage, we suggest the <a href="https://code.visualstudio.com/">VSCode IDE</a> with the  <a href="https://www.julia-vscode.org/docs/dev/gettingstarted/">Julia Language Support</a> extension. </li></ol><h2 id="mddf-example1"><a class="docs-heading-anchor" href="#mddf-example1">MDDF, KB integrals, and group contributions</a><a id="mddf-example1-1"></a><a class="docs-heading-anchor-permalink" href="#mddf-example1" title="Permalink"></a></h2><p>Here we compute the minimum-distance distribution function, the Kirkwood-Buff integral, and the atomic contributions of the solvent to the density. This example illustrates the regular usage of <code>ComplexMixtures</code>, to compute the minimum distance distribution function, KB-integrals and group contributions. </p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs"># Activate environment in current directory
+import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+# Run this once, to install necessary packages:
+# Pkg.add([&quot;ComplexMixtures&quot;, &quot;PDBTools&quot;, &quot;Plots&quot;, &quot;LaTeXStrings&quot;])
+
+# Load packages
+using ComplexMixtures
+using PDBTools
+using Plots, Plots.Measures
+using LaTeXStrings
+
+# The complete trajectory file can be downloaded from (1Gb):
+# https://www.dropbox.com/scl/fi/zfq4o21dkttobg2pqd41m/glyc50_traj.dcd?rlkey=el3k6t0fx6w5yiqktyx96gzg6&amp;dl=0
+
+# The example output file is available at:
+# 
+# Load PDB file of the system
+atoms = read_pdb(&quot;./system.pdb&quot;)
+
+# Select the protein and the GLYC molecules
+protein = select(atoms, &quot;protein&quot;)
+glyc = select(atoms, &quot;resname GLYC&quot;)
+
+# Setup solute and solvent structures
+solute = AtomSelection(protein, nmols=1)
+solvent = AtomSelection(glyc, natomspermol=14)
+
+# Path to the trajectory file
+trajectory_file = &quot;./glyc50_traj.dcd&quot;
+
+# Run mddf calculation, and save results
+results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(10.0, 15.0)))
+save(results, &quot;glyc50_results.json&quot;)
+println(&quot;Results saved to glyc50_results.json&quot;)
+
+#
+# Produce plots
+#
+# Default options for plots 
+Plots.default(
+    fontfamily=&quot;Computer Modern&quot;,
+    linewidth=2,
+    framestyle=:box,
+    label=nothing,
+    grid=false
+)
+
+#
+# The complete MDDF and the Kirkwood-Buff Integral
+#
+plot(layout=(1, 2))
+# plot mddf
+plot!(results.d, results.mddf,
+    xlabel=L&quot;r/\AA&quot;,
+    ylabel=&quot;mddf&quot;,
+    subplot=1
+)
+hline!([1], linestyle=:dash, linecolor=:gray, subplot=1)
+# plot KB integral
+plot!(results.d, results.kb / 1000, #to L/mol
+    xlabel=L&quot;r/\AA&quot;,
+    ylabel=L&quot;G_{us}/\mathrm{L~mol^{-1}}&quot;,
+    subplot=2
+)
+# size and margin
+plot!(size=(800, 300), margin=4mm)
+savefig(&quot;./mddf.png&quot;)
+println(&quot;Created plot mddf.png&quot;)
+
+#
+# Atomic contributions to the MDDF
+#
+hydroxyls = [&quot;O1&quot;, &quot;O2&quot;, &quot;O3&quot;, &quot;H1&quot;, &quot;H2&quot;, &quot;H3&quot;]
+aliphatic = [&quot;C1&quot;, &quot;C2&quot;, &quot;HA&quot;, &quot;HB&quot;, &quot;HC&quot;, &quot;HD&quot;]
+hydr_contrib = contributions(results, SolventGroup(hydroxyls))
+aliph_contrib = contributions(results, SolventGroup(aliphatic))
+
+plot(results.d, results.mddf,
+    xlabel=L&quot;r/\AA&quot;,
+    ylabel=&quot;mddf&quot;,
+    size=(600, 400)
+)
+plot!(results.d, hydr_contrib, label=&quot;Hydroxyls&quot;)
+plot!(results.d, aliph_contrib, label=&quot;Aliphatic chain&quot;)
+hline!([1], linestyle=:dash, linecolor=:gray)
+savefig(&quot;./mddf_atom_contrib.png&quot;)
+println(&quot;Created plot mddf_atom_contrib.png&quot;)</code></pre></details><br><h4 id="Output"><a class="docs-heading-anchor" href="#Output">Output</a><a id="Output-1"></a><a class="docs-heading-anchor-permalink" href="#Output" title="Permalink"></a></h4><p>The code above will produce the following plots, which contain the minimum-distance distribution of  glycerol relative to the protein, and the corresponding KB integral:</p><center>
+<img width=100% src="../assets/scripts/example1/mddf.png">
+</center><p>and the same distribution function, decomposed into the contributions of the hydroxyl and aliphatic groups of glycerol:</p><center>
+<img width=70% src="../assets/scripts/example1/mddf_atom_contrib.png">
+</center><div class="admonition is-info" id="Note-d969c5b4a4e1601d"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-d969c5b4a4e1601d" title="Permalink"></a></header><div class="admonition-body"><p>To change the options of the calculation, set the <code>Options</code> structure accordingly and pass it as a parameter to <code>mddf</code>. For example:</p><pre><code class="language-julia hljs">options = Options(bulk_range=(10.0, 15.0), stride=5)
+mddf(trajectory_file, solute, solvent, options)</code></pre><p>The complete set of options available is described <a href="../options/#options">here</a>.</p></div></div><h2 id="2D-map-example1"><a class="docs-heading-anchor" href="#2D-map-example1">2D density map</a><a id="2D-map-example1-1"></a><a class="docs-heading-anchor-permalink" href="#2D-map-example1" title="Permalink"></a></h2><p>In this followup from the example above, we compute group contributions of the solute (the protein) to the MDDFs, split into the contributions each protein residue. This allows the observation of the penetration of the solvent on the structure, and the strength of the interaction of the solvent, or cossolvent, with each type of residue in the structure. The <code>ResidueContributions</code> and <code>Plots.contourf</code> auxiliary functions, <a href="../density_maps/#2D_per_residue">documented here</a>, are used:  </p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs"># Activate environment in current directory
+import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+# Run this once, to install necessary packages:
+# Pkg.add([&quot;ComplexMixtures&quot;, &quot;PDBTools&quot;, &quot;Plots&quot;, &quot;LaTeXStrings&quot;])
+
+# Load packages
+using ComplexMixtures
+using PDBTools
+using Plots
+
+# Load PDB file of the system
+atoms = read_pdb(&quot;./system.pdb&quot;)
+
+# Select the protein and the GLYC molecules
+protein = select(atoms, &quot;protein&quot;)
+
+# Load example output file (computed in the previous script)
+example_output = &quot;./glyc50_results.json&quot;
+results = load(example_output)
+
+#
+# Plot a 2D map showing the contributions of some residues
+#
+residue_contributions = ResidueContributions(
+  results, 
+  select(protein, &quot;resnum &gt;= 70 and resnum &lt;= 110&quot;)
+)
+contourf(residue_contributions; oneletter=true)
+savefig(&quot;./density2D.png&quot;)
+println(&quot;Created plot density2D.png&quot;)
+</code></pre></details><br><h4 id="Output-2"><a class="docs-heading-anchor" href="#Output-2">Output</a><a class="docs-heading-anchor-permalink" href="#Output-2" title="Permalink"></a></h4><p>The code above will produce the following plot, which contains, for each residue, the contributions of each residue to the distribution function of glycerol, within 1.5 to 3.5 <span>$\mathrm{\AA}$</span> of the surface of the protein.</p><center>
+<img width=70% src="../assets/scripts/example1/density2D.png">
+</center><h2 id="3D-map-example1"><a class="docs-heading-anchor" href="#3D-map-example1">3D density map</a><a id="3D-map-example1-1"></a><a class="docs-heading-anchor-permalink" href="#3D-map-example1" title="Permalink"></a></h2><p>In this example we compute three-dimensional representations of the density map of Glycerol in the vicinity of a set of residues of a protein, from the minimum-distance distribution function.  For further information about the <code>grid3D</code> function, go to the <a href="../density_maps/#grid3D">3D grid map</a> section of the manual.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+using PDBTools
+using ComplexMixtures
+
+# PDB file of the system simulated
+atoms = read_pdb(&quot;./system.pdb&quot;)
+
+# Load results of a ComplexMixtures run
+results = load(&quot;./glyc50_results.json&quot;)
+
+# Compute the 3D density grid and output it to the PDB file
+# here we use dmax=3.5 such that the the output file is not too large
+grid = grid3D(results, atoms, &quot;./grid.pdb&quot;; dmin=1.5, dmax=3.5)</code></pre></details><br><p>Here, the MDDF is decomposed at each distance according to the contributions of each <em>solute</em> (the protein) residue. The grid is created such that, at each point in space around the protein, it is possible to identify: </p><ol><li><p>Which atom is the closest atom of the solute to that point.</p></li><li><p>Which is the contribution of that atom (or residue) to the distribution function.</p></li></ol><p>Therefore, by filtering the 3D density map at each distance one can visualize over the solute structure which are the regions that mostly interact with the solvent of choice at each distance. Typical images of such a density are:</p><center>
+<img width=100% src="../figures/density3D_final.png">
+</center><p>In the figure on the left, the points in space around the protein are selected with the following properties: distance from the protein smaller than 2.0Å and relative contribution to the MDDF at the corresponding distance of at least 10% of the maximum contribution. Thus, we are selecting the regions of the protein corresponding to the most stable hydrogen-bonding interactions. The color of the points is the contribution to the MDDF, from blue to red. Thus, the most reddish-points corresponds to the regions where the most stable hydrogen bonds were formed. We have marked two regions here, on opposite sides of the protein, with arrows.</p><p>Clicking on those points we obtain which are the atoms of the protein contributing to the MDDF at that region. In particular, the arrow on the right points to the strongest red region, which corresponds to an Aspartic acid. These residues are shown explicitly under the density (represented as a transparent surface) on the figure in the center.</p><p>The figure on the right displays, overlapped with the hydrogen-bonding residues, the most important contributions to the second peak of the distribution, corresponding to distances from the protein between 2.0 and 3.5Å. Notably, the regions involved are different from the ones forming hydrogen bonds, indicating that non-specific interactions with the protein (and not a second solvation shell) are responsible for the second peak. </p><h3 id="How-to-run-this-example:"><a class="docs-heading-anchor" href="#How-to-run-this-example:">How to run this example:</a><a id="How-to-run-this-example:-1"></a><a class="docs-heading-anchor-permalink" href="#How-to-run-this-example:" title="Permalink"></a></h3><p>Assuming that the input files are available in the script directory, just run the script with:</p><pre><code class="language-bash hljs">julia density3D.jl</code></pre><p>Alternatively, open Julia and copy/paste or the commands in <code>density3D.jl</code> or use <code>include(&quot;./density3D.jl&quot;)</code>. These options will allow you to remain on the Julia section with access to the <code>grid</code> data structure that was generated and corresponds to the output <code>grid.pdb</code> file. </p><p>This will create the <code>grid.pdb</code> file. <a href="../assets/scripts/example1/grid.vmd">Here</a> we provide a previously setup VMD session that contains the data with the visualization choices used to generate the figure above. Load it with:</p><pre><code class="language-bash hljs">vmd -e grid.vmd</code></pre><p>A short tutorial video showing how to open the input and output PDB files in VMD and produce images of the density is available here: </p><center>
+<iframe width="560" style="height:315px" src="https://www.youtube.com/embed/V4Py44IKDh8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../examples/">« Running the examples</a><a class="docs-footer-nextpage" href="../example2/">Polyacrylamide in DMF »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 15 December 2025 18:35">Monday 15 December 2025</span>. Using Julia version 1.10.10.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
