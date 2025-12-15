@@ -207,9 +207,11 @@ Pages = ["tools/grid3D.jl"]
 The call to `grid3D` will write an output a PDB file with the grid points, which loaded in a visualization software side-by-side with the protein structure, allows the production of the images shown. The `grid.pdb` file contains a regular PDB format where: 
 
 - The positions of the atoms are grid points. 
-- The identity of the atoms correspond to the identity of the protein atom contributing to the MDDF at that point (the closest protein atom). 
-- The temperature-factor column (`beta`) contains the relative contribution of that atom to the MDDF at the corresponding distance. 
+- The identity of the atoms correspond to the identity of the protein atom contributing to the property at that point (the closest protein atom). 
+- The temperature-factor column (`beta`) contains the relative contribution of that atom to the property at the corresponding distance. 
 - The `occupancy` field contains the distance itself.
+
+The "property" is, by default, the MDDF. Coordination numbers of minimum-distance counts can be used by setting the `type` keyword parameter.
 
 For example, the distribution function of a hydrogen-bonding liquid solvating a protein will display a characteristic peak at about 1.8Å. The MDDF at that distance can be decomposed into the contributions of all atoms of the protein which were found to form hydrogen bonds to the solvent. A 3D representation of these contributions can be obtained by computing, around a static protein (solute) structure, which are the regions in space which are closer to each atom of the protein. The position in space is then marked with the atom of the protein to which that region "belongs" and with the contribution of that atom to the MDDF at each distance within that region. A special function to compute this 3D distribution is provided here: `grid3D`. 
 
