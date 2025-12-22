@@ -117,10 +117,14 @@ Please cite the following articles if the package was useful to you:
 
 ### Applications
 
-* A. F. Pereira, L. Martínez, **Osmolyte Structural and Thermodynamic Effects Across the Protein Folding Landscape**, *JACS Au*, 2025. [[Full Text]](https://doi.org/10.1021/jacsau.5c00813). 
+```@raw html
+<a href="https://doi.org/10.1021/jacsau.5c00813"><img style="float: left" src="assets/pereira2025.png" width="25%"></a>
+```
+
+* A. F. Pereira, L. Martínez, **Osmolyte Structural and Thermodynamic Effects Across the Protein Folding Landscape**, *JACS Au*, 5, 12, 6025–6041, 2025. [[Full Text]](https://doi.org/10.1021/jacsau.5c00813). 
 
 ```@raw html
-<a href="https://pubs.acs.org/toc/jpcbfk/129/27"><img style="float: right" src="assets/2025_jpcb_capa.png" width="20%"></a>
+<a href="https://pubs.acs.org/toc/jpcbfk/129/27"><img style="float: right" src="assets/2025_jpcb_capa.png" width="22%"></a>
 ```
 
 * V. Piccoli, L. Martínez, **Cation Hydrophobicity Effects on Protein Solvation in Aqueous Ionic Liquids**, *J. Phys. Chem. B*, 129 (27) 6765-6776, 2025. [[Full Text]](https://pubs.acs.org/doi/10.1021/acs.jpcb.5c00779). 
