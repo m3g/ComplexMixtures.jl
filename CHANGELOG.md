@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.16.1-DEV
 --------------
+- ![INFO][badge-info] Add JACS Au cover and update reference.
 
 Version 2.16.0
 --------------
