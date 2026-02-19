@@ -72,24 +72,22 @@ molecules have the same number of atoms.
 mol_index(i, natomspermol) = (i - 1) ÷ natomspermol + 1
 
 #=
-    update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
+    update_list!(pair, jref_atom, j_natoms_per_molecule, isolute, list::Vector{MinimumDistance})
 
 Function that updates a list of minimum distances given the indices of the atoms involved for one pair within cutoff,
 for autocorrelations (such that the identity of `isolute` is needed)
 
 =#
 function update_list!(
-    i,
-    j,
-    d2,
+    pair,
     jref_atom,
     j_natoms_per_molecule,
     isolute,
     list::Vector{MinimumDistance},
 )
+    (; i, j, d) = pair
     jmol = mol_index(j, j_natoms_per_molecule)
     if jmol != isolute
-        d = sqrt(d2)
         ref_atom_within_cutoff = (atom_type(j, j_natoms_per_molecule) == jref_atom)
         dref = ref_atom_within_cutoff ? d : +Inf
         list[jmol] = update_md(
@@ -101,20 +99,18 @@ function update_list!(
 end
 
 #=
-    update_list!(i, j, d2, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
+    update_list!(pair, jref_atom, j_natoms_per_molecule, list::Vector{MinimumDistance})
 
 Function that updates a list of minimum distances given the indices of the atoms involved for one pair within cutoff.
 
 =#
 function update_list!(
-    i,
-    j,
-    d2,
+    pair,
     jref_atom,
     j_natoms_per_molecule,
     list::Vector{MinimumDistance},
 )
-    d = sqrt(d2)
+    (; i, j, d) = pair
     jmol = mol_index(j, j_natoms_per_molecule)
     ref_atom_within_cutoff = (atom_type(j, j_natoms_per_molecule) == jref_atom)
     dref = ref_atom_within_cutoff ? d : +Inf
@@ -134,23 +130,18 @@ function minimum_distances!(
     system::AbstractParticleSystem,
     R::Result,
     isolute::Int;
-    update_lists::Bool,
 )
     jref_atom = R.files[1].irefatom
     jnatomspermol = R.solvent.natomspermol
     if R.autocorrelation
-        map_pairwise!(
-            (x, y, i, j, d2, list) ->
-                update_list!(i, j, d2, jref_atom, jnatomspermol, isolute, list),
+        pairwise!(
+            (pair, list) -> update_list!(pair, jref_atom, jnatomspermol, isolute, list),
             system;
-            update_lists=update_lists,
         )
     else
-        map_pairwise!(
-            (x, y, i, j, d2, list) ->
-                update_list!(i, j, d2, jref_atom, jnatomspermol, list),
+        pairwise!(
+            (pair, list) -> update_list!(pair, jref_atom, jnatomspermol, list),
             system;
-            update_lists=update_lists,
         )
     end
     return system.list
@@ -180,7 +171,6 @@ function CellListMap.ParticleSystem(
         lcell=options.lcell,
         parallel, # true only if low_memory is set 
         nbatches,
-        autoswap=false, # The lists will be built for the solvent, always
     )
     return system
 end

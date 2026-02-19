@@ -65,12 +65,12 @@ end
 end
 
 #=
-    move!(x::AbstractVector, newcm::AbstractVector,beta, gamma, theta)
+    move!(x, newcm, beta, gamma, theta)
 
 Translates and rotates a molecule according to the desired input center of coordinates and Euler rotations modifyies the vector x.
 
 =#
-function move!(x::AbstractVector{T}, newcm::T, beta, gamma, theta) where {T<:SVector}
+function move!(x, newcm, beta, gamma, theta)
     cm = mean(x)
     A = eulermat(beta, gamma, theta)
     for i in eachindex(x)
@@ -96,18 +96,16 @@ end
 end
 
 #=
-    random_move!(x_ref::AbstractVector{T}, 
+    random_move!(x, 
                  irefatom::Integer,
                  system::AbstractParticleSystem,
-                 x_new::AbstractVector{T}, RNG) where {T<:SVector}
+                 RNG)
 
-Function that generates a new random position for a molecule.
-
-The new position is returned in `x_new`, a previously allocated array.
+Function that generates a new random position for a molecule, updating the coordinates of  in x.
 
 =#
 function random_move!(
-    x::AbstractVector{<:SVector{3}},
+    x,
     irefatom::Integer,
     system::AbstractParticleSystem,
     RNG,
