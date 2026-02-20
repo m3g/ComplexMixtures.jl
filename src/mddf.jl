@@ -288,7 +288,7 @@ function mddf(
     @sync for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
         Threads.@spawn begin
             # Local data structures for this chunk
-            system_chunk = ParticleSystem(
+            system_chunk = build_particle_system(
                 trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
             )
             buff_chunk = Buffer(trajectory, R)

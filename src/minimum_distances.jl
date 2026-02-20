@@ -154,7 +154,7 @@ will be setup such that `xpositions` corresponds to one molecule of the solute, 
 `ypositions` contains all coordinates of all atoms of the solvent. 
 
 =#
-function CellListMap.ParticleSystem(
+function build_particle_system(
     trajectory::Trajectory,
     unitcell,
     options::Options,
