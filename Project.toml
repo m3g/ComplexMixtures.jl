@@ -75,3 +75,8 @@ TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [targets]
 test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner", "Aqua", "DelimitedFiles", "Documenter", "Random", "Plots", "ShowMethodTesting"]
+
+[sources]
+CellListMap = {url = "https://github.com/m3g/CellListMap.jl", rev = "main"}
+PDBTools = {url = "https://github.com/m3g/PDBTools.jl", rev = "celllistmap-0.10.0"}
+
