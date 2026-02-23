@@ -190,7 +190,7 @@ end
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
-    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1, 1))
+    system = ComplexMixtures.build_particle_system(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181)
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
@@ -206,7 +206,7 @@ end
     # Auto-correlation
     traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
-    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1, 1))
+    system = ComplexMixtures.build_particle_system(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0
     @test system.list == fill(zero(ComplexMixtures.MinimumDistance), 181) # one molecule less
     @test system.output == fill(zero(ComplexMixtures.MinimumDistance), 181)
