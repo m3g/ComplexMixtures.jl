@@ -313,7 +313,7 @@ function mddf(
                         @. buff_chunk.solvent_read = trajectory.x_solvent
                         # Read weight of this frame
                         unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
-                        update_unitcell!(system_chunk, unitcell)
+                        update!(system_chunk; unitcell=unitcell)
                         # Display progress bar
                         next!(progress)
                     end

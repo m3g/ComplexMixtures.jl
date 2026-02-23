@@ -7,7 +7,7 @@ import PrecompileTools
 import Random
 import StructTypes
 
-using CellListMap: CellListMap, AbstractParticleSystem, ParticleSystem, update_unitcell!, pairwise!
+using CellListMap: CellListMap, AbstractParticleSystem, ParticleSystem, pairwise!, update!
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
 using LinearAlgebra: norm, cross, dot, diag
 using FortranFiles: FortranFile, rewind, FString, read, close
