@@ -169,7 +169,7 @@ The complete data available is:
 | `irefatom` | This is a reference atom that is used to generate random rotations and translations internally. | `Int` | Counts of the distributions for this atom are performed automatically to obtain radial (or proximal) distribution functions. Can be used for testing purposes. |
 | `rdf_count` | This is the `md_count` minimum distance count of `irefatom`. | `Vector{Float64}` | This corresponds to the conventional radial distribution function if the solute contains only one atom. | 
 | `rdf_count_random` | Minimum distance of `irefatom` count for the random distribution. | `Vector{Float64}` | |
-| `rdf` | Distribution function computed from the `irefatom` distribution. It is a conventional `rdf` if the solvent has only one atom. | `Vector{Float64}` | | 
+| `rdf` | Distribution function computed from the `irefatom` distribution.| `Vector{Float64}` |  It is a conventional `rdf` if the solute has only one atom. | 
 | `kb_rdf` | Kirkwood-Buff integral computed from the `irefatom` distribution. | `Vector{Float64}` | This must converge, at long distances, to the same value as `kb`, and can be used for testing. | 
 | `options` | Calculation options. | `Options` | Carries (some redundant) options set by the user. | 
 | `lastframe_read` | Last frame read from the trajectory. | `Int` | | 
