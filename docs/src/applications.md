@@ -5,13 +5,13 @@
 ```
 
 * E. D. S. Mourão, F. C. Ramos, L. Martínez, **Molecular Basis for Solvation Structure and Thermodynamics of Polyacrylamide in Aqueous Solutions of Glucose.**
-  *Macromolecules*, 2026. [Full Text]
+  *Macromolecules*, 2026. [[Full Text]](https://pubs.acs.org/doi/10.1021/acs.macromol.5c03031)
 
 * C. A. Tavares, M. Soñora, S. Pantano, L. Martínez, **Lipid Architecture in the Zika Virus.**
-  *ACS Phys. Chem. Au*, 2026. [Full Text]
+  *ACS Phys. Chem. Au*, 2026. [[Full Text]](https://pubs.acs.org/doi/10.1021/acsphyschemau.5c00113)
 
 * V. Piccoli, A. F. Pereira, L. Rivillas-Acevedo, N. Pastor, A. E. Peláez-Aguilar, L. Martínez, **Preferential Solvation by Trifluoroethanol Drives α-Helical Folding in the Disordered S2 Region of the Escargot Protein.**
-  *ChemPhysChem*, (27) 3, e202500668, 2026. [Full Text]
+  *ChemPhysChem*, (27) 3, e202500668, 2026. [[Full Text]](https://chemistry-europe.onlinelibrary.wiley.com/doi/10.1002/cphc.202500668)
 
 ```@raw html
 <a href="https://doi.org/10.1021/jacsau.5c00813"><img style="float: left" src="../assets/pereira2025.png" width="25%"></a>
