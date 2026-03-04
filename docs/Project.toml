@@ -7,3 +7,4 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [sources]
 ComplexMixtures = {path = ".."}
+Documenter = {rev = "top_menu", url = "https://github.com/lmiq/Documenter.jl"}
