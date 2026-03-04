@@ -1,11 +1,9 @@
 
-# Quick Guide
+# Quick example
 
 First, follow the [installation](@ref Installation) instructions. 
 Below is a complete working example, followed by detailed descriptions 
 of each command.
-
-## Basic example
 
 Here we show the input file required for the study of the solvation of a protein
 by the `TMAO` solvent, which is a molecule with 14 atoms. The protein is assumed to be
@@ -13,7 +11,7 @@ at infinite dilution in the simulation. The trajectory of the simulation is in `
 format in this example, which is the default output of `NAMD` and `CHARMM` simulation
 packages.
 
-### Input files
+## Input files
 
 The files necessary to run this would be:
 
@@ -24,7 +22,7 @@ The files necessary to run this would be:
 These files are not provided for this example. For complete running examples, please
 check our [examples](@ref examples) section.
 
-### The Julia script
+## The Julia script
 
 ```@eval
 using Markdown

@@ -79,4 +79,4 @@ test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "Te
 [sources]
 CellListMap = {url = "https://github.com/m3g/CellListMap.jl", rev = "main"}
 PDBTools = {url = "https://github.com/m3g/PDBTools.jl", rev = "celllistmap-0.10.0"}
-
+Documenter = {rev = "top_menu", url = "https://github.com/lmiq/Documenter.jl"}

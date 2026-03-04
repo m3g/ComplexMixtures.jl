@@ -13,6 +13,7 @@ ComplexMixtures.jl Changelog
 Version 2.16.1-DEV
 --------------
 - ![INFO][badge-info] Update internals to use CellListMap v0.10.0. 
+- ![INFO][badge-info] add concepts.md page - use top_menu
 - ![INFO][badge-info] Add JACS Au cover and update reference.
 
 Version 2.16.0

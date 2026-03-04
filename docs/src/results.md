@@ -1,4 +1,4 @@
-# [Results](@id results)
+# [Result data structure](@id results)
 
 ```@meta
 CollapsedDocStrings = true
