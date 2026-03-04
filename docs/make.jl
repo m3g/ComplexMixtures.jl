@@ -12,13 +12,16 @@ makedocs(
     ],
     sitename="ComplexMixtures.jl",
     pages=[
-        "Introduction" => "index.md",
-        "Install and run" => Any[ 
+        "Introduction" => Any[ 
+            "Home" => "index.md",
+            "Concepts" => "concepts.md",
+        ],
+        "Getting started" => Any[ 
             "Installation" => "installation.md",
             "Parallel execution" => "parallel.md",
+            "Quick example" =>  "quickguide.md",
             "From Python" => "python.md",
         ],
-        "Quick Guide" => "quickguide.md",
         "Examples" => Any[
             "Running the examples" => "examples.md",
             "Protein in water/glycerol" => "example1.md",
