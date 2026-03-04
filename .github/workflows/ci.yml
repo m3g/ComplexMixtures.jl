@@ -78,7 +78,6 @@ jobs:
           version: 'lts'
       - run: |
           julia --project=docs -e '
-            import Pkg; Pkg.add("Documenter")
             using Pkg
             Pkg.develop(PackageSpec(path=pwd()))
             Pkg.instantiate()'
