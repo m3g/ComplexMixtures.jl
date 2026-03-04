@@ -75,3 +75,6 @@ TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [targets]
 test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner", "Aqua", "DelimitedFiles", "Documenter", "Random", "Plots", "ShowMethodTesting"]
+
+[sources]
+Documenter = {rev = "top_menu", url = "https://github.com/lmiq/Documenter.jl"}

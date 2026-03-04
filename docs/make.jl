@@ -1,24 +1,22 @@
-import Pkg
-Pkg.add("Documenter")
 using Documenter
 using ComplexMixtures
 using PDBTools
 using Plots
-push!(LOAD_PATH, "../src/")
 makedocs(
     modules=[
         ComplexMixtures,
         isdefined(Base, :get_extension) ? Base.get_extension(ComplexMixtures, :Plotting) : ComplexMixtures.Plotting,
     ],
     sitename="ComplexMixtures.jl",
-    pages=[
-        "Introduction" => "index.md",
-        "Install and run" => Any[ 
+    top_menu = [
+        "Getting started" => Any[ 
+            "Introduction" => "index.md",
+            "Concepts" => "concepts.md",
             "Installation" => "installation.md",
             "Parallel execution" => "parallel.md",
+            "Quick example" =>  "quickguide.md",
             "From Python" => "python.md",
         ],
-        "Quick Guide" => "quickguide.md",
         "Examples" => Any[
             "Running the examples" => "examples.md",
             "Protein in water/glycerol" => "example1.md",
@@ -41,7 +39,12 @@ makedocs(
             "Tools" => "tools.md",
         ],
 #        "Updating scripts" => "updating_scripts.md",
-        "References" => "references.md",
+        "References" => Any[
+            "Primary citations" => "citations.md",
+            "Applications" => "applications.md",
+            "See also" => "seealso.md",
+            "Breaking changes" => "breaking_changes.md",
+        ],
     ],
 )
 deploydocs(
