@@ -12,12 +12,12 @@ function mol_range(imol, n_atoms_per_molecule)
 end
 
 #=
-    viewmol(i::Integer, x::Vector{T}, n::Int) where T
+    viewmol(i::Integer, x, n::Int) where T
 
 Returns a view of a coordinate vector corresponding to the atoms of a molecule with index i. n is the number of atoms of the molecule.
 
 =#
-viewmol(i::Integer, x::Vector{T}, n::Integer) where {T} = @view(x[mol_range(i, n)])
+viewmol(i::Integer, x, n::Integer) = @view(x[mol_range(i, n)])
 
 # From the selection of the solute or solvent
-viewmol(i::Integer, x::Vector{T}, s::AtomSelection) where {T} = viewmol(i, x, s.natomspermol)
+viewmol(i::Integer, x, s::AtomSelection) = viewmol(i, x, s.natomspermol)

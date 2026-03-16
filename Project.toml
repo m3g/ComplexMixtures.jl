@@ -33,7 +33,7 @@ Plotting = "Plots"
 [compat]
 Aqua = "0.8.9"
 BenchmarkTools = "1"
-CellListMap = "0.9.7"
+CellListMap = "0.10.0"
 Chemfiles = "0.10.3"
 ChunkSplitters = "3.1"
 DelimitedFiles = "1.9"
@@ -77,4 +77,6 @@ TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner", "Aqua", "DelimitedFiles", "Documenter", "Random", "Plots", "ShowMethodTesting"]
 
 [sources]
+CellListMap = {url = "https://github.com/m3g/CellListMap.jl", rev = "main"}
+PDBTools = {url = "https://github.com/m3g/PDBTools.jl", rev = "celllistmap-0.10.0"}
 Documenter = {rev = "top_menu", url = "https://github.com/lmiq/Documenter.jl"}

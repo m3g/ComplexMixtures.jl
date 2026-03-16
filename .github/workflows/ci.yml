@@ -19,8 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - 'lts'
-          - 'pre'
+          - '1'
         os:
           - ubuntu-latest
           - macOS-latest
@@ -46,8 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - 'lts'
-          - 'pre'
+          - '1'
         os:
           - ubuntu-latest
         build_is_production_build:
