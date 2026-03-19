@@ -7,8 +7,10 @@ makedocs(
         ComplexMixtures,
         isdefined(Base, :get_extension) ? Base.get_extension(ComplexMixtures, :Plotting) : ComplexMixtures.Plotting,
     ],
+    format=Documenter.LaTeX(),
+    top_menu=true,
     sitename="ComplexMixtures.jl",
-    top_menu = [
+    pages = [
         "Getting started" => Any[ 
             "Introduction" => "index.md",
             "Concepts" => "concepts.md",
