@@ -28,6 +28,10 @@ export save, load, write, merge
 export atom_group, atom_group_name, atom_group_names
 export renormalize
 
+# Graphical UI (requires Bonito and WGLMakie extension)
+export gui
+function gui end
+
 # Tools
 import MolSimToolkitShared: coordination_number
 export coordination_number

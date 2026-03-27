@@ -1,9 +1,10 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
-authors = ["Leandro Martinez <lmartine@unicamp.br>"]
 version = "2.16.1-DEV"
+authors = ["Leandro Martinez <lmartine@unicamp.br>"]
 
 [deps]
+Bonito = "824d6782-a2ef-11e9-3a09-e5662e0c26f8"
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
 Chemfiles = "46823bd8-5fb3-5f92-9aa0-96921f3dd015"
 ChunkSplitters = "ae650224-84b6-46f8-82ea-d812ca08434e"
@@ -23,16 +24,22 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
+WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 
 [weakdeps]
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
+[sources]
+Documenter = {rev = "top_menu_from_pages", url = "https://github.com/lmiq/Documenter.jl"}
+
 [extensions]
+GUI = ["WGLMakie", "Bonito"]
 Plotting = "Plots"
 
 [compat]
 Aqua = "0.8.9"
 BenchmarkTools = "1"
+Bonito = "0.6, 1, 2, 3, 4"
 CellListMap = "0.9.7"
 Chemfiles = "0.10.3"
 ChunkSplitters = "3.1"
@@ -58,6 +65,7 @@ StructTypes = "1.10"
 Test = "1.10"
 TestItemRunner = "1.1"
 TestItems = "1"
+WGLMakie = "0.10, 0.11, 1"
 julia = "1.10"
 
 [extras]
@@ -75,6 +83,3 @@ TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [targets]
 test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner", "Aqua", "DelimitedFiles", "Documenter", "Random", "Plots", "ShowMethodTesting"]
-
-[sources]
-Documenter = {rev = "top_menu_from_pages", url = "https://github.com/lmiq/Documenter.jl"}
