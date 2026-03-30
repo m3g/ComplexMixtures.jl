@@ -91,9 +91,26 @@ button { font-size: 12px !important; padding: 3px 8px !important; }
 input, select, textarea { font-size: 12px !important; }
 .cm-grp-list { margin: 4px 0; border: 1px solid #e0e0e0; border-radius: 4px; padding: 4px 8px; overflow-y: auto; background: #fff; }
 .cm-grp-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 12px; }
-.cm-tab2-body { display: flex; gap: 10px; align-items: flex-start; }
-.cm-grp-panel { width: 200px; flex-shrink: 0; border: 1px solid #ddd; border-radius: 4px; padding: 8px; background: #fafafa; }
-.cm-grp-panel-title { font-weight: bold; font-size: 12px; color: #333; margin-bottom: 6px; }
+.cm-tab2-body { display: flex; gap: 10px; align-items: stretch; }
+.cm-grp-panel { width: 220px; flex-shrink: 0; border: 1px solid #ddd; border-radius: 4px; padding: 8px; background: #fafafa; display: flex; flex-direction: column; }
+.cm-export-section { margin-top: auto; padding-top: 8px; border-top: 1px solid #ddd; }
+.cm-export-field { display: flex; flex-direction: column; gap: 2px; margin: 3px 0; }
+.cm-export-field label { color: #555; font-size: 11px; }
+.cm-export-field input[type=text], .cm-export-field input[type=textfield] { width: 100%; font-size: 11px !important; box-sizing: border-box; }
+.cm-export-field-inline { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
+.cm-export-field-inline label { white-space: nowrap; color: #555; font-size: 11px; min-width: 56px; }
+.cm-export-field-inline select { flex: 1; font-size: 11px !important; }
+.cm-export-btns { display: flex; gap: 4px; margin: 4px 0; flex-wrap: wrap; }
+.cm-export-btns button { flex: 1; font-size: 10px !important; padding: 2px 4px !important; }
+.cm-grp-panel-title { font-weight: bold; font-size: 12px; color: #333; margin-bottom: 4px; }
+.cm-comp-tabs { display: flex; gap: 0; margin-bottom: 6px; border-bottom: 2px solid #ccc; width: fit-content; }
+.cm-comp-tab button { font-size: 11px !important; padding: 3px 8px !important; border: 1px solid #ccc; border-bottom: none; border-radius: 3px 3px 0 0; background: #f0f0f0; cursor: pointer; margin-right: 2px; width: fit-content !important; }
+.cm-comp-tab.active button { background: #3970d1 !important; color: white !important; font-weight: bold; border-color: #3970d1; }
+.cm-fig-wrap { display: flex; flex-direction: column; }
+.cm-fig-row { display: flex; align-items: stretch; }
+.cm-ylabel { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; color: #444; text-align: center; padding: 0 3px; white-space: nowrap; }
+.cm-xlabel { text-align: center; font-size: 12px; color: #444; margin: 1px 0 3px 0; }
+.cm-plot-title { text-align: center; font-size: 14px; font-weight: bold; color: #222; margin: 6px 0 1px 0; }
 .cm-row-left label { min-width: auto !important; text-align: left !important; font-weight: normal; }
 .cm-tabs { display: flex; gap: 4px; margin-bottom: 0px; }
 .cm-tab-btn { padding: 6px 16px; border: 1px solid #ccc; border-radius: 4px 4px 0 0;
@@ -307,11 +324,10 @@ function ComplexMixtures.gui(;
         # ══════════════════════════════════════════════════════════════
 
         # ── Tab 1: MDDF & KB ──────────────────────────────────────────
-        fig1 = Figure(; size=(900, 620))
-        ax_mddf = Axis(fig1[1, 1]; ylabel="g(r)", ylabelsize=14, xticklabelsize=11, yticklabelsize=11)
-        Label(fig1[1, 1, Top()], "MDDF"; fontsize=16, padding=(0, 0, 4, 0))
-        ax_kb = Axis(fig1[2, 1]; ylabel="KB (cm3/mol)", ylabelsize=14, xticklabelsize=11, yticklabelsize=11)
-        Label(fig1[2, 1, Top()], "Kirkwood-Buff Integral"; fontsize=16, padding=(0, 0, 4, 0))
+        fig1_mddf = Figure(; size=(900, 295))
+        ax_mddf = Axis(fig1_mddf[1, 1]; xticklabelsize=11, yticklabelsize=11)
+        fig1_kb = Figure(; size=(900, 295))
+        ax_kb = Axis(fig1_kb[1, 1]; xticklabelsize=11, yticklabelsize=11)
 
         # Tab 1 limits (below the plots)
         tf_mddf_xmin = Bonito.NumberInput(0.0)
@@ -338,69 +354,166 @@ function ComplexMixtures.gui(;
                 btn_kb_lims),
         )
 
-        # ── Tab 2: Group Contributions ────────────────────────────────
-        fig2 = Figure(; size=(900, 620))
-        ax_grp_mddf = Axis(fig2[1, 1]; ylabel="g(r)", ylabelsize=14, xticklabelsize=11, yticklabelsize=11)
-        Label(fig2[1, 1, Top()], "Group MDDF Contributions"; fontsize=16, padding=(0, 0, 4, 0))
-        ax_grp_cn = Axis(fig2[2, 1]; ylabel="Coordination number", ylabelsize=14, xticklabelsize=11, yticklabelsize=11)
-        Label(fig2[2, 1, Top()], "Group Coord. Number Contributions"; fontsize=16, padding=(0, 0, 4, 0))
-
+        # ── Tab 2 & 3: Group Contributions (Solute / Solvent) ────────────
         MAX_GROUPS = 10
-        tf_newgrp = Bonito.TextField("resname ARG")
-        btn_addgrp = Bonito.Button("Add")
-        grp_names = [Observable("") for _ in 1:MAX_GROUPS]
-        grp_checks = [Bonito.Checkbox(true) for _ in 1:MAX_GROUPS]
-        grp_active = Observable(0)
-        grp_total_check = Bonito.Checkbox(true)
-        btn_rmgrp = Bonito.Button("Remove unchecked")
-        dd_side = Bonito.Dropdown(["Solute", "Solvent"])
 
-        checklist_dom = map(grp_active) do n
-            rows = Any[DOM.div(class="cm-grp-item",
-                grp_total_check,
-                DOM.span("Total MDDF"),
-            )]
+        # Solute group tab figures
+        fig_sol_mddf = Figure(; size=(900, 295))
+        ax_sol_mddf = Axis(fig_sol_mddf[1, 1]; xticklabelsize=11, yticklabelsize=11)
+        fig_sol_cn = Figure(; size=(900, 295))
+        ax_sol_cn = Axis(fig_sol_cn[1, 1]; xticklabelsize=11, yticklabelsize=11)
+
+        # Solvent group tab figures
+        fig_slv_mddf = Figure(; size=(900, 295))
+        ax_slv_mddf = Axis(fig_slv_mddf[1, 1]; xticklabelsize=11, yticklabelsize=11)
+        fig_slv_cn = Figure(; size=(900, 295))
+        ax_slv_cn = Axis(fig_slv_cn[1, 1]; xticklabelsize=11, yticklabelsize=11)
+
+        # Solute group state
+        tf_comp_sol = Bonito.TextField("protein")
+        tf_newgrp_sol = Bonito.TextField("resname ARG")
+        btn_addgrp_sol = Bonito.Button("Add")
+        btn_rmgrp_sol = Bonito.Button("Remove unchecked")
+        grp_names_sol  = [Observable("") for _ in 1:MAX_GROUPS]
+        grp_labels_sol = [Observable("") for _ in 1:MAX_GROUPS]
+        grp_checks_sol = [Bonito.Checkbox(true) for _ in 1:MAX_GROUPS]
+        grp_active_sol = Observable(0)
+        grp_total_sol = Bonito.Checkbox(true)
+
+        # Solvent group state
+        tf_comp_slv = Bonito.TextField("resname TMAO")
+        tf_newgrp_slv = Bonito.TextField("element O")
+        btn_addgrp_slv = Bonito.Button("Add")
+        btn_rmgrp_slv = Bonito.Button("Remove unchecked")
+        grp_names_slv  = [Observable("") for _ in 1:MAX_GROUPS]
+        grp_labels_slv = [Observable("") for _ in 1:MAX_GROUPS]
+        grp_checks_slv = [Bonito.Checkbox(true) for _ in 1:MAX_GROUPS]
+        grp_active_slv = Observable(0)
+        grp_total_slv = Bonito.Checkbox(true)
+
+        checklist_sol_dom = map(grp_active_sol) do n
+            rows = Any[DOM.div(class="cm-grp-item", grp_total_sol, DOM.span("Total MDDF"))]
             for i in 1:n
-                push!(rows, DOM.div(class="cm-grp-item",
-                    grp_checks[i],
-                    DOM.span(grp_names[i][]),
-                ))
+                push!(rows, DOM.div(class="cm-grp-item", grp_checks_sol[i], DOM.span(grp_labels_sol[i][])))
             end
             DOM.div(class="cm-grp-list", rows...)
         end
 
-        # Group limits (below plots)
+        checklist_slv_dom = map(grp_active_slv) do n
+            rows = Any[DOM.div(class="cm-grp-item", grp_total_slv, DOM.span("Total MDDF"))]
+            for i in 1:n
+                push!(rows, DOM.div(class="cm-grp-item", grp_checks_slv[i], DOM.span(grp_labels_slv[i][])))
+            end
+            DOM.div(class="cm-grp-list", rows...)
+        end
+
+        # Group limits (shared)
         tf_grp_xmin = Bonito.NumberInput(0.0)
         tf_grp_xmax = Bonito.NumberInput(10.0)
         tf_grp_ymin = Bonito.NumberInput(0.0)
         tf_grp_ymax = Bonito.NumberInput(5.0)
-        btn_grp_lims = Bonito.Button("Apply")
+        btn_grp_lims_sol = Bonito.Button("Apply")
+        btn_grp_lims_slv = Bonito.Button("Apply")
 
-        tab2_body = DOM.div(class="cm-tab2-body",
+        # Export controls - Solute
+        tf_export_sol      = Bonito.TextField("solute_group_contributions")
+        dd_export_fmt_sol  = Bonito.Dropdown(["svg", "png", "pdf"])
+        btn_export_mddf_sol = Bonito.Button("Export MDDF plot")
+        btn_export_cn_sol   = Bonito.Button("Export CN plot")
+        btn_export_csv_sol  = Bonito.Button("Export data (CSV)")
+        last_sol_data = Observable{Any}(nothing)
+
+        # Export controls - Solvent
+        tf_export_slv      = Bonito.TextField("solvent_group_contributions")
+        dd_export_fmt_slv  = Bonito.Dropdown(["svg", "png", "pdf"])
+        btn_export_mddf_slv = Bonito.Button("Export MDDF plot")
+        btn_export_cn_slv   = Bonito.Button("Export CN plot")
+        btn_export_csv_slv  = Bonito.Button("Export data (CSV)")
+        last_slv_data = Observable{Any}(nothing)
+
+        tab_sol_body = DOM.div(class="cm-tab2-body",
             DOM.div(
-                fig2,
-                DOM.div(style="text-align:center; font-size:13px; color:#444; margin: 0 0 2px 0;", "r (Angstrom)"),
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "Solute MDDF Group Contributions"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "MDDF(r)"),
+                        fig_sol_mddf,
+                    ),
+                ),
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "Solute Coord. Number Group Contributions"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "Coordination number"),
+                        fig_sol_cn,
+                    ),
+                ),
+                DOM.div(class="cm-xlabel", "r (Angstrom)"),
+                DOM.div(class="cm-lims-row",
+                    DOM.span("Limits:"),
+                    DOM.span("x:"), tf_grp_xmin, DOM.span("–"), tf_grp_xmax,
+                    DOM.span("y:"), tf_grp_ymin, DOM.span("–"), tf_grp_ymax,
+                    btn_grp_lims_sol),
             ),
             DOM.div(class="cm-grp-panel",
+                DOM.div(class="cm-row cm-row-left", DOM.label("Solute:"), tf_comp_sol),
                 DOM.div(class="cm-grp-panel-title", "Groups"),
-                DOM.div(class="cm-lims-row", tf_newgrp, btn_addgrp),
-                DOM.div(class="cm-row cm-row-left", DOM.label("Side:"), dd_side),
-                checklist_dom,
-                DOM.div(style="margin: 4px 0;", btn_rmgrp),
+                DOM.div(class="cm-lims-row", tf_newgrp_sol, btn_addgrp_sol),
+                checklist_sol_dom,
+                DOM.div(style="margin: 4px 0;", btn_rmgrp_sol),
+                DOM.div(class="cm-export-section",
+                    DOM.div(class="cm-grp-panel-title", "Export"),
+                    DOM.div(class="cm-export-field", DOM.label("File name:"), tf_export_sol),
+                    DOM.div(class="cm-export-field-inline", DOM.label("Format:"), dd_export_fmt_sol),
+                    DOM.div(class="cm-export-btns", btn_export_mddf_sol, btn_export_cn_sol),
+                    DOM.div(class="cm-export-btns", btn_export_csv_sol),
+                ),
             ),
         )
 
-        tab2_limits = DOM.div(class="cm-lims-row",
-            DOM.span("Limits:"),
-            DOM.span("x:"), tf_grp_xmin, DOM.span("–"), tf_grp_xmax,
-            DOM.span("y:"), tf_grp_ymin, DOM.span("–"), tf_grp_ymax,
-            btn_grp_lims,
+        tab_slv_body = DOM.div(class="cm-tab2-body",
+            DOM.div(
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "Solvent MDDF Group Contributions"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "MDDF(r)"),
+                        fig_slv_mddf,
+                    ),
+                ),
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "Solvent Coord. Number Group Contributions"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "Coordination number"),
+                        fig_slv_cn,
+                    ),
+                ),
+                DOM.div(class="cm-xlabel", "r (Angstrom)"),
+                DOM.div(class="cm-lims-row",
+                    DOM.span("Limits:"),
+                    DOM.span("x:"), tf_grp_xmin, DOM.span("–"), tf_grp_xmax,
+                    DOM.span("y:"), tf_grp_ymin, DOM.span("–"), tf_grp_ymax,
+                    btn_grp_lims_slv),
+            ),
+            DOM.div(class="cm-grp-panel",
+                DOM.div(class="cm-row cm-row-left", DOM.label("Solvent:"), tf_comp_slv),
+                DOM.div(class="cm-grp-panel-title", "Groups"),
+                DOM.div(class="cm-lims-row", tf_newgrp_slv, btn_addgrp_slv),
+                checklist_slv_dom,
+                DOM.div(style="margin: 4px 0;", btn_rmgrp_slv),
+                DOM.div(class="cm-export-section",
+                    DOM.div(class="cm-grp-panel-title", "Export"),
+                    DOM.div(class="cm-export-field", DOM.label("File name:"), tf_export_slv),
+                    DOM.div(class="cm-export-field-inline", DOM.label("Format:"), dd_export_fmt_slv),
+                    DOM.div(class="cm-export-btns", btn_export_mddf_slv, btn_export_cn_slv),
+                    DOM.div(class="cm-export-btns", btn_export_csv_slv),
+                ),
+            ),
         )
 
         # ── Tab 3: Residue Contributions ──────────────────────────────
-        fig3 = Figure(; size=(900, 500))
-        ax_rc = Axis(fig3[1, 1]; ylabel="r (Angstrom)",
-            ylabelsize=14, xticklabelsize=9, yticklabelsize=11)
+        fig3_mddf = Figure(; size=(900, 295))
+        ax_rc_mddf = Axis(fig3_mddf[1, 1]; xticklabelsize=9, yticklabelsize=11)
+        fig3_cn = Figure(; size=(900, 295))
+        ax_rc_cn = Axis(fig3_cn[1, 1]; xticklabelsize=9, yticklabelsize=11)
         tf_rc_sel = Bonito.TextField("protein")
         tf_dmin = Bonito.NumberInput(1.5)
         tf_dmax = Bonito.NumberInput(3.5)
@@ -408,7 +521,7 @@ function ComplexMixtures.gui(;
 
         tab3_controls = DOM.div(
             DOM.div(class="cm-row", DOM.label("Selection:"), tf_rc_sel),
-            DOM.div(class="cm-lims-row",
+            DOM.div(class="cm-lims-row", style="justify-content: center;",
                 DOM.span("dmin:"), tf_dmin,
                 DOM.span("dmax:"), tf_dmax,
                 btn_rc_update,
@@ -436,19 +549,46 @@ function ComplexMixtures.gui(;
         plots_panel = DOM.div(class="cm-plots",
             DOM.div(class="cm-tabs",
                 DOM.div(class="cm-tab-btn active", "MDDF & KB"),
-                DOM.div(class="cm-tab-btn", "Group Contributions"),
+                DOM.div(class="cm-tab-btn", "Solute group contributions"),
+                DOM.div(class="cm-tab-btn", "Solvent group contributions"),
                 DOM.div(class="cm-tab-btn", "Residue Contributions"),
             ),
             DOM.div(class="cm-tab-content active",
-                fig1,
-                DOM.div(style="text-align:center; font-size:13px; color:#444; margin: 0 0 2px 0;", "r (Angstrom)"),
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "MDDF"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "MDDF(r)"),
+                        fig1_mddf,
+                    ),
+                ),
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "Kirkwood-Buff Integral"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "KB (L/mol)"),
+                        fig1_kb,
+                    ),
+                ),
+                DOM.div(class="cm-xlabel", "r (Angstrom)"),
                 tab1_limits,
             ),
-            DOM.div(class="cm-tab-content", tab2_body, tab2_limits),
+            DOM.div(class="cm-tab-content", tab_sol_body),
+            DOM.div(class="cm-tab-content", tab_slv_body),
             DOM.div(class="cm-tab-content", tab3_controls,
-                DOM.div(style="text-align:center; font-size:15px; font-weight:bold; color:#222; margin:4px 0 0 0;", "Residue Contributions"),
-                fig3,
-                DOM.div(style="text-align:center; font-size:13px; color:#444; margin-top:0;", "Residue"),
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "Residue Contributions to MDDF"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "r (Angstrom)"),
+                        fig3_mddf,
+                    ),
+                ),
+                DOM.div(class="cm-fig-wrap",
+                    DOM.div(class="cm-plot-title", "Residue Contributions to Coordination Number"),
+                    DOM.div(class="cm-fig-row",
+                        DOM.span(class="cm-ylabel", "r (Angstrom)"),
+                        fig3_cn,
+                    ),
+                ),
+                DOM.div(class="cm-xlabel", "Residue"),
             ),
             tab_switch_js,
         )
@@ -480,29 +620,68 @@ function ComplexMixtures.gui(;
         end
 
         # ── Group management ───────────────────────────────────────────
-        on(btn_addgrp.value) do _
-            sel = strip(String(tf_newgrp.value[]))
-            isempty(sel) && return
-            n = grp_active[]
-            n >= MAX_GROUPS && (status_obs[] = "Maximum $MAX_GROUPS groups reached"; return)
-            for i in 1:n
-                grp_names[i][] == sel && return  # duplicate
+        function _grp_label(sel, comp_sel, at)
+            if at === nothing
+                return sel
             end
-            grp_names[n + 1][] = sel
-            grp_checks[n + 1].value[] = true
-            grp_active[] = n + 1
+            combined = isempty(strip(comp_sel)) ? sel : "($comp_sel) and ($sel)"
+            n_atoms = try length(PDBTools.select(at, combined)) catch; -1 end
+            n_atoms < 0 ? sel : "$sel ($n_atoms atoms)"
         end
-        on(btn_rmgrp.value) do _
-            n = grp_active[]
-            kept = String[]
+
+        on(btn_addgrp_sol.value) do _
+            sel = strip(String(tf_newgrp_sol.value[]))
+            isempty(sel) && return
+            n = grp_active_sol[]
+            n >= MAX_GROUPS && (status_obs[] = "Maximum $MAX_GROUPS groups reached"; return)
+            for i in 1:n; grp_names_sol[i][] == sel && return; end
+            grp_names_sol[n + 1][] = sel
+            grp_labels_sol[n + 1][] = _grp_label(sel, String(tf_comp_sol.value[]), atoms_obs[])
+            grp_checks_sol[n + 1].value[] = true
+            grp_active_sol[] = n + 1
+        end
+        on(btn_rmgrp_sol.value) do _
+            n = grp_active_sol[]
+            kept_names = String[]; kept_labels = String[]
             for i in 1:n
-                grp_checks[i].value[] && push!(kept, grp_names[i][])
+                if grp_checks_sol[i].value[]
+                    push!(kept_names, grp_names_sol[i][])
+                    push!(kept_labels, grp_labels_sol[i][])
+                end
             end
-            for i in eachindex(kept)
-                grp_names[i][] = kept[i]
-                grp_checks[i].value[] = true
+            for i in eachindex(kept_names)
+                grp_names_sol[i][] = kept_names[i]
+                grp_labels_sol[i][] = kept_labels[i]
+                grp_checks_sol[i].value[] = true
             end
-            grp_active[] = length(kept)
+            grp_active_sol[] = length(kept_names)
+        end
+        on(btn_addgrp_slv.value) do _
+            sel = strip(String(tf_newgrp_slv.value[]))
+            isempty(sel) && return
+            n = grp_active_slv[]
+            n >= MAX_GROUPS && (status_obs[] = "Maximum $MAX_GROUPS groups reached"; return)
+            for i in 1:n; grp_names_slv[i][] == sel && return; end
+            grp_names_slv[n + 1][] = sel
+            grp_labels_slv[n + 1][] = _grp_label(sel, String(tf_comp_slv.value[]), atoms_obs[])
+            grp_checks_slv[n + 1].value[] = true
+            grp_active_slv[] = n + 1
+        end
+        on(btn_rmgrp_slv.value) do _
+            n = grp_active_slv[]
+            kept_names = String[]; kept_labels = String[]
+            for i in 1:n
+                if grp_checks_slv[i].value[]
+                    push!(kept_names, grp_names_slv[i][])
+                    push!(kept_labels, grp_labels_slv[i][])
+                end
+            end
+            for i in eachindex(kept_names)
+                grp_names_slv[i][] = kept_names[i]
+                grp_labels_slv[i][] = kept_labels[i]
+                grp_checks_slv[i].value[] = true
+            end
+            grp_active_slv[] = length(kept_names)
         end
 
         # ── Load JSON ──────────────────────────────────────────────────
@@ -597,17 +776,17 @@ function ComplexMixtures.gui(;
         on(result_obs) do R
             R === nothing && return
             empty!(ax_mddf)
-            ax_mddf.ylabel = "g(r)"
             empty!(ax_kb)
-            ax_kb.ylabel = "KB (cm3/mol)"
-            # Remove old legends from fig1
-            for c in copy(fig1.content)
+            for c in copy(fig1_mddf.content)
+                c isa Legend && delete!(c)
+            end
+            for c in copy(fig1_kb.content)
                 c isa Legend && delete!(c)
             end
             lines!(ax_mddf, R.d, R.mddf; color=:dodgerblue, linewidth=1.5, label="MDDF")
             hlines!(ax_mddf, [1.0]; color=:gray60, linestyle=:dash)
             axislegend(ax_mddf; position=:rt, labelsize=10)
-            lines!(ax_kb, R.d, R.kb; color=:orangered, linewidth=1.5, label="KB integral")
+            lines!(ax_kb, R.d, R.kb ./ 1000; color=:orangered, linewidth=1.5, label="KB integral")
             axislegend(ax_kb; position=:rt, labelsize=10)
             # Update overview text
             try
@@ -630,95 +809,182 @@ function ComplexMixtures.gui(;
             ylims!(ax_kb, Float64(tf_kb_ymin.value[]), Float64(tf_kb_ymax.value[]))
         end
 
-        # ── Tab 2: group contributions ────────────────────────────────
-        function _update_grp_plots!()
-            R = result_obs[]
-            R === nothing && return
-            at = atoms_obs[]
-            at === nothing && return
+        # ── Tab 2/3: group contributions ──────────────────────────────
+        palette = [:orangered, :green3, :purple, :goldenrod, :deeppink,
+                   :teal, :slateblue, :sienna, :cyan4, :olive]
 
-            side = String(dd_side.value[])
-            GrpT = side == "Solute" ? SoluteGroup : SolventGroup
-
-            n = grp_active[]
+        function _update_sol_grp_plots!()
+            R = result_obs[]; R === nothing && return
+            at = atoms_obs[]; at === nothing && return
+            comp_sel = String(tf_comp_sol.value[])
+            n = grp_active_sol[]
             active_sels = String[]
-            for i in 1:n
-                grp_checks[i].value[] && push!(active_sels, grp_names[i][])
-            end
-
-            group_labels = String[]
-            mddf_curves = Vector{Float64}[]
-            cn_curves = Vector{Float64}[]
+            for i in 1:n; grp_checks_sol[i].value[] && push!(active_sels, grp_names_sol[i][]); end
+            group_labels = String[]; mddf_curves = Vector{Float64}[]; cn_curves = Vector{Float64}[]
             for sel in active_sels
+                combined_sel = isempty(strip(comp_sel)) ? sel : "($comp_sel) and ($sel)"
                 local sel_atoms
-                try
-                    sel_atoms = PDBTools.select(at, sel)
-                catch e
-                    status_obs[] = "Error in selection '$sel': $(sprint(showerror, e))"; return
-                end
-                if isempty(sel_atoms)
-                    status_obs[] = "Selection '$sel' matched no atoms"; return
-                end
-                grp = GrpT(sel_atoms)
+                try; sel_atoms = PDBTools.select(at, combined_sel)
+                catch e; status_obs[] = "Error in selection '$combined_sel': $(sprint(showerror, e))"; return; end
+                isempty(sel_atoms) && (status_obs[] = "Selection '$combined_sel' matched no atoms"; return)
+                grp = SoluteGroup(sel_atoms)
                 push!(group_labels, sel)
                 push!(mddf_curves, contributions(R, grp; type=:mddf))
                 push!(cn_curves, contributions(R, grp; type=:coordination_number))
             end
-
-            palette = [:orangered, :green3, :purple, :goldenrod, :deeppink,
-                       :teal, :slateblue, :sienna, :cyan4, :olive]
-            empty!(ax_grp_mddf)
-            ax_grp_mddf.ylabel = "g(r)"
-            for c in copy(fig2.content)
-                c isa Legend && delete!(c)
-            end
-            if grp_total_check.value[]
-                lines!(ax_grp_mddf, R.d, R.mddf; color=:dodgerblue, linewidth=2, label="Total MDDF")
-                hlines!(ax_grp_mddf, [1.0]; color=:gray60, linestyle=:dash)
+            empty!(ax_sol_mddf)
+            for c in copy(fig_sol_mddf.content); c isa Legend && delete!(c); end
+            if grp_total_sol.value[]
+                lines!(ax_sol_mddf, R.d, R.mddf; color=:dodgerblue, linewidth=2, label="Total MDDF")
+                hlines!(ax_sol_mddf, [1.0]; color=:gray60, linestyle=:dash)
             end
             for (k, lab) in enumerate(group_labels)
-                c = palette[mod1(k, length(palette))]
-                lines!(ax_grp_mddf, R.d, mddf_curves[k]; color=c, linewidth=1.5, label=lab)
+                lines!(ax_sol_mddf, R.d, mddf_curves[k]; color=palette[mod1(k, length(palette))], linewidth=1.5, label=lab)
             end
-            axislegend(ax_grp_mddf; position=:rt, labelsize=9)
-            empty!(ax_grp_cn)
-            ax_grp_cn.ylabel = "Coordination number"
-            if grp_total_check.value[]
-                lines!(ax_grp_cn, R.d, R.coordination_number; color=:dodgerblue, linewidth=2, label="Total")
+            axislegend(ax_sol_mddf; position=:rt, labelsize=9)
+            empty!(ax_sol_cn)
+            for c in copy(fig_sol_cn.content); c isa Legend && delete!(c); end
+            if grp_total_sol.value[]
+                lines!(ax_sol_cn, R.d, R.coordination_number; color=:dodgerblue, linewidth=2, label="Total")
             end
             for (k, lab) in enumerate(group_labels)
-                c = palette[mod1(k, length(palette))]
-                lines!(ax_grp_cn, R.d, cn_curves[k]; color=c, linewidth=1.5, label=lab)
+                lines!(ax_sol_cn, R.d, cn_curves[k]; color=palette[mod1(k, length(palette))], linewidth=1.5, label=lab)
             end
-            axislegend(ax_grp_cn; position=:lt, labelsize=9)
-            status_obs[] = "Group contributions updated ($(length(group_labels)) checked, $side)"
+            axislegend(ax_sol_cn; position=:lt, labelsize=9)
+            last_sol_data[] = (
+                d            = copy(R.d),
+                total_mddf   = grp_total_sol.value[] ? copy(R.mddf) : nothing,
+                total_cn     = grp_total_sol.value[] ? copy(R.coordination_number) : nothing,
+                group_labels = copy(group_labels),
+                mddf_curves  = copy(mddf_curves),
+                cn_curves    = copy(cn_curves),
+            )
+            status_obs[] = "Solute group contributions updated ($(length(group_labels)) groups)"
         end
 
-        on(grp_total_check.value) do _
-            _update_grp_plots!()
+        function _update_slv_grp_plots!()
+            R = result_obs[]; R === nothing && return
+            at = atoms_obs[]; at === nothing && return
+            comp_sel = String(tf_comp_slv.value[])
+            n = grp_active_slv[]
+            active_sels = String[]
+            for i in 1:n; grp_checks_slv[i].value[] && push!(active_sels, grp_names_slv[i][]); end
+            group_labels = String[]; mddf_curves = Vector{Float64}[]; cn_curves = Vector{Float64}[]
+            for sel in active_sels
+                combined_sel = isempty(strip(comp_sel)) ? sel : "($comp_sel) and ($sel)"
+                local sel_atoms
+                try; sel_atoms = PDBTools.select(at, combined_sel)
+                catch e; status_obs[] = "Error in selection '$combined_sel': $(sprint(showerror, e))"; return; end
+                isempty(sel_atoms) && (status_obs[] = "Selection '$combined_sel' matched no atoms"; return)
+                grp = SolventGroup(sel_atoms)
+                push!(group_labels, sel)
+                push!(mddf_curves, contributions(R, grp; type=:mddf))
+                push!(cn_curves, contributions(R, grp; type=:coordination_number))
+            end
+            empty!(ax_slv_mddf)
+            for c in copy(fig_slv_mddf.content); c isa Legend && delete!(c); end
+            if grp_total_slv.value[]
+                lines!(ax_slv_mddf, R.d, R.mddf; color=:dodgerblue, linewidth=2, label="Total MDDF")
+                hlines!(ax_slv_mddf, [1.0]; color=:gray60, linestyle=:dash)
+            end
+            for (k, lab) in enumerate(group_labels)
+                lines!(ax_slv_mddf, R.d, mddf_curves[k]; color=palette[mod1(k, length(palette))], linewidth=1.5, label=lab)
+            end
+            axislegend(ax_slv_mddf; position=:rt, labelsize=9)
+            empty!(ax_slv_cn)
+            for c in copy(fig_slv_cn.content); c isa Legend && delete!(c); end
+            if grp_total_slv.value[]
+                lines!(ax_slv_cn, R.d, R.coordination_number; color=:dodgerblue, linewidth=2, label="Total")
+            end
+            for (k, lab) in enumerate(group_labels)
+                lines!(ax_slv_cn, R.d, cn_curves[k]; color=palette[mod1(k, length(palette))], linewidth=1.5, label=lab)
+            end
+            axislegend(ax_slv_cn; position=:lt, labelsize=9)
+            last_slv_data[] = (
+                d            = copy(R.d),
+                total_mddf   = grp_total_slv.value[] ? copy(R.mddf) : nothing,
+                total_cn     = grp_total_slv.value[] ? copy(R.coordination_number) : nothing,
+                group_labels = copy(group_labels),
+                mddf_curves  = copy(mddf_curves),
+                cn_curves    = copy(cn_curves),
+            )
+            status_obs[] = "Solvent group contributions updated ($(length(group_labels)) groups)"
         end
-        on(dd_side.value) do _
-            _update_grp_plots!()
-        end
-        on(grp_active) do n
-            n > 0 && _update_grp_plots!()
-        end
+
+        on(grp_total_sol.value) do _; _update_sol_grp_plots!(); end
+        on(grp_total_slv.value) do _; _update_slv_grp_plots!(); end
+        on(grp_active_sol) do n; n > 0 && _update_sol_grp_plots!(); end
+        on(grp_active_slv) do n; n > 0 && _update_slv_grp_plots!(); end
         for i in 1:MAX_GROUPS
-            on(grp_checks[i].value) do _
-                i <= grp_active[] && _update_grp_plots!()
+            on(grp_checks_sol[i].value) do _; i <= grp_active_sol[] && _update_sol_grp_plots!(); end
+            on(grp_checks_slv[i].value) do _; i <= grp_active_slv[] && _update_slv_grp_plots!(); end
+        end
+        on(tf_comp_sol.value) do _; grp_active_sol[] > 0 && _update_sol_grp_plots!(); end
+        on(tf_comp_slv.value) do _; grp_active_slv[] > 0 && _update_slv_grp_plots!(); end
+
+        # ── Tab 2/3: export helpers ───────────────────────────────────
+        function _export_fig(fig, tf_name, dd_fmt)
+            fmt  = String(dd_fmt.value[])
+            base = strip(String(tf_name.value[]))
+            isempty(base) && (base = "export")
+            path = endswith(base, ".$fmt") ? base : "$base.$fmt"
+            try
+                WGLMakie.save(path, fig)
+                status_obs[] = "Saved: $path"
+            catch e
+                status_obs[] = "Export error: $(sprint(showerror, e))"
             end
         end
 
-        # ── Tab 2: apply group limits ─────────────────────────────────
-        on(btn_grp_lims.value) do _
-            xlo = Float64(tf_grp_xmin.value[])
-            xhi = Float64(tf_grp_xmax.value[])
-            ylo = Float64(tf_grp_ymin.value[])
-            yhi = Float64(tf_grp_ymax.value[])
-            xlims!(ax_grp_mddf, xlo, xhi)
-            xlims!(ax_grp_cn, xlo, xhi)
-            ylims!(ax_grp_mddf, ylo, yhi)
-            ylims!(ax_grp_cn, 0, nothing)
+        function _export_csv(data, tf_name)
+            data === nothing && (status_obs[] = "No data to export — run a plot first"; return)
+            base = strip(String(tf_name.value[]))
+            isempty(base) && (base = "export")
+            path = endswith(base, ".csv") ? base : "$base.csv"
+            try
+                open(path, "w") do io
+                    # Header
+                    cols = ["d"]
+                    data.total_mddf !== nothing && push!(cols, "Total_MDDF")
+                    for lab in data.group_labels; push!(cols, "$(lab)_mddf"); end
+                    data.total_cn !== nothing && push!(cols, "Total_CN")
+                    for lab in data.group_labels; push!(cols, "$(lab)_cn"); end
+                    println(io, join(cols, ","))
+                    # Rows
+                    for j in eachindex(data.d)
+                        vals = [string(data.d[j])]
+                        data.total_mddf !== nothing && push!(vals, string(data.total_mddf[j]))
+                        for k in eachindex(data.group_labels); push!(vals, string(data.mddf_curves[k][j])); end
+                        data.total_cn !== nothing && push!(vals, string(data.total_cn[j]))
+                        for k in eachindex(data.group_labels); push!(vals, string(data.cn_curves[k][j])); end
+                        println(io, join(vals, ","))
+                    end
+                end
+                status_obs[] = "Saved: $path"
+            catch e
+                status_obs[] = "Export error: $(sprint(showerror, e))"
+            end
+        end
+
+        on(btn_export_mddf_sol.value) do _; _export_fig(fig_sol_mddf, tf_export_sol, dd_export_fmt_sol); end
+        on(btn_export_cn_sol.value)   do _; _export_fig(fig_sol_cn,   tf_export_sol, dd_export_fmt_sol); end
+        on(btn_export_csv_sol.value)  do _; _export_csv(last_sol_data[], tf_export_sol); end
+        on(btn_export_mddf_slv.value) do _; _export_fig(fig_slv_mddf, tf_export_slv, dd_export_fmt_slv); end
+        on(btn_export_cn_slv.value)   do _; _export_fig(fig_slv_cn,   tf_export_slv, dd_export_fmt_slv); end
+        on(btn_export_csv_slv.value)  do _; _export_csv(last_slv_data[], tf_export_slv); end
+
+        # ── Tab 2/3: apply group limits ───────────────────────────────
+        on(btn_grp_lims_sol.value) do _
+            xlo = Float64(tf_grp_xmin.value[]); xhi = Float64(tf_grp_xmax.value[])
+            ylo = Float64(tf_grp_ymin.value[]); yhi = Float64(tf_grp_ymax.value[])
+            xlims!(ax_sol_mddf, xlo, xhi); xlims!(ax_sol_cn, xlo, xhi)
+            ylims!(ax_sol_mddf, ylo, yhi); ylims!(ax_sol_cn, 0, nothing)
+        end
+        on(btn_grp_lims_slv.value) do _
+            xlo = Float64(tf_grp_xmin.value[]); xhi = Float64(tf_grp_xmax.value[])
+            ylo = Float64(tf_grp_ymin.value[]); yhi = Float64(tf_grp_ymax.value[])
+            xlims!(ax_slv_mddf, xlo, xhi); xlims!(ax_slv_cn, xlo, xhi)
+            ylims!(ax_slv_mddf, ylo, yhi); ylims!(ax_slv_cn, 0, nothing)
         end
 
         # ── Tab 3: residue contributions ──────────────────────────────
@@ -738,12 +1004,12 @@ function ComplexMixtures.gui(;
                 if isempty(sel_atoms)
                     status_obs[] = "Selection '$sel_str' matched no atoms"; return
                 end
-                rc = ResidueContributions(R, sel_atoms; dmin=dmin, dmax=dmax, silent=true)
+                rc_mddf = ResidueContributions(R, sel_atoms; dmin=dmin, dmax=dmax, type=:mddf, silent=true)
+                rc_cn   = ResidueContributions(R, sel_atoms; dmin=dmin, dmax=dmax, type=:coordination_number, silent=true)
 
-                nres = length(rc.resnums)
-                x_pos = rc.xticks[1]
-                y_d = rc.d
-                zmat = collect(hcat(rc.residue_contributions...)')  # (nres × nd)
+                nres = length(rc_mddf.resnums)
+                x_pos = rc_mddf.xticks[1]
+                y_d   = rc_mddf.d
 
                 rc_range = 1:nres
                 if nres > 2000
@@ -751,29 +1017,41 @@ function ComplexMixtures.gui(;
                     rc_range = 1:rc_step:nres
                 end
                 x_plot = x_pos[rc_range]
-                z_plot = zmat[rc_range, :]
-
-                clims, cscale = _set_clims_and_colorscale!(rc)
-                cmap = cscale == :bwr ? :RdBu : :tempo
-                nlevels = cscale == :tempo ? 5 : 12
 
                 step = max(1, length(rc_range) ÷ 50)
                 tick_idx = 1:step:length(x_plot)
                 orig_idx = collect(rc_range)[collect(tick_idx)]
-                xtick_pos = rc.xticks[1][orig_idx]
-                xtick_lab = rc.xticks[2][orig_idx]
+                xtick_pos = rc_mddf.xticks[1][orig_idx]
+                xtick_lab = rc_mddf.xticks[2][orig_idx]
 
-                empty!(ax_rc)
-                ax_rc.ylabel = "r (Angstrom)"
-                contourf!(ax_rc, x_plot, y_d, z_plot; colormap=cmap, levels=nlevels)
-                ax_rc.xticks = (xtick_pos, xtick_lab)
-                ax_rc.xticklabelrotation = π / 3
-
-                # Add colorbar (remove previous if exists)
-                if length(fig3.layout.content) > 1
-                    try delete!(fig3.layout.content[end].content) catch end
+                # MDDF plot
+                zmat_mddf = collect(hcat(rc_mddf.residue_contributions...)')[rc_range, :]
+                clims_mddf, cscale_mddf = _set_clims_and_colorscale!(rc_mddf)
+                cmap_mddf = cscale_mddf == :bwr ? :RdBu : :tempo
+                nlevels_mddf = cscale_mddf == :tempo ? 5 : 12
+                empty!(ax_rc_mddf)
+                contourf!(ax_rc_mddf, x_plot, y_d, zmat_mddf; colormap=cmap_mddf, levels=nlevels_mddf)
+                ax_rc_mddf.xticks = (xtick_pos, xtick_lab)
+                ax_rc_mddf.xticklabelrotation = π / 3
+                if length(fig3_mddf.layout.content) > 1
+                    try delete!(fig3_mddf.layout.content[end].content) catch end
                 end
-                Colorbar(fig3[1, 2]; colormap=cmap, limits=clims,
+                Colorbar(fig3_mddf[1, 2]; colormap=cmap_mddf, limits=clims_mddf,
+                    label="Contribution", labelsize=10, ticklabelsize=9)
+
+                # Coordination number plot
+                zmat_cn = collect(hcat(rc_cn.residue_contributions...)')[rc_range, :]
+                clims_cn, cscale_cn = _set_clims_and_colorscale!(rc_cn)
+                cmap_cn = cscale_cn == :bwr ? :RdBu : :tempo
+                nlevels_cn = cscale_cn == :tempo ? 5 : 12
+                empty!(ax_rc_cn)
+                contourf!(ax_rc_cn, x_plot, y_d, zmat_cn; colormap=cmap_cn, levels=nlevels_cn)
+                ax_rc_cn.xticks = (xtick_pos, xtick_lab)
+                ax_rc_cn.xticklabelrotation = π / 3
+                if length(fig3_cn.layout.content) > 1
+                    try delete!(fig3_cn.layout.content[end].content) catch end
+                end
+                Colorbar(fig3_cn[1, 2]; colormap=cmap_cn, limits=clims_cn,
                     label="Contribution", labelsize=10, ticklabelsize=9)
 
                 status_obs[] = "Residue contributions updated ($nres residues)"
