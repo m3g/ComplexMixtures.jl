@@ -353,6 +353,10 @@ function ComplexMixtures.gui(;
                 DOM.span("y:"), tf_kb_ymin, DOM.span("–"), tf_kb_ymax,
                 btn_kb_lims),
         )
+        btn_export_mddf1 = Bonito.Button("Export MDDF (SVG)")
+        btn_export_kb1   = Bonito.Button("Export KB (SVG)")
+        btn_export_csv1  = Bonito.Button("Export data (CSV)")
+        last_tab1_data   = Observable{Any}(nothing)
 
         # ── Tab 2 & 3: Group Contributions (Solute / Solvent) ────────────
         MAX_GROUPS = 10
@@ -416,16 +420,12 @@ function ComplexMixtures.gui(;
         btn_grp_lims_slv = Bonito.Button("Apply")
 
         # Export controls - Solute
-        tf_export_sol      = Bonito.TextField("solute_group_contributions")
-        dd_export_fmt_sol  = Bonito.Dropdown(["svg", "png", "pdf"])
         btn_export_mddf_sol = Bonito.Button("Export MDDF plot")
         btn_export_cn_sol   = Bonito.Button("Export CN plot")
         btn_export_csv_sol  = Bonito.Button("Export data (CSV)")
         last_sol_data = Observable{Any}(nothing)
 
         # Export controls - Solvent
-        tf_export_slv      = Bonito.TextField("solvent_group_contributions")
-        dd_export_fmt_slv  = Bonito.Dropdown(["svg", "png", "pdf"])
         btn_export_mddf_slv = Bonito.Button("Export MDDF plot")
         btn_export_cn_slv   = Bonito.Button("Export CN plot")
         btn_export_csv_slv  = Bonito.Button("Export data (CSV)")
@@ -461,9 +461,7 @@ function ComplexMixtures.gui(;
                 checklist_sol_dom,
                 DOM.div(style="margin: 4px 0;", btn_rmgrp_sol),
                 DOM.div(class="cm-export-section",
-                    DOM.div(class="cm-grp-panel-title", "Export"),
-                    DOM.div(class="cm-export-field", DOM.label("File name:"), tf_export_sol),
-                    DOM.div(class="cm-export-field-inline", DOM.label("Format:"), dd_export_fmt_sol),
+                    DOM.div(class="cm-grp-panel-title", "Export (SVG / CSV)"),
                     DOM.div(class="cm-export-btns", btn_export_mddf_sol, btn_export_cn_sol),
                     DOM.div(class="cm-export-btns", btn_export_csv_sol),
                 ),
@@ -500,9 +498,7 @@ function ComplexMixtures.gui(;
                 checklist_slv_dom,
                 DOM.div(style="margin: 4px 0;", btn_rmgrp_slv),
                 DOM.div(class="cm-export-section",
-                    DOM.div(class="cm-grp-panel-title", "Export"),
-                    DOM.div(class="cm-export-field", DOM.label("File name:"), tf_export_slv),
-                    DOM.div(class="cm-export-field-inline", DOM.label("Format:"), dd_export_fmt_slv),
+                    DOM.div(class="cm-grp-panel-title", "Export (SVG / CSV)"),
                     DOM.div(class="cm-export-btns", btn_export_mddf_slv, btn_export_cn_slv),
                     DOM.div(class="cm-export-btns", btn_export_csv_slv),
                 ),
@@ -519,12 +515,16 @@ function ComplexMixtures.gui(;
         tf_dmax = Bonito.NumberInput(3.5)
         btn_rc_update = Bonito.Button("Update")
 
+        btn_export_csv_rc = Bonito.Button("Export data (CSV)")
+        last_rc_data      = Observable{Any}(nothing)
+
         tab3_controls = DOM.div(
             DOM.div(class="cm-row", DOM.label("Selection:"), tf_rc_sel),
             DOM.div(class="cm-lims-row", style="justify-content: center;",
                 DOM.span("dmin:"), tf_dmin,
                 DOM.span("dmax:"), tf_dmax,
                 btn_rc_update,
+                btn_export_csv_rc,
             ),
         )
 
@@ -570,6 +570,8 @@ function ComplexMixtures.gui(;
                 ),
                 DOM.div(class="cm-xlabel", "r (Angstrom)"),
                 tab1_limits,
+                DOM.div(class="cm-lims-row", style="justify-content: center; margin-top: 4px;",
+                    btn_export_mddf1, btn_export_kb1, btn_export_csv1),
             ),
             DOM.div(class="cm-tab-content", tab_sol_body),
             DOM.div(class="cm-tab-content", tab_slv_body),
@@ -794,6 +796,7 @@ function ComplexMixtures.gui(;
             catch
                 overview_obs[] = "Overview unavailable."
             end
+            last_tab1_data[] = (d=copy(R.d), mddf=copy(R.mddf), kb=copy(R.kb ./ 1000))
             status_obs[] = "Plots updated"
         end
 
@@ -923,34 +926,123 @@ function ComplexMixtures.gui(;
         on(tf_comp_slv.value) do _; grp_active_slv[] > 0 && _update_slv_grp_plots!(); end
 
         # ── Tab 2/3: export helpers ───────────────────────────────────
-        function _export_fig(fig, tf_name, dd_fmt)
-            fmt  = String(dd_fmt.value[])
-            base = strip(String(tf_name.value[]))
-            isempty(base) && (base = "export")
-            path = endswith(base, ".$fmt") ? base : "$base.$fmt"
+        # Write a line-plot SVG from stored data (no CairoMakie/OpenCV needed)
+        SVG_PALETTE = ["#ff4500","#00cd00","#800080","#daa520","#ff1493",
+                       "#008080","#6a5acd","#a0522d","#008b8b","#808000"]
+
+        function _write_svg(io, data, plot_type, ylabel_str, title_str)
+            curves = plot_type == :mddf ? data.mddf_curves : data.cn_curves
+            total  = plot_type == :mddf ? data.total_mddf  : data.total_cn
+            d = data.d
+
+            all_y = vcat(total !== nothing ? total : Float64[], vcat(curves...))
+            isempty(all_y) && (all_y = [0.0, 1.0])
+            xmin, xmax = minimum(d), maximum(d)
+            ymin, ymax = minimum(all_y), maximum(all_y)
+            ypad = (ymax - ymin) * 0.05
+            ymin -= ypad; ymax += ypad
+            xmin == xmax && (xmax = xmin + 1)
+            ymin == ymax && (ymax = ymin + 1)
+
+            W, H = 800, 400
+            ml, mr, mt, mb = 72, 24, 44, 56
+            pw = W - ml - mr; ph = H - mt - mb
+
+            fx(x) = ml + (x - xmin) / (xmax - xmin) * pw
+            fy(y) = mt + ph - (y - ymin) / (ymax - ymin) * ph
+            fmts(v) = string(round(v; sigdigits=4))
+
+            println(io, """<svg xmlns="http://www.w3.org/2000/svg" width="$W" height="$H" font-family="Arial,sans-serif">""")
+            println(io, """<rect width="$W" height="$H" fill="white"/>""")
+            # Border
+            println(io, """<rect x="$ml" y="$mt" width="$pw" height="$ph" fill="none" stroke="#bbb" stroke-width="1"/>""")
+            # Title
+            println(io, """<text x="$(W÷2)" y="$(mt-12)" text-anchor="middle" font-size="14" font-weight="bold">$title_str</text>""")
+            # X label
+            println(io, """<text x="$(ml + pw÷2)" y="$(H-6)" text-anchor="middle" font-size="12">r (Angstrom)</text>""")
+            # Y label (rotated)
+            cx = 14; cy = mt + ph÷2
+            println(io, """<text transform="rotate(-90,$cx,$cy)" x="$cx" y="$cy" text-anchor="middle" font-size="12">$ylabel_str</text>""")
+            # Clip region
+            println(io, """<clipPath id="plotarea"><rect x="$ml" y="$mt" width="$pw" height="$ph"/></clipPath>""")
+            # Dashed reference at y=1 for MDDF
+            if plot_type == :mddf && ymin <= 1.0 <= ymax
+                y1 = fy(1.0)
+                println(io, """<line x1="$ml" y1="$y1" x2="$(ml+pw)" y2="$y1" stroke="#999" stroke-width="1" stroke-dasharray="4,4" clip-path="url(#plotarea)"/>""")
+            end
+            # Total line
+            if total !== nothing
+                pts = join(["$(round(fx(d[j]);digits=2)),$(round(fy(total[j]);digits=2))" for j in eachindex(d)], " ")
+                println(io, """<polyline points="$pts" fill="none" stroke="#1e90ff" stroke-width="2" clip-path="url(#plotarea)"/>""")
+            end
+            # Group lines
+            for (k, curve) in enumerate(curves)
+                c = SVG_PALETTE[mod1(k, length(SVG_PALETTE))]
+                pts = join(["$(round(fx(d[j]);digits=2)),$(round(fy(curve[j]);digits=2))" for j in eachindex(d)], " ")
+                println(io, """<polyline points="$pts" fill="none" stroke="$c" stroke-width="1.5" clip-path="url(#plotarea)"/>""")
+            end
+            # X ticks
+            for i in 0:5
+                x = xmin + i * (xmax - xmin) / 5
+                xi = round(fx(x); digits=2)
+                println(io, """<line x1="$xi" y1="$(mt+ph)" x2="$xi" y2="$(mt+ph+5)" stroke="#333" stroke-width="1"/>""")
+                println(io, """<text x="$xi" y="$(mt+ph+18)" text-anchor="middle" font-size="10">$(fmts(x))</text>""")
+            end
+            # Y ticks
+            for i in 0:5
+                y = ymin + i * (ymax - ymin) / 5
+                yi = round(fy(y); digits=2)
+                println(io, """<line x1="$(ml-5)" y1="$yi" x2="$ml" y2="$yi" stroke="#333" stroke-width="1"/>""")
+                println(io, """<text x="$(ml-8)" y="$(yi+4)" text-anchor="end" font-size="10">$(fmts(y))</text>""")
+            end
+            # Legend
+            all_labels = String[]; all_colors = String[]
+            if total !== nothing
+                push!(all_labels, plot_type == :mddf ? "Total MDDF" : "Total")
+                push!(all_colors, "#1e90ff")
+            end
+            for (k, lab) in enumerate(data.group_labels)
+                push!(all_labels, lab); push!(all_colors, SVG_PALETTE[mod1(k, length(SVG_PALETTE))])
+            end
+            if !isempty(all_labels)
+                lx = ml + pw - 160; ly = mt + 10
+                box_h = length(all_labels) * 18 + 8
+                println(io, """<rect x="$lx" y="$ly" width="155" height="$box_h" fill="white" stroke="#ccc" stroke-width="1" rx="3"/>""")
+                for (i, (lab, col)) in enumerate(zip(all_labels, all_colors))
+                    y = ly + 4 + (i - 1) * 18
+                    println(io, """<line x1="$(lx+6)" y1="$(y+7)" x2="$(lx+26)" y2="$(y+7)" stroke="$col" stroke-width="2"/>""")
+                    println(io, """<text x="$(lx+30)" y="$(y+11)" font-size="10">$lab</text>""")
+                end
+            end
+            println(io, "</svg>")
+        end
+
+        function _export_fig(data, plot_type, ylabel_str, title_str)
+            data === nothing && (status_obs[] = "No data to export — run a plot first"; return)
+            path = _pick_save_file(; title="Save plot (.svg)")
+            isempty(path) && return
+            endswith(path, ".svg") || (path = "$path.svg")
             try
-                WGLMakie.save(path, fig)
+                open(path, "w") do io; _write_svg(io, data, plot_type, ylabel_str, title_str); end
                 status_obs[] = "Saved: $path"
             catch e
                 status_obs[] = "Export error: $(sprint(showerror, e))"
             end
         end
 
-        function _export_csv(data, tf_name)
+        function _export_csv(data)
             data === nothing && (status_obs[] = "No data to export — run a plot first"; return)
-            base = strip(String(tf_name.value[]))
-            isempty(base) && (base = "export")
-            path = endswith(base, ".csv") ? base : "$base.csv"
+            path = _pick_save_file(; title="Save data (.csv)")
+            isempty(path) && return
+            endswith(path, ".csv") || (path = "$path.csv")
             try
                 open(path, "w") do io
-                    # Header
                     cols = ["d"]
                     data.total_mddf !== nothing && push!(cols, "Total_MDDF")
                     for lab in data.group_labels; push!(cols, "$(lab)_mddf"); end
                     data.total_cn !== nothing && push!(cols, "Total_CN")
                     for lab in data.group_labels; push!(cols, "$(lab)_cn"); end
                     println(io, join(cols, ","))
-                    # Rows
                     for j in eachindex(data.d)
                         vals = [string(data.d[j])]
                         data.total_mddf !== nothing && push!(vals, string(data.total_mddf[j]))
@@ -966,12 +1058,74 @@ function ComplexMixtures.gui(;
             end
         end
 
-        on(btn_export_mddf_sol.value) do _; _export_fig(fig_sol_mddf, tf_export_sol, dd_export_fmt_sol); end
-        on(btn_export_cn_sol.value)   do _; _export_fig(fig_sol_cn,   tf_export_sol, dd_export_fmt_sol); end
-        on(btn_export_csv_sol.value)  do _; _export_csv(last_sol_data[], tf_export_sol); end
-        on(btn_export_mddf_slv.value) do _; _export_fig(fig_slv_mddf, tf_export_slv, dd_export_fmt_slv); end
-        on(btn_export_cn_slv.value)   do _; _export_fig(fig_slv_cn,   tf_export_slv, dd_export_fmt_slv); end
-        on(btn_export_csv_slv.value)  do _; _export_csv(last_slv_data[], tf_export_slv); end
+        on(btn_export_mddf_sol.value) do _; _export_fig(last_sol_data[], :mddf, "MDDF(r)",             "Solute MDDF Group Contributions"); end
+        on(btn_export_cn_sol.value)   do _; _export_fig(last_sol_data[], :cn,   "Coordination number", "Solute Coord. Number Group Contributions"); end
+        on(btn_export_csv_sol.value)  do _; _export_csv(last_sol_data[]); end
+        on(btn_export_mddf_slv.value) do _; _export_fig(last_slv_data[], :mddf, "MDDF(r)",             "Solvent MDDF Group Contributions"); end
+        on(btn_export_cn_slv.value)   do _; _export_fig(last_slv_data[], :cn,   "Coordination number", "Solvent Coord. Number Group Contributions"); end
+        on(btn_export_csv_slv.value)  do _; _export_csv(last_slv_data[]); end
+
+        # ── Tab 1: export ─────────────────────────────────────────────
+        on(btn_export_mddf1.value) do _
+            d = last_tab1_data[]
+            d === nothing && (status_obs[] = "No data to export — load a result first"; return)
+            _export_fig((d=d.d, total_mddf=d.mddf, total_cn=nothing,
+                         group_labels=String[], mddf_curves=Vector{Float64}[],
+                         cn_curves=Vector{Float64}[]),
+                        :mddf, "MDDF(r)", "MDDF")
+        end
+        on(btn_export_kb1.value) do _
+            d = last_tab1_data[]
+            d === nothing && (status_obs[] = "No data to export — load a result first"; return)
+            _export_fig((d=d.d, total_mddf=d.kb, total_cn=nothing,
+                         group_labels=String[], mddf_curves=Vector{Float64}[],
+                         cn_curves=Vector{Float64}[]),
+                        :mddf, "KB (L/mol)", "Kirkwood-Buff Integral")
+        end
+        on(btn_export_csv1.value) do _
+            d = last_tab1_data[]
+            d === nothing && (status_obs[] = "No data to export — load a result first"; return)
+            path = _pick_save_file(; title="Save data (.csv)")
+            isempty(path) && return
+            endswith(path, ".csv") || (path = "$path.csv")
+            try
+                open(path, "w") do io
+                    println(io, "d,MDDF,KB_L_per_mol")
+                    for j in eachindex(d.d)
+                        println(io, "$(d.d[j]),$(d.mddf[j]),$(d.kb[j])")
+                    end
+                end
+                status_obs[] = "Saved: $path"
+            catch e
+                status_obs[] = "Export error: $(sprint(showerror, e))"
+            end
+        end
+
+        # ── Tab 4 (RC): export data ───────────────────────────────────
+        on(btn_export_csv_rc.value) do _
+            d = last_rc_data[]
+            d === nothing && (status_obs[] = "No data to export — run Update first"; return)
+            path = _pick_save_file(; title="Save residue contributions (.csv)")
+            isempty(path) && return
+            endswith(path, ".csv") || (path = "$path.csv")
+            try
+                open(path, "w") do io
+                    nres = length(d.residue_names)
+                    header = vcat(["d"], ["mddf_$(d.residue_names[i])" for i in 1:nres],
+                                        ["cn_$(d.residue_names[i])"   for i in 1:nres])
+                    println(io, join(header, ","))
+                    for j in eachindex(d.d)
+                        vals = [string(d.d[j])]
+                        for i in 1:nres; push!(vals, string(d.zmat_mddf[i, j])); end
+                        for i in 1:nres; push!(vals, string(d.zmat_cn[i, j])); end
+                        println(io, join(vals, ","))
+                    end
+                end
+                status_obs[] = "Saved: $path"
+            catch e
+                status_obs[] = "Export error: $(sprint(showerror, e))"
+            end
+        end
 
         # ── Tab 2/3: apply group limits ───────────────────────────────
         on(btn_grp_lims_sol.value) do _
@@ -1054,6 +1208,13 @@ function ComplexMixtures.gui(;
                 Colorbar(fig3_cn[1, 2]; colormap=cmap_cn, limits=clims_cn,
                     label="Contribution", labelsize=10, ticklabelsize=9)
 
+                last_rc_data[] = (
+                    d            = copy(y_d),
+                    x_pos        = copy(x_pos),
+                    residue_names = rc_mddf.xticks[2],
+                    zmat_mddf    = collect(hcat(rc_mddf.residue_contributions...)'),
+                    zmat_cn      = collect(hcat(rc_cn.residue_contributions...)'),
+                )
                 status_obs[] = "Residue contributions updated ($nres residues)"
             catch e
                 status_obs[] = "Error: $(sprint(showerror, e))"
