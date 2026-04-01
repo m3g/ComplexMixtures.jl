@@ -28,24 +28,6 @@ mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
     @test CM.mol_str(2) == "2 molecules"
 end
 
-#=
-    writexyz(x::Vector{T}, file::String) where T <: AbstractVector
-
-Print test xyz file.
-
-=#
-function writexyz(x::Vector{T}, file::AbstractString) where {T<:AbstractVector}
-    f = open(file, "w")
-    nx = length(x)
-    println(f, nx)
-    println(f, "title")
-    for i = 1:nx
-        println(f, "H $(x[i][1]) $(x[i][2]) $(x[i][3])")
-    end
-    close(f)
-    return nothing
-end
-
 # function that checks if output files were produced with the current version
 function _check_version(filename)
     json_version = _get_version(filename)
