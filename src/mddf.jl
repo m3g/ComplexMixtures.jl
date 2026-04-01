@@ -110,7 +110,7 @@ end
 
 """     
     mddf(
-        trajectory_file::String, 
+        trajectory_file::AbstractString, 
         solute::AtomSelection,
         solvent::AtomSelection, # optional: if omitted, an auto-correlation will be computed
         options::Options=Options(); # optional: if omitted, default options will be used
@@ -182,11 +182,11 @@ julia> results = mddf(trajectory_file, solute, solvent, options);
 function mddf end
 
 function mddf(
-    trajectory_file::String,
+    trajectory_file::AbstractString,
     solute::AtomSelection,
     solvent::AtomSelection,
     options::Options=Options();
-    trajectory_format::String="",
+    trajectory_format::AbstractString="",
     chemfiles::Bool=false,
     kargs...
 )
@@ -203,10 +203,10 @@ function mddf(
 end
 
 function mddf(
-    trajectory_file::String,
+    trajectory_file::AbstractString,
     solute_and_solvent::AtomSelection,
     options::Options=Options();
-    trajectory_format::String="",
+    trajectory_format::AbstractString="",
     chemfiles::Bool=false,
     kargs...
 )
@@ -476,7 +476,7 @@ end
 
 """     
     coordination_number(
-        trajectory_file::String, 
+        trajectory_file::AbstractString, 
         solute::AtomSelection,
         solvent::AtomSelection, # optional: if omitted, an auto-correlation will be computed
         options::Options=Options(); # optional: if omitted, default options will be used
@@ -540,11 +540,11 @@ julia> results = coordination_number(trajectory_file, solute, solvent, options);
 
 """
 function coordination_number(
-    trajectory_file::String,
+    trajectory_file::AbstractString,
     solute::AtomSelection,
     solvent::AtomSelection,
     options::Options=Options();
-    trajectory_format::String="",
+    trajectory_format::AbstractString="",
     chemfiles::Bool=false,
     kargs...)
     _coordination_number_call_error(; kargs...)
@@ -556,10 +556,10 @@ function coordination_number(
 end
 
 function coordination_number(
-    trajectory_file::String,
+    trajectory_file::AbstractString,
     solute_and_solvent::AtomSelection,
     options::Options=Options();
-    trajectory_format::String="",
+    trajectory_format::AbstractString="",
     chemfiles::Bool=false,
     kargs...
 )
@@ -787,6 +787,15 @@ end
     r1 = coordination_number(trajectory_file, atom)
     r2 = coordination_number(trajectory_file, atom, Options())
     @test coordination_number(r1) ≈ coordination_number(r2)
+
+    # Test input with substrings
+    options = Options()
+    trajectory_file = @view("$data_dir/toy/self_monoatomic.pdb---"[1:end-3])
+    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
+    r1 = mddf(trajectory_file, atom, atom)
+    r2 = mddf(trajectory_file, atom, atom, Options())
+    @test coordination_number(r1) ≈ coordination_number(r2)
+
 end
 
 @testitem "mddf - real system" begin

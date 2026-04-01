@@ -171,8 +171,8 @@ Note that the `load` function requires, as a second argument, the `ResidueContri
 the method from the loading of the `Result` data structure.
 
 ```@docs
-load(::String, ::Type{ResidueContributions})
-save(::String, ::ResidueContributions)
+load(::AbstractString, ::Type{ResidueContributions})
+save(::AbstractString, ::ResidueContributions)
 ```
 
 !!! tip 

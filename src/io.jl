@@ -34,7 +34,7 @@ end
 Print test xyz file.
 
 =#
-function writexyz(x::Vector{T}, file::String) where {T<:AbstractVector}
+function writexyz(x::Vector{T}, file::AbstractString) where {T<:AbstractVector}
     f = open(file, "w")
     nx = length(x)
     println(f, nx)

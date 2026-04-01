@@ -734,12 +734,12 @@ StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
 StructTypes.StructType(::Type{TrajectoryFileOptions}) = StructTypes.Struct()
 
 """
-    save(filename::String, R::Result)
+    save(filename::AbstractString, R::Result)
 
 Function to write the result data structure to a json file.
 
 """
-function save(filename::String, R::Result)
+function save(filename::AbstractString, R::Result)
     filename = expanduser(filename)
     open(filename, "w") do f
         JSON3.write(f, R)
@@ -747,7 +747,7 @@ function save(filename::String, R::Result)
     return "Results saved in JSON file: $filename"
 end
 # legacy order
-save(R::Result, filename::String) = save(filename, R)
+save(R::Result, filename::AbstractString) = save(filename, R)
 
 #
 # This function tries to read a version number from a result.json
@@ -761,7 +761,7 @@ function _get_version(filename)
 end
 
 """
-    load(filename::String, [::Type{Result}=Result])
+    load(filename::AbstractString, [::Type{Result}=Result])
 
 Function to load the json saved results file into, by default, the `Result` data structure.
 The second parameter is optional for loading `Result` objects.
@@ -776,7 +776,7 @@ R = load("results.json", Result)
 ```
 
 """
-function load(filename::String, ::Type{Result})
+function load(filename::AbstractString, ::Type{Result})
     filename = expanduser(filename)
     _check_version(filename)
     R = try
@@ -791,7 +791,7 @@ function load(filename::String, ::Type{Result})
     end
     return R
 end
-load(filename::String) = load(filename, Result)
+load(filename::AbstractString) = load(filename, Result)
 
 @testitem "Result - load/save" begin
     using ComplexMixtures: load
@@ -816,6 +816,13 @@ load(filename::String) = load(filename, Result)
     end
     @test_throws ArgumentError load(tmpfile)
     rm(tmpfile)
+
+    # Test load and save with substrings
+    r1 = load(@view("$data_dir/NAMD/protein_tmao.json---"[1:end-3]))
+    tmp = @view(tempname()[1:end-1])
+    save(r1, tmp)
+    r2 = load(tmp)
+    @test r1 == r2
 end
 
 #=
