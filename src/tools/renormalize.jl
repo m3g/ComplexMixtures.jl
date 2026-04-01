@@ -1,5 +1,5 @@
 """
-    renormalize(R::Result, bulk_density::Number, unit::AbstractString="mol/L"; silent=true)
+    renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
 
 Renormalizes the `Result` structure `R` to a different bulk density of the solvent.
 The `unit` argument can be either `"mol/L"` or `"sites/Angs3"` (default is `"mol/L"`).
@@ -27,7 +27,7 @@ The `silent` keyword argument controls whether warnings are printed associated t
 bins with zero samples in the ideal-gas histogram.
 
 """
-function renormalize(R::Result, bulk_density::Number, unit::AbstractString="mol/L"; silent=true)
+function renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
     if !(unit in ("mol/L", "sites/Angs3"))
         throw(ArgumentError("""\n
             Concentration unit must be "mol/L" or "sites/Angs3".

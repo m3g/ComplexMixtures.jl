@@ -29,7 +29,7 @@ mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
 end
 
 #=
-    writexyz(x::Vector{T}, file::AbstractString) where T <: AbstractVector
+    writexyz(x::Vector{T}, file::String) where T <: AbstractVector
 
 Print test xyz file.
 
