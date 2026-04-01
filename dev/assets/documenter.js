@@ -1227,14 +1227,23 @@ $(document).ready(function () {
   if (topMenu.length === 0) return;
   var documenter = document.getElementById("documenter");
   function updateTopMenuHeight() {
-    documenter.style.setProperty(
-      "--topmenu-height",
-      topMenu[0].offsetHeight + "px",
-    );
+    var height = topMenu[0].offsetHeight + "px";
+    documenter.style.setProperty("--topmenu-height", height);
+    // Offset anchor-scroll targets so the fixed top menu doesn't cover them
+    document.documentElement.style.scrollPaddingTop = height;
   }
   updateTopMenuHeight();
   $(window).resize(updateTopMenuHeight);
   $(window).on("orientationchange", updateTopMenuHeight);
+  // Re-scroll to the hash anchor now that scroll-padding-top is set.
+  // The browser may have already scrolled to the anchor before JS ran,
+  // causing the header to be hidden under the fixed top menu.
+  if (location.hash) {
+    var target = document.getElementById(
+      decodeURIComponent(location.hash.substring(1))
+    );
+    if (target) target.scrollIntoView();
+  }
 });
 
 // Scroll the navigation bar to the currently selected menu item
