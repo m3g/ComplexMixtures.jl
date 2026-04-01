@@ -112,7 +112,7 @@ function atom_group(atsel::AtomSelection, i::Integer)
     atsel.custom_groups || _error_custom_groups()
     atsel.group_atom_indices[i]
 end
-function atom_group(atsel::AtomSelection, group_name::AbstractString)
+function atom_group(atsel::AtomSelection, group_name::String)
     atsel.custom_groups || _error_custom_groups()
     igroup = findfirst(==(group_name), atsel.group_names)
     if isnothing(igroup)
