@@ -787,6 +787,15 @@ end
     r1 = coordination_number(trajectory_file, atom)
     r2 = coordination_number(trajectory_file, atom, Options())
     @test coordination_number(r1) ≈ coordination_number(r2)
+
+    # Test input with substrings
+    options = Options()
+    trajectory_file = @view("$data_dir/toy/self_monoatomic.pdb---"[1:end-3])
+    atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
+    r1 = mddf(trajectory_file, atom, atom)
+    r2 = mddf(trajectory_file, atom, atom, Options())
+    @test coordination_number(r1) ≈ coordination_number(r2)
+
 end
 
 @testitem "mddf - real system" begin

@@ -816,6 +816,13 @@ load(filename::AbstractString) = load(filename, Result)
     end
     @test_throws ArgumentError load(tmpfile)
     rm(tmpfile)
+
+    # Test load and save with substrings
+    r1 = load(@view("$data_dir/NAMD/protein_tmao.json---"[1:end-3]))
+    tmp = @view(tempname()[1:end-1])
+    save(r1, tmp)
+    r2 = load(tmp)
+    @test r1 == r2
 end
 
 #=

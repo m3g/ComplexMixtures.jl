@@ -29,7 +29,7 @@ include("./trajectory_formats/NamdDCD.jl")
 include("./trajectory_formats/PDBTraj.jl")
 
 function Trajectory(
-    filename::AbstractString,
+    input_filename::AbstractString,
     solute::AtomSelection,
     solvent::AtomSelection;
     format::AbstractString="",
@@ -37,6 +37,7 @@ function Trajectory(
     show_progress=true,
     lastframe=-1,
 )
+    filename = string(input_filename)
     if !isempty(format) && !(format in trajectory_formats)
         throw(ArgumentError("""\n
             Trajectory format not properly set: $format 

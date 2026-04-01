@@ -23,7 +23,7 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    format::AbstractString
+    format::String
     stream::Stream{<:Chemfiles.Trajectory} # mutable such that we can close it and open it again
     frame::Chemfiles.Frame
     nframes::Int64
@@ -47,13 +47,13 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
 end
 
 #"""
-#    ChemFile(filename::AbstractString, solute::AtomSelection, solvent::AtomSelection;format="" , T::Type = SVector{3,Float64})
+#    ChemFile(filename::String, solute::AtomSelection, solvent::AtomSelection;format="" , T::Type = SVector{3,Float64})
 #
 #Function open will set up the IO stream of the trajectory, fill up the number of frames field and additional parameters if required.
 #
 #"""
 function ChemFile(
-    filename::AbstractString,
+    filename::String,
     solute::AtomSelection,
     solvent::AtomSelection;
     format="",
