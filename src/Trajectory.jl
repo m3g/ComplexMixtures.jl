@@ -1,5 +1,5 @@
 """
-    Trajectory(filename::String, solute::AtomSelection, solvent::AtomSelection; format::String = "", chemfiles = false)
+    Trajectory(filename::AbstractString, solute::AtomSelection, solvent::AtomSelection; format::AbstractString = "", chemfiles = false)
 
 Trajectory constructor data type. 
 
@@ -29,10 +29,10 @@ include("./trajectory_formats/NamdDCD.jl")
 include("./trajectory_formats/PDBTraj.jl")
 
 function Trajectory(
-    filename::String,
+    filename::AbstractString,
     solute::AtomSelection,
     solvent::AtomSelection;
-    format::String="",
+    format::AbstractString="",
     chemfiles=false,
     show_progress=true,
     lastframe=-1,
@@ -57,7 +57,7 @@ function Trajectory(
 end
 
 # If only one selection is provided, assume that the solute and the solvent are the same
-Trajectory(filename::String, solvent::AtomSelection; kargs...) =  
+Trajectory(filename::AbstractString, solvent::AtomSelection; kargs...) =  
     Trajectory(filename, solvent, solvent; kargs...)
 
 #=

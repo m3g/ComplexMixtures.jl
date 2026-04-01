@@ -471,7 +471,7 @@ ResidueContributions(result, g::Union{SoluteGroup,SolventGroup}, args...; kwargs
     _custom_group_error_for_ResidueContributions()
 
 """
-    save(filename::String, rc::ResidueContributions)
+    save(filename::AbstractString, rc::ResidueContributions)
 
 Save the `ResidueContributions` object to a JSON file.
 
@@ -483,7 +483,7 @@ rc = load("residue_contributions.json", ResidueContributions)
 ```
 
 """
-function save(filename::String, rc::ResidueContributions)
+function save(filename::AbstractString, rc::ResidueContributions)
     filename = expanduser(filename)
     open(filename, "w") do f
         JSON3.write(f, rc)
@@ -492,7 +492,7 @@ function save(filename::String, rc::ResidueContributions)
 end
 
 """
-    load(filename::String, ResidueContributions)
+    load(filename::AbstractString, ResidueContributions)
 
 Function to load the residue contributions saved into a JSON file into the `ResidueContributions` data structure.
 
@@ -506,7 +506,7 @@ rc = load("residue_contributions.json", ResidueContributions)
 ```
 
 """
-function load(filename::String, ::Type{ResidueContributions})
+function load(filename::AbstractString, ::Type{ResidueContributions})
     filename = expanduser(filename)
     _check_version(filename)
     rc = try
