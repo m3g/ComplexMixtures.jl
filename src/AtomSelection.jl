@@ -79,7 +79,7 @@ natoms(atsel::AtomSelection) = length(atsel.indices)
     atom_group(atsel::AtomSelection, groupname::String)
 
     atom_group(atsel::AtomSelection, i::Int)
-    atom_group(atsel::AtomSelection, groupname::AbstractString)
+    atom_group(atsel::AtomSelection, groupname::String)
 
 Return the indices of the atoms that belong to a given group, when custom groups where defined.
 
