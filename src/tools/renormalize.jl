@@ -27,7 +27,7 @@ The `silent` keyword argument controls whether warnings are printed associated t
 bins with zero samples in the ideal-gas histogram.
 
 """
-function renormalize(R::Result, bulk_density::Number, unit::AbstractString="mol/L"; silent=true)
+function renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
     if !(unit in ("mol/L", "sites/Angs3"))
         throw(ArgumentError("""\n
             Concentration unit must be "mol/L" or "sites/Angs3".
