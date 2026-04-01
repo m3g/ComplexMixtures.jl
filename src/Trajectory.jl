@@ -38,6 +38,7 @@ function Trajectory(
     lastframe=-1,
 )
     filename = string(input_filename)
+    format = string(format)
     if !isempty(format) && !(format in trajectory_formats)
         throw(ArgumentError("""\n
             Trajectory format not properly set: $format 
