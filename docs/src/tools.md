@@ -7,6 +7,12 @@
 CollapsedDocStrings = true
 ```
 
+## Kirkood-Buff Integral Finite-Size corrections
+
+```@docs
+kbi
+```
+
 ## [Computing radial distribution functions](@id radial_distribution)
 
 The distributions returned by the `mddf` function (the `mddf` and

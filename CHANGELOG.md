@@ -10,8 +10,10 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 2.17.1-DEV
+Version 2.19.0-DEV
 --------------
+- ![FEATURE][badge-feature] Implement the `kbi` function, which can be used to apply finite-size corrections to the raw
+KBI obtained. Currently, supports the first-order correction of Kruger and Vlugt, as default.
 
 Version 2.17.0
 --------------

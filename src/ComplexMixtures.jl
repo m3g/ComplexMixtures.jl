@@ -35,6 +35,7 @@ export ResidueContributions
 export contributions
 export gr
 export grid3D
+export kbi
 
 # Testing data
 const src_dir = @__DIR__
@@ -86,6 +87,7 @@ include("./tools/gr.jl")
 include("./tools/grid3D.jl")
 include("./tools/write.jl")
 include("./tools/renormalize.jl")
+include("./tools/kbi.jl")
 
 # Precompilation directives
 include("precompile.jl")
