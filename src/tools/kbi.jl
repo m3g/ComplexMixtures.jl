@@ -31,6 +31,7 @@ integral suffers from thermodynamic finite-size depletion effects. The
 
 """
 function kbi(R::Result; correction=:first_order)
+    dr = R.files[1].options.binstep
     kb = if correction == :none
         copy(r.kb)
     elseif correction == :first_order
