@@ -49,3 +49,9 @@ function kbi(R::Result; correction=:first_order)
     end
     return kb
 end
+
+@testitem "kbi" begin
+
+    # needs tests
+
+end
