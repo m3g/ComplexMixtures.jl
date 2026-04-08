@@ -4,6 +4,8 @@
 Compute the Kirkwood-Buff Integral (KBI) from the spatial correlation data 
 contained in the `Result` object `R`.
 
+The output KBI has units of cm³ mol⁻¹.
+
 This function integrates the solvent density fluctuations around the solute. 
 Because simulations are performed in finite, closed periodic boxes, the raw 
 integral suffers from thermodynamic finite-size depletion effects. The 
