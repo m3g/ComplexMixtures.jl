@@ -79,6 +79,7 @@ include("./parallel_setup.jl")
 include("./mddf.jl")
 
 # Tools
+include("./tools/merge.jl")
 include("./tools/contributions.jl")
 include("./tools/residue_contributions.jl")
 include("./tools/coordination_number.jl")

@@ -63,12 +63,22 @@ function update_counters!(R::Result, system::AbstractParticleSystem, frame_weigh
     return R
 end
 
-# Update counters for the ideal gas distributions
+## Update counters for the ideal gas distributions
 function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::AbstractFloat, ::Val{:random})
     for md in system.list
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
         R.md_count_random[ibin] += frame_weight
+        if R.autocorrelation
+            # the atoms belong to the same set, so their contributions must be halved,
+            # and contribute, both, to the solute count. The solute count is copied to the
+            # solvent count in the `finalresults!` function.
+            update_group_count!(R.solute_group_count_random, ibin, md.i, frame_weight / 2, R.solute)
+            update_group_count!(R.solute_group_count_random, ibin, md.j, frame_weight / 2, R.solute)
+        else
+            update_group_count!(R.solute_group_count_random, ibin, md.i, frame_weight, R.solute)
+            update_group_count!(R.solvent_group_count_random, ibin, md.j, frame_weight, R.solvent)
+        end
         if md.ref_atom_within_cutoff
             ibin = setbin(md.d_ref_atom, R.files[1].options.binstep)
             R.rdf_count_random[ibin] += frame_weight
