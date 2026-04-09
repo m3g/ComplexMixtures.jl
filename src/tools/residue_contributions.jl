@@ -27,7 +27,7 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 
 - `dmin::Float64`: The minimum distance to consider. Default is `1.5`.
 - `dmax::Float64`: The maximum distance to consider. Default is `3.5`.
-- `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, or `:coordination_number`). Default is `:mddf`.
+- `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, `:coordination_number`, or `:kbi`). Default is `:mddf`.
 - `silent::Bool`: If `true`, the progress bar is not shown. Default is `false`.
 
 A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
