@@ -336,7 +336,7 @@ function _mddf_final_results!(R::Result, options::Options)
         R.solvent_group_count .= R.solute_group_count
         R.solvent_group_count_random .= R.solute_group_count_random 
     else
-        @. R.solvent_group_count = R.solvent_group_count / (samples.random * Q)
+        @. R.solvent_group_count = R.solvent_group_count / (R.solute.nmols * Q)
         @. R.solvent_group_count_random = R.solvent_group_count_random / (samples.random * Q)
     end
     @. R.md_count_random = R.md_count_random / (samples.random * Q)
