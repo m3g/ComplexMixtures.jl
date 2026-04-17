@@ -7,7 +7,7 @@ makedocs(
         ComplexMixtures,
         isdefined(Base, :get_extension) ? Base.get_extension(ComplexMixtures, :Plotting) : ComplexMixtures.Plotting,
     ],
-    top_menu=true,
+    format = Documenter.HTML(top_menu = true),
     sitename="ComplexMixtures.jl",
     pages = [
         "Getting started" => Any[ 
