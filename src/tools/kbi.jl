@@ -24,10 +24,12 @@ integral suffers from thermodynamic finite-size depletion effects. The
 - `:first_order` (default): Applies a geometric, shape-independent first-order 
     dampening window. It maps the arbitrary protein geometry to an effective length 
     scale ``L = 6V/A`` at the final cutoff. A Bartlett-style triangular window 
-    ``W(r) = 1 - \\frac{3r}{2L}`` is then applied to the integrand. This perfectly 
+    ``W(r) = 1 - \\frac{3r}{2L}`` is then applied to the integrand. This 
     subtracts the leading-order thermodynamic boundary error while dampening 
     long-range statistical noise.
-- `:exact_spherical`: Applies the 
+- `:exact_spherical`: Applies the exact finite-size correction for spherical 
+  volumes of Krüger and Vlugt. Strictly valid for radial distribution functions
+  (which can be obtained when the solute selection has a single atom). 
 
 # References
 - Krüger, P., & Vlugt, T. J. H. (2018). "Size and shape dependence of finite-volume 
@@ -35,7 +37,7 @@ integral suffers from thermodynamic finite-size depletion effects. The
   [DOI: 10.1103/PhysRevE.97.051301]
 
 """
-kbi(R::Result; correction::Symbol=:first_order) = _kbi(R, Val(correction))
+kbi(R::Result; correction::Symbol=:none) = _kbi(R, Val(correction))
 
 function _kbi(R::Result, invalid_option)
     throw(ArgumentError("""\n
@@ -47,27 +49,25 @@ function _kbi(R::Result, invalid_option)
     """))
 end
 
+# No correction, just return R.kb
+_kbi(R::Result, ::Val{:none}) = R.kb
+
 # First order correction (6V/A)
 function _kbi(R::Result, ::Val{:first_order})
     dr = R.files[1].options.binstep
     u = units.Angs3tocm3permol
-    kb = if correction == :none
-        copy(r.kb)
-    elseif correction == :first_order
-        # Compute L = 6V/A at the final cutoff 
-        V_R = sum(R.volume.shell) / R.density.solvent_bulk
-        A_R = R.volume.shell[end] / (R.density.solvent_bulk * dr)
-        L = 6 * V_R / A_R
-
-        # Leading-order shape-independent correction from Eq. 12 of 
-        # Kruger & Vlugt (10.1103/PhysRevE.97.051301)
-        W = @. 1 - (3/2) * R.d / L
-        u * (1/R.density.solvent_bulk) * cumsum(
-            (R.md_count[i] - R.md_count_random[i]) * W[i]
-            for i in eachindex(R.d)
-        )
-    end
-    return kb
+    # Compute L = 6V/A at the final cutoff 
+    V_R = sum(R.volume.shell) / R.density.solvent_bulk
+    A_R = R.volume.shell[end] / (R.density.solvent_bulk * dr)
+    L = 6 * V_R / A_R
+    # Leading-order shape-independent correction from Eq. 12 of 
+    # Kruger & Vlugt (10.1103/PhysRevE.97.051301)
+    W = @. 1 - (3/2) * R.d / L
+    kbi = u * (1/R.density.solvent_bulk) * cumsum(
+        (R.md_count[i] - R.md_count_random[i]) * W[i]
+        for i in eachindex(R.d)
+    )
+    return kbi
 end
 
 # 
@@ -102,7 +102,8 @@ end
 @testitem "kbi" begin
     using ComplexMixtures
     using ComplexMixtures: data_dir
-    R = load(joinpath(data_dir,"NAMD/protein_tmao.json"))
+    rw = load("$data_dir/NAMD/water/rw_20_25.json")
+    rwO = load("$data_dir/NAMD/water/rw_20_25.json")
 
     @test_throws "Invalid KBI correction option" kbi(R; correction=:abc)
 end
