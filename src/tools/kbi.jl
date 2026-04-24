@@ -17,14 +17,17 @@ integral suffers from thermodynamic finite-size depletion effects. The
 
 # Keyword Arguments
 - `correction::Symbol`: Specifies the type of finite-size correction to apply.
-  - `:none`: Returns the raw, uncorrected KBI (`R.kb`). This integral will typically 
+
+## Correction types:
+- `:none`: Returns the raw, uncorrected KBI (`R.kb`). This integral will typically 
     exhibit a drifting tail at long distances due to box size limitations.
-  - `:first_order` (default): Applies a geometric, shape-independent first-order 
+- `:first_order` (default): Applies a geometric, shape-independent first-order 
     dampening window. It maps the arbitrary protein geometry to an effective length 
     scale ``L = 6V/A`` at the final cutoff. A Bartlett-style triangular window 
     ``W(r) = 1 - \\frac{3r}{2L}`` is then applied to the integrand. This perfectly 
     subtracts the leading-order thermodynamic boundary error while dampening 
     long-range statistical noise.
+- `:exact_spherical`: Applies the 
 
 # References
 - Krüger, P., & Vlugt, T. J. H. (2018). "Size and shape dependence of finite-volume 
@@ -32,7 +35,20 @@ integral suffers from thermodynamic finite-size depletion effects. The
   [DOI: 10.1103/PhysRevE.97.051301]
 
 """
-function kbi(R::Result; correction=:first_order)
+kbi(R::Result; correction::Symbol=:first_order) = _kbi(R, Val(correction))
+
+function _kbi(R::Result, invalid_option)
+    throw(ArgumentError("""\n
+        Invalid KBI correction option. Available corrections are:
+            - :none
+            - :first_order
+            - :exact_spherical
+    
+    """))
+end
+
+# First order correction (6V/A)
+function _kbi(R::Result, ::Val{:first_order})
     dr = R.files[1].options.binstep
     u = units.Angs3tocm3permol
     kb = if correction == :none
@@ -54,8 +70,39 @@ function kbi(R::Result; correction=:first_order)
     return kb
 end
 
+# 
+function _kbi(R::Result, ::Val{:exact_spherical})
+    if R.solute.natomspermol != 1
+        @warn begin 
+            """\n
+            The exact spherical correction only applies to radial distribution functions,
+            such that the solute selection must contain only one atom per molecule. 
+
+            Here, the number of atoms of the solute is $(R.solute.natomspermol), implying
+            a minimum-distance distribution function, and thus this correction does not apply. 
+
+            The solvent selection might contain more atoms, because the `kb_rdf` field of the
+            result data structure will be used, which implies a single-site counting.
+        
+        """
+        end _file=nothing _line=nothing
+    end
+    gr, _ = ComplexMixtures.gr(R)
+    dr = R.files[1].options.binstep
+    u = units.Angs3tocm3permol
+    D = 2 * R.cutoff
+    kbi = u * collect(cumsum(
+        (4 * pi * R.d[i]^2 * dr).* (gr[i] - 1) * 
+        (1 - (3/2) * (R.d[i]/D) + (1/2) * (R.d[i]/D)^3)
+        for i in eachindex(R.d)
+    ))
+    return kbi
+end
+
 @testitem "kbi" begin
+    using ComplexMixtures
+    using ComplexMixtures: data_dir
+    R = load(joinpath(data_dir,"NAMD/protein_tmao.json"))
 
-    # needs tests
-
+    @test_throws "Invalid KBI correction option" kbi(R; correction=:abc)
 end
