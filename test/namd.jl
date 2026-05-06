@@ -21,6 +21,11 @@
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
+    # test substring input
+    traj = Trajectory(@view("$dir/trajectory.dcd---"[1:end-3]), protein, tmao)
+    R = mddf(traj, options)
+    @test isapprox(R, R_save, debug=true)
+
     # Test save and load
     temp_output = tempname()
     save(R, temp_output)

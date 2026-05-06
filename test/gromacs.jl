@@ -1,5 +1,5 @@
 @testitem "Gromacs" begin
-    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
+    using ComplexMixtures
     using ComplexMixtures: data_dir
     using PDBTools: read_pdb, select
 
@@ -16,6 +16,11 @@
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol=20)
     traj = Trajectory("$dir/trajectory.xtc", protein, emi)
+    R = mddf(traj, options)
+    @test isapprox(R, R_save, debug=true)
+
+    # test substring input
+    traj = Trajectory(@view("$dir/trajectory.xtc---"[1:end-3]), protein, emi)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 

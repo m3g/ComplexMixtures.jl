@@ -21,6 +21,11 @@
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
+    # test substring input
+    traj = Trajectory(@view("$dir/trajectory.dcd---"[1:end-3]), protein, tmao, chemfiles=true)
+    R = mddf(traj, options)
+    @test isapprox(R, R_save, debug=true)
+
     # Test save and load
     temp_output = tempname()
     save(R, temp_output)
@@ -40,6 +45,11 @@
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
     traj = Trajectory("$dir/trajectory.dcd", tmao, water, chemfiles=true)
+    R = mddf(traj, options)
+    @test isapprox(R, R_save, debug=true)
+
+    # test substring input
+    traj = Trajectory(@view("$dir/trajectory.dcd---"[1:end-3]), tmao, water, chemfiles=true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 

@@ -17,7 +17,7 @@ calculation, and `results.json` is the output file to be created. The
 file is written in `JSON` format, thus is not naturally human-readable.
 
 ```@docs
-save(::String, ::Result)
+save(::AbstractString, ::Result)
 ```
 
 ## Load saved data
@@ -29,7 +29,7 @@ The `load` function reads the output of the `save` function above,
 and restores the results data structure.
 
 ```@docs
-load(::String, ::Type{Result})
+load(::AbstractString, ::Type{Result})
 ```
 
 ## Write data in a human-readable format

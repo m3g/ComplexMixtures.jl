@@ -1,6 +1,6 @@
 """
     write(
-        R::Result, filename::String;
+        R::Result, filename::AbstractString;
         solute_group_names::AbstractVector{<:AbstractString} = R.solute.group_names,
         solvent_group_names::AbstractVector{<:AbstractString} = R.solvent.group_names,
     )
@@ -12,7 +12,7 @@ If they are not defined, the user can pass the names of the groups as strings in
 
 """
 function Base.write(
-    filename::String, R::Result;
+    filename::AbstractString, R::Result;
     solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
     solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
 )
@@ -127,7 +127,7 @@ end
 #
 function write_group_contributions(
     R::Result,
-    filename::String,
+    filename::AbstractString,
     type::Symbol,
     group_names::AbstractVector{<:AbstractString},
 )
@@ -200,7 +200,7 @@ end
 
 # legacy order
 Base.write(
-    R::Result, filename::String;
+    R::Result, filename::AbstractString;
     solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
     solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
 ) = write(filename, R; solute_group_names, solvent_group_names)

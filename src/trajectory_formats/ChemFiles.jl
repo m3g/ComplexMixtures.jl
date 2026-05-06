@@ -23,7 +23,7 @@ struct ChemFile{T<:AbstractVector} <: Trajectory
     # Mandatory data for things to work
     #
     filename::String
-    format::AbstractString
+    format::String
     stream::Stream{<:Chemfiles.Trajectory} # mutable such that we can close it and open it again
     frame::Chemfiles.Frame
     nframes::Int64
