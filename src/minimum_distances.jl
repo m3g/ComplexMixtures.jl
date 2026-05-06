@@ -198,7 +198,8 @@ end
     @test length(system.xpositions) == 1463
     @test length(system.ypositions) == 2534
     @test system.unitcell ≈ [84.42188262939453 0.0 0.0; 0.0 84.42188262939453 0.0; 0.0 0.0 84.42188262939453]
-    @test system._box == CellListMap.Box(
+    # This test refers to internals of CellListMap, and might be removed.
+    @test system.private.box == CellListMap.Box(
         ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)),
         10.0, lcell=options.lcell
     )
@@ -214,7 +215,8 @@ end
     @test length(system.xpositions) == 14 # one TMAO molecule
     @test length(system.ypositions) == 2534 # one molecule less
     @test system.unitcell ≈ [84.42188262939453 0.0 0.0; 0.0 84.42188262939453 0.0; 0.0 0.0 84.42188262939453]
-    @test system._box == CellListMap.Box(
+    # This test refers to internals of CellListMap, and might be removed.
+    @test system.private.box == CellListMap.Box(
         ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)),
         10.0, lcell=options.lcell
     )
