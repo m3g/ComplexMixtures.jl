@@ -16,7 +16,6 @@ Version 2.17.1-DEV
 
 Version 2.17.0
 --------------
-- ![INFO][badge-info] Update internals to use CellListMap v0.10.0. 
 - ![FEATURE][badge-feature] Support for `AbstractString` in the signature of functions that previously only accepted `String`.
 - ![INFO][badge-info] add concepts.md page - use top_menu
 - ![INFO][badge-info] Add JACS Au cover and update reference.
