@@ -69,6 +69,8 @@ function randomize_solvent!(
     R::Result,
     RNG,
 )
+    uc = system.unitcell
+    cmin, cmax = CellListMap.get_computing_box(system)
     for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0
@@ -81,7 +83,7 @@ function randomize_solvent!(
         # Copy the coordinates of the random solvent molecule chosen
         y_new .= viewmol(jmol, buff.solvent_read, R.solvent)
         # Randomize rotations and translation for this molecule 
-        random_move!(y_new, R.files[1].irefatom, system, RNG)
+        random_move!(y_new, R.files[1].irefatom, uc, cmin, cmax, RNG)
     end
 end
 
@@ -288,7 +290,7 @@ function mddf(
     @sync for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
         Threads.@spawn begin
             # Local data structures for this chunk
-            system_chunk = ParticleSystem(
+            system_chunk = build_particle_system(
                 trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
             )
             buff_chunk = Buffer(trajectory, R)
@@ -313,7 +315,7 @@ function mddf(
                         @. buff_chunk.solvent_read = trajectory.x_solvent
                         # Read weight of this frame
                         unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
-                        update_unitcell!(system_chunk, unitcell)
+                        update!(system_chunk; unitcell=unitcell)
                         # Display progress bar
                         next!(progress)
                     end
@@ -376,7 +378,6 @@ function mddf_frame!(
     #
     # Compute the MDDFs for each solute molecule
     #
-    update_lists = true
     system.ypositions .= buff.solvent_read
     for isolute = 1:r_chunk.solute.nmols
 
@@ -386,8 +387,7 @@ function mddf_frame!(
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
         # for the previous solute
-        minimum_distances!(system, r_chunk, isolute; update_lists=update_lists)
-        update_lists = false # avoid recomputation of the cell lists in the next iteration
+        minimum_distances!(system, r_chunk, isolute)
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within update_counters there are loops over solvent molecules, in such a way that
@@ -402,7 +402,6 @@ function mddf_frame!(
         # the same solute molecule).
         nrand = count(==(isolute), buff.ref_solutes)
         if nrand > 0
-            update_lists = true
             # Save coordinates and list
             buff.list .= system.list
             # Annotate the indices of the molecules that are in the bulk solution
@@ -416,7 +415,7 @@ function mddf_frame!(
             end
             for _ = 1:nrand
                 randomize_solvent!(system, buff, n_solvent_in_bulk, r_chunk, RNG)
-                minimum_distances!(system, r_chunk, isolute; update_lists=update_lists)
+                minimum_distances!(system, r_chunk, isolute)
                 update_counters!(r_chunk, system, frame_weight, Val(:random))
             end
             # Restore positions and minimum distance list of system structure
@@ -449,7 +448,6 @@ function coordination_number_frame!(
     #
     # Compute the MDDFs for each solute molecule
     #
-    update_lists = true
     system.ypositions .= buff.solvent_read
     for isolute = 1:r_chunk.solute.nmols
 
@@ -459,8 +457,7 @@ function coordination_number_frame!(
         # Compute minimum distances of the molecules to the solute (updates system.list, and returns it)
         # The cell lists will be recomputed for the first solute, or if a random distribution was computed
         # for the previous solute
-        minimum_distances!(system, r_chunk, isolute; update_lists=update_lists)
-        update_lists = false # avoid recomputation of the cell lists in the next iteration
+        minimum_distances!(system, r_chunk, isolute)
 
         # For each solute molecule, update the counters (this is highly suboptimal, because
         # within update_counters there are loops over solvent molecules, in such a way that
