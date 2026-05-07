@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.17.1-DEV
 --------------
+- ![INFO][badge-info] Update internals to use CellListMap v0.10.0. 
 
 Version 2.17.0
 --------------

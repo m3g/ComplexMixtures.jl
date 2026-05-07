@@ -62,13 +62,15 @@
     @test t_RNG.allocs <= Allocs(5)
 
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
-    system = ComplexMixtures.ParticleSystem(traj, tmeta.unitcell, options, false, (1, 1))
+    system = ComplexMixtures.build_particle_system(traj, tmeta.unitcell, options, false, (1, 1))
     buff = ComplexMixtures.Buffer(traj, R)
     @. buff.solute_read = traj.x_solute
     @. buff.solvent_read = traj.x_solvent
-    ComplexMixtures.update_unitcell!(system, ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)))
+    ComplexMixtures.update!(system; unitcell=ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)))
     t_mddf_frame =
-        @benchmark ComplexMixtures.mddf_frame!($R, $system, $buff, $options, 1.0, $RNG) samples = 1 evals = 1
+        @benchmark ComplexMixtures.mddf_frame!($R, $system, $buff, $options, 1.0, $RNG) samples = 2 evals = 1
     @test t_mddf_frame.allocs < Allocs(200)
+    t_rnd_solv = @benchmark ComplexMixtures.randomize_solvent!($system, $buff, 157, $R, $RNG) samples = 1 evals =1
+    @test t_rnd_solv.allocs == Allocs(0)
 
 end
