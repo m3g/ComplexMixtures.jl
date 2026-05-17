@@ -8,7 +8,6 @@ of the set provided weighted by the number of frames read in each Result set.
 
 """
 function Base.merge(results::Vector{<:Result})
-    cannot_merge = false
     nframes_read = 0
     for ir in eachindex(results)
         for file in results[ir].files
@@ -16,27 +15,39 @@ function Base.merge(results::Vector{<:Result})
         end
         for jr in ir+1:lastindex(results)
             if results[ir].nbins != results[jr].nbins
-                println(
-                    "ERROR: To merge Results, the number of bins of the histograms of both sets must be the same.",
-                )
-                cannot_merge = true
+                throw(ArgumentError("""\n
+                        To merge Results, the number of bins of the histograms of the sets must be the same.
+
+                    """))
             end
-            if !(results[ir].cutoff ≈ results[ir].cutoff)
-                println(
-                    "ERROR: To merge Results, cutoff distance of the of the histograms of both sets must be the same.",
-                )
-                cannot_merge = true
+            if !(results[ir].cutoff ≈ results[jr].cutoff)
+                throw(ArgumentError("""\n
+                    To merge Results, cutoff distance of the of the histograms of the sets must be the same.
+
+                """))
             end
             if (results[ir].solute != results[jr].solute) || (results[ir].solvent != results[jr].solvent)
-                println(
-                    "ERROR: To merge Results, the solute and solvent selections of both sets must be the same.",
-                )
-                cannot_merge = true
+                throw(ArgumentError("""\n
+                    To merge Results, the solute and solvent selections of the sets must be the same.
+
+                """))
+            end
+            for field in fieldnames(Result)
+                a_i = getfield(results[ir], field)
+                if a_i isa AbstractArray
+                    a_j = getfield(results[jr], field)
+                    if length(a_i) != length(a_j)
+                        throw(ArgumentError("""\n
+                            field $field of results $ir and $jr are incompatible. 
+                                got: length(results[$ir]) == $(length(a_i))
+                                got: length(results[$jr]) == $(length(a_j))
+
+                            """
+                        ))
+                    end
+                end
             end
         end
-    end
-    if cannot_merge
-        throw(ArgumentError(" Incompatible set of results to merge. "))
     end
 
     # Total number of frames of all results, and total weight of frames
@@ -221,5 +232,33 @@ end
     traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
     R2 = mddf(traj, options)
 
+    @test_throws "solute and solvent selections of the sets must be the same" merge([R1,R2])
+    options = Options(
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
+        n_random_samples=10^5,
+        firstframe=2,
+        binstep=0.05,
+    )
+    R3 = mddf(traj, options)
+    @test_throws "number of bins" merge([R2,R3])
 
+    options = Options(
+        seed=321,
+        StableRNG=true,
+        nthreads=1,
+        silent=true,
+        n_random_samples=10^5,
+        firstframe=2,
+        bulk_range=(4,5),
+        binstep=0.01,
+    )
+    R3 = mddf(traj, options)
+    @test_throws "cutoff distance" merge([R2,R3])
+
+    R3 = deepcopy(R2)
+    empty!(R3.solute_group_count_random)
+    @test_throws "field solute_group_count_random" merge([R2,R3])
 end
