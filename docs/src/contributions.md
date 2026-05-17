@@ -244,6 +244,8 @@ bar(
 <img src="../figures/kbi_contributions3.png" width="80%">
 ```
 
+Residues with positive contributions are those for which local accumulation of the solvent compensates the excluded volume effect. Residues that are completely hidden from the surface will contribute proportionally to their excluded volumes.
+
 !!! tip
     See the [2D density map per residue](@ref 2D_per_residue) section for details on indexing, slicing, and arithmetic operations on `ResidueContributions` objects.
 
