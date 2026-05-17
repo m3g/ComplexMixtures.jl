@@ -91,7 +91,8 @@ The keyword `type` defines the return type of the contribution:
 - `type=:mddf` : the contribution of the group to the MDDF is returned (default).
 - `type=:coordination_number` : the contribution of the group to the coordination number, that is, the 
    cumulative sum of counts at each distance, is returned.
-- `type=:md_count` : the contribution of the group to the site count at each distance is returned. 
+- `type=:md_count` : the contribution of the group to the site count at each distance is returned.
+- `type=:kbi` : the proximal contribution of the group to the Kirkwood-Buff integral is returned (in cm³ mol⁻¹). See [Proximal contributions to KBIs](@ref) below.
 
 Example of the usage of the `type` option:
 ```julia
@@ -168,12 +169,13 @@ G_{total}(r) = \sum_i G_i(r)
 
 where each $G_i(r)$ is the proximal contribution of group $i$.
 
-For example, consider a protein solvated by Glucose (`resname GLYC`), and follow the  `mddf` computation steps of [this example](@ref example1): 
+For example, consider a protein solvated by Glycerol (`resname GLYC`), following the `mddf` computation steps of [this example](@ref example1): 
 
 ```julia
 using ComplexMixtures, PDBTools, Plots, LaTeXStrings
 atoms = read_pdb("system.pdb")
-solute = AtomSelection(select(atoms, "protein"); nmols=1)
+protein = select(atoms, "protein")
+solute = AtomSelection(protein; nmols=1)
 solvent = AtomSelection(select(atoms, "resname GLYC"); natomspermol=14)
 R = mddf("glyc50_traj.dcd", solute, solvent, Options(bulk_range=(10,12)))
 ```
@@ -204,7 +206,7 @@ plot!(xlabel="Distance / Å", ylabel="KBI / L mol⁻¹")
 ```
 
 !!! note
-    The KBI contributions are returned in cm³ mol⁻¹, consistent with `results.kb`. Divide by 1000 to convert to L mol⁻¹.
+    The KBI contributions are returned in cm³ mol⁻¹, consistent with `R.kb`. Divide by 1000 to convert to L mol⁻¹.
 
 ## Per-residue proximal contributions to KBIs
 
@@ -224,7 +226,7 @@ heatmap(rc_kbi)
 The sum of contributions from all residues at the last distance converges to the total KBI:
 
 ```julia
-sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ results.kb[end]
+sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ R.kb[end]
 ```
 
 Or, since the converged value of the KBIs is of particular interest, a bar plot of the proximal contributions at the final distance can illustrate better the contribution of each residue:
