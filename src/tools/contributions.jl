@@ -290,6 +290,10 @@ end
     @test sum(contributions(results, SoluteGroup("polar"); type=:md_count)) ≈ 20.0
     @test sum(contributions(results, SoluteGroup("nonpolar"); type=:md_count)) ≈ 9.4
     @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type=:md_count)) ≈ 29.4 / length(eachresidue(tmao))
+    
+    # Test providing group indices
+    @test sum(contributions(results, SoluteGroup(1); type=:md_count)) ≈ 4.4
+    @test sum(contributions(results, SoluteGroup(2); type=:md_count)) ≈ 2.4
 
     @test_throws ArgumentError contributions(results, SolventGroup(solvent); type=:wrong_type)
     @test_throws ArgumentError contributions(results, SoluteGroup([1, 2, 3]))
