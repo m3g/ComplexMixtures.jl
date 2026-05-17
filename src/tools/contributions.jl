@@ -267,6 +267,9 @@ end
     @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type=:md_count)) ≈ 29.4 / length(eachresidue(tmao))
     @test_throws "replace \"acidic\" by" contributions(results, SoluteGroup("acidic"))
 
+    # Type argument error test
+    @test_throws "must be" contributions(results, SoluteGroup(select(protein, "acidic")); type=:wrong_type)
+
     # With custom groups
     solute = AtomSelection(
         protein, nmols=1;
