@@ -152,3 +152,98 @@ hydrogen-bonding distances, but much less in general. Of course all
 selection options could be used, to obtain the contributions of specific
 types of residues, atoms, the backbone, the side-chains, etc. 
 
+## Proximal contributions to KBIs
+
+The `type=:kbi` option in `contributions` computes the **proximal contribution** of each atomic group to the
+Kirkwood-Buff integral (KBI). Each solute atom acts as a reference: solvent molecules for which
+that atom is the nearest solute atom are assigned to it. The KBI contribution of a group is then computed
+from the excess or deficit of proximal solvent contacts relative to the random (ideal-gas) reference,
+normalized by the bulk solvent density — exactly as the total KBI is computed, but restricted to the
+subset of contacts attributed to that group. The result is a decomposition of the total KBI (`results.kb`)
+into atomic or group contributions:
+
+```math
+G_{total}(r) = \sum_i G_i(r)
+```
+
+where each $G_i(r)$ is the proximal contribution of group $i$.
+
+For example, consider a protein solvated by Glucose (`resname GLYC`), and follow the  `mddf` computation steps of [this example](@ref example1): 
+
+```julia
+using ComplexMixtures, PDBTools, Plots, LaTeXStrings
+atoms = read_pdb("system.pdb")
+solute = AtomSelection(select(atoms, "protein"); nmols=1)
+solvent = AtomSelection(select(atoms, "resname GLYC"); natomspermol=14)
+R = mddf("glyc50_traj.dcd", solute, solvent, Options(bulk_range=(10,12)))
+```
+
+The contributions of charged, polar but not charged, and non-polar residues to the KBI can be computed with:
+
+```julia
+charged_atoms = select(atoms, "protein and charged")
+polar_not_charged_atoms = select(atoms, "protein and polar and not charged")
+nonpolar_atoms = select(atoms, "protein and nonpolar")
+kbi_charged = contributions(R, SoluteGroup(charged_atoms); type=:kbi)
+kbi_polar_not_charged = contributions(R, SoluteGroup(polar_not_charged_atoms); type=:kbi)
+kbi_nonpolar = contributions(R, SoluteGroup(nonpolar_atoms); type=:kbi)
+```
+
+These partial contributions are additive: `R.kb ≈ kbi_charged + kbi_polar_not_charged + kbi_nonpolar`.
+
+```julia
+plot(R.d, R.kb / 1000, label="Total KBI", linewidth=2)
+plot!(R.d, kbi_charged / 1000, label="Charged residues", linewidth=2)
+plot!(R.d, kbi_polar_not_charged / 1000, label="Polar, not charged, residues", linewidth=2)
+plot!(R.d, kbi_nonpolar / 1000, label="Non-polar residues", linewidth=2)
+plot!(xlabel="Distance / Å", ylabel="KBI / L mol⁻¹")
+```
+
+```@raw html
+<img src="../figures/kbi_contributions1.png" width="60%">
+```
+
+!!! note
+    The KBI contributions are returned in cm³ mol⁻¹, consistent with `results.kb`. Divide by 1000 to convert to L mol⁻¹.
+
+## Per-residue proximal contributions to KBIs
+
+The `ResidueContributions` function supports `type=:kbi`, producing a 2D map of the proximal KBI
+contributions decomposed per residue. Since the KBI requires integration over distances long enough to
+converge to the bulk, the `dmax` parameter should be extended well beyond its default value of 3.5 Å. Continuing from the previous example, we have:
+
+```julia
+rc_kbi = ResidueContributions(R, protein; type=:kbi, dmax=12.0)
+heatmap(rc_kbi)
+```
+
+```@raw html
+<img src="../figures/kbi_contributions2.png" width="80%">
+```
+
+The sum of contributions from all residues at the last distance converges to the total KBI:
+
+```julia
+sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ results.kb[end]
+```
+
+Or, since the converged value of the KBIs is of particular interest, a bar plot of the proximal contributions at the final distance can illustrate better the contribution of each residue:
+
+```julia
+bar(
+    [rc_kbi[i][end]/1000 for i in eachindex(rc_kbi)]; 
+    xticks=PDBTools.residue_ticks(protein; stride=10), xrotation=60, 
+    label="", 
+    framestyle=:box, 
+    ylabel=L"G_i~/~\textrm{L~mol^{-1}}", 
+    xlabel="residue"
+)
+```
+
+```@raw html
+<img src="../figures/kbi_contributions3.png" width="80%">
+```
+
+!!! tip
+    See the [2D density map per residue](@ref 2D_per_residue) section for details on indexing, slicing, and arithmetic operations on `ResidueContributions` objects.
+
