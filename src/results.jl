@@ -552,24 +552,28 @@ function _get_version(filename)
 end
 
 """
-    load(filename::AbstractString, [::Type{Result}=Result])
+    load(filename::AbstractString)
 
-Function to load the json saved results file into, by default, the `Result` data structure.
-The second parameter is optional for loading `Result` objects.
+Function to load a `ComplexMixtures.Result` data structure. 
 
 ## Example
 
 ```julia
-using ComplexMixtures: load
+using ComplexMixtures
 R = load("results.json")
-#or
-R = load("results.json", Result)
 ```
 
 """
-function load(filename::AbstractString, ::Type{Result})
+function load(filename::AbstractString)
     filename = expanduser(filename)
-    _check_version(filename)
+    load_type = _check_version(filename)
+    return load(filename, load_type)
+end
+
+#
+# Load Result data structure in current version. 
+#
+function load(filename::AbstractString, ::Type{Result})
     R = try
         open(filename, "r") do io
             JSON3.read(io, Result)
@@ -582,7 +586,6 @@ function load(filename::AbstractString, ::Type{Result})
     end
     return R
 end
-load(filename::AbstractString) = load(filename, Result)
 
 @testitem "Result - load/save" begin
     using ComplexMixtures: load
@@ -598,8 +601,8 @@ load(filename::AbstractString) = load(filename, Result)
     r2 = load(tmp)
     @test r1 == r2
     # Test throwing an error incompatible versions of ComplexMixtures
-    @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_new.json")
-    @test_throws ArgumentError load("$data_dir/wrong_version_jsons/too_old.json")
+    @test_throws ArgumentError load("$data_dir/legacy/wrong_version_jsons/too_new.json")
+    @test_throws ArgumentError load("$data_dir/legacy/wrong_version_jsons/too_old.json")
     rm(tmp)
     tmpfile = tempname()
     open(tmpfile, "w") do io

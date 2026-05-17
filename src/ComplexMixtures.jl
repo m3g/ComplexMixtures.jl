@@ -62,6 +62,8 @@ include("./viewmol.jl")
 
 # Structures and functions to store and report results
 include("./results.jl")
+include("./legacy/results-2.17.1.jl") # Legacy compatibility
+
 
 # Comparison operators for ComplexMixtures types
 include("./compare.jl")
