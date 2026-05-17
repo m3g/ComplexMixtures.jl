@@ -27,7 +27,7 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 
 - `dmin::Float64`: The minimum distance to consider. Default is `1.5`.
 - `dmax::Float64`: The maximum distance to consider. Default is `3.5`.
-- `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, or `:coordination_number`). Default is `:mddf`.
+- `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, `:coordination_number`, or `:kbi`). Default is `:mddf`.
 - `silent::Bool`: If `true`, the progress bar is not shown. Default is `false`.
 
 A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
@@ -699,11 +699,16 @@ end
         stride=1,
         StableRNG=true,
         nthreads=2,
-        silent=true
+        silent=true,
+        bulk_range=(8,12),
     )
     result = mddf(traj, options)
     rc = ResidueContributions(result, glicines)
     # This might actually be changed in the future, depending on what one wants. Maybe just throw an error.
     @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions))
+
+    # Test extracting proximal contributions to the KBIs
+    rc_kbi = ResidueContributions(result, glicines; type=:kbi, dmax=12.0)
+    @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ result.kb[end]
 
 end

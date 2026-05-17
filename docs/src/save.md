@@ -29,7 +29,7 @@ The `load` function reads the output of the `save` function above,
 and restores the results data structure.
 
 ```@docs
-load(::AbstractString, ::Type{Result})
+load(::AbstractString)
 ```
 
 ## Write data in a human-readable format

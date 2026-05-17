@@ -28,10 +28,7 @@ mol_str(n) = "$n $(n == 1 ? "molecule" : "molecules")"
     @test CM.mol_str(2) == "2 molecules"
 end
 
-# function that checks if output files were produced with the current version
-function _check_version(filename)
-    json_version = _get_version(filename)
-    current_version = pkgversion(@__MODULE__)
+function _loading_version_errors(json_version, current_version)
     # Error if the json file is from a newer version than the current one
     if json_version > current_version
         throw(ArgumentError("""\n
@@ -45,6 +42,7 @@ function _check_version(filename)
 
         """))
     end
+    # Error if a version smaller than 2.0.0 is found
     if json_version < v"2.0.0"
         throw(ArgumentError("""\n
             Trying to load a json result created with an older, and incompatible, version of ComplexMixtures.
@@ -63,4 +61,28 @@ function _check_version(filename)
         """))
     end
     return nothing
+end
+
+# function that checks if output files were produced with the current version
+function _check_version(filename)
+    json_version = _get_version(filename)
+    current_version = pkgversion(@__MODULE__)
+    _loading_version_errors(json_version, current_version)
+    #
+    # Choose load type depending on the version of the file
+    #
+    load_type = if v"2.0.0" < json_version <= v"2.17.1"
+        @warn """\n
+            Reading json result created with $json_version. 
+            
+            This version didn't support KBI contribution decomposition, introduced in v2.18.0. 
+            
+            The `solute_group_count_random` and `solvent_group_count_random` arrays will be empty.
+
+        """ _file=nothing _line=nothing
+        Result_2_17_1
+    else
+        Result
+    end
+    return load_type
 end

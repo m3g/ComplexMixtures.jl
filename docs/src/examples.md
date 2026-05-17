@@ -2,7 +2,7 @@
 
 ## List of examples
 
-- [Protein in water/glycerol](@ref)
+- [Protein in water/glycerol](@ref example1)
 - [Polyacrylamide in DMDF](@ref)
 - [POPC membrane in water/ethanol](@ref)
 - [Glycerol/water mixture](@ref)

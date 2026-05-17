@@ -25,13 +25,14 @@ end
 """
     contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf)
 
-Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number, or MD count.
+Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number, MD count,
+or proximal contributions to the Kirkwood-Buff integrals. 
 
 # Arguments
 
 - `R::Result`: The result of a calculation.
 - `group::Union{SoluteGroup,SolventGroup}`: The group of atoms to consider.
-- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number`, or `:md_count`.
+- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number`, `:md_count`, or `:kbi`.
 
 # Examples
 
@@ -73,8 +74,8 @@ function contributions(
     _warn_zero_md_count=true,
 )
 
-    if !(type in (:mddf, :coordination_number, :md_count))
-        throw(ArgumentError("type must be :mddf (default), :coordination_number, or :md_count"))
+    if !(type in (:mddf, :coordination_number, :md_count, :kbi))
+        throw(ArgumentError("type must be :mddf (default), :coordination_number, :md_count, :kbi"))
     end
 
     if _warn_zero_md_count && type == :mddf && all(==(0), R.md_count_random)
@@ -90,9 +91,11 @@ function contributions(
     if group isa SoluteGroup
         atsel = R.solute
         group_count = R.solute_group_count
+        group_count_random = R.solute_group_count_random
     elseif group isa SolventGroup
         atsel = R.solvent
         group_count = R.solvent_group_count
+        group_count_random = R.solvent_group_count_random
     end
 
     # If custom groups were provided, we cannot retrieve general group contributions from
@@ -128,6 +131,7 @@ function contributions(
         end
     end
     sel_count = zeros(length(group_count[1]))
+    sel_count_random = zeros(length(group_count[1]))
 
     # If the index of the groups was provided
     if !isnothing(group.group_index)
@@ -139,6 +143,7 @@ function contributions(
             """))
         end
         sel_count .= group_count[igroup]
+        sel_count_random .= group_count_random[igroup]
     end
 
     # If the name of the group was provided
@@ -146,6 +151,7 @@ function contributions(
         igroup = findfirst(==(group.group_name), atsel.group_names)
         isnothing(igroup) && _name_not_found_error(group.group_name, atsel)
         sel_count .= group_count[igroup]
+        sel_count_random .= group_count_random[igroup]
     end
 
     # If, instead, atom indices or names were provided, sum over the contributions of the atoms.
@@ -173,6 +179,7 @@ function contributions(
                 itype = findfirst(==(iat), atsel.indices)
                 isnothing(itype) && _index_not_found_error(iat, atsel)
                 sel_count .+= group_count[itype]
+                sel_count_random .+= group_count_random[itype]
             end
         else
             # If there's more than one molecule, the contributions are stored by 
@@ -182,6 +189,7 @@ function contributions(
                 any(==(iat), atsel.indices) || _index_not_found_error(iat, atsel)
                 itype = atom_type(iat, atsel.natomspermol; first=first(atsel.indices))
                 sel_count .+= group_count[itype] / atsel.nmols
+                sel_count_random .+= group_count_random[itype] / atsel.nmols
             end
         end
     end
@@ -206,6 +214,7 @@ function contributions(
                 if atom_name == name
                     found_atom_name = true
                     sel_count .+= group_count[igroup]
+                    sel_count_random .+= group_count_random[igroup]
                 end
             end
             found_atom_name || _name_not_found_error(atom_name, atsel)
@@ -213,7 +222,7 @@ function contributions(
     end
 
     # Convert to the desired type
-    if type == :mddf
+    output = if type == :mddf
         for i in eachindex(R.md_count_random, sel_count)
             if R.md_count_random[i] == 0.0
                 sel_count[i] = 0.0
@@ -221,13 +230,21 @@ function contributions(
                 sel_count[i] /= R.md_count_random[i]
             end
         end
+        sel_count
     elseif type == :coordination_number
         sel_count .= cumsum(sel_count)
+        sel_count
     elseif type == :md_count
         # do nothing, already md_count
+        sel_count
+    elseif type == :kbi
+        sel_count .= cumsum(sel_count)
+        sel_count_random .= cumsum(sel_count_random)
+        kbi = units.Angs3tocm3permol * (1 / R.density.solvent_bulk) * (sel_count .- sel_count_random)
+        kbi
     end
 
-    return sel_count
+    return output
 end
 
 @testitem "contributions" begin
@@ -250,6 +267,9 @@ end
     @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type=:md_count)) ≈ 29.4 / length(eachresidue(tmao))
     @test_throws "replace \"acidic\" by" contributions(results, SoluteGroup("acidic"))
 
+    # Type argument error test
+    @test_throws "must be" contributions(results, SoluteGroup(select(protein, "acidic")); type=:wrong_type)
+
     # With custom groups
     solute = AtomSelection(
         protein, nmols=1;
@@ -270,6 +290,10 @@ end
     @test sum(contributions(results, SoluteGroup("polar"); type=:md_count)) ≈ 20.0
     @test sum(contributions(results, SoluteGroup("nonpolar"); type=:md_count)) ≈ 9.4
     @test sum(contributions(results, SolventGroup(findall(Select("resname TMAO and resnum 1"), atoms)); type=:md_count)) ≈ 29.4 / length(eachresidue(tmao))
+    
+    # Test providing group indices
+    @test sum(contributions(results, SoluteGroup(1); type=:md_count)) ≈ 4.4
+    @test sum(contributions(results, SoluteGroup(2); type=:md_count)) ≈ 2.4
 
     @test_throws ArgumentError contributions(results, SolventGroup(solvent); type=:wrong_type)
     @test_throws ArgumentError contributions(results, SoluteGroup([1, 2, 3]))
@@ -296,6 +320,16 @@ end
     @test results.mddf ≈ contributions(results, SoluteGroup(protein))
     r = collect(eachresidue(protein))
     @test results.mddf ≈ mapreduce(x -> contributions(results, SoluteGroup(x)), +, r)
+
+    # Test consistency of proximal contributions to the KBIs
+    kbi_polar = contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi)
+    kbi_nonpolar = contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi)
+    @test results.kb ≈ kbi_polar + kbi_nonpolar
+
+    # This is probably unused, but possible
+    kbi_tmao_O = contributions(results, SolventGroup(select(atoms, "resname TMAO and element O")); type=:kbi)
+    kbi_not_tmao_O = contributions(results, SolventGroup(select(atoms, "resname TMAO and not element O")); type=:kbi)
+    @test results.kb ≈ kbi_tmao_O + kbi_not_tmao_O
 
     # Now test if the solute is a dicontinuous set of atoms in the original structure
     # The solute has only one molecule.

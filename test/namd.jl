@@ -1,7 +1,6 @@
 
 @testitem "NAMD" begin
-    using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load,
-        SoluteGroup, SolventGroup, contributions
+    using ComplexMixtures
     using ComplexMixtures: data_dir
     using PDBTools: read_pdb, select, Select
 
