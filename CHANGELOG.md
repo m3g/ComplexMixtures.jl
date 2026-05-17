@@ -10,6 +10,9 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.18.1-DEV
+--------------
+
 Version 2.18.0
 --------------
 - ![FEATURE][badge-feature] Provide the `type=:kbi` option to `contributions` and `ResidueContributions` functions, to obtain the proximal contributions to the KBIs. 
