@@ -601,8 +601,9 @@ end
     r2 = load(tmp)
     @test r1 == r2
     # Test throwing an error incompatible versions of ComplexMixtures
-    @test_throws ArgumentError load("$data_dir/legacy/wrong_version_jsons/too_new.json")
-    @test_throws ArgumentError load("$data_dir/legacy/wrong_version_jsons/too_old.json")
+    @test_throws "newer version" load("$data_dir/legacy/wrong_version_jsons/too_new.json")
+    @test_throws "older" load("$data_dir/legacy/wrong_version_jsons/too_old.json")
+    @test_throws "Result object" load("$data_dir/legacy/wrong_version_jsons/broken_json_2.18.0.json")
     rm(tmp)
     tmpfile = tempname()
     open(tmpfile, "w") do io

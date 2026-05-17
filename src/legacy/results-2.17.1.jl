@@ -139,4 +139,6 @@ end
     @test r_new.mddf ≈ r_old.mddf
     @test r_old.solute_group_count_random == Vector{Float64}[]
     @test r_old.solvent_group_count_random == Vector{Float64}[]
+    @test_throws "Result object" load(joinpath(data_dir, "legacy/wrong_version_jsons/broken_json.json"))
+
 end
