@@ -1,10 +1,10 @@
 # Applications
 
+* G. C. de Andrade, A. F. Pereira, P. H. B. Ferreira, K. D. da Cruz, G. S. de Sousa, M. F. Mota, R. J. de Oliveira, L. Martínez, M. A. Marques, J. L. Silva, G. A. P. de Oliveira, **Cancer-linked aggregation of p53 is driven by sequence-encoded frustration, solvation, and hydrophobic gating absent in its paralogs.** *Communications Chemistry*, 2026. [[Full Text]](https://www.nature.com/articles/s42004-026-02050-2)
+
 ```@raw html
 <a href="#"><img style="float: right" src="../assets/mourao2026.jpg" width="22%"></a>
 ```
-
-* G. C. de Andrade, A. F. Pereira, P. H. B. Ferreira, K. D. da Cruz, G. S. de Sousa, M. F. Mota, R. J. de Oliveira, L. Martínez, M. A. Marques, J. L. Silva, G. A. P. de Oliveira, **Cancer-linked aggregation of p53 is driven by sequence-encoded frustration, solvation, and hydrophobic gating absent in its paralogs.** *Communications Chemistry*, 2026. [[Full Text]](https://www.nature.com/articles/s42004-026-02050-2)
 
 * E. D. S. Mourão, F. C. Ramos, L. Martínez, **Molecular Basis for Solvation Structure and Thermodynamics of Polyacrylamide in Aqueous Solutions of Glucose.**
   *Macromolecules*, 59, 5, 3212–3225 2026. [[Full Text]](https://pubs.acs.org/doi/10.1021/acs.macromol.5c03031)
@@ -30,8 +30,7 @@
 * F. C. Ramos, L. Martínez, **Molecular dynamics and solvation structures of the β-glucosidase from Humicola insolens (BGHI) in aqueous solutions containing glucose**
   *Int. J. Biol. Macromol.* 286 (138210) 2025. [[Full Text]](https://doi.org/10.1016/j.ijbiomac.2024.138210)
 
-* P. Y. S. Nakasu, V. Piccoli, A. Ovejero-Pérez, P. Kumar, A. A. Ghatta, S. Melanie, C. Polesca, L. Martínez, J. P. Hallett, 
-**Fractionation of Squid Pens with Ionic Liquids─An Upgraded β-Chitin and Shellfish Protein Production.** *ACS Sustainable Chem. Eng.* 13 (7) 2649–2660, 2025. [[Full Text]](https://doi.org/10.1021/acssuschemeng.4c04217)
+* P. Y. S. Nakasu, V. Piccoli, A. Ovejero-Pérez, P. Kumar, A. A. Ghatta, S. Melanie, C. Polesca, L. Martínez, J. P. Hallett, **Fractionation of Squid Pens with Ionic Liquids─An Upgraded β-Chitin and Shellfish Protein Production.** *ACS Sustainable Chem. Eng.* 13 (7) 2649–2660, 2025. [[Full Text]](https://doi.org/10.1021/acssuschemeng.4c04217)
 
 * V. Piccoli, L. Martínez, **Competitive Effects of Anions on Protein Solvation by Aqueous Ionic Liquids.** 
   *J. Phys. Chem. B* 128, 7792-7802, 2024. [[Full Text]](https://pubs.acs.org/doi/10.1021/acs.jpcb.4c03735)
