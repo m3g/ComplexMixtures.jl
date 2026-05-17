@@ -699,11 +699,16 @@ end
         stride=1,
         StableRNG=true,
         nthreads=2,
-        silent=true
+        silent=true,
+        bulk_range=(8,12),
     )
     result = mddf(traj, options)
     rc = ResidueContributions(result, glicines)
     # This might actually be changed in the future, depending on what one wants. Maybe just throw an error.
     @test all(rc.residue_contributions[i] ≈ rc.residue_contributions[1] for i in 1:length(rc.residue_contributions))
+
+    # Test extracting proximal contributions to the KBIs
+    rc_kbi = ResidueContributions(result, glicines; type=:kbi, dmax=12.0)
+    @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ result.kb[end]
 
 end

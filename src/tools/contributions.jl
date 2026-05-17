@@ -25,13 +25,14 @@ end
 """
     contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf)
 
-Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number, or MD count.
+Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number, MD count,
+or proximal contributions to the Kirkwood-Buff integrals. 
 
 # Arguments
 
 - `R::Result`: The result of a calculation.
 - `group::Union{SoluteGroup,SolventGroup}`: The group of atoms to consider.
-- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number`, or `:md_count`.
+- `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number`, `:md_count`, or `:kbi`.
 
 # Examples
 
@@ -312,6 +313,16 @@ end
     @test results.mddf ≈ contributions(results, SoluteGroup(protein))
     r = collect(eachresidue(protein))
     @test results.mddf ≈ mapreduce(x -> contributions(results, SoluteGroup(x)), +, r)
+
+    # Test consistency of proximal contributions to the KBIs
+    kbi_polar = contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi)
+    kbi_nonpolar = contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi)
+    @test results.kb ≈ kbi_polar + kbi_nonpolar
+
+    # This is probably unused, but possible
+    kbi_tmao_O = contributions(results, SolventGroup(select(atoms, "resname TMAO and element O")); type=:kbi)
+    kbi_not_tmao_O = contributions(results, SolventGroup(select(atoms, "resname TMAO and not element O")); type=:kbi)
+    @test results.kb ≈ kbi_tmao_O + kbi_not_tmao_O
 
     # Now test if the solute is a dicontinuous set of atoms in the original structure
     # The solute has only one molecule.
