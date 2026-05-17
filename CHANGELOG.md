@@ -10,8 +10,10 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 2.17.2-DEV
+Version 2.18.0-DEV
 --------------
+- ![FEATURE][badge-feature] Provide the `type=:kbi` option to `contributions` and `ResidueContributions` functions, to obtain the proximal contributions to the KBIs. 
+- ![FEATURE][badge-feature] Save `solute_group_count_random` and `solvent_group_count_random` to allow the decomposition of KBIs into proximal group contributions. 
 
 Version 2.17.1
 --------------
