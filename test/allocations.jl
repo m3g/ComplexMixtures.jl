@@ -57,8 +57,8 @@
     t_nextframe = @benchmark ComplexMixtures.nextframe!($traj) samples = 1 evals = 1
     @test t_nextframe.allocs <= Allocs(100)
 
-    RNG = ComplexMixtures.init_random(options)
-    t_RNG = @benchmark ComplexMixtures.init_random($options) samples = 1 evals = 1
+    RNG = ComplexMixtures.init_random(options, 1)
+    t_RNG = @benchmark ComplexMixtures.init_random($options, 1) samples = 1 evals = 1
     @test t_RNG.allocs <= Allocs(5)
 
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
