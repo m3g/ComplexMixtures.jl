@@ -154,7 +154,7 @@ end
         return true
     end
 
-    RNG = ComplexMixtures.init_random(Options())
+    RNG = ComplexMixtures.init_random(Options(), 1)
     # Orthorhombic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     system = ParticleSystem(
