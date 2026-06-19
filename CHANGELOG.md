@@ -10,7 +10,7 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 2.18.1-DEV
+Version 2.18.1
 --------------
 - ![INFO][badge-info] Fix concurrency issue of RNG generator and unnccessary lock of system update.
 
