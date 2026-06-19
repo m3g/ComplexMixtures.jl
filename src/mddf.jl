@@ -302,7 +302,7 @@ function mddf(
                     @info "From thread id: $(Threads.threadid()): stop_complexmixtures file found. Exiting."
                     break
                 end
-                local compute, frame_weight
+                local compute, frame_weight, unitcell_frame
                 # Read frame coordinates
                 @lock read_lock begin
                     iframe, frame_weight, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
@@ -314,8 +314,7 @@ function mddf(
                         @. buff_chunk.solute_read = trajectory.x_solute
                         @. buff_chunk.solvent_read = trajectory.x_solvent
                         # Read weight of this frame
-                        unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
-                        update!(system_chunk; unitcell=unitcell)
+                        unitcell_frame = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
                         # Display progress bar
                         next!(progress)
                     end
@@ -324,6 +323,7 @@ function mddf(
                 # Perform MDDF computation
                 #
                 if compute
+                    update!(system_chunk; unitcell=unitcell_frame)
                     # Compute distances in this frame and update results
                     if !coordination_number_only
                         mddf_frame!(r_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)
