@@ -234,9 +234,6 @@ function mddf(
     options.silent || println(bars)
     options.silent || println("Initializing data structures ...")
 
-    # Set random number generator
-    RNG = init_random(options)
-
     # Compute some meta-data from the trajectory file and the options,
     # to allow parallel creation of the Result, and ParticleSystem
     # data structures
@@ -287,8 +284,11 @@ function mddf(
     # Loop over the trajectory
     read_lock = ReentrantLock()
     sum_results_lock = ReentrantLock()
-    @sync for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
+    @sync for (ichunk, frame_range) in enumerate(ChunkSplitters.chunks(to_read_frames; n=nchunks))
         Threads.@spawn begin
+            # Set random number generator
+            RNG = init_random(options, ichunk)
+
             # Local data structures for this chunk
             system_chunk = build_particle_system(
                 trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
@@ -302,7 +302,7 @@ function mddf(
                     @info "From thread id: $(Threads.threadid()): stop_complexmixtures file found. Exiting."
                     break
                 end
-                local compute, frame_weight
+                local compute, frame_weight, unitcell_frame
                 # Read frame coordinates
                 @lock read_lock begin
                     iframe, frame_weight, compute = goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
@@ -314,8 +314,7 @@ function mddf(
                         @. buff_chunk.solute_read = trajectory.x_solute
                         @. buff_chunk.solvent_read = trajectory.x_solvent
                         # Read weight of this frame
-                        unitcell = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
-                        update!(system_chunk; unitcell=unitcell)
+                        unitcell_frame = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
                         # Display progress bar
                         next!(progress)
                     end
@@ -324,6 +323,7 @@ function mddf(
                 # Perform MDDF computation
                 #
                 if compute
+                    update!(system_chunk; unitcell=unitcell_frame)
                     # Compute distances in this frame and update results
                     if !coordination_number_only
                         mddf_frame!(r_chunk, system_chunk, buff_chunk, options, frame_weight, RNG)

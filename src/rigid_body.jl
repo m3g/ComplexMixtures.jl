@@ -5,7 +5,7 @@
 
 import RandomNumbers.Xorshifts as RndX
 import StableRNGs
-function init_random(options)
+function init_random(options, ichunk::Int)
     if options.StableRNG
         seed = abs(RndX.rand(Int))
         RNG = StableRNGs.StableRNG(seed)
@@ -13,7 +13,7 @@ function init_random(options)
         RNG = RndX.Xoroshiro128Plus()
     end
     if options.seed > 0
-        RndX.seed!(RNG, options.seed)
+        RndX.seed!(RNG, options.seed + ichunk - 1)
     end
     return RNG
 end
@@ -154,7 +154,7 @@ end
         return true
     end
 
-    RNG = ComplexMixtures.init_random(Options())
+    RNG = ComplexMixtures.init_random(Options(), 1)
     # Orthorhombic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
     system = ParticleSystem(
