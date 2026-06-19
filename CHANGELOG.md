@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.18.1-DEV
 --------------
+- ![INFO][badge-info] Fix concurrency issue of RNG generator and unnccessary lock of system update.
 
 Version 2.18.0
 --------------
