@@ -234,9 +234,6 @@ function mddf(
     options.silent || println(bars)
     options.silent || println("Initializing data structures ...")
 
-    # Set random number generator
-    RNG = init_random(options)
-
     # Compute some meta-data from the trajectory file and the options,
     # to allow parallel creation of the Result, and ParticleSystem
     # data structures
@@ -287,8 +284,11 @@ function mddf(
     # Loop over the trajectory
     read_lock = ReentrantLock()
     sum_results_lock = ReentrantLock()
-    @sync for frame_range in ChunkSplitters.chunks(to_read_frames; n=nchunks)
+    @sync for (ichunk, frame_range) in enumerate(ChunkSplitters.chunks(to_read_frames; n=nchunks))
         Threads.@spawn begin
+            # Set random number generator
+            RNG = init_random(options, ichunk)
+
             # Local data structures for this chunk
             system_chunk = build_particle_system(
                 trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
