@@ -12,7 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.18.2
 --------------
-- ![INFO][badge-info] Import `save` and `load` from MolSimToolkitShared (v1.6) for interop with PDBTools.jl.
+- ![INFO][badge-info] Import `save` and `load` from MolSimToolkitShared (v1.6) for interop with PDBTools.jl. Note: this required the "benign" piracy of `save` from `MolSimToolkitShared`, to avoid breaking `save(::String)`. This will be fixed in a future v3.
 
 Version 2.18.1
 --------------
