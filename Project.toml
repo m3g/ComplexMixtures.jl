@@ -32,7 +32,7 @@ Plotting = "Plots"
 
 [compat]
 Aqua = "0.8.9"
-BenchmarkTools = "1"
+BenchmarkTools = "1.6.2"
 CellListMap = "0.10.1"
 Chemfiles = "0.10.3"
 ChunkSplitters = "3.1"
