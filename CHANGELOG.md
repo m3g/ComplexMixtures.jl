@@ -12,6 +12,8 @@ ComplexMixtures.jl Changelog
 
 Version 2.18.3-DEV
 --------------
+- ![FEATURE][badge-feature] Implement the `kbi` function, which can be used to apply finite-size corrections to the raw
+KBI obtained. Currently, supports the first-order correction of Kruger and Vlugt, as default.
 
 Version 2.18.2
 --------------
