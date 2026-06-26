@@ -22,6 +22,7 @@ export Trajectory, Options, Result
 export AtomSelection, SoluteGroup, SolventGroup
 
 # Functions
+import MolSimToolkitShared: save, load
 export mddf
 export overview
 export save, load, write, merge

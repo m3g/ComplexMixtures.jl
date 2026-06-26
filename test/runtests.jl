@@ -21,7 +21,11 @@ end
 
 @testitem "Aqua.test_all" begin
     import Aqua
-    Aqua.test_all(ComplexMixtures)
+    import MolSimToolkitShared
+    Aqua.test_all(
+        ComplexMixtures;
+        piracies = (treat_as_own = [MolSimToolkitShared.load],) # avoid this one piracy error, to be fixed in v3
+    )
 end
 
 include("./show_methods.jl")
