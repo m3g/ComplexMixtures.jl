@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 2.18.3-DEV
 --------------
+- ![INFO][badge-info] Update references and application papers.
 
 Version 2.18.2
 --------------
