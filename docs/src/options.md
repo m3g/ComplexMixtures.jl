@@ -76,7 +76,7 @@ value can even be decreased to speed up the calculations.
 
 `seed`: Seed for random number generator. If `-1`, the seed will be
 generated from the entropy of the system. If your results are dependent
-on the seed, is is probable that you do not have enough sampling. Mostly
+on the seed, it is probable that you do not have enough sampling. Mostly
 used for testing purposes. Two runs are only identical if ran with
 the same seed and in serial mode.   
 

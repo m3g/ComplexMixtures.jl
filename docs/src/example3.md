@@ -119,7 +119,7 @@ $(read("./assets/scripts/example3/script3.jl", String))
 
 ![](./assets/scripts/example3/mddf_POPC_water_groups.png)
 
-Not surprisingly, water interactions occur majoritarily with the Phosphate and Choline groups of POPC molecules, that is, with the polar head of the lipid. The interactions at hydrogen-bonding distances are dominated by the phosphate group, and non-specific interaction occur mostly with the choline group. Some water molecules penetrate the membrane and interact with the glycerol and aliphatic chains of POPC, but these contributions are clearly secondary.
+Not surprisingly, water interactions occur mostly with the Phosphate and Choline groups of POPC molecules, that is, with the polar head of the lipid. The interactions at hydrogen-bonding distances are dominated by the phosphate group, and non-specific interactions occur mostly with the choline group. Some water molecules penetrate the membrane and interact with the glycerol and aliphatic chains of POPC, but these contributions are clearly secondary.
 
 ## [Interaction of POPC groups with ethanol](@id groups3-example3)
 
@@ -167,7 +167,7 @@ $(read("./assets/scripts/example3/script5.jl", String))
 
 ![](./assets/scripts/example3/POPC_ethanol_chains.png)
 
-Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.
+Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the unsaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain exposes these terminal groups to membrane depth where ethanol is already abundant.
 
 The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:
 

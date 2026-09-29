@@ -82,7 +82,7 @@ obtaining the following figure:
 <img width=70% src="../assets/scripts/example1/2D-map_st-bb.png">
 </center>
 ```
-which shows that the side-chains contribute mostly to these densities, except here expectedly, for some Gly residues.
+which shows that the side-chains contribute mostly to these densities, except, as expected, for some Gly residues.
 
 ### Indexing, slicing, arithmetic operations
 
@@ -161,7 +161,7 @@ functions can be use with:
 
 ```julia
 rc = ResidueContributions(results1, select(atoms, "protein")); 
-# Save rc objecto to a file (json format):
+# Save rc object to a file (json format):
 save("residue_contributions.json", rc) 
 # Load json file into a new rc_loaded object:
 rc_loaded = load("residue_contributions.json", ResidueContributions)

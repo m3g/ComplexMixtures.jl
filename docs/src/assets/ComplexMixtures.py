@@ -73,6 +73,6 @@ def mddf(*args, **kwargs) :
     jl.GC.enable(True)
     return result
 
-# Covert python lists to julia arrays
+# Convert python lists to julia arrays
 def list(python_list) :
     return jl.map(jl.identity, python_list)

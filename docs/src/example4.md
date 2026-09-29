@@ -64,7 +64,7 @@ $(read("./assets/scripts/example4/script1.jl", String))
 
 Both water and glycerol form hydrogen bonds with (other) glycerol molecules, as indicated by the peaks at ~1.8$$\mathrm{\AA}$$. The auto-correlation function of glycerol shows a more marked second peak corresponding to non-specific interactions, which (as we will show) are likely associated to interactions of its aliphatic groups.
 
-The KB integrals in the second panel show similar values water and glycerol, with the KB integral for water being slightly greater. This means that glycerol molecules are (sightly, if the result is considered reliable) preferentially hydrated from a macroscopic standpoint.
+The KB integrals in the second panel show similar values for water and glycerol, with the KB integral for water being slightly greater. This means that glycerol molecules are (slightly, if the result is considered reliable) preferentially hydrated from a macroscopic standpoint.
 
 ## [Glycerol group contributions to MDDFs](@id glyc-groups-example4)
 

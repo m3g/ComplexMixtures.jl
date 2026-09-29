@@ -26,7 +26,7 @@ The [PDBTools](https://m3g.github.io/PDBTools) package helps the construction of
 the solute and solvent data structures,
 by providing a convenient selection syntax. Additionally, it sets up the names
 of the atoms of the system in the data structure, which can be used to retrieve
-atom and and group contributions to MDDFs and coordination numbers. 
+atom and group contributions to MDDFs and coordination numbers. 
 
 For example, here we define a protein of a system as the solute:
 
@@ -119,7 +119,7 @@ the decomposition of the final MDDFs into any group contribution. However, when 
 has millions of atoms, storing the contribution of each atom becomes prohibitive in terms of memory.
 Thus, one may need to predefine the groups in which the contributions will be analyzed.
 
-Here, we illustrate this feature by presselecting the acidic and basic residues of a protein:
+Here, we illustrate this feature by preselecting the acidic and basic residues of a protein:
 
 ```julia
 julia> using ComplexMixtures, PDBTools

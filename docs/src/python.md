@@ -147,7 +147,7 @@ $(read("./assets/scripts/python/script3.py", String))
 
 ![](./assets/scripts/python/group_contributions.png)
 
-Despite the low sampling, it is clear that hydroxyl groups contribute to the greter peak of the distribution, at hydrogen-bonding distances, as expected. The contributions of the aliphatic groups to the MDDF occurs at longer distances, associated to non-specific interactions. 
+Despite the low sampling, it is clear that hydroxyl groups contribute to the greater peak of the distribution, at hydrogen-bonding distances, as expected. The contributions of the aliphatic groups to the MDDF occur at longer distances, associated to non-specific interactions. 
 
 !!! note
     The syntax here diverges from the Julia-only examples by requiring the lists of names

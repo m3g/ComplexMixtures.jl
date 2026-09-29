@@ -7,7 +7,7 @@ The following examples consider a system composed a protein solvated by a mixtur
 <img width=50% src="../figures/prot_glyc_system.png">
 </center>
 ```
-Image of the system of the example: a protein solvated by a mixture of glycreol (green) and water, at a concentration of 50%vv. 
+Image of the system of the example: a protein solvated by a mixture of glycerol (green) and water, at a concentration of 50%vv. 
 
 ### Index
 
@@ -95,7 +95,7 @@ and the same distribution function, decomposed into the contributions of the hyd
 
 In this followup from the example above, we compute group contributions of the solute (the protein) to the MDDFs,
 split into the contributions each protein residue. This allows the observation of the penetration of the solvent
-on the structure, and the strength of the interaction of the solvent, or cossolvent, with each type of residue
+on the structure, and the strength of the interaction of the solvent, or cosolvent, with each type of residue
 in the structure. The `ResidueContributions` and `Plots.contourf` auxiliary functions, [documented here](@ref 2D_per_residue), are used:  
 
 ```@raw html
