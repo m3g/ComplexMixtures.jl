@@ -37,7 +37,7 @@ for mer in eachresidue(acr)
         end
         # Filter the atoms of this mer that belong to the group
         mer_group_atoms = filter(at -> name(at) in group_atoms, mer)
-        # Retrive the contribution of this mer atoms to the MDDF
+        # Retrieve the contribution of this mer atoms to the MDDF
         atoms_contrib = contributions(results, SoluteGroup(mer_group_atoms))
         # Smooth the contributions
         atoms_contrib = movavg(atoms_contrib; n=10).x
