@@ -1,11 +1,10 @@
 module ComplexMixtures
 
 import ChunkSplitters
-import JSON3
+import JSON
 import PDBTools
 import PrecompileTools
 import Random
-import StructTypes
 
 using CellListMap: CellListMap, AbstractParticleSystem, ParticleSystem, pairwise!, update!
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
