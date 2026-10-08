@@ -11,4 +11,3 @@ PDBTools = "3.41.0"
 [sources]
 ComplexMixtures = {path = ".."}
 Documenter = {rev = "top_menu_from_pages", url = "https://github.com/lmiq/Documenter.jl"}
-PDBTools = {path = "/home/leandro/.julia/dev/PDBTools"}
