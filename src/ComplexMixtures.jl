@@ -35,7 +35,7 @@ export coordination_number
 export ResidueContributions
 export contributions
 export gr
-export grid3D
+export grid3D, volumetric_data
 
 # Testing data
 const src_dir = @__DIR__

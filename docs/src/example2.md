@@ -166,7 +166,7 @@ $(read("./assets/scripts/example2/script4.jl", String))
 
 #### Output 
 
-The script saves the views as the `grid_hbonds.html` and `grid_second_peak.html` files, which can be opened in any 
+The script saves the views as the `grid_hbonds.html`, `grid_second_peak.html`, and `isosurfaces.html` files, which can be opened in any 
 web browser. The views are shown below (rotate, zoom, and hover over the points to identify the polymer atoms closest to each point).
 
 !!! note
@@ -198,6 +198,21 @@ The second view displays the regions associated with distances between 2.0 and 3
 
 At these distances, the contributions of the amine groups are still important, but the terminal methyl groups 
 of the polymer (and, to a smaller extent, the carbonyl groups) also contribute, consistently with the 2D map above. 
+
+Finally, the grid can be converted into volumetric data with the [`volumetric_data`](@ref) function, which places 
+the values of the grid on a regular three-dimensional grid. The data is smoothed with a Gaussian function of 
+width `sigma=0.5` Å, such that it can be represented by continuous isosurfaces. In the view below, the 
+isosurfaces correspond to 50% (orange, transparent) and 75% (red) of the maximum value of the smoothed data:
+
+```@raw html
+<center>
+<iframe src="../assets/scripts/example2/isosurfaces.html" style="width: 100%; height: 450px; border: none;"></iframe>
+</center>
+```
+
+The regions of highest density (red) are located near the amine groups, at hydrogen-bonding distances. The
+volumetric data is also written to the `density.dx` file (OpenDX format), which can be visualized in other
+software, such as [VMD](https://www.ks.uiuc.edu/Research/vmd/).
 
 ### References
 

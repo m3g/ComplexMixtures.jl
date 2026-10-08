@@ -53,4 +53,20 @@ view_second_peak = visualize(
     ),
 )
 save("./grid_second_peak.html", view_second_peak)
-println("Views saved to grid_hbonds.html and grid_second_peak.html")
+
+# The grid can also be converted into volumetric data, smoothed with a
+# Gaussian function of width 0.5 Å, and represented by isosurfaces. Here,
+# the isosurfaces correspond to 50% (orange, transparent) and 75% (red) 
+# of the maximum value of the smoothed data
+density = volumetric_data(grid; sigma=0.5)
+dmax = maximum(density.data)
+view_isosurfaces = visualize(
+    acr => (style=:ballandstick,),
+    density => (isovalue=0.5 * dmax, color="orange", opacity=0.4),
+    density => (isovalue=0.75 * dmax, color="red"),
+)
+save("./isosurfaces.html", view_isosurfaces)
+
+# Write the volumetric data to a file, to be visualized in other software
+write_dx("./density.dx", density)
+println("Views saved to grid_hbonds.html, grid_second_peak.html, and isosurfaces.html")

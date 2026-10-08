@@ -145,6 +145,56 @@ strongly enough to overcome this exclusion.
     - The grid can also be written to a PDB file, by providing a file name to `grid3D`, and visualized in other
       software. An example using [VMD](https://www.ks.uiuc.edu/Research/vmd/) is available [below](@ref grid3D-vmd).
 
+## [Isosurfaces of volumetric data](@id grid3D-isosurfaces)
+
+The grid can be converted into volumetric data, that is, the values of the contributions on a regular 
+three-dimensional grid, with the `volumetric_data` function (documented above). Since the value at each grid point
+is the contribution of the closest solute atom, the values change abruptly between neighboring points
+closest to different atoms. Thus, the data is usually smoothed with a Gaussian function (of width `sigma`, in Å),
+to be represented by continuous isosurfaces. 
+
+For example, the code below displays the density of DMF around a polyacrylamide segment (from 
+[this example](@ref 3Dmap-example2)). The polymer is shown in balls and sticks, and the isosurfaces correspond 
+to 50% (orange, transparent) and 75% (red) of the maximum value of the smoothed data:
+
+```julia
+using ComplexMixtures, PDBTools
+system = read_pdb("./equilibrated.pdb")
+acr = select(system, "resname FACR or resname ACR or resname LACR")
+for atom in acr # set elements: the PDB file has no element column
+    atom.pdb_element = string(first(name(atom)))
+end
+results = load("./mddf.json")
+grid = grid3D(results, system; dmin=1.5, dmax=3.5)
+density = volumetric_data(grid; sigma=0.5)
+dmax = maximum(density.data)
+visualize(
+    acr => (style=:ballandstick,),
+    density => (isovalue=0.5 * dmax, color="orange", opacity=0.4),
+    density => (isovalue=0.75 * dmax, color="red"),
+)
+```
+
+```@raw html
+<center>
+<iframe src="../assets/scripts/example2/isosurfaces.html" style="width: 100%; height: 450px; border: none;"></iframe>
+</center>
+```
+
+The regions of highest density of DMF (red) are located near the amine groups of the polymer, at hydrogen-bonding 
+distances. The volumetric data can also be written to a file in the OpenDX format with `write_dx("density.dx", density)`, 
+to be visualized in other software (VMD, PyMOL, ChimeraX). 
+
+This representation is particularly useful for small solutes, as in the [polyacrylamide in DMF](@ref 3Dmap-example2)
+and [glycerol/water](@ref 3Dmap-example4) examples. For solutes composed of many molecules (as glycerol in a 
+glycerol/water mixture), the grid is built around one of the molecules (see the `molecule` keyword of `grid3D`).
+
+!!! note
+    - Smoothing preserves the sum of the values, thus the maximum value of the data decreases as `sigma` increases.
+      Choosing the isovalues relative to the maximum value of the data, as above, is a simple way to account for that.
+    - When showing nested isosurfaces, the inner isosurface should be opaque, otherwise it may not be visible 
+      through the outer (transparent) one.
+
 ## [Visualization with VMD](@id grid3D-vmd)
 
 The grid can also be written to a PDB file, for visualization in other software, by providing the name of the output file to `grid3D`. Here, we illustrate this with the system of [this example](@ref 3D-map-example1):

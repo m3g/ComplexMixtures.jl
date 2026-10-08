@@ -13,6 +13,8 @@ ComplexMixtures.jl Changelog
 Version 2.19.0-DEV
 --------------
 - ![FEATURE][badge-feature] Use PDBtools 3.41.0 visualization functions to document and display contributions interactivelly over structures.
+- ![FEATURE][badge-feature] `volumetric_data`: converts the grid of `grid3D` into volumetric data (`PDBTools.VolumetricData`), optionally smoothed, which can be displayed as isosurfaces with `PDBTools.visualize` or written to OpenDX (`.dx`) files.
+- ![FEATURE][badge-feature] `grid3D` supports solutes with multiple molecules: the grid is built around one of the molecules (keyword `molecule`, the first one by default).
 
 Version 2.18.3-DEV
 --------------
