@@ -55,7 +55,7 @@ Structure to contain the results of the MDDF calculation.
 
 $(TYPEDFIELDS)
 
-The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
+The Result{Vector{Float64}} parametric type is necessary only for reading the JSON saved file. 
 
 """
 @kwdef mutable struct Result
@@ -88,7 +88,7 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     # the coordination number counts. These are used to
     # compute group contributions to the MDDFs and KBIs
     # Note: These could be Matrix{Float64}, but for the convenience
-    # of using JSON3, we use Vector{Vector{Float64}}, which is 
+    # of using JSON, we use Vector{Vector{Float64}}, which is 
     # read directly.
     solute_group_count::Vector{Vector{Float64}}
     solvent_group_count::Vector{Vector{Float64}}
@@ -515,14 +515,6 @@ end
 #
 # Functions to save the results to a file
 #
-# These definitions are probably not necessary for StructTypes >= 1.10.0
-# 
-StructTypes.StructType(::Type{AtomSelection}) = StructTypes.Struct()
-StructTypes.StructType(::Type{Result}) = StructTypes.Struct()
-StructTypes.StructType(::Type{Density}) = StructTypes.Struct()
-StructTypes.StructType(::Type{Volume}) = StructTypes.Struct()
-StructTypes.StructType(::Type{Options}) = StructTypes.Struct()
-StructTypes.StructType(::Type{TrajectoryFileOptions}) = StructTypes.Struct()
 
 """
     save(filename::AbstractString, R::Result)
@@ -533,7 +525,7 @@ Function to write the result data structure to a json file.
 function save(filename::AbstractString, R::Result)
     filename = expanduser(filename)
     open(filename, "w") do f
-        JSON3.write(f, R)
+        JSON.json(f, R)
     end
     return "Results saved in JSON file: $filename"
 end
@@ -576,7 +568,7 @@ end
 function load(filename::AbstractString, ::Type{Result})
     R = try
         open(filename, "r") do io
-            JSON3.read(io, Result)
+            JSON.parse(io, Result)
         end
     catch
         throw(ArgumentError("""\n 
@@ -618,6 +610,18 @@ end
     save(r1, tmp)
     r2 = load(tmp)
     @test r1 == r2
+
+    # The file format is preserved: saving a loaded file reproduces it
+    file = "$data_dir/NAMD/Protein_in_Glycerol/protein_glyc.json"
+    r1 = load(file)
+    tmp = tempname()
+    save(tmp, r1)
+    @test read(tmp, String) == read(file, String)
+    rm(tmp)
+
+    # Show the trajectory file options, which contain the (float) frame weights
+    @test occursin("frame_weights = [ ", sprint(show, r1.files[1]))
+    @test ComplexMixtures.print_vector_summary([1.234, 2.0]) == "[ 1.23, 2.0 ]"
 end
 
 #=

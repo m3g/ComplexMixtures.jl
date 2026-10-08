@@ -80,6 +80,6 @@ The [ComplexMixtures.jl](https://github.com/m3g/ComplexMixtures.jl) package impl
 
 3. **Reliable KB integrals**: KB integrals that converge at shorter distances compared to RDF-based computations, yielding more robust thermodynamic data from standard simulation box sizes. See [Results](@ref results).
 
-4. **Density maps**: two-dimensional representations of solvent density around each residue of macromolecules, connecting structure and solvation at the residue level. See [Density maps](@ref density_maps).
+4. **Density maps**: two-dimensional representations of solvent density around each residue of macromolecules, connecting structure and solvation at the residue level, and three-dimensional representations of the solvent density around the structure. See [2D density maps](@ref 2D_per_residue) and [3D density maps](@ref grid3D).
 
 These tools make ComplexMixtures.jl particularly well suited for studying the solvation of complex-shaped molecules — proteins, polymers, membranes, and mixtures of molecules with non-trivial geometries — from a molecular perspective grounded in rigorous statistical mechanics.

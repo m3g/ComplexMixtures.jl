@@ -14,7 +14,7 @@ pick the number of threads available in your computer.
 ## Optimal number of threads
 
 The number of threads used for computation of the MDDF is the number of threads available to Julia. 
-Many computers allow hyperthreading, and not necessarily this this beneficial for the execution
+Many computers allow hyperthreading, and this is not necessarily beneficial for the execution
 of this package. The optimal number of threads may vary. Some newer CPUs have "energy saving"
 cores, which are also relatively slow.
 

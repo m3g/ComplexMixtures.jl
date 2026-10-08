@@ -10,7 +10,7 @@ Structure to contain the results of the MDDF calculation.
 
 $(TYPEDFIELDS)
 
-The Result{Vector{Float64}} parametric type is necessary only for reading the JSON3 saved file. 
+The Result{Vector{Float64}} parametric type is necessary only for reading the JSON saved file. 
 
 =#
 @kwdef mutable struct Result_2_17_1
@@ -43,7 +43,7 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     # the coordination number counts. These are used to
     # compute group contributions to the MDDFs and KBIs
     # Note: These could be Matrix{Float64}, but for the convenience
-    # of using JSON3, we use Vector{Vector{Float64}}, which is 
+    # of using JSON, we use Vector{Vector{Float64}}, which is 
     # read directly.
     solute_group_count::Vector{Vector{Float64}}
     solvent_group_count::Vector{Vector{Float64}}
@@ -73,7 +73,7 @@ end
 function load(filename, ::Type{Result_2_17_1})
     R_old = try
         open(filename, "r") do io
-            JSON3.read(io, Result_2_17_1)
+            JSON.parse(io, Result_2_17_1)
         end
     catch
         throw(ArgumentError("""\n 

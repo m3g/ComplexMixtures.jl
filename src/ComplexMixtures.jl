@@ -1,11 +1,10 @@
 module ComplexMixtures
 
 import ChunkSplitters
-import JSON3
+import JSON
 import PDBTools
 import PrecompileTools
 import Random
-import StructTypes
 
 using CellListMap: CellListMap, AbstractParticleSystem, ParticleSystem, pairwise!, update!
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS
@@ -35,7 +34,7 @@ export coordination_number
 export ResidueContributions
 export contributions
 export gr
-export grid3D
+export grid3D, volumetric_data
 export kbi
 
 # Testing data

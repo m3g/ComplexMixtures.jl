@@ -15,6 +15,7 @@ The system simulated consists of 1000 water molecules (red) and 1000 glycerol mo
 - [Glycerol-Glycerol and Water-Glycerol distribution functions](@ref glyc_mddf-example4)
 - [Glycerol group contributions to MDDFs](@ref glyc-groups-example4)
 - [2D map of group contributions](@ref map-example4)
+- [3D density map of water around glycerol](@ref 3Dmap-example4)
 
 ## [Data, packages, and execution](@id data-example4)
 
@@ -64,7 +65,7 @@ $(read("./assets/scripts/example4/script1.jl", String))
 
 Both water and glycerol form hydrogen bonds with (other) glycerol molecules, as indicated by the peaks at ~1.8$$\mathrm{\AA}$$. The auto-correlation function of glycerol shows a more marked second peak corresponding to non-specific interactions, which (as we will show) are likely associated to interactions of its aliphatic groups.
 
-The KB integrals in the second panel show similar values water and glycerol, with the KB integral for water being slightly greater. This means that glycerol molecules are (sightly, if the result is considered reliable) preferentially hydrated from a macroscopic standpoint.
+The KB integrals in the second panel show similar values for water and glycerol, with the KB integral for water being slightly greater. This means that glycerol molecules are (slightly, if the result is considered reliable) preferentially hydrated from a macroscopic standpoint.
 
 ## [Glycerol group contributions to MDDFs](@id glyc-groups-example4)
 
@@ -108,3 +109,59 @@ $(read("./assets/scripts/example4/script3.jl", String))
 ![](./assets/scripts/example4/GlycerolWater_map.png)
 
 The interesting result here is that the $$\mathrm{CH}$$ group of glycerol is protected from both solvents. There is a strong density augmentation at the vicinity of hydroxyl groups, and the second peak of the MDDFs is clearly associated to interactions with the $$\mathrm{CH_2}$$ groups.
+
+## [3D density map of water around glycerol](@id 3Dmap-example4)
+
+The contributions of the glycerol atoms to the MDDF of water can also be projected into the space around 
+a glycerol molecule, with the [`grid3D`](@ref grid3D) function, and visualized with the `visualize` function of 
+[PDBTools](https://m3g.github.io/PDBTools.jl/stable/visualization/) (version 3.41.0 or greater). Since the solute
+(glycerol) is composed of many molecules, the grid is built around one of them, and the contributions of each
+atom are averaged over all glycerol molecules.
+
+```@raw html
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
+```
+```@eval
+using Markdown
+code = Markdown.parse("""
+\`\`\`julia
+$(read("./assets/scripts/example4/script4.jl", String))
+\`\`\`
+""")
+```
+```@raw html
+</details><br>
+```
+
+#### Output 
+
+The script saves the views as the `grid_hbonds.html` and `isosurfaces.html` files, which can be opened in any 
+web browser (rotate, zoom, and hover over the points to identify the glycerol atoms closest to each point). 
+
+The first view displays the regions associated with the hydrogen-bonding peak of the MDDF (distances 
+smaller than 2.0Å), with at least 10% of the maximum contribution. The glycerol molecule is shown in balls 
+and sticks, and the grid points as dots, colored from white to red according to their contribution to the MDDF: 
+
+```@raw html
+<center>
+<iframe src="../assets/scripts/example4/grid_hbonds.html" style="width: 100%; height: 450px; border: none;"></iframe>
+</center>
+```
+
+In the second view, the grid is converted into volumetric data with the [`volumetric_data`](@ref) function, and 
+smoothed with a Gaussian function of width `sigma=0.5` Å. The isosurfaces correspond to 50% (orange, transparent) 
+and 75% (red) of the maximum value of the smoothed data:
+
+```@raw html
+<center>
+<iframe src="../assets/scripts/example4/isosurfaces.html" style="width: 100%; height: 450px; border: none;"></iframe>
+</center>
+```
+
+The highest densities of water (red) are found at hydrogen-bonding distances from the hydroxyl groups of glycerol.
+The volumetric data is also written to the `density.dx` file (OpenDX format), which can be visualized in other
+software, such as [VMD](https://www.ks.uiuc.edu/Research/vmd/).
+
+### References
+
+The interactive 3D views were rendered with [3Dmol.js](https://3dmol.csb.pitt.edu), through the `visualize` function of [PDBTools](https://m3g.github.io/PDBTools.jl/stable/visualization/): N. Rego and D. Koes, 3Dmol.js: molecular visualization with WebGL, Bioinformatics 31, 1322-1324 (2015). [https://doi.org/10.1093/bioinformatics/btu829](https://doi.org/10.1093/bioinformatics/btu829)

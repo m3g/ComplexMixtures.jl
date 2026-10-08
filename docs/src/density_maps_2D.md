@@ -2,19 +2,14 @@
 CollapsedDocStrings = true
 ```
 
-# [Density maps](@id density_maps)
-
-- [2D density map per residue](@ref 2D_per_residue)
-- [3D density map around a macromolecule](@ref grid3D)
-
-## [2D density map per residue](@id 2D_per_residue)
+# [2D density maps](@id 2D_per_residue)
 
 - [The `ResidueContributions` object](@ref)
 - [Contributions of subgroups of residues](@ref)
 - [Indexing, slicing, arithmetic operations](@ref)
 - [Saving and loading a ResidueContributions object](@ref)
 
-### The `ResidueContributions` object
+## The `ResidueContributions` object
 
 One nice way to visualize the accumulation or depletion of a solvent around a macromolecule (a protein, for example), is to obtain a 2D map of the density as a function of the distance from its surface. For example, in the figure below the density of a solute (here, Glycerol), in the neighborhood of a protein is shown:
 
@@ -53,7 +48,7 @@ A complete example of its usage can be seen [here](@ref 2D-map-example1).
 !!! compat
     All features described in this section are only available in v2.10.0 or greater.
 
-### Contributions of subgroups of residues
+## Contributions of subgroups of residues
 
 Residue contributions can also be computed for subgroups of the residues. For example, as a continuation of the [protein in glycerol example](@ref 2D-map-example1) , one
 can compute the map of residue contributions, but splitting the contributions of backbone and side-chains of the residues:
@@ -82,9 +77,9 @@ obtaining the following figure:
 <img width=70% src="../assets/scripts/example1/2D-map_st-bb.png">
 </center>
 ```
-which shows that the side-chains contribute mostly to these densities, except here expectedly, for some Gly residues.
+which shows that the side-chains contribute mostly to these densities, except, as expected, for some Gly residues.
 
-### Indexing, slicing, arithmetic operations
+## Indexing, slicing, arithmetic operations
 
 The `ResidueContributions` object can be indexes and sliced, for the analysis of the contributions of specific residues
 or range of residues:
@@ -153,7 +148,7 @@ rc_last_distance = last.(rc)
 max_c = maximum.(rc)
 ```
 
-### Saving and loading a ResidueContributions object
+## Saving and loading a ResidueContributions object
 
 The `ResidueContributions` object can be saved and loaded for easier data analysis. In particular, this 
 is important for very large structures, where its computation can be costly. The saving and loading 
@@ -161,7 +156,7 @@ functions can be use with:
 
 ```julia
 rc = ResidueContributions(results1, select(atoms, "protein")); 
-# Save rc objecto to a file (json format):
+# Save rc object to a file (json format):
 save("residue_contributions.json", rc) 
 # Load json file into a new rc_loaded object:
 rc_loaded = load("residue_contributions.json", ResidueContributions)
@@ -192,40 +187,3 @@ save(::AbstractString, ::ResidueContributions)
     
     The above produces a matrix with a number of columns equal to the number of residues and a number of rows equal to the number of MDDF points. That matrix can be plotted as a contour map with adequate plotting software. 
     
-
-## [3D density map around a macromolecule](@id grid3D)
-
-Three-dimensional representations of the distribution functions can also be obtained from the MDDF results. These 3D representations are obtained from the fact that the MDDFs can be decomposed into the contributions of each solute atom, and that each point in space is closest to a single solute atom as well. Thus, each point in space can be associated to one solute atom, and the contribution of that atom to the MDDF at the corresponding distance can be obtained.   
-
-A 3D density map is constructed with the `grid3D` function:
-
-```@autodocs
-Modules = [ComplexMixtures]
-Pages = ["tools/grid3D.jl"]
-```
-
-The call to `grid3D` will write an output a PDB file with the grid points, which loaded in a visualization software side-by-side with the protein structure, allows the production of the images shown. The `grid.pdb` file contains a regular PDB format where: 
-
-- The positions of the atoms are grid points. 
-- The identity of the atoms correspond to the identity of the protein atom contributing to the property at that point (the closest protein atom). 
-- The temperature-factor column (`beta`) contains the relative contribution of that atom to the property at the corresponding distance. 
-- The `occupancy` field contains the distance itself.
-
-The "property" is, by default, the MDDF. Coordination numbers of minimum-distance counts can be used by setting the `type` keyword parameter.
-
-For example, the distribution function of a hydrogen-bonding liquid solvating a protein will display a characteristic peak at about 1.8Å. The MDDF at that distance can be decomposed into the contributions of all atoms of the protein which were found to form hydrogen bonds to the solvent. A 3D representation of these contributions can be obtained by computing, around a static protein (solute) structure, which are the regions in space which are closer to each atom of the protein. The position in space is then marked with the atom of the protein to which that region "belongs" and with the contribution of that atom to the MDDF at each distance within that region. A special function to compute this 3D distribution is provided here: `grid3D`. 
-
-This is better illustrated by a graphical representation. In the figure below we see a 3D representation of the MDDF of Glycerol around a protein, computed from a simulation of this protein in a mixture of water and Glycerol. A complete set of files and a script to reproduce this example [is available here](@ref 3D-map-example1). 
-
-```@raw html
-<center>
-<img src="../figures/density3D_final.png" width=100%>
-</center>
-```
-
-In the figure on the left, the points in space around the protein are selected with the following properties: distance from the protein smaller than 2.0Å and relative contribution to the MDDF at the corresponding distance of at least 10% of the maximum contribution. Thus, we are selecting the regions of the protein corresponding to the most stable hydrogen-bonding interactions. The color of the points is the contribution to the MDDF, from blue to red. Thus, the most reddish-points corresponds to the regions where the most stable hydrogen bonds were formed. We have marked two regions here, on opposite sides of the protein, with arrows.
-
-Clicking on those points we obtain which are the atoms of the protein contributing to the MDDF at that region. In particular, the arrow on the right points to the strongest red region, which corresponds to an Aspartic acid. These residues are shown explicitly under the density (represented as a transparent surface) on the figure in the center.   
-
-The figure on the right displays, overlapped with the hydrogen-bonding residues, the most important contributions to the second peak of the distribution, corresponding to distances from the protein between 2.0 and 3.5Å. Notably, the regions involved are different from the ones forming hydrogen bonds, indicating that non-specific interactions with the protein (and not a second solvation shell) are responsible for the second peak. 
-

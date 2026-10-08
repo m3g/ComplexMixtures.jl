@@ -16,7 +16,7 @@ Plots.default(
     grid=false,
 )
 
-# Load previusly saved results, computed in the previous script
+# Load previously saved results, computed in the previous script
 results = load("./mddf.json")
 
 # Plot with two subplots
