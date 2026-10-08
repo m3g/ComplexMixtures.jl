@@ -10,6 +10,10 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.19.0-DEV
+--------------
+- ![FEATURE][badge-feature] Use PDBtools 3.41.0 visualization functions to document and display contributions interactivelly over structures.
+
 Version 2.18.3-DEV
 --------------
 - ![INFO][badge-info] Update references and application papers.
