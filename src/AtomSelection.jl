@@ -575,7 +575,7 @@ end
 #
 # Functions for printing solvent and solute groups 
 #
-#_round(x::Real; digits=2) = round(x; digits=digits)
+_round(x::AbstractFloat; digits=2) = round(x; digits=digits)
 _round(x::Integer; digits=nothing) = x
 _round(x::String; digits=nothing) = x
 @views function print_vector_summary(x::AbstractVector{T}; digits=2) where {T}

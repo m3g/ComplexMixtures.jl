@@ -7,7 +7,11 @@ makedocs(
         ComplexMixtures,
         isdefined(Base, :get_extension) ? Base.get_extension(ComplexMixtures, :Plotting) : ComplexMixtures.Plotting,
     ],
-    format = Documenter.HTML(top_menu = true),
+    format = Documenter.HTML(
+        top_menu = true,
+        # pages with interactive 3D views of structures
+        size_threshold_ignore = ["density_maps_3D.md", "example1.md"],
+    ),
     sitename="ComplexMixtures.jl",
     pages = [
         "Getting started" => Any[ 
@@ -35,7 +39,8 @@ makedocs(
         "Analysis" => Any[
             "Results" => "results.md",
             "Atomic and group contributions" => "contributions.md",
-            "Density maps" => "density_maps.md",
+            "2D density maps" => "density_maps_2D.md",
+            "3D density maps" => "density_maps_3D.md",
             "Coordination numbers" => "coordination_numbers.md",
             "Tools" => "tools.md",
         ],

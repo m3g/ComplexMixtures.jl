@@ -1,4 +1,4 @@
-# Polyacrylamide in DMDF
+# Polyacrylamide in DMF
 
 In this example we illustrate how the solvation structure of a polymer can be studied with ComplexMixtures.jl. The system is a 5-mer segment of polyacrylamide (PAE - capped with methyl groups), solvated with dimethylformamide (DMF). The system is interesting because of the different functional groups and polarities involved in the interactions of DMF with PAE. A snapshot of the system is shown below.
 
@@ -30,6 +30,7 @@ The structures of DMF and of the polyacrylamide segment are:
 - [MDDF and KB integrals](@ref mddf-example2)
 - [Group contributions](@ref groups-example2)
 - [2D density map](@ref 2Dmap-example2)
+- [3D density map](@ref 3Dmap-example2)
 
 ## [Data, packages, and execution](@id data-example2)
 
@@ -142,6 +143,77 @@ Finally, it is noticeable that the central mer is more weakly solvated by DMF th
 </center>
 ```
 
+## [3D density map](@id 3Dmap-example2)
+
+The contributions of the polymer atoms to the MDDF can also be projected into the space around the polymer,
+with the [`grid3D`](@ref grid3D) function, and visualized with the `visualize` function of 
+[PDBTools](https://m3g.github.io/PDBTools.jl/stable/visualization/) (version 3.41.0 or greater). 
+
+```@raw html
+<details><summary><font color="darkgreen">Complete example code: click here!</font></summary>
+```
+```@eval
+using Markdown
+code = Markdown.parse("""
+\`\`\`julia
+$(read("./assets/scripts/example2/script4.jl", String))
+\`\`\`
+""")
+```
+```@raw html
+</details><br>
+```
+
+#### Output 
+
+The script saves the views as the `grid_hbonds.html`, `grid_second_peak.html`, and `isosurfaces.html` files, which can be opened in any 
+web browser. The views are shown below (rotate, zoom, and hover over the points to identify the polymer atoms closest to each point).
+
+!!! note
+    The polymer is flexible, and the grid is built around a single conformation of the polymer (the one of 
+    the `equilibrated.pdb` file). Thus, the views show the contributions of each polymer atom to the MDDF, 
+    averaged over the trajectory, projected into the space around this reference conformation.
+
+The first view displays the regions associated with the hydrogen-bonding peak of the MDDF (distances 
+smaller than 2.0Å), with at least 10% of the maximum contribution. The polymer is shown in balls and sticks,
+and the grid points as dots, colored from white to red according to their contribution to the MDDF: 
+
+```@raw html
+<center>
+<iframe src="../assets/scripts/example2/grid_hbonds.html" style="width: 100%; height: 450px; border: none;"></iframe>
+</center>
+```
+
+These regions surround the hydrogen atoms of the amine groups of the polymer, consistently with the 
+hydrogen bonds of these groups with the carbonyl oxygen of DMF. 
+
+The second view displays the regions associated with distances between 2.0 and 3.5Å, with at least
+50% of the maximum contribution:
+
+```@raw html
+<center>
+<iframe src="../assets/scripts/example2/grid_second_peak.html" style="width: 100%; height: 450px; border: none;"></iframe>
+</center>
+```
+
+At these distances, the contributions of the amine groups are still important, but the terminal methyl groups 
+of the polymer (and, to a smaller extent, the carbonyl groups) also contribute, consistently with the 2D map above. 
+
+Finally, the grid can be converted into volumetric data with the [`volumetric_data`](@ref) function, which places 
+the values of the grid on a regular three-dimensional grid. The data is smoothed with a Gaussian function of 
+width `sigma=0.5` Å, such that it can be represented by continuous isosurfaces. In the view below, the 
+isosurfaces correspond to 50% (orange, transparent) and 75% (red) of the maximum value of the smoothed data:
+
+```@raw html
+<center>
+<iframe src="../assets/scripts/example2/isosurfaces.html" style="width: 100%; height: 450px; border: none;"></iframe>
+</center>
+```
+
+The regions of highest density (red) are located near the amine groups, at hydrogen-bonding distances. The
+volumetric data is also written to the `density.dx` file (OpenDX format), which can be visualized in other
+software, such as [VMD](https://www.ks.uiuc.edu/Research/vmd/).
+
 ### References
 
 Molecules built with JSME: B. Bienfait and P. Ertl, JSME: a free molecule editor in JavaScript, Journal of Cheminformatics 5:24 (2013)
@@ -149,4 +221,6 @@ Molecules built with JSME: B. Bienfait and P. Ertl, JSME: a free molecule editor
 
 The system was built with [Packmol](http://m3g.iqm.unicamp.br/packmol).
 
-The simulations were performed with [NAMD](https://www.ks.uiuc.edu/Research/namd/), with [CHARMM36](https://www.charmm.org) parameters. 
+The simulations were performed with [NAMD](https://www.ks.uiuc.edu/Research/namd/), with [CHARMM36](https://www.charmm.org) parameters.
+
+The interactive 3D views were rendered with [3Dmol.js](https://3dmol.csb.pitt.edu), through the `visualize` function of [PDBTools](https://m3g.github.io/PDBTools.jl/stable/visualization/): N. Rego and D. Koes, 3Dmol.js: molecular visualization with WebGL, Bioinformatics 31, 1322-1324 (2015). [https://doi.org/10.1093/bioinformatics/btu829](https://doi.org/10.1093/bioinformatics/btu829)

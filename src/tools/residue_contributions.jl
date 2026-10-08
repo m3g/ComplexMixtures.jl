@@ -486,7 +486,7 @@ rc = load("residue_contributions.json", ResidueContributions)
 function save(filename::AbstractString, rc::ResidueContributions)
     filename = expanduser(filename)
     open(filename, "w") do f
-        JSON3.write(f, rc)
+        JSON.json(f, rc)
     end
     return "ResidueContributions saved in JSON file: $filename"
 end
@@ -511,7 +511,7 @@ function load(filename::AbstractString, ::Type{ResidueContributions})
     _check_version(filename)
     rc = try
         open(filename, "r") do io
-            JSON3.read(io, ResidueContributions{MultipleResidueContribution})
+            JSON.parse(io, ResidueContributions{MultipleResidueContribution})
         end
     catch
         throw(ArgumentError("""\n
