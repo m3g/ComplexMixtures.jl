@@ -119,9 +119,10 @@ function random_move!(
         scale * (cmin[i] + rand(RNG, Float64) * (cmax[i] - cmin[i])) for i = 1:3
     )
 
-    # Generate random rotation angles 
+    # Generate random rotation angles. The rotation matrix is Rx(beta)*Ry(gamma)*Rz(theta),
+    # for which the uniform measure on rotations is ∝ cos(gamma), with gamma in [-π/2, π/2]
     beta = 2π * rand(RNG, Float64)
-    gamma = 2π * rand(RNG, Float64)
+    gamma = asin(2 * rand(RNG, Float64) - 1)
     theta = 2π * rand(RNG, Float64)
 
     # Take care that this molecule is not split by periodic boundary conditions, by

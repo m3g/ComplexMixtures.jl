@@ -13,6 +13,8 @@ ComplexMixtures.jl Changelog
 Version 2.18.3-DEV
 --------------
 - ![INFO][badge-info] Update references and application papers.
+- ![BUGFIX][badge-bugfix] `gr(R::Result)` now returns `R.rdf` and `R.kb_rdf` (normalized by the random reference state) when the solute has more than one atom per molecule. Previously, the spherical shell volume was used, which is only valid for single-atom solutes, and produced wrong g(r) and KB integrals in that case. The behavior for single-atom solutes is unchanged. 
+- ![BUGFIX][badge-bugfix] Random rotations of solvent molecules in the ideal-gas reference state are now uniformly distributed. The previous sampling of the rotation angles was not uniform in orientation space. The practical relevance is small: the molecules are copied from the bulk before being rotated, so in isotropic solutions their orientations were already random and the bias cancelled. The bias could affect, slightly, the MDDF and KBI of multi-atom solvents (not the site-based `rdf`) if the bulk orientations are anisotropic or poorly sampled (e.g. few solvent molecules, short trajectories). Results for a given random seed will differ slightly from previous versions.
 
 Version 2.18.2
 --------------
