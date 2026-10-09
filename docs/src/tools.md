@@ -31,6 +31,13 @@ computed from the results, using this volume estimate:
 g, kb = ComplexMixtures.gr(R)
 ```
 
+!!! note
+    The spherical shell volume is only valid if the solute has a single atom per molecule
+    (the solvent may have more atoms, in which case the distances are counted relative to its
+    reference atom). If the solute has more than one atom per molecule, `gr(R)` returns the
+    distribution normalized by the random reference state and the corresponding KB integral
+    (the `rdf` and `kb_rdf` fields of the `Result` structure).
+
 By default, the single-reference count (`rdf_count`) of the Result
 structure will be used to compute the radial distribution function. The
 function can be called with explicit control of all input parameters: 

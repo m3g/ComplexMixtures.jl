@@ -26,12 +26,27 @@ end
 
 
 """
-    gr(R::Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.files[1].options.binstep)
+    gr(R::Result)
 
 If a Result structure is provided without further details, use the rdf count and the bulk solvent density.
 
+If the solute contains a single atom per molecule, the distances in `R.rdf_count` are radial
+distances to the reference atom of the solvent molecules, and the g(r) and KB integral are
+computed with the analytical spherical shell volumes.
+
+If the solute contains more than one atom per molecule, the distances are minimum distances
+from the solute to the reference atom of the solvent, and the volume elements are not spherical
+shells. In this case, the distribution is normalized by the random reference state (`R.rdf`), 
+and the KB integral is `R.kb_rdf`.
+
 """
-gr(R::Result) = gr(R.d, R.rdf_count, R.density.solvent_bulk, R.files[1].options.binstep)
+function gr(R::Result)
+    if R.solute.natomspermol == 1
+        return gr(R.d, R.rdf_count, R.density.solvent_bulk, R.files[1].options.binstep)
+    else
+        return copy(R.rdf), copy(R.kb_rdf)
+    end
+end
 
 @testitem "Radial distribution" begin
     using ComplexMixtures: gr, mddf, Trajectory, Options, AtomSelection
@@ -46,4 +61,15 @@ gr(R::Result) = gr(R.d, R.rdf_count, R.density.solvent_bulk, R.files[1].options.
     @test R.rdf_count ≈ R.md_count
     @test gr1[end] ≈ 1.0 rtol = 0.1
     @test kb1[end] ≈ 20.0 rtol = 0.1
+end
+
+@testitem "Radial distribution - multi-atom solute" begin
+    using ComplexMixtures: gr, load
+    using ComplexMixtures: data_dir
+    R = load("$data_dir/NAMD/protein_tmao.json")
+    @test R.solute.natomspermol > 1
+    g, kb = gr(R)
+    @test g == R.rdf
+    @test kb == R.kb_rdf
+    @test g !== R.rdf
 end

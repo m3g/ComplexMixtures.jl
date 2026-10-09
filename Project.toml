@@ -28,7 +28,6 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [sources]
 Documenter = {rev = "top_menu_from_pages", url = "https://github.com/lmiq/Documenter.jl"}
-PDBTools = {path = "/home/leandro/.julia/dev/PDBTools"}
 
 [extensions]
 Plotting = "Plots"

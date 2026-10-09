@@ -134,9 +134,11 @@ end
 @testitem "Result_2_17_1 reading" begin
     using ComplexMixtures
     using ComplexMixtures: data_dir
-    r_new = load(joinpath(data_dir, "NAMD/tmao_tmao.json"))
     r_old = load(joinpath(data_dir, "legacy/tmao_tmao.json"))
-    @test r_new.mddf ≈ r_old.mddf
+    raw = ComplexMixtures.JSON.parsefile(joinpath(data_dir, "legacy/tmao_tmao.json"))
+    @test r_old.mddf ≈ Float64.(raw["mddf"])
+    @test r_old.kb ≈ Float64.(raw["kb"])
+    @test r_old.md_count_random ≈ Float64.(raw["md_count_random"])
     @test r_old.solute_group_count_random == Vector{Float64}[]
     @test r_old.solvent_group_count_random == Vector{Float64}[]
     @test_throws "Result object" load(joinpath(data_dir, "legacy/wrong_version_jsons/broken_json.json"))
