@@ -1,6 +1,6 @@
 name = "ComplexMixtures"
 uuid = "6f35c628-ac57-5bae-8ea9-703a8964f6e9"
-version = "2.19.0"
+version = "2.19.1-DEV"
 authors = ["Leandro Martinez <lmartine@unicamp.br>"]
 
 [deps]
