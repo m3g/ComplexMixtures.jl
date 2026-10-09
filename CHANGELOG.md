@@ -10,7 +10,7 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 2.19.0-DEV
+Version 2.19.0
 --------------
 - ![FEATURE][badge-feature] `kbi(R; correction)`: running KBIs computed with the improved estimators of the infinite-volume KBI of Krüger and Vlugt (`correction=:G1` or `:G2`), which converge much faster than the truncated integral. Valid for radial distribution functions (single-atom solutes).
 - ![FEATURE][badge-feature] `finite_volume_kbi` and `extrapolate_kbi`: finite-volume KBIs of spheres of diameter `L`, and their extrapolation to the infinite-volume limit, by fitting `G(L) = G∞ + F∞/L`.
