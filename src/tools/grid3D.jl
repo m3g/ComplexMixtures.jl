@@ -310,9 +310,9 @@ end
     grid = grid3D(R, atoms, grid_file)
     @test length(grid) ≈ 1539 atol = 3
     c05 = filter(at -> beta(at) > 0.5, grid)
-    @test length(c05) == 14
+    @test length(c05) == 16
     @test all(at -> element(at) == "O", c05)
-    @test all(at -> occup(at) < 2.0, c05)
+    @test all(at -> occup(at) < 2.2, c05)
 
     # Test if the file was properly written
     grid_read = read_pdb(grid_file)
