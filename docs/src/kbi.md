@@ -4,6 +4,25 @@ CollapsedDocStrings = true
 
 # [Kirkwood-Buff integrals: convergence and finite-size corrections](@id kbi)
 
+## When are finite-size corrections useful?
+
+ComplexMixtures.jl is generally used to study the solvation of large or complex-shaped solutes, such as 
+proteins, polymers, or membranes. For these, the KB integrals must be computed from minimum-distance 
+distribution functions (MDDFs), available in the `R.kb` field of the result. As explained in the 
+[Concepts](@ref concepts_finite_size) section, integrals of radial distribution functions are impractical
+in these cases: the distances required to reach the bulk solution in all directions around an anisotropic
+solute are much larger than those accessible in typical simulation boxes. And, currently, there is no
+theory of finite-size corrections for KB integrals computed from MDDFs.
+
+The finite-size corrections described in this page apply, instead, to radial distribution functions,
+which are meaningful when the solute can be represented by a single atom. This is the typical case of
+mixtures of small molecules — water, alcohols, common solvents and cosolvents — where one is interested
+in the KB integrals between the components of the mixture, for example to compute preferential solvation
+parameters, activity coefficient derivatives, or partial molar volumes. In these cases, the corrections
+greatly improve the convergence of the KB integrals, as shown in the example below.
+
+## Running and finite-volume KBIs
+
 The Kirkwood-Buff integral (KBI) of a pair of species is, in the thermodynamic limit, the integral of the 
 excess density of the solvent around the solute, over all space:
 
@@ -209,7 +228,8 @@ end
 
 - **Minimum-distance distributions.** For solutes with more than one atom (proteins, polymers, etc.), use the KBI
   computed from the MDDF, `R.kb`. The corrections described here do not apply. The convergence of MDDF-based 
-  KBIs is discussed in the [Kirkwood-Buff integrals and convergence](@ref) section.
+  KBIs is discussed in the [Kirkwood-Buff integrals and convergence](@ref) and 
+  [Finite-size corrections](@ref concepts_finite_size) sections of the Concepts page.
 
 ## Reference functions
 
