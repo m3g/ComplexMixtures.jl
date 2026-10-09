@@ -35,7 +35,7 @@ export ResidueContributions
 export contributions
 export gr
 export grid3D, volumetric_data
-export kbi
+export kbi, finite_volume_kbi, extrapolate_kbi
 
 # Testing data
 const src_dir = @__DIR__

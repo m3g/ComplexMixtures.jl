@@ -12,8 +12,9 @@ ComplexMixtures.jl Changelog
 
 Version 2.19.0-DEV
 --------------
-- ![FEATURE][badge-feature] Implement the `kbi` function, which can be used to apply finite-size corrections to the raw
-KBI obtained. Currently, supports the first-order correction of Kruger and Vlugt, as default.
+- ![FEATURE][badge-feature] `kbi(R; correction)`: running KBIs computed with the improved estimators of the infinite-volume KBI of Krüger and Vlugt (`correction=:G1` or `:G2`), which converge much faster than the truncated integral. Valid for radial distribution functions (single-atom solutes).
+- ![FEATURE][badge-feature] `finite_volume_kbi` and `extrapolate_kbi`: finite-volume KBIs of spheres of diameter `L`, and their extrapolation to the infinite-volume limit, by fitting `G(L) = G∞ + F∞/L`.
+- ![INFO][badge-info] New documentation page about the convergence and finite-size corrections of KBIs.
 - ![FEATURE][badge-feature] Use PDBtools 3.41.0 visualization functions to document and display contributions interactivelly over structures.
 - ![FEATURE][badge-feature] `volumetric_data`: converts the grid of `grid3D` into volumetric data (`PDBTools.VolumetricData`), optionally smoothed, which can be displayed as isosurfaces with `PDBTools.visualize` or written to OpenDX (`.dx`) files.
 - ![FEATURE][badge-feature] `grid3D` supports solutes with multiple molecules: the grid is built around one of the molecules (keyword `molecule`, the first one by default).
