@@ -42,6 +42,7 @@ makedocs(
             "2D density maps" => "density_maps_2D.md",
             "3D density maps" => "density_maps_3D.md",
             "Coordination numbers" => "coordination_numbers.md",
+            "Kirkwood-Buff integrals" => "kbi.md",
             "Tools" => "tools.md",
         ],
 #        "Updating scripts" => "updating_scripts.md",

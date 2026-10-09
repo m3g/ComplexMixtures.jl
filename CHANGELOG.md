@@ -12,15 +12,15 @@ ComplexMixtures.jl Changelog
 
 Version 2.19.0-DEV
 --------------
+- ![FEATURE][badge-feature] `kbi(R; correction)`: running KBIs computed with the improved estimators of the infinite-volume KBI of Krüger and Vlugt (`correction=:G1` or `:G2`), which converge much faster than the truncated integral. Valid for radial distribution functions (single-atom solutes).
+- ![FEATURE][badge-feature] `finite_volume_kbi` and `extrapolate_kbi`: finite-volume KBIs of spheres of diameter `L`, and their extrapolation to the infinite-volume limit, by fitting `G(L) = G∞ + F∞/L`.
+- ![INFO][badge-info] New documentation page about the convergence and finite-size corrections of KBIs.
 - ![FEATURE][badge-feature] Use PDBtools 3.41.0 visualization functions to document and display contributions interactivelly over structures.
 - ![FEATURE][badge-feature] `volumetric_data`: converts the grid of `grid3D` into volumetric data (`PDBTools.VolumetricData`), optionally smoothed, which can be displayed as isosurfaces with `PDBTools.visualize` or written to OpenDX (`.dx`) files.
 - ![FEATURE][badge-feature] `grid3D` supports solutes with multiple molecules: the grid is built around one of the molecules (keyword `molecule`, the first one by default).
 - ![INFO][badge-info] Skip `:kbi` contribution computation if not available (because the read json is from an old version).
 - ![INFO][badge-info] Use JSON.jl (v1) instead of the deprecated JSON3.jl (and StructTypes.jl) to read and write results files. The file format is unchanged.
 - ![FIX][badge-fix] Fix the display of `TrajectoryFileOptions` (e.g. `results.files[1]`) with non-empty frame weights.
-
-Version 2.18.3-DEV
---------------
 - ![INFO][badge-info] Update references and application papers.
 - ![BUGFIX][badge-bugfix] `gr(R::Result)` now returns `R.rdf` and `R.kb_rdf` (normalized by the random reference state) when the solute has more than one atom per molecule. Previously, the spherical shell volume was used, which is only valid for single-atom solutes, and produced wrong g(r) and KB integrals in that case. The behavior for single-atom solutes is unchanged. 
 - ![BUGFIX][badge-bugfix] Random rotations of solvent molecules in the ideal-gas reference state are now uniformly distributed. The previous sampling of the rotation angles was not uniform in orientation space. The practical relevance is small: the molecules are copied from the bulk before being rotated, so in isotropic solutions their orientations were already random and the bias cancelled. The bias could affect, slightly, the MDDF and KBI of multi-atom solvents (not the site-based `rdf`) if the bulk orientations are anisotropic or poorly sampled (e.g. few solvent molecules, short trajectories). Results for a given random seed will differ slightly from previous versions.
