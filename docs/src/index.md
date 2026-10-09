@@ -101,6 +101,8 @@ From differences in KB integrals among cosolvents, the Preferential Solvation pa
 
 In particular, the plot shows that besides being preferentially excluded from the protein surface at high concentrations in the native state, suggesting protein folding stabilization, the interactions with the protein in the denatured states are stronger, leading to denaturation at all concentrations. 
 
+The computation of preferential interaction parameters from KB integrals, and their relation to the dependence of the chemical potential of the protein on the cosolvent concentration (and thus to m-values), is illustrated in the [Preferential interactions and m-values](@ref preferential-example1) section of the protein in water/glycerol example.
+
 ## References
 
 Please cite the following articles if the package was useful to you:

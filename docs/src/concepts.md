@@ -70,6 +70,14 @@ This difference in convergence is illustrated in the KB integral plot below. The
 
 Faster convergence of KB integrals is not only more convenient — it is essential for obtaining reliable thermodynamic data from finite-size molecular dynamics simulations, where the simulation box imposes a practical upper limit on the distances that can be probed.
 
+### [Finite-size corrections](@id concepts_finite_size)
+
+Even when the bulk solution is reached, a KB integral truncated at a finite distance oscillates around its limiting value, and its value depends on the distance at which it is read. For radial distribution functions, this truncation error can be greatly reduced with the theory of finite-volume KB integrals developed by Krüger and Vlugt, which provides weighted integrals and extrapolation procedures that estimate the infinite-volume KB integral from a distribution function known only up to a finite distance.
+
+That theory relies on the geometry of the distances between pairs of *points* inside a sphere (or another simple convex volume). It does not apply directly to minimum-distance distributions: the solute domain defined by minimum distances has the shape of the solute itself, which is irregular and fluctuates along the simulation. **Currently, there is no equivalent theory for finite-size corrections of MDDF-based KB integrals**, and these must be computed as truncated integrals, read from the range of distances where they are stable.
+
+The corrections are thus useful when the solute can be represented by a single atom — typically in mixtures of small molecules, such as water and common solvents and cosolvents — where the RDF is the natural distribution function. ComplexMixtures.jl implements them for this case, as described in the [Kirkwood-Buff integrals: convergence and finite-size corrections](@ref kbi) section.
+
 ## How ComplexMixtures.jl uses these concepts
 
 The [ComplexMixtures.jl](https://github.com/m3g/ComplexMixtures.jl) package implements the computation of MDDFs and KB integrals from molecular dynamics trajectories, providing:
@@ -78,7 +86,7 @@ The [ComplexMixtures.jl](https://github.com/m3g/ComplexMixtures.jl) package impl
 
 2. **Atomic and group decomposition**: natural decomposition of the MDDF into the contributions of individual atoms or chemical groups of both solute and solvent, enabling a detailed chemical interpretation of solvation. See [Atomic and group contributions](@ref contributions).
 
-3. **Reliable KB integrals**: KB integrals that converge at shorter distances compared to RDF-based computations, yielding more robust thermodynamic data from standard simulation box sizes. See [Results](@ref results).
+3. **Reliable KB integrals**: KB integrals that converge at shorter distances compared to RDF-based computations, yielding more robust thermodynamic data from standard simulation box sizes, and finite-size corrections for KB integrals computed from RDFs. See [Results](@ref results) and [Kirkwood-Buff integrals](@ref kbi).
 
 4. **Density maps**: two-dimensional representations of solvent density around each residue of macromolecules, connecting structure and solvation at the residue level, and three-dimensional representations of the solvent density around the structure. See [2D density maps](@ref 2D_per_residue) and [3D density maps](@ref grid3D).
 
