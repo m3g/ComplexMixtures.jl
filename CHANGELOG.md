@@ -10,6 +10,15 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 2.19.0-DEV
+--------------
+- ![FEATURE][badge-feature] Use PDBtools 3.41.0 visualization functions to document and display contributions interactivelly over structures.
+- ![FEATURE][badge-feature] `volumetric_data`: converts the grid of `grid3D` into volumetric data (`PDBTools.VolumetricData`), optionally smoothed, which can be displayed as isosurfaces with `PDBTools.visualize` or written to OpenDX (`.dx`) files.
+- ![FEATURE][badge-feature] `grid3D` supports solutes with multiple molecules: the grid is built around one of the molecules (keyword `molecule`, the first one by default).
+- ![INFO][badge-info] Skip `:kbi` contribution computation if not available (because the read json is from an old version).
+- ![INFO][badge-info] Use JSON.jl (v1) instead of the deprecated JSON3.jl (and StructTypes.jl) to read and write results files. The file format is unchanged.
+- ![FIX][badge-fix] Fix the display of `TrajectoryFileOptions` (e.g. `results.files[1]`) with non-empty frame weights.
+
 Version 2.18.3-DEV
 --------------
 - ![INFO][badge-info] Update references and application papers.

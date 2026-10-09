@@ -132,6 +132,8 @@ function contributions(
     end
     sel_count = zeros(length(group_count[1]))
     sel_count_random = zeros(length(group_count[1]))
+    # Results from versions < 2.18.0 do not have the random group counts (required for KBI contributions)
+    has_random = !isempty(group_count_random)
 
     # If the index of the groups was provided
     if !isnothing(group.group_index)
@@ -143,7 +145,7 @@ function contributions(
             """))
         end
         sel_count .= group_count[igroup]
-        sel_count_random .= group_count_random[igroup]
+        has_random && (sel_count_random .= group_count_random[igroup])
     end
 
     # If the name of the group was provided
@@ -151,7 +153,7 @@ function contributions(
         igroup = findfirst(==(group.group_name), atsel.group_names)
         isnothing(igroup) && _name_not_found_error(group.group_name, atsel)
         sel_count .= group_count[igroup]
-        sel_count_random .= group_count_random[igroup]
+        has_random && (sel_count_random .= group_count_random[igroup])
     end
 
     # If, instead, atom indices or names were provided, sum over the contributions of the atoms.
@@ -179,7 +181,7 @@ function contributions(
                 itype = findfirst(==(iat), atsel.indices)
                 isnothing(itype) && _index_not_found_error(iat, atsel)
                 sel_count .+= group_count[itype]
-                sel_count_random .+= group_count_random[itype]
+                has_random && (sel_count_random .+= group_count_random[itype])
             end
         else
             # If there's more than one molecule, the contributions are stored by 
@@ -189,7 +191,7 @@ function contributions(
                 any(==(iat), atsel.indices) || _index_not_found_error(iat, atsel)
                 itype = atom_type(iat, atsel.natomspermol; first=first(atsel.indices))
                 sel_count .+= group_count[itype] / atsel.nmols
-                sel_count_random .+= group_count_random[itype] / atsel.nmols
+                has_random && (sel_count_random .+= group_count_random[itype] / atsel.nmols)
             end
         end
     end
@@ -214,7 +216,7 @@ function contributions(
                 if atom_name == name
                     found_atom_name = true
                     sel_count .+= group_count[igroup]
-                    sel_count_random .+= group_count_random[igroup]
+                    has_random && (sel_count_random .+= group_count_random[igroup])
                 end
             end
             found_atom_name || _name_not_found_error(atom_name, atsel)
