@@ -83,8 +83,21 @@ See also [`finite_volume_kbi`](@ref) and [`extrapolate_kbi`](@ref).
 
 """
 function kbi(R::Result; correction::Symbol=:W7, normalization::Symbol=:ganguly)
+    return _kbi(R, R.md_count, R.md_count_random; correction, normalization)
+end
+
+#=
+    _kbi(R::Result, count, count_random; correction, normalization)
+
+Computes the KBI from the minimum-distance counts `count` and `count_random`, which can 
+be those of the complete solute and solvent, or of a group of atoms (in which case the result
+is the contribution of the group to the KBI). The reference density is always computed
+from the total counts.
+
+=#
+function _kbi(R::Result, count::AbstractVector, count_random::AbstractVector; correction::Symbol, normalization::Symbol)
     W = _kbi_weight(Val(correction))
-    h = _kbi_integrand(R, Val(normalization))
+    h = _kbi_integrand(R, count, count_random, Val(normalization))
     return _weighted_running_integral(h, R, W)
 end
 
@@ -96,14 +109,19 @@ function _kbi_weight(::Val{correction}) where {correction}
 
     """))
 end
-_kbi_weight(::Val{:none}) = x -> 1.0
+# Weights are polynomials, represented by their coefficients (constant term first)
+_polymul(a, b) = [sum(a[i] * b[k-i+1] for i in max(1, k - length(b) + 1):min(k, length(a))) for k in 1:(length(a)+length(b)-1)]
+_kbi_weight(::Val{:none}) = [1.0]
 _kbi_weight(::Val{:G0}) = _kbi_weight(Val(:none))
-_kbi_weight(::Val{:G1}) = x -> 1 - x^3
-_kbi_weight(::Val{:G2}) = x -> 1 - (23 / 8) * x^3 + (3 / 4) * x^4 + (9 / 8) * x^5
-_kbi_weight(::Val{:W7}) = x -> (1 - x)^4 * (1 + 35x / 16) * (1 + 1225x^2 / 256) * (1 + 29x / 16 + 5x^2 / 4 + 5x^3 / 16)
+_kbi_weight(::Val{:G1}) = [1.0, 0.0, 0.0, -1.0]
+_kbi_weight(::Val{:G2}) = [1.0, 0.0, 0.0, -23 / 8, 3 / 4, 9 / 8]
+# W₇⁽³⁾(x) = (1-x)^4 (1 + 35x/16)(1 + 1225x^2/256)(1 + 29x/16 + 5x^2/4 + 5x^3/16)
+_kbi_weight(::Val{:W7}) = foldl(_polymul, (
+    [1.0, -4.0, 6.0, -4.0, 1.0], [1.0, 35 / 16], [1.0, 0.0, 1225 / 256], [1.0, 29 / 16, 5 / 4, 5 / 16]
+))
 
 const _kbi_normalizations = (:ganguly, :bulk)
-function _kbi_integrand(::Result, ::Val{normalization}) where {normalization}
+function _kbi_integrand(::Result, ::AbstractVector, ::AbstractVector, ::Val{normalization}) where {normalization}
     throw(ArgumentError("""\n
         Invalid KBI normalization option: :$normalization. Available normalizations are: 
         $(join(":" .* string.(_kbi_normalizations), ", "))
@@ -122,21 +140,22 @@ function _check_normalized(R::Result)
 end
 
 #=
-    _kbi_integrand(R::Result, normalization)
+    _kbi_integrand(R::Result, count, count_random, normalization)
 
 Returns, for each bin, the excess volume (in Å³) of the integrand of the KBI, that is, 
-the integral of [ρ(d)/ρ_ref(d) - ρ_id(d)/ρ_bulk] dV(d) over the bin.
+the integral of [ρ(d)/ρ_ref(d) - ρ_id(d)/ρ_bulk] dV(d) over the bin, computed from
+the minimum-distance counts provided.
 
 =#
-function _kbi_integrand(R::Result, ::Val{:bulk})
+function _kbi_integrand(R::Result, count::AbstractVector, count_random::AbstractVector, ::Val{:bulk})
     _check_normalized(R)
-    return (R.md_count .- R.md_count_random) ./ R.density.solvent_bulk
+    return (count .- count_random) ./ R.density.solvent_bulk
 end
 
-function _kbi_integrand(R::Result, ::Val{:ganguly})
+function _kbi_integrand(R::Result, count::AbstractVector, count_random::AbstractVector, ::Val{:ganguly})
     _check_normalized(R)
     ρ_ref = _ganguly_density(R)
-    return @. R.md_count / ρ_ref - R.md_count_random / R.density.solvent_bulk
+    return @. count / ρ_ref - count_random / R.density.solvent_bulk
 end
 
 #=
@@ -157,17 +176,23 @@ end
 #=
     _weighted_running_integral(h, R::Result, W)
 
-Returns the running integrals ∑ᵢ h[i] W(dᵢ/L) for each upper limit L of the bins, in cm³ mol⁻¹.
+Returns the running integrals ∑ᵢ h[i] W(dᵢ/L) for each upper limit L of the bins, in cm³ mol⁻¹,
+where W is a polynomial with coefficients `W` (constant term first). The integrals are computed
+from the running moments Sₖ(L) = ∑ᵢ h[i] dᵢᵏ, as ∑ₖ W[k+1] Sₖ(L)/Lᵏ.
 
 =#
-function _weighted_running_integral(h::AbstractVector, R::Result, W::F) where {F<:Function}
+function _weighted_running_integral(h::AbstractVector, R::Result, W::AbstractVector)
     binstep = R.files[1].options.binstep
     G = zeros(length(h))
-    for j in eachindex(G)
-        L = j * binstep
-        G[j] = units.Angs3tocm3permol * sum(h[i] * W(R.d[i] / L) for i in 1:j)
+    for k in eachindex(W)
+        W[k] == 0 && continue
+        Sk = 0.0
+        for j in eachindex(G, h)
+            Sk += h[j] * R.d[j]^(k - 1)
+            G[j] += W[k] * Sk / (j * binstep)^(k - 1)
+        end
     end
-    return G
+    return units.Angs3tocm3permol .* G
 end
 
 #=

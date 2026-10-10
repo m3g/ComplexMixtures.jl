@@ -23,7 +23,7 @@ end
 
 
 """
-    contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf)
+    contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf, correction = :W7, normalization = :ganguly)
 
 Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number, MD count,
 or proximal contributions to the Kirkwood-Buff integrals. 
@@ -33,6 +33,9 @@ or proximal contributions to the Kirkwood-Buff integrals.
 - `R::Result`: The result of a calculation.
 - `group::Union{SoluteGroup,SolventGroup}`: The group of atoms to consider.
 - `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number`, `:md_count`, or `:kbi`.
+- `correction::Symbol` and `normalization::Symbol`: Only used if `type=:kbi`. The weight function and the 
+  reference density used to compute the KBI, as in [`kbi`](@ref). The contributions are additive: the
+  sum of the contributions of all atoms is equal to `kbi(R; correction, normalization)`.
 
 # Examples
 
@@ -71,6 +74,8 @@ function contributions(
     R::Result,
     group::Union{SoluteGroup,SolventGroup};
     type=:mddf,
+    correction::Symbol=:W7,
+    normalization::Symbol=:ganguly,
     _warn_zero_md_count=true,
 )
 
@@ -240,10 +245,7 @@ function contributions(
         # do nothing, already md_count
         sel_count
     elseif type == :kbi
-        sel_count .= cumsum(sel_count)
-        sel_count_random .= cumsum(sel_count_random)
-        kbi = units.Angs3tocm3permol * (1 / R.density.solvent_bulk) * (sel_count .- sel_count_random)
-        kbi
+        _kbi(R, sel_count, sel_count_random; correction, normalization)
     end
 
     return output
@@ -326,12 +328,19 @@ end
     # Test consistency of proximal contributions to the KBIs
     kbi_polar = contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi)
     kbi_nonpolar = contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi)
-    @test results.kb ≈ kbi_polar + kbi_nonpolar
+    @test kbi(results) ≈ kbi_polar + kbi_nonpolar
+    for correction in (:none, :G1, :G2, :W7), normalization in (:bulk, :ganguly)
+        kp = contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi, correction, normalization)
+        knp = contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi, correction, normalization)
+        @test kbi(results; correction, normalization) ≈ kp + knp
+    end
+    @test results.kb ≈ contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi, correction=:none, normalization=:bulk) +
+                       contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi, correction=:none, normalization=:bulk)
 
     # This is probably unused, but possible
     kbi_tmao_O = contributions(results, SolventGroup(select(atoms, "resname TMAO and element O")); type=:kbi)
     kbi_not_tmao_O = contributions(results, SolventGroup(select(atoms, "resname TMAO and not element O")); type=:kbi)
-    @test results.kb ≈ kbi_tmao_O + kbi_not_tmao_O
+    @test kbi(results) ≈ kbi_tmao_O + kbi_not_tmao_O
 
     # Now test if the solute is a dicontinuous set of atoms in the original structure
     # The solute has only one molecule.

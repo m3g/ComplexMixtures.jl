@@ -159,15 +159,18 @@ The `type=:kbi` option in `contributions` computes the **proximal contribution**
 Kirkwood-Buff integral (KBI). Each solute atom acts as a reference: solvent molecules for which
 that atom is the nearest solute atom are assigned to it. The KBI contribution of a group is then computed
 from the excess or deficit of proximal solvent contacts relative to the random (ideal-gas) reference,
-normalized by the bulk solvent density — exactly as the total KBI is computed, but restricted to the
-subset of contacts attributed to that group. The result is a decomposition of the total KBI (`results.kb`)
-into atomic or group contributions:
+normalized by the reference solvent density — exactly as the total KBI is computed, but restricted to the
+subset of contacts attributed to that group. The result is a decomposition of the total KBI, as computed
+by [`kbi`](@ref), into atomic or group contributions:
 
 ```math
 G_{total}(r) = \sum_i G_i(r)
 ```
 
-where each $G_i(r)$ is the proximal contribution of group $i$.
+where each $G_i(r)$ is the proximal contribution of group $i$. The `correction` and `normalization` options
+of [`kbi`](@ref) are also available in `contributions` (with the same defaults), and are applied to the
+contributions of each group, such that the decomposition is consistent with the total KBI computed with 
+the same options. 
 
 For example, consider a protein solvated by Glycerol (`resname GLYC`), following the `mddf` computation steps of [this example](@ref example1): 
 
@@ -191,10 +194,10 @@ kbi_polar_not_charged = contributions(R, SoluteGroup(polar_not_charged_atoms); t
 kbi_nonpolar = contributions(R, SoluteGroup(nonpolar_atoms); type=:kbi)
 ```
 
-These partial contributions are additive: `R.kb ≈ kbi_charged + kbi_polar_not_charged + kbi_nonpolar`.
+These partial contributions are additive: `kbi(R) ≈ kbi_charged + kbi_polar_not_charged + kbi_nonpolar`.
 
 ```julia
-plot(R.d, R.kb / 1000, label="Total KBI", linewidth=2)
+plot(R.d, kbi(R) / 1000, label="Total KBI", linewidth=2)
 plot!(R.d, kbi_charged / 1000, label="Charged residues", linewidth=2)
 plot!(R.d, kbi_polar_not_charged / 1000, label="Polar, not charged, residues", linewidth=2)
 plot!(R.d, kbi_nonpolar / 1000, label="Non-polar residues", linewidth=2)
@@ -206,7 +209,7 @@ plot!(xlabel="Distance / Å", ylabel="KBI / L mol⁻¹")
 ```
 
 !!! note
-    The KBI contributions are returned in cm³ mol⁻¹, consistent with `R.kb`. Divide by 1000 to convert to L mol⁻¹.
+    The KBI contributions are returned in cm³ mol⁻¹, consistent with `kbi(R)`. Divide by 1000 to convert to L mol⁻¹.
 
 ## Per-residue proximal contributions to KBIs
 
@@ -226,7 +229,7 @@ heatmap(rc_kbi)
 The sum of contributions from all residues at the last distance converges to the total KBI:
 
 ```julia
-sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ R.kb[end]
+sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ kbi(R)[end]
 ```
 
 Or, since the converged value of the KBIs is of particular interest, a bar plot of the proximal contributions at the final distance can illustrate better the contribution of each residue:
