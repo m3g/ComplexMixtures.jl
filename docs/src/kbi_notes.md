@@ -20,6 +20,10 @@
   solute a single atom of the protein, the atom closest to its center of mass (OD1 of ASN 123,
   1.6 Å from the center of mass; the protein extends up to ~28 Å from its center).
 
+- **Asphaltene in heptane/toluene** (one asphaltene model molecule of 54 atoms, 2080 heptane and 1230 toluene
+  molecules, cubic box of ~90 Å, 1000 frames). The MDDFs of the asphaltene relative to each solvent component
+  were computed with `dbulk=20.0` and `cutoff=30.0`. This is discussed in a [separate section](@ref kbi_notes_asphaltene).
+
 Throughout, ``L`` is the upper limit of integration, and the estimators ``G_0``, ``G_1`` and ``G_2`` are
 those of [`kbi`](@ref).
 
@@ -266,6 +270,67 @@ shell or that of the rest of the box, and varies from ~-13500 to ~-19500 cm³ mo
 estimated from a window within the integration range, because the normalization forces the average
 of ``g - 1`` to vanish in that window.
 
+## [A small solute in a mixed solvent: asphaltene in heptane/toluene](@id kbi_notes_asphaltene)
+
+The asphaltene model is a small solute (54 atoms, with a largest interatomic distance of ~18 Å), solvated by a
+heptane/toluene mixture (molar fraction of toluene 0.37). The MDDFs of the asphaltene relative to
+heptane and to toluene were computed from the same trajectory, with `dbulk=20.0` and `cutoff=30.0`
+(the bulk density is estimated in the 20–30 Å shell). There is a single solute molecule, and 1000 frames.
+Only the MDDFs are available for this system: the RDFs, which require the trajectory, were not computed.
+
+![Asphaltene in heptane/toluene](./figures/kbi_notes/asphaltene.png)
+
+**Correlation length.** Both MDDFs have a first peak at ~2.4 Å (heptane) and ~2.7 Å (toluene), a second solvation shell at 6–7 Å,
+and are indistinguishable from one beyond ~12 Å. Averaged over 0.5 Å bins, ``g(d)`` fluctuates around
+one by 0.3–0.6% in the 20–30 Å range, which is of the order of the statistical noise of the counts.
+The correlations are, thus, short-ranged compared to the size of the domain.
+
+**Weights.** The truncated KBIs (`R.kb`, gray) oscillate by ±200–300 cm³ mol⁻¹ up to the cutoff. 
+These oscillations are mostly noise of the integrand at long distances, amplified by the volume 
+of the shells. The ``G_2`` and ``W_7^{(3)}`` weights applied to the MDDF integrand (computed as in the 
+previous sections) remove the oscillations, and give stable values from ``L \approx 8`` Å up to 
+the cutoff. Here the weights are useful because the integrand beyond the second shell is noise
+around zero, and not a monotonic tail.
+
+**Reference density.** The ratio ``\rho_{\rm out}(d)/\rho_{\rm bulk}`` is approximately constant, 
+but different from one: ~0.995 for heptane and ~1.010–1.014 for toluene. That is, the 20–30 Å shell
+used to estimate the bulk density is enriched in heptane by 0.5% and depleted in toluene by 1% 
+relative to the rest of the box. These differences correspond to less than one molecule in the
+shell, and are not a perturbation caused by the solute, which is much smaller. They are, most likely, 
+composition fluctuations of the mixture not averaged out in 1000 frames of a single solute 
+molecule. Because the integration volume grows with ``L``, an offset of 1% in the reference density
+produces a drift of ~1% of ``V(L)`` in the KBI, which is ~250 cm³ mol⁻¹ at 25 Å, and of the order 
+of the KBIs themselves. This is the drift of the Ganguly-normalized KBIs (black).
+
+KBIs in cm³ mol⁻¹:
+
+| | L (Å) | truncated | ``G_2`` weight | ``W_7^{(3)}`` weight | Ganguly | Ganguly + ``G_2`` weight | ``\rho_{\rm out}/\rho_{\rm bulk}`` |
+|:--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| Heptane | 10 | -669 | -543 | -570 | -617 | -520 | 0.9962 |
+| | 15 | -544 | -525 | -530 | -423 | -475 | 0.9958 |
+| | 20 | -480 | -509 | -513 | -245 | -417 | 0.9953 |
+| | 25 | -450 | -488 | -498 | -34 | -336 | 0.9948 |
+| Toluene | 10 | -17 | 23 | -2 | -144 | -38 | 1.0105 |
+| | 15 | 80 | 85 | 80 | -205 | -39 | 1.0107 |
+| | 20 | 41 | 97 | 107 | -504 | -121 | 1.0114 |
+| | 25 | -65 | 69 | 98 | -1023 | -286 | 1.0128 |
+| Toluene − heptane | 10 | 652 | 566 | 568 | 473 | 482 | |
+| | 15 | 624 | 610 | 610 | 218 | 436 | |
+| | 20 | 521 | 606 | 621 | -259 | 296 | |
+| | 25 | 385 | 557 | 596 | -989 | 50 | |
+
+- The weighted `bulk_range` estimates are the most stable: ~-500 cm³ mol⁻¹ for heptane and ~50–100 
+  cm³ mol⁻¹ for toluene, giving a preferential solvation of the asphaltene by toluene of 
+  ``G_{\rm tol} - G_{\rm hep} \approx 550-620`` cm³ mol⁻¹. As discussed for the protein, part of this 
+  stability is enforced by the normalization in the bulk window.
+- At ``L \approx 10`` Å, where the correlations have decayed but the integration volume is still
+  small, all estimates agree within ~150 cm³ mol⁻¹, and the preferential solvation is ~470–650 
+  cm³ mol⁻¹. This is a reasonable estimate of the systematic uncertainty of the result.
+- Even with a small solute and short correlation lengths, the KBIs computed at large ``L`` are 
+  limited by the accuracy of the reference density, not by the decay of the correlations. In mixtures,
+  the reference densities of the components are affected by slow composition fluctuations, which
+  require longer sampling (or more solute molecules) than the decay of ``g(d)`` itself suggests.
+
 ## Summary
 
 1. For small solutes with oscillatory correlations (water), the corrected RDF estimators (``G_2``, 
@@ -282,6 +347,10 @@ of ``g - 1`` to vanish in that window.
    agreement is a diagnostic: the ratio ``\rho_{\rm out}(d)/\rho_{\rm bulk}`` should be close to one
    and independent of ``d``. In the protein–glycerol example it is not, and the KBI is uncertain
    at the 25% level.
+6. Small solutes with short correlation lengths are not exempt from normalization errors. For the
+   asphaltene in heptane/toluene, 1% differences in the reference densities of the components dominate
+   the uncertainty of the KBIs at large ``L``. Weighted estimates at ``L`` just beyond the decay of
+   the correlations (~10–15 Å) are the most robust.
 
 ## Possible additions to the package (not implemented)
 
