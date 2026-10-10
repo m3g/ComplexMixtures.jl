@@ -347,15 +347,21 @@ function _mddf_final_results!(R::Result, options::Options)
     R.volume.total = R.volume.total / Q
     @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
 
-    # Solute domain volume: the volume within the cutoff
+    # Solute domain volume: the volume within the cutoff, from the distances of the 
+    # reference atoms of the solvent molecules to the solute
     R.volume.domain = sum(R.volume.shell)
-
-    # Bulk volume and density: the bulk is the region beyond the cutoff
     R.volume.bulk = R.volume.total - R.volume.domain
-    n_solvent_in_bulk = samples.solvent_nmols - sum(R.rdf_count)
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
-    R.density.solvent_bulk = n_solvent_in_bulk / R.volume.bulk
+
+    # Bulk density: the density of the solvent beyond the cutoff, with the solvent molecules
+    # classified by their minimum distance to the solute, as in the MDDF. The volume of the 
+    # region within the cutoff is that of the random distribution, with density R.density.solvent 
+    # (with this definition, the bulk density is equal to the reference density of the Ganguly 
+    # normalization at the cutoff).
+    n_solvent_in_bulk = samples.solvent_nmols - sum(R.md_count)
+    v_solvent_in_bulk = R.volume.total - sum(R.md_count_random) / R.density.solvent
+    R.density.solvent_bulk = n_solvent_in_bulk / v_solvent_in_bulk
 
     # Now that we know the the volume of the domain and the density of the solvent in the 
     # bulk region, we can rescale the random counts to take into account that the the ideal
@@ -764,6 +770,12 @@ end
     overview(R::Result)
 
 Function that outputs the volumes and densities in the most natural units.
+
+The solute partial molar volume is estimated as the volume of the system minus the volume
+occupied by the solvent at the bulk density, ``V - N/\rho_{\rm bulk}``. This estimate is 
+the difference of two large numbers, and is very sensitive to the bulk density: an error of 
+0.1% in the bulk density corresponds to an error of 0.1% of the volume of the system. 
+It is only meaningful if the solvent has a single component.
 """
 function overview(R::Result)
 

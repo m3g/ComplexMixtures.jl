@@ -450,6 +450,14 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
     @test ρg[end] ≈ (R.solvent.nmols - 1 - sum(R.md_count)) / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
     @test all(x -> isapprox(x, R.density.solvent_bulk; rtol=1e-3), ρg[findfirst(>=(5.0), R.d):end])
 
+    # For results computed with the current version, the reference density of the Ganguly 
+    # normalization at the cutoff is the bulk density
+    R = load("$data_dir/NAMD/protein_tmao.json")
+    @test ComplexMixtures._ganguly_density(R)[end] ≈ R.density.solvent_bulk
+    R = load("$data_dir/NAMD/tmao_tmao.json")
+    @test R.autocorrelation
+    @test ComplexMixtures._ganguly_density(R)[end] ≈ R.density.solvent_bulk
+
     # Not normalized results
     R = load("$data_dir/NAMD/water/rw_20_25.json")
     R.density.solvent_bulk = 0.0

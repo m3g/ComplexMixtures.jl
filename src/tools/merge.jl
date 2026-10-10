@@ -186,7 +186,7 @@ end
     @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
-    @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+    @test R.density.solvent_bulk ≈ 2 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
     @test R.weights == [0.5, 0.5]
 
     # Test loading a saved merged file
