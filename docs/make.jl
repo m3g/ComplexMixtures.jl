@@ -62,4 +62,5 @@ deploydocs(
     target="build",
     branch="gh-pages",
     versions=["stable" => "v^", "v#.#"],
+    push_preview=true,
 )
