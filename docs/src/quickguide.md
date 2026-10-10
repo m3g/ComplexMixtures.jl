@@ -173,11 +173,11 @@ distance to the protein:
 ```
 
 The Kirkwood-Buff integral corresponding to that distribution is
-provided in the `results.kb` vector, and can be also directly plotted 
-with   
+obtained with the [`kbi`](@ref) function, which returns the integral, in cm³ mol⁻¹, as a 
+function of the distance, and can be plotted with   
 
 ```julia
-plot(results.d, results.kb, xlabel="d / Å", ylabel="KB(d) / L / mol") 
+plot(results.d, kbi(results) / 1000, xlabel="d / Å", ylabel="KB(d) / L / mol") 
 ```
 to obtain:
 

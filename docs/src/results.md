@@ -73,6 +73,13 @@ plot(results.d,results.mddf,xlabel="d/A",ylabel="mddf(d) / L/mol")
 The `results.kb` vector will contain the Kirkwood-Buff integral computed
 as a function of the minimum-distance to the solute. For properly
 sampled simulations, it is expected to converge at large distances.  
+
+!!! tip
+    `results.kb` contains the truncated (uncorrected) KB integral. The recommended way to obtain the
+    KB integral is the [`kbi`](@ref) function, `kbi(results)`, which applies corrections for the truncation
+    of the integral and for the reference density, and converges faster. See the
+    [Kirkwood-Buff integrals](@ref kbi) section.
+
 ```julia-repl
 julia> results.kb
 500-element Array{Float64,1}:
