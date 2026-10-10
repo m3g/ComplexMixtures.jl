@@ -31,7 +31,7 @@ solvent = AtomSelection(glyc, natomspermol=14)
 trajectory_file = "./glyc50_traj.dcd"
 
 # Run mddf calculation, and save results
-results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(10.0, 15.0)))
+results = mddf(trajectory_file, solute, solvent, Options(cutoff=15.0))
 save(results, "glyc50_results.json")
 println("Results saved to glyc50_results.json")
 

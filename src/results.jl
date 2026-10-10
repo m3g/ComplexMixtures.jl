@@ -347,31 +347,32 @@ function _mddf_final_results!(R::Result, options::Options)
     R.volume.total = R.volume.total / Q
     @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
 
-    # Solute domain volume
-    ibulk = setbin(R.dbulk + 0.5 * R.files[1].options.binstep, R.files[1].options.binstep)
-    R.volume.domain = sum(@view(R.volume.shell[1:ibulk-1]))
-
-    # Bulk volume and density properties: either the bulk is considered everything
-    # that is not the domain, or the bulk is the region between d_bulk and cutoff,
-    # if R.files[1].options.usecutoff is true (meaning that there is a cutoff different from
-    # that of the bulk distance)
-    if !R.files[1].options.usecutoff
-        R.volume.bulk = R.volume.total - R.volume.domain
-        n_solvent_in_bulk = samples.solvent_nmols - sum(R.rdf_count)
-    else
-        n_solvent_in_bulk = sum(@view(R.rdf_count[ibulk:R.nbins]))
-        R.volume.bulk = sum(@view(R.volume.shell[ibulk:R.nbins]))
-    end
+    # Solute domain volume: the volume within the cutoff, from the distances of the 
+    # reference atoms of the solvent molecules to the solute
+    R.volume.domain = sum(R.volume.shell)
+    R.volume.bulk = R.volume.total - R.volume.domain
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
-    R.density.solvent_bulk = n_solvent_in_bulk / R.volume.bulk
+
+    # Density of the random (ideal-gas) distribution: samples.solvent_nmols molecules 
+    # (one less than the number of solvent molecules if the solute and solvent are the same)
+    # in the volume of the system
+    density_random = samples.solvent_nmols / R.volume.total
+
+    # Bulk density: the density of the solvent beyond the cutoff, with the solvent molecules
+    # classified by their minimum distance to the solute, as in the MDDF. The volume of the 
+    # region within the cutoff is that of the random distribution (with this definition, the 
+    # bulk density is equal to the reference density of the Ganguly normalization at the cutoff).
+    n_solvent_in_bulk = samples.solvent_nmols - sum(R.md_count)
+    v_solvent_in_bulk = R.volume.total - sum(R.md_count_random) / density_random
+    R.density.solvent_bulk = n_solvent_in_bulk / v_solvent_in_bulk
 
     # Now that we know the the volume of the domain and the density of the solvent in the 
     # bulk region, we can rescale the random counts to take into account that the the ideal
     # gas distribution must have more molecules, with same bulk density, that the true
     # distribution, because we have to take into consieration the available volume which is
     # occupied by the solute
-    density_fix = R.density.solvent_bulk / R.density.solvent
+    density_fix = R.density.solvent_bulk / density_random
     return renormalize!(R, density_fix; silent=options.silent)
 end
 
@@ -401,10 +402,6 @@ function renormalize!(R::Result, density_fix::Number; silent)
                 warned_already = true
             end
         end
-        R.kb[ibin] =
-            units.Angs3tocm3permol *
-            (1 / R.density.solvent_bulk) *
-            (R.coordination_number[ibin] - R.coordination_number_random[ibin])
 
         # For the RDF
         if R.rdf_count_random[ibin] > 0.0
@@ -423,6 +420,24 @@ function renormalize!(R::Result, density_fix::Number; silent)
             (1 / R.density.solvent_bulk) *
             (R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
+    end
+    _set_kb!(R)
+    return R
+end
+
+#=
+    _set_kb!(R::Result)
+
+Sets `R.kb` to the KBI computed with the default options of `kbi`. If the bulk density
+is zero, the KBI is not defined, and the uncorrected expression is used (resulting in `Inf` or `NaN`).
+
+=#
+function _set_kb!(R::Result)
+    if R.density.solvent_bulk > 0
+        R.kb .= kbi(R)
+    else
+        @. R.kb = units.Angs3tocm3permol * (1 / R.density.solvent_bulk) *
+                  (R.coordination_number - R.coordination_number_random)
     end
     return R
 end
@@ -699,7 +714,7 @@ end
 
 function _bulk_range_from_R(R)
     if R.dbulk == R.cutoff
-        return ">= $(R.dbulk) Å"
+        return "> $(R.cutoff) Å"
     else
         return "$(R.dbulk) - $(R.cutoff) Å"
     end
@@ -759,6 +774,12 @@ end
     overview(R::Result)
 
 Function that outputs the volumes and densities in the most natural units.
+
+The solute partial molar volume is estimated as the volume of the system minus the volume
+occupied by the solvent at the bulk density, ``V - N/\rho_{\rm bulk}``. This estimate is 
+the difference of two large numbers, and is very sensitive to the bulk density: an error of 
+0.1% in the bulk density corresponds to an error of 0.1% of the volume of the system. 
+It is only meaningful if the solvent has a single component.
 """
 function overview(R::Result)
 

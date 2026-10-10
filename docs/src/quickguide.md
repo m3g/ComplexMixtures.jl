@@ -138,7 +138,7 @@ are automatically recognized.
 If default options are used (as the bin size of the histograms, read all
 frames without skipping any), just run the `mddf` with:
 ```julia
-results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
+results = mddf(trajectory_file, solute, solvent, Options(cutoff=12.0))
 
 ```
 Some optional parameters for the computation are available in the
@@ -173,11 +173,11 @@ distance to the protein:
 ```
 
 The Kirkwood-Buff integral corresponding to that distribution is
-provided in the `results.kb` vector, and can be also directly plotted 
-with   
+obtained with the [`kbi`](@ref) function, which returns the integral, in cm³ mol⁻¹, as a 
+function of the distance, and can be plotted with   
 
 ```julia
-plot(results.d, results.kb, xlabel="d / Å", ylabel="KB(d) / L / mol") 
+plot(results.d, kbi(results) / 1000, xlabel="d / Å", ylabel="KB(d) / L / mol") 
 ```
 to obtain:
 

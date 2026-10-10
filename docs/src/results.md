@@ -9,7 +9,7 @@ the MDDF, KB integrals, and atomic contributions. The following section
 will assume that the computation was performed by calling the `mddf`
 function with 
 ```julia
-results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
+results = mddf(trajectory_file, solute, solvent, Options(cutoff=12.0))
 ``` 
 such that the `results` variable contain the `Result` data structure. By
 default, the histograms contain 500 bins (`binstep=0.002` and
@@ -73,6 +73,13 @@ plot(results.d,results.mddf,xlabel="d/A",ylabel="mddf(d) / L/mol")
 The `results.kb` vector will contain the Kirkwood-Buff integral computed
 as a function of the minimum-distance to the solute. For properly
 sampled simulations, it is expected to converge at large distances.  
+
+!!! tip
+    `results.kb` contains the truncated (uncorrected) KB integral. The recommended way to obtain the
+    KB integral is the [`kbi`](@ref) function, `kbi(results)`, which applies corrections for the truncation
+    of the integral and for the reference density, and converges faster. See the
+    [Kirkwood-Buff integrals](@ref kbi) section.
+
 ```julia-repl
 julia> results.kb
 500-element Array{Float64,1}:
@@ -161,7 +168,7 @@ The complete data available is:
 | Parameter | Meaning | Type of value | Comment | 
 |:----------|:--------|:-------------:|:--------|
 | `nbins` | Number of bins of the histograms. | `Int` | | 
-| `dbulk` | Distance from solute of bulk solution. | `Float64` |  |
+| `dbulk` | Distance from solute of bulk solution. Equal to `cutoff` since version 2.19.1. | `Float64` |  |
 | `cutoff` | Maximum distance to be considered for histograms. | `Float64`  | | 
 | `autocorrelation` | The solute is the same as the solvent? | `Bool` | Automatically set if `solute == solvent`. |  
 | `solute` | Properties of the solute | `AtomSelection` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solute. |

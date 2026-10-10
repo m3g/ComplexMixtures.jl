@@ -4,7 +4,7 @@ using TestItems: @testitem
 
 import Plots
 using ComplexMixtures: ComplexMixtures, Result, SoluteGroup, SolventGroup, contributions,
-    ResidueContributions, _set_clims_and_colorscale!
+    ResidueContributions, _set_clims_and_colorscale!, ReferenceDensity
 using PDBTools: PDBTools, Residue, residue_ticks, Atom, eachresidue, resnum
 
 """
@@ -160,6 +160,52 @@ function _density2D(
 
     # return the plot
     return plt
+end
+
+"""
+    plot(rd::ReferenceDensity; kargs...)
+
+Plot the deviations of the densities of the solvent in different regions of the system from the 
+bulk density, in percent, as computed by [`reference_density`](@ref ComplexMixtures.reference_density): 
+the density in shells around the solute, the density between each distance and the cutoff, and the 
+density beyond each distance (the reference density of the Ganguly normalization of the KBIs).
+
+Keyword arguments are passed to `Plots.plot`.
+
+!!! compat
+    This function requires loading the `Plots` package, and was introduced in version 2.19.1.
+
+"""
+function Plots.plot(rd::ReferenceDensity; kargs...)
+    dev(x) = 100 * (x - 1)
+    plt = Plots.plot(rd.shell_d, dev.(rd.shell);
+        label="Local (shells)", color=:gray, alpha=0.7, marker=:circle, markersize=2, linewidth=1,
+    )
+    Plots.plot!(plt, rd.d, dev.(rd.window); label="Between d and the cutoff", linewidth=2)
+    Plots.plot!(plt, rd.d, dev.(rd.outside); label="Beyond d (Ganguly reference)", linewidth=2)
+    Plots.hline!(plt, [0.0]; label=nothing, color=:black, linestyle=:dash)
+    # Set the limits from the region beyond the first solvation shell
+    imin = findfirst(>=(0.5), rd.shell)
+    dmin = isnothing(imin) ? first(rd.d) : rd.shell_d[imin]
+    i0 = something(findfirst(>=(dmin), rd.d), 1)
+    vals = filter(isfinite, vcat(rd.window[i0:end], rd.outside[i0:end]))
+    δ = isempty(vals) ? 2.0 : max(0.5, 2 * maximum(abs.(dev.(vals))))
+    Plots.plot!(plt;
+        xlabel="d / Å", ylabel="(ρ/ρ_bulk - 1) / %", xlims=(dmin, last(rd.d)), ylims=(-δ, δ),
+        framestyle=:box, kargs...
+    )
+    return plt
+end
+
+@testitem "plot ReferenceDensity" begin
+    using ComplexMixtures, Plots
+    using ComplexMixtures: data_dir
+    R = load("$data_dir/NAMD/water/rw_20_25.json")
+    tmpplot = tempname() * ".png"
+    plt = plot(reference_density(R); title="water")
+    savefig(plt, tmpplot)
+    @test isfile(tmpplot)
+    rm(tmpplot)
 end
 
 @testitem "contourf" begin

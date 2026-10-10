@@ -2,164 +2,168 @@
 CollapsedDocStrings = true
 ```
 
-# [Kirkwood-Buff integrals: convergence and finite-size corrections](@id kbi)
+# [Kirkwood-Buff integrals](@id kbi)
 
-## When are finite-size corrections useful?
+## Computing KBIs: the `kbi` function
 
-ComplexMixtures.jl is generally used to study the solvation of large or complex-shaped solutes, such as 
-proteins, polymers, or membranes. For these, the KB integrals must be computed from minimum-distance 
-distribution functions (MDDFs), available in the `R.kb` field of the result. As explained in the 
-[Concepts](@ref concepts_finite_size) section, integrals of radial distribution functions are impractical
-in these cases: the distances required to reach the bulk solution in all directions around an anisotropic
-solute are much larger than those accessible in typical simulation boxes. And, currently, there is no
-theory of finite-size corrections for KB integrals computed from MDDFs.
+The Kirkwood-Buff integrals (KBIs) of a `Result` object are obtained with the [`kbi`](@ref) function:
 
-The finite-size corrections described in this page apply, instead, to radial distribution functions,
-which are meaningful when the solute can be represented by a single atom. This is the typical case of
-mixtures of small molecules — water, alcohols, common solvents and cosolvents — where one is interested
-in the KB integrals between the components of the mixture, for example to compute preferential solvation
-parameters, activity coefficient derivatives, or partial molar volumes. In these cases, the corrections
-greatly improve the convergence of the KB integrals, as shown in the example below.
-
-## Running and finite-volume KBIs
-
-The Kirkwood-Buff integral (KBI) of a pair of species is, in the thermodynamic limit, the integral of the 
-excess density of the solvent around the solute, over all space:
-
-```math
-G_\infty = \int_0^\infty h(r)\, 4\pi r^2\, dr, \quad h(r) = g(r) - 1.
+```julia
+G = kbi(R)
 ```
 
-In a simulation, ``g(r)`` is known only up to a finite distance ``L`` (the `cutoff` of the calculation), 
-and the integral must be truncated. The `Result` object returned by `mddf` contains two such 
-truncated integrals, as a function of the distance:
+which returns the KBI, in cm³ mol⁻¹, as a function of the upper limit of integration, ``L``, for 
+each distance of `R.d`. The `R.kb` field of the `Result` contains the same values, `R.kb == kbi(R)`.
+The `kbi` function allows choosing the corrections applied, and computes the KBIs with the 
+current definitions for results saved with previous versions of the package, in which `R.kb` contained
+the uncorrected KBI. By default, the KBI is computed with a weight function that corrects for the 
+truncation of the integral at a finite distance, and with a reference density that corrects for 
+the finite number of molecules in the simulation box, as explained below. The corrections apply 
+to minimum-distance distribution functions (MDDFs), thus to solutes and solvents of any shape, and
+to radial distribution functions (RDFs), which are MDDFs of single-atom solutes and solvents. 
 
-- `R.kb`: the KBI computed from the minimum-distance distribution function (MDDF).
-- `R.kb_rdf`: the KBI computed from the distribution of the distances to the reference atom of the solvent. 
-  If the solute has a single atom per molecule, this is the radial distribution function (RDF) of the 
-  pair, and `R.kb_rdf` is the usual "running" KBI.
-
-The running KBI converges poorly with ``L``: the oscillations of ``h(r)`` are amplified by the 
-``r^2`` factor, and the integral oscillates around its limiting value even at long distances. 
-For radial distribution functions, the convergence can be greatly improved by using the 
-results of the theory of finite-volume KBIs, as proposed by Krüger and Vlugt [1,2], 
-implemented in the [`kbi`](@ref), [`finite_volume_kbi`](@ref) and [`extrapolate_kbi`](@ref) functions,
-which are described here.
+The uncorrected (truncated) integral of the MDDF is obtained with `kbi(R; correction=:none, normalization=:mddf)`.
 
 !!! compat
-    The functions described in this page were introduced in version 2.19.0.
+    The `kbi` function was introduced in version 2.19.0. Its application to MDDFs, the `:W7` correction,
+    and the `normalization` option were introduced in version 2.19.1, in which the defaults were set 
+    to `correction=:W7` and `normalization=:ganguly`, and `R.kb` was set to `kbi(R)`. In previous versions,
+    `R.kb` contained the uncorrected KBI.
 
 ## Theory in brief
 
-### Finite-volume KBIs
+### The truncated KBI
 
-The KBI of a finite (sub)volume ``V``, ``G(V)``, measures the particle number fluctuations
-inside ``V``. It can be written as a radial integral with a purely geometrical weight, which, for a
-sphere of diameter ``L``, is [1,2]:
-
-```math
-G(L) = \int_0^L h(r)\, 4\pi r^2 \left(1 - \frac{3}{2}x + \frac{1}{2}x^3\right) dr, \quad x = \frac{r}{L}.
-```
-
-Note that ``r`` is the distance between two points *inside* the sphere, thus it varies from ``0`` to the 
-*diameter* ``L``, and ``G(L)`` requires ``g(r)`` up to ``r = L``. For large ``L``, [2]
+The KBI of a pair of species is, in the thermodynamic limit, the integral of the excess density of 
+the solvent around the solute over all space. In terms of the minimum-distance distribution 
+function, ``g(d)``, 
 
 ```math
-G(L) = G_\infty + \frac{F_\infty}{L} + O\left(\frac{1}{L^2}\right),
+G_\infty = \int_0^\infty \left[g(d) - 1\right] \frac{dV(d)}{dd}\, dd
 ```
 
-where ``F_\infty`` is a surface term. ``G(L)`` is a smooth function of ``L``, but it is *not*
-an estimate of ``G_\infty``: it differs from it by ``F_\infty/L``, which decays slowly. ``G_\infty`` can, 
-however, be obtained by extrapolating ``G(L)`` as a function of ``1/L`` to ``1/L \to 0``.
+where ``V(d)`` is the volume of the domain within a minimum distance ``d`` of the solute (for 
+single-atom solutes, ``dV/dd = 4\pi d^2``, and ``g(d)`` is the RDF). In a simulation, ``g(d)`` is 
+known only up to a finite distance, and the integral must be truncated at ``L``. The truncated 
+integral, ``G_0(L)``, converges poorly with ``L``: the oscillations of ``g(d) - 1`` are amplified 
+by the volume element, and the integral oscillates around its limiting value even at long distances.
 
-### Improved estimators of the infinite-volume KBI
+### Weight functions
 
-Using the relation above, Krüger and Vlugt derived weight functions that estimate ``G_\infty`` directly
-from ``g(r)`` known up to ``L`` [1,2]: 
+Krüger and Vlugt [1,2] derived, from the theory of finite-volume KBIs, weight functions that estimate
+``G_\infty`` from the RDF known up to ``L``:
 
 ```math
-G_k(L) = \int_0^L h(r)\, u_k(r)\, dr
+G_W(L) = \int_0^L \left[g(d) - 1\right] \frac{dV(d)}{dd}\, W(d/L)\, dd
 ```
 
-with
+Santos [3] showed that these weights follow from a purely mathematical identity, valid for any 
+one-dimensional integral, and generalized them to a family of weights, ``W_n^{(k)}(x)``, that vanish
+more smoothly at ``x = d/L = 1``. Since the identity does not depend on the origin of the integrand, 
+the weights can be applied to the KBI computed from MDDFs. The available weights are:
 
-| Estimator | Weight, ``u_k(r)``, ``x = r/L`` | Behavior |
+| `correction` | Weight, ``W(x)``, ``x = d/L`` | |
 |:---------:|:-------------------------------|:---------|
-| ``G_0`` | ``4\pi r^2`` | The truncated integral. Large oscillations. |
-| ``G_1`` | ``4\pi r^2 (1 - x^3)`` | Ref. [1]. Smaller oscillations. |
-| ``G_2`` | ``4\pi r^2 \left(1 - \frac{23}{8}x^3 + \frac{3}{4}x^4 + \frac{9}{8}x^5\right)`` | Ref. [2], Eq. 24. Error ``\sim 1/L^3``. Recommended. |
+| `:none` (or `:G0`) | ``1`` | The truncated integral. Large oscillations. |
+| `:G1` | ``1 - x^3`` | Ref. [1]. |
+| `:G2` | ``1 - \frac{23}{8}x^3 + \frac{3}{4}x^4 + \frac{9}{8}x^5`` | Ref. [2], Eq. 24. |
+| `:W7` | ``(1-x)^4 (1 + \frac{35}{16}x)(1 + \frac{1225}{256}x^2)(1 + \frac{29}{16}x + \frac{5}{4}x^2 + \frac{5}{16}x^3)`` | Ref. [3]. Default. |
 
-The weights of ``G_1`` and ``G_2`` go to zero at ``r = L``, smoothly in the case of ``G_2``. Thus, the 
-oscillations of ``h(r)`` near the truncation point do not propagate to the integral, which is the 
-reason of the poor convergence of ``G_0``. The weight functions are shown below:
+The weights go to zero at ``d = L``, thus the oscillations of ``g(d)`` near the truncation point do
+not propagate to the integral:
 
 ```@example kbi
 using Plots
 x = range(0, 1, length=200)
-plot(x, ones(length(x)); label="G₀", linewidth=2)
-plot!(x, @. 1 - x^3; label="G₁", linewidth=2)
-plot!(x, @. 1 - 23/8 * x^3 + 3/4 * x^4 + 9/8 * x^5; label="G₂", linewidth=2)
-plot!(x, @. 1 - 3/2 * x + 1/2 * x^3; label="Finite-volume sphere, G(L)", linewidth=2, linestyle=:dash)
-plot!(xlabel="x = r/L", ylabel="u(r) / 4πr²", framestyle=:box, size=(500, 350))
+W7(x) = (1-x)^4 * (1 + 35x/16) * (1 + 1225x^2/256) * (1 + 29x/16 + 5x^2/4 + 5x^3/16)
+plot(x, ones(length(x)); label="G₀ (:none)", linewidth=2)
+plot!(x, @. 1 - x^3; label="G₁ (:G1)", linewidth=2)
+plot!(x, @. 1 - 23/8 * x^3 + 3/4 * x^4 + 9/8 * x^5; label="G₂ (:G2)", linewidth=2)
+plot!(x, W7.(x); label="W₇⁽³⁾ (:W7)", linewidth=2)
+plot!(xlabel="x = d/L", ylabel="W(x)", framestyle=:box, size=(500, 350))
 ```
 
-### When can these corrections be used
+The weights correct the truncation of the integral when ``g(d) - 1`` oscillates around zero at ``L``. 
+They do not correct slowly decaying (monotonic) tails of the distribution, nor errors in the reference density.
 
-- **Radial distribution functions only.** The theory applies to functions of the distance between two
-  points (two atoms). Thus, the solute must be defined with a single atom per molecule (for example, the 
-  oxygen atom of water). The solvent may contain more than one atom: the distances are computed to its 
-  reference atom (by default, the first atom of the molecule). If the solute has more than one atom per 
-  molecule, the functions will issue a warning, because the distribution is a minimum-distance
-  distribution, for which the theory does not apply.
+### Reference density
 
-- **Truncation, not ensemble, errors.** The corrections address the truncation of the integral at a 
-  finite distance. They do not correct the systematic error of ``g(r)`` computed from simulations of
-  closed systems (with a fixed number of molecules), nor errors in the estimate of the bulk density. 
-  These errors are small at each distance, but are amplified by the ``r^2`` factor, and appear as a 
-  drift of all estimators at long distances. The values should be taken from a range of distances 
-  where the estimates are stable.
+The distribution function is the ratio between the density of the solvent at each distance and a 
+reference density, which must be the density of the solvent in the bulk. In a simulation with a fixed number
+of molecules, the accumulation (or depletion) of solvent molecules around the solute changes the
+density of the rest of the box, and an inaccurate reference density causes a drift of the KBI at long 
+distances, because the volume element grows with ``L``. Two normalizations are available: 
+
+- `normalization=:mddf`: the reference density is the bulk density of the solvent, `R.density.solvent_bulk`, 
+  estimated from the region beyond the cutoff, at all distances. This is the normalization of the MDDF,
+  `R.mddf`, thus the KBI is the integral of `R.mddf`.
+- `normalization=:ganguly` (default): the reference density at each distance ``d`` is the density 
+  of the solvent outside the domain within ``d``,
+  ```math
+  \rho_{\rm ref}(d) = \frac{N - N_{\rm in}(d)}{V - V(d)}
+  ```
+  where ``N`` is the number of solvent molecules (minus one if the solute and the solvent are the same), 
+  ``N_{\rm in}(d)`` is the average number of solvent molecules within ``d``, and ``V`` is the volume of the box.
+  This is the correction for closed systems proposed by Ganguly and van der Vegt [4].
+
+If the two normalizations give different KBIs at the distances of interest, the estimate of the 
+reference density is a source of error that must be considered. The density of the solvent in different 
+regions of the system can be inspected with the [`reference_density`](@ref) function (see 
+[Inspecting the reference density](@ref kbi_reference_density) below).
 
 ## Example: water
 
-Here we use the oxygen-oxygen distribution function of a simulation of pure water (6845 molecules,
-cubic box of ~58.7 Å), computed up to 25 Å. The solute and the solvent were defined
-by the water oxygen atoms only, thus the distribution is a radial distribution function:
+Here we use the distribution functions of a simulation of pure water (6845 molecules, cubic box of 
+~58.7 Å), computed up to 25 Å. In `rw_20_25.json` the solute and the solvent are the complete water 
+molecules, thus the distribution is an MDDF. In `rwO_20_25.json` they are the oxygen atoms only,
+thus the distribution is the O–O RDF:
 
 ```@example kbi
 using ComplexMixtures
 using ComplexMixtures: data_dir
-R = load(joinpath(data_dir, "NAMD", "water", "rwO_20_25.json"))
-R.solute.natomspermol # must be one
+R = load(joinpath(data_dir, "NAMD", "water", "rw_20_25.json"))
+RO = load(joinpath(data_dir, "NAMD", "water", "rwO_20_25.json"))
+R.solute.natomspermol, RO.solute.natomspermol
 ```
 
-### Improved running KBIs
+### Running KBIs
 
-The [`kbi`](@ref) function returns the running KBIs computed with the different estimators, as a function
-of the upper limit of integration, `L`, which corresponds to the distances of `R.d`:
+The [`kbi`](@ref) function returns the KBIs as a function of the upper limit of integration, `L`, 
+which corresponds to the distances of `R.d`:
 
 ```@example kbi
-g0 = kbi(R; correction=:G0) # same as R.kb_rdf
-g1 = kbi(R; correction=:G1)
+g0 = kbi(R; correction=:none, normalization=:mddf) # truncated
 g2 = kbi(R; correction=:G2)
-plot(R.d, g0; label="G₀ (truncated)", linewidth=2)
-plot!(R.d, g1; label="G₁", linewidth=2)
+w7 = kbi(R) # correction=:W7, normalization=:ganguly
+w7O = kbi(RO) # O-O RDF
+plot(R.d, g0; label="G₀ (truncated)", linewidth=2, color=:gray)
 plot!(R.d, g2; label="G₂", linewidth=2)
+plot!(R.d, w7; label="W₇⁽³⁾ (default)", linewidth=2, color=:black)
+plot!(RO.d, w7O; label="W₇⁽³⁾, O–O RDF", linewidth=2, linestyle=:dash)
 plot!(xlabel="L / Å", ylabel="KBI / cm³ mol⁻¹", ylims=(-30, 0), xlims=(3, 25), framestyle=:box, size=(600, 400))
 ```
 
-The truncated integral, ``G_0``, oscillates significantly, and its value depends strongly on the distance 
-at which it is read. ``G_1`` and, particularly, ``G_2`` are much more stable, and reach a plateau 
-already at about 8 Å. A good estimate of ``G_\infty`` is the average value of ``G_2`` in the plateau:
+The truncated integral, ``G_0``, oscillates significantly, and drifts upwards at long distances. The 
+weighted integrals reach a plateau at about 8 Å. A good estimate of ``G_\infty`` is the average value 
+of the weighted KBI in the plateau:
 
 ```@example kbi
 using Statistics
-plateau = findall(L -> 10 <= L <= 20, R.d)
-mean(g2[plateau]), std(g2[plateau])
+plateau = findall(L -> 8 <= L <= 15, R.d)
+mean(w7[plateau]), std(w7[plateau])
 ```
 
-At distances larger than ~18 Å, an upward drift is visible in ``G_0`` and, to a lesser extent, in ``G_1``, 
-while ``G_2`` is barely affected. Since this drift is not a truncation effect, it is probably associated
-with the closed-system errors mentioned above, and the estimates at shorter distances are preferable.
+The value obtained from the MDDF is similar to that obtained from the O–O RDF:
+
+```@example kbi
+plateau = findall(L -> 10 <= L <= 20, RO.d)
+mean(w7O[plateau]), std(w7O[plateau])
+```
+
+At distances larger than ~15 Å, the KBI computed from the MDDF drifts upwards. The weights and the Ganguly 
+normalization reduce the drift, but do not remove it. Since this drift is not a truncation effect, it is 
+probably associated with the sampling or with the estimate of the reference density, and the values at 
+shorter distances are preferable. 
 
 As a reference, the KBI of a pure liquid is related to its isothermal compressibility, ``\kappa_T``, by 
 ``G_\infty = RT\kappa_T - 1/\rho``, where ``\rho`` is the molar density. For water at 298 K, the experimental 
@@ -168,12 +172,27 @@ depends on the water model, and on the sampling.
 
 ### Finite-volume KBIs and extrapolation
 
+For radial distribution functions, an alternative estimate of ``G_\infty`` is provided by the theory
+of finite-volume KBIs [1,2]. The KBI of a sphere of diameter ``L`` is
+
+```math
+G(L) = \int_0^L h(r)\, 4\pi r^2 \left(1 - \frac{3}{2}x + \frac{1}{2}x^3\right) dr, \quad x = \frac{r}{L},
+```
+
+where ``r`` is the distance between two points *inside* the sphere. For large ``L``, 
+``G(L) = G_\infty + F_\infty/L + O(1/L^2)``, where ``F_\infty`` is a surface term. ``G(L)`` is not an estimate 
+of ``G_\infty``, but ``G_\infty`` can be obtained by extrapolating ``G(L)`` to ``1/L \to 0``. 
+
+This theory applies to two-point integrals over open subvolumes, and not to the KBIs computed from MDDFs,
+which are integrals around a fixed solute. Thus, [`finite_volume_kbi`](@ref) requires a single-atom solute
+(it issues a warning otherwise), and uses the distribution of the distances to the reference atom of the solvent
+(`R.rdf_count`).
+
 The [`finite_volume_kbi`](@ref) function computes the finite-volume KBIs of spheres of diameter ``L``,
-for all ``L`` up to the cutoff. Since ``G(L) = G_\infty + F_\infty/L``, the plot of ``G(L)`` as a function 
-of ``1/L`` must be linear for large enough ``L``:
+for all ``L`` up to the cutoff. The plot of ``G(L)`` as a function of ``1/L`` must be linear for large enough ``L``:
 
 ```@example kbi
-fv = finite_volume_kbi(R)
+fv = finite_volume_kbi(RO)
 ```
 
 ```@example kbi
@@ -196,7 +215,7 @@ plot!(x, ext.Ginf .+ ext.F .* x; label="Fit, 10 ≤ L ≤ 20 Å", linewidth=2, l
 vspan!([1 / 20, 1 / 10]; alpha=0.2, color=:gray, label=nothing)
 ```
 
-The extrapolated value is consistent with the plateau of ``G_2``. The result of the extrapolation should 
+The extrapolated value is consistent with the plateau of the weighted KBIs. The result of the extrapolation should 
 not depend much on the range of ``L`` used. This must be checked, because the linear relation is valid
 only for ``L`` larger than the correlation length of the fluid, and the data at large ``L`` may be 
 affected by the drift discussed above:
@@ -208,33 +227,59 @@ for Lrange in ((8.0, 16.0), (10.0, 20.0), (10.0, 25.0), (15.0, 25.0))
 end
 ```
 
+## [Inspecting the reference density](@id kbi_reference_density)
+
+The [`reference_density`](@ref) function computes the density of the solvent in different regions of the
+system, relative to the bulk density (estimated beyond the cutoff): the density in shells around the solute, 
+the density between each distance ``d`` and the cutoff, and the density beyond ``d``, which is the reference
+density of the Ganguly normalization:
+
+```@example kbi
+rd = reference_density(R)
+```
+
+```@example kbi
+plot(rd; size=(600, 400))
+```
+
+The plot shows the deviations of these densities from the bulk density, in percent. Beyond the correlation 
+length of the distribution, all deviations should be close to zero. Here, for water, they are smaller than 0.1%,
+except for the noise of the density in the shells. The density beyond ``d`` is the reference density of the
+Ganguly normalization, and its deviation is the one that affects the KBIs. The density between ``d`` and the
+cutoff is a more sensitive indicator of the non-uniformity of the density, because the deviation of the density
+beyond ``d`` is diluted by the volume beyond the cutoff. If the
+density between ``d`` and the cutoff varies as ``d`` approaches the cutoff, or if the densities are systematically
+different from one, the density of the solvent is not uniform beyond the correlation length. This may be caused 
+by insufficient sampling or by long-range effects, and the KBIs will depend on the reference density used to
+normalize them.
+
 ## Interpreting the results
 
-- **Prefer ``G_2``.** The `:G2` estimator of `kbi` is the simplest and most robust estimate of ``G_\infty``. 
-  Plot it as a function of ``L``, and report the value (or average) in the range where it is stable.
+- **Use `kbi(R)`.** Plot the KBI as a function of ``L``, and report the value (or average) in the 
+  range where it is stable. Compare the results obtained with the different corrections and normalizations:
+  the differences between them are an indication of the uncertainty of the result.
 
-- **Use the extrapolation as a cross-check.** The extrapolation of ``G(L)`` relies on a fit, whose result 
-  depends on the range of ``L``, and involves an extrapolation from ``1/L \sim 0.05`` Å⁻¹ to zero, 
-  which amplifies the noise. When ``G_2`` and the extrapolation agree, the result is reliable. 
+- **Drifts at long distances.** If all estimates drift at long distances, the drift is not a truncation
+  effect. It usually indicates an imprecise estimate of the reference density, insufficient sampling, or 
+  a slowly decaying tail of the distribution. In this case, use the values at shorter distances, where
+  the estimates are stable, increase the sampling (for example, by performing multiple independent 
+  simulations and merging the results with [`merge`](@ref)), or increase the size of the simulation box.
 
-- **The surface term, ``F_\infty``**, is a property of the fluid, and describes how the density fluctuations 
-  in a finite volume deviate from those of the infinite system. It has units of cm³ mol⁻¹ Å here. 
+- **Extrapolation.** For RDFs, the extrapolation of the finite-volume KBIs is a cross-check of the 
+  weighted estimates. It relies on a fit whose result depends on the range of ``L``, and involves an 
+  extrapolation from ``1/L \sim 0.05`` Å⁻¹ to zero, which amplifies the noise.
 
-- **Drifts at long distances.** If all estimators drift at long distances, the drift is not a truncation
-  effect, and these corrections cannot remove it. It usually indicates a closed-system error in ``g(r)``,
-  or an imprecise estimate of the bulk density. In this case, use the values at shorter distances, where
-  the estimates are stable, increase the size of the simulation box, or consider corrections for closed
-  systems [3].
-
-- **Minimum-distance distributions.** For solutes with more than one atom (proteins, polymers, etc.), use the KBI
-  computed from the MDDF, `R.kb`. The corrections described here do not apply. The convergence of MDDF-based 
-  KBIs is discussed in the [Kirkwood-Buff integrals and convergence](@ref) and 
-  [Finite-size corrections](@ref concepts_finite_size) sections of the Concepts page.
+- **Group contributions.** The decomposition of the KBI into contributions of groups of atoms
+  ([`contributions`](@ref) with `type=:kbi`) accepts the same `correction` and `normalization` options,
+  and the contributions sum to the KBI computed by `kbi` with the same options.
 
 ## Reference functions
 
 ```@docs
 kbi
+reference_density
+ComplexMixtures.ReferenceDensity
+Plots.plot(::ComplexMixtures.ReferenceDensity)
 finite_volume_kbi
 extrapolate_kbi
 ComplexMixtures.FiniteVolumeKBI
@@ -248,6 +293,8 @@ ComplexMixtures.FiniteVolumeKBI
 2. P. Krüger, T. J. H. Vlugt, Size and shape dependence of finite-volume Kirkwood-Buff integrals.
    *Phys. Rev. E* 97, 051301(R) (2018). 
    [DOI: 10.1103/PhysRevE.97.051301](https://doi.org/10.1103/PhysRevE.97.051301)
-3. P. Ganguly, N. F. A. van der Vegt, Convergence of Sampling Kirkwood–Buff Integrals of Aqueous Solutions 
+3. A. Santos, Finite-size estimates of Kirkwood-Buff and similar integrals. 
+   [arXiv:1806.00821](https://arxiv.org/abs/1806.00821) (2018).
+4. P. Ganguly, N. F. A. van der Vegt, Convergence of Sampling Kirkwood–Buff Integrals of Aqueous Solutions 
    with Molecular Dynamics Simulations. *J. Chem. Theory Comput.* 9, 1347 (2013).
    [DOI: 10.1021/ct301017q](https://doi.org/10.1021/ct301017q)

@@ -24,7 +24,7 @@ water = select(atoms, "water")
 solute = AtomSelection(protein, nmols=1)
 solvent = AtomSelection(water, natomspermol=3)
 trajectory_file = "./glyc50_traj.dcd"
-water_results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(10.0, 15.0)))
+water_results = mddf(trajectory_file, solute, solvent, Options(cutoff=15.0))
 save(water_results, "water_results.json")
 println("Results saved to water_results.json")
 
