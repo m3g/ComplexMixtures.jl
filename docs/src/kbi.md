@@ -166,6 +166,36 @@ As a reference, the KBI of a pure liquid is related to its isothermal compressib
 value is ``G_\infty \approx 1.1 - 18.1 \approx -17`` cm³ mol⁻¹. The exact value obtained from the simulation 
 depends on the water model, and on the sampling.
 
+### Comparison with the MDDF of the whole molecule
+
+For comparison, the same simulation was analyzed using the complete water molecules (three atoms) as
+both solute and solvent. The result is a minimum-distance distribution function (MDDF), and its KBI, `R.kb`, 
+is the one available for solutes with more than one atom:
+
+```@example kbi
+Rw = load(joinpath(data_dir, "NAMD", "water", "rw_20_25.json"))
+Rw.solute.natomspermol # three atoms: minimum-distance distribution
+```
+
+```@example kbi
+plot(R.d, g0; label="G₀ (O–O rdf)", linewidth=2, color=:gray, alpha=0.6)
+plot!(R.d, g1; label="G₁ (O–O rdf)", linewidth=2)
+plot!(R.d, g2; label="G₂ (O–O rdf)", linewidth=2)
+plot!(Rw.d, Rw.kb; label="MDDF (whole molecule)", linewidth=2, color=:black)
+plot!(xlabel="L / Å", ylabel="KBI / cm³ mol⁻¹", ylims=(-30, 0), xlims=(3, 25), framestyle=:box, size=(600, 400))
+```
+
+The MDDF-based KBI reaches values similar to those of ``G_2`` at about 8–12 Å (around -15.7 cm³ mol⁻¹, 
+against about -16 for ``G_2``), but it does not display a stable plateau: it drifts upward 
+at larger distances (to about -8 cm³ mol⁻¹ at 25 Å), while ``G_2`` remains essentially constant. 
+The drift of the uncorrected estimators at long distances, discussed above, is of the same magnitude 
+in ``G_0`` and in the MDDF KBI for ``L > 16`` Å. The additional drift of the MDDF KBI in this run
+originates mostly in the 12–16 Å range, where the MDDF deviates from one by only ~4×10⁻⁴: an
+amount comparable to the uncertainty in the bulk density, which the ``r^2``-like growth of the
+integration weight amplifies. We found no evidence that this additional drift is intrinsic 
+to the MDDF. The truncation corrections ``G_1`` and ``G_2``, however, cannot be applied to it, 
+and the MDDF KBI remains dependent on the distance at which it is read.
+
 ### Finite-volume KBIs and extrapolation
 
 The [`finite_volume_kbi`](@ref) function computes the finite-volume KBIs of spheres of diameter ``L``,
