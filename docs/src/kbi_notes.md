@@ -502,6 +502,43 @@ with zero: ``+7 \pm 16`` cm³ mol⁻¹ Å⁻¹ (Ganguly + ``W_7^{(3)}``, positiv
 - A finite-size error is not detected, but it can only be bounded at the level of the SEM (~0.3% in 
   the density, ~250 cm³ mol⁻¹ in the KBI).
 
+### The reference density of the merged result
+
+The uniformity of the density of the solvent beyond the correlation length was inspected with the 
+`reference_density` function proposed in [PR #135](https://github.com/m3g/ComplexMixtures.jl/pull/135), 
+for each simulation and for the merged result. For this analysis, the MDDFs were recomputed with
+the code of that PR, with `cutoff=25.0`, such that the bulk density is the density of the 
+solvent beyond the cutoff (with the molecules classified by their minimum distance to the solute), 
+which is equal to the Ganguly reference density at the cutoff. The function provides the deviations
+from the bulk density of the density between ``d`` and the cutoff (the "window"), of the density beyond 
+``d`` (the Ganguly reference density), and of the density in 1 Å shells:
+
+![EMIM reference density](./figures/kbi_notes/emim_reference_density.png)
+
+Deviations (%) from the bulk density:
+
+| d (Å) | Window, merged | Window, simulations (mean ± SEM) | Beyond ``d``, merged | Beyond ``d``, simulations (mean ± SEM) |
+|:--:|:--:|:--:|:--:|:--:|
+| 10 | -0.008 | +0.002 ± 0.38 | -0.003 | +0.001 ± 0.13 |
+| 15 | +0.040 | +0.048 ± 0.33 | +0.011 | +0.014 ± 0.09 |
+| 20 | +0.111 | +0.117 ± 0.31 | +0.020 | +0.022 ± 0.06 |
+
+- In each simulation, the density in the window deviates from the bulk density by up to ±3% (standard
+  deviation of 1.3–1.6% among simulations), and the density beyond ``d`` by up to ±1%. Each simulation
+  has an approximately constant offset from ~5 Å up to the cutoff, which, if analyzed alone, would 
+  suggest a systematic non-uniformity of the density. 
+- The signs of the offsets are random (9 of 18 positive at 10 and 15 Å, 10 of 18 at 20 Å), and 
+  the densities of the merged result are uniform: beyond ~8 Å, the density in the window deviates 
+  from the bulk density by less than 0.1%, and the Ganguly reference density by less than 0.03%. 
+  The remaining scatter of the 1 Å shells (±0.5%) is the noise of the density of a thin shell.
+- The bulk density of the merged result (0.0012765 molecules/Å³) is the mean of those of the
+  simulations, which have a standard deviation of 0.75%.
+- The KBI of the merged result (`R.kb`, equal to `kbi(R)` in that PR) is -5590, -5459, and -5424 cm³ mol⁻¹
+  at 10, 15 and 20 Å, within 1 cm³ mol⁻¹ of the values obtained above.
+
+Thus, the non-uniformity of the density observed in each simulation is a sampling fluctuation. Plotting
+the reference density of each simulation and of the merged result is a direct diagnostic of this behavior.
+
 The recommended protocol, thus, is:
 
 1. Perform several (preferably more than 8) simulations from independent initial configurations.
@@ -545,6 +582,10 @@ errors of the difference add).
    effective way to reduce and to estimate the sampling error of the KBIs.
 
 ## Possible additions to the package (not implemented)
+
+Most of these items are implemented in [PR #135](https://github.com/m3g/ComplexMixtures.jl/pull/135): the 
+weights applied to MDDFs (with ``W_7^{(3)}`` as the default), the Ganguly normalization (default), and the 
+`reference_density` diagnostic.
 
 - Report ``\rho_{\rm out}(d)/\rho_{\rm bulk}`` as a diagnostic of the bulk-density estimate.
 - Provide the Ganguly normalization as an alternative, so that the difference between the KBIs
