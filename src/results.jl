@@ -347,21 +347,12 @@ function _mddf_final_results!(R::Result, options::Options)
     R.volume.total = R.volume.total / Q
     @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
 
-    # Solute domain volume
-    ibulk = setbin(R.dbulk + 0.5 * R.files[1].options.binstep, R.files[1].options.binstep)
-    R.volume.domain = sum(@view(R.volume.shell[1:ibulk-1]))
+    # Solute domain volume: the volume within the cutoff
+    R.volume.domain = sum(R.volume.shell)
 
-    # Bulk volume and density properties: either the bulk is considered everything
-    # that is not the domain, or the bulk is the region between d_bulk and cutoff,
-    # if R.files[1].options.usecutoff is true (meaning that there is a cutoff different from
-    # that of the bulk distance)
-    if !R.files[1].options.usecutoff
-        R.volume.bulk = R.volume.total - R.volume.domain
-        n_solvent_in_bulk = samples.solvent_nmols - sum(R.rdf_count)
-    else
-        n_solvent_in_bulk = sum(@view(R.rdf_count[ibulk:R.nbins]))
-        R.volume.bulk = sum(@view(R.volume.shell[ibulk:R.nbins]))
-    end
+    # Bulk volume and density: the bulk is the region beyond the cutoff
+    R.volume.bulk = R.volume.total - R.volume.domain
+    n_solvent_in_bulk = samples.solvent_nmols - sum(R.rdf_count)
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
     R.density.solvent_bulk = n_solvent_in_bulk / R.volume.bulk
@@ -401,10 +392,6 @@ function renormalize!(R::Result, density_fix::Number; silent)
                 warned_already = true
             end
         end
-        R.kb[ibin] =
-            units.Angs3tocm3permol *
-            (1 / R.density.solvent_bulk) *
-            (R.coordination_number[ibin] - R.coordination_number_random[ibin])
 
         # For the RDF
         if R.rdf_count_random[ibin] > 0.0
@@ -423,6 +410,24 @@ function renormalize!(R::Result, density_fix::Number; silent)
             (1 / R.density.solvent_bulk) *
             (R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
+    end
+    _set_kb!(R)
+    return R
+end
+
+#=
+    _set_kb!(R::Result)
+
+Sets `R.kb` to the KBI computed with the default options of `kbi`. If the bulk density
+is zero, the KBI is not defined, and the uncorrected expression is used (resulting in `Inf` or `NaN`).
+
+=#
+function _set_kb!(R::Result)
+    if R.density.solvent_bulk > 0
+        R.kb .= kbi(R)
+    else
+        @. R.kb = units.Angs3tocm3permol * (1 / R.density.solvent_bulk) *
+                  (R.coordination_number - R.coordination_number_random)
     end
     return R
 end
@@ -699,7 +704,7 @@ end
 
 function _bulk_range_from_R(R)
     if R.dbulk == R.cutoff
-        return ">= $(R.dbulk) Å"
+        return "> $(R.cutoff) Å"
     else
         return "$(R.dbulk) - $(R.cutoff) Å"
     end

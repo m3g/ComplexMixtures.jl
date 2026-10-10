@@ -70,7 +70,7 @@ using the `overview` function. Examples:
 ```julia-repl
 ...
 
-julia> results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
+julia> results = mddf(trajectory_file, solute, solvent, Options(cutoff=12.0))
 
 julia> results
 --------------------------------------------------------------------------------

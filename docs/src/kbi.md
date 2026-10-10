@@ -6,27 +6,29 @@ CollapsedDocStrings = true
 
 ## Computing KBIs: the `kbi` function
 
-The recommended way to obtain the Kirkwood-Buff integrals (KBIs) from a `Result` object is the 
-[`kbi`](@ref) function:
+The Kirkwood-Buff integrals (KBIs) of a `Result` object are obtained with the [`kbi`](@ref) function:
 
 ```julia
 G = kbi(R)
 ```
 
 which returns the KBI, in cm³ mol⁻¹, as a function of the upper limit of integration, ``L``, for 
-each distance of `R.d`. By default, the KBI is computed with a weight function that corrects for the 
+each distance of `R.d`. The `R.kb` field of the `Result` contains the same values, `R.kb == kbi(R)`.
+The `kbi` function allows choosing the corrections applied, and computes the KBIs with the 
+current definitions for results saved with previous versions of the package, in which `R.kb` contained
+the uncorrected KBI. By default, the KBI is computed with a weight function that corrects for the 
 truncation of the integral at a finite distance, and with a reference density that corrects for 
 the finite number of molecules in the simulation box, as explained below. The corrections apply 
 to minimum-distance distribution functions (MDDFs), thus to solutes and solvents of any shape, and
 to radial distribution functions (RDFs), which are MDDFs of single-atom solutes and solvents. 
 
-The `R.kb` field of the `Result` contains the uncorrected (truncated) KBI, normalized by the bulk 
-density, equivalent to `kbi(R; correction=:none, normalization=:bulk)`.
+The uncorrected (truncated) integral of the MDDF is obtained with `kbi(R; correction=:none, normalization=:mddf)`.
 
 !!! compat
     The `kbi` function was introduced in version 2.19.0. Its application to MDDFs, the `:W7` correction,
     and the `normalization` option were introduced in version 2.19.1, in which the defaults were set 
-    to `correction=:W7` and `normalization=:ganguly`.
+    to `correction=:W7` and `normalization=:ganguly`, and `R.kb` was set to `kbi(R)`. In previous versions,
+    `R.kb` contained the uncorrected KBI.
 
 ## Theory in brief
 
@@ -92,8 +94,9 @@ of molecules, the accumulation (or depletion) of solvent molecules around the so
 density of the rest of the box, and an inaccurate reference density causes a drift of the KBI at long 
 distances, because the volume element grows with ``L``. Two normalizations are available: 
 
-- `normalization=:bulk`: the reference density is the bulk density of the solvent, `R.density.solvent_bulk`, 
-  estimated in the bulk region defined by the `dbulk` and `cutoff` parameters of the calculation. 
+- `normalization=:mddf`: the reference density is the bulk density of the solvent, `R.density.solvent_bulk`, 
+  estimated from the region beyond the cutoff, at all distances. This is the normalization of the MDDF,
+  `R.mddf`, thus the KBI is the integral of `R.mddf`.
 - `normalization=:ganguly` (default): the reference density at each distance ``d`` is the density 
   of the solvent outside the domain within ``d``,
   ```math
@@ -104,7 +107,9 @@ distances, because the volume element grows with ``L``. Two normalizations are a
   This is the correction for closed systems proposed by Ganguly and van der Vegt [4].
 
 If the two normalizations give different KBIs at the distances of interest, the estimate of the 
-reference density is a source of error that must be considered.
+reference density is a source of error that must be considered. The density of the solvent in different 
+regions of the system can be inspected with the [`reference_density`](@ref) function (see 
+[Inspecting the reference density](@ref kbi_reference_density) below).
 
 ## Example: water
 
@@ -127,11 +132,11 @@ The [`kbi`](@ref) function returns the KBIs as a function of the upper limit of 
 which corresponds to the distances of `R.d`:
 
 ```@example kbi
-g0 = kbi(R; correction=:none, normalization=:bulk) # same as R.kb
+g0 = kbi(R; correction=:none, normalization=:mddf) # truncated
 g2 = kbi(R; correction=:G2)
 w7 = kbi(R) # correction=:W7, normalization=:ganguly
 w7O = kbi(RO) # O-O RDF
-plot(R.d, g0; label="G₀ (R.kb)", linewidth=2, color=:gray)
+plot(R.d, g0; label="G₀ (truncated)", linewidth=2, color=:gray)
 plot!(R.d, g2; label="G₂", linewidth=2)
 plot!(R.d, w7; label="W₇⁽³⁾ (default)", linewidth=2, color=:black)
 plot!(RO.d, w7O; label="W₇⁽³⁾, O–O RDF", linewidth=2, linestyle=:dash)
@@ -222,6 +227,28 @@ for Lrange in ((8.0, 16.0), (10.0, 20.0), (10.0, 25.0), (15.0, 25.0))
 end
 ```
 
+## [Inspecting the reference density](@id kbi_reference_density)
+
+The [`reference_density`](@ref) function computes the density of the solvent in different regions of the
+system, relative to the bulk density (estimated beyond the cutoff): the density in shells around the solute, 
+the density between each distance ``d`` and the cutoff, and the density beyond ``d``, which is the reference
+density of the Ganguly normalization:
+
+```@example kbi
+rd = reference_density(R)
+```
+
+```@example kbi
+plot(rd; size=(600, 400))
+```
+
+Beyond the correlation length of the distribution, all these densities should be close to one. Here, for 
+water, they differ from one by less than 10⁻³, except for the noise of the density in the shells. If the
+density between ``d`` and the cutoff varies as ``d`` approaches the cutoff, or if the densities are systematically
+different from one, the density of the solvent is not uniform beyond the correlation length. This may be caused 
+by insufficient sampling or by long-range effects, and the KBIs will depend on the reference density used to
+normalize them.
+
 ## Interpreting the results
 
 - **Use `kbi(R)`.** Plot the KBI as a function of ``L``, and report the value (or average) in the 
@@ -239,12 +266,16 @@ end
   extrapolation from ``1/L \sim 0.05`` Å⁻¹ to zero, which amplifies the noise.
 
 - **Group contributions.** The decomposition of the KBI into contributions of groups of atoms
-  ([`contributions`](@ref) with `type=:kbi`) is a decomposition of the uncorrected KBI, `R.kb`.
+  ([`contributions`](@ref) with `type=:kbi`) accepts the same `correction` and `normalization` options,
+  and the contributions sum to the KBI computed by `kbi` with the same options.
 
 ## Reference functions
 
 ```@docs
 kbi
+reference_density
+ComplexMixtures.ReferenceDensity
+Plots.plot(::ComplexMixtures.ReferenceDensity)
 finite_volume_kbi
 extrapolate_kbi
 ComplexMixtures.FiniteVolumeKBI

@@ -52,9 +52,7 @@ end
 #
 # Defines is a molecule is a bulk molecule
 #
-inbulk(md::MinimumDistance, options::Options) =
-    options.usecutoff ? (md.within_cutoff && md.d > options.dbulk) :
-    !md.within_cutoff
+inbulk(md::MinimumDistance, ::Options) = !md.within_cutoff
 
 #=
     randomize_solvent!(system, buff, n_solvent_in_bulk, options, RNG)
@@ -173,7 +171,7 @@ julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
 julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
 
-julia> options = Options(lastframe=10, bulk_range=(10.0, 15.0));
+julia> options = Options(lastframe=10, cutoff=15.0);
 
 julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
 
@@ -528,7 +526,7 @@ julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
 julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
 
-julia> options = Options(lastframe=10, bulk_range=(10.0, 15.0));
+julia> options = Options(lastframe=10, cutoff=15.0);
 
 julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
 

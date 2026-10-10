@@ -41,13 +41,16 @@ slowly decaying (monotonic) tails of the distribution, nor errors in the referen
   molecules (minus one if the solute and solvent are the same), ``N_{\\rm in}(d)`` is the number of 
   solvent molecules within ``d``, and ``V(d)`` is the volume of the domain within ``d``. This corrects 
   for the depletion (or excess) of solvent molecules in the bulk of a closed simulation box.
-- `:bulk`: the reference density is the bulk density of the solvent, `R.density.solvent_bulk`, 
-  estimated in the bulk region defined by the `dbulk` and `cutoff` parameters. With this normalization 
-  and `correction=:none`, the result is `R.kb`.
+- `:mddf`: the reference density is the bulk density of the solvent, `R.density.solvent_bulk` 
+  (the density of the solvent beyond the cutoff), at all distances. This is the normalization of 
+  the MDDF, `R.mddf`, thus the KBI is the integral of `R.mddf`. 
 
-The normalizations differ by the region of the system from which the reference density is estimated: 
-the region beyond ``d`` (`:ganguly`), or the bulk region (`:bulk`). If they lead to different KBIs, the 
-estimate of the reference density is a source of error that must be considered.
+The normalizations differ by the region of the system from which the reference density is estimated, 
+which is the region beyond ``d`` (`:ganguly`), or the region beyond the cutoff (`:mddf`). They coincide 
+at ``d`` equal to the cutoff. If they lead to different KBIs, the estimate of the reference density is a 
+source of error that must be considered.
+
+`R.kb` contains the KBI computed with the default options, `kbi(R)`.
 
 # Examples
 
@@ -56,7 +59,10 @@ julia> R = load("result.json");
 
 julia> G = kbi(R); # W₇⁽³⁾ weight, Ganguly normalization
 
-julia> G0 = kbi(R; correction=:none, normalization=:bulk); # equal to R.kb
+julia> G == R.kb
+true
+
+julia> G0 = kbi(R; correction=:none, normalization=:mddf); # truncated integral of the MDDF
 ```
 
 # References
@@ -78,8 +84,8 @@ See also [`finite_volume_kbi`](@ref) and [`extrapolate_kbi`](@ref).
 !!! compat
     This function was introduced in version 2.19.0. The `:W7` correction and the `normalization` 
     keyword were introduced in version 2.19.1, in which the corrections were extended to MDDFs, 
-    and the defaults were changed from `correction=:none` (and the bulk normalization) to 
-    `correction=:W7, normalization=:ganguly`.
+    and the defaults were changed from `correction=:none` (and the normalization of the MDDF) to 
+    `correction=:W7, normalization=:ganguly`. Since version 2.19.1, `R.kb` is equal to `kbi(R)`.
 
 """
 function kbi(R::Result; correction::Symbol=:W7, normalization::Symbol=:ganguly)
@@ -120,7 +126,7 @@ _kbi_weight(::Val{:W7}) = foldl(_polymul, (
     [1.0, -4.0, 6.0, -4.0, 1.0], [1.0, 35 / 16], [1.0, 0.0, 1225 / 256], [1.0, 29 / 16, 5 / 4, 5 / 16]
 ))
 
-const _kbi_normalizations = (:ganguly, :bulk)
+const _kbi_normalizations = (:ganguly, :mddf)
 function _kbi_integrand(::Result, ::AbstractVector, ::AbstractVector, ::Val{normalization}) where {normalization}
     throw(ArgumentError("""\n
         Invalid KBI normalization option: :$normalization. Available normalizations are: 
@@ -147,7 +153,7 @@ the integral of [ρ(d)/ρ_ref(d) - ρ_id(d)/ρ_bulk] dV(d) over the bin, compute
 the minimum-distance counts provided.
 
 =#
-function _kbi_integrand(R::Result, count::AbstractVector, count_random::AbstractVector, ::Val{:bulk})
+function _kbi_integrand(R::Result, count::AbstractVector, count_random::AbstractVector, ::Val{:mddf})
     _check_normalized(R)
     return (count .- count_random) ./ R.density.solvent_bulk
 end
@@ -379,8 +385,8 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
 
     @test_throws "Invalid KBI correction option" kbi(R; correction=:abc)
     @test_throws "Invalid KBI normalization option" kbi(R; normalization=:abc)
-    @test kbi(R; correction=:none, normalization=:bulk) ≈ R.kb
-    @test kbi(R; correction=:G0, normalization=:bulk) == kbi(R; correction=:none, normalization=:bulk)
+    @test kbi(R; correction=:none, normalization=:mddf) ≈ R.kb
+    @test kbi(R; correction=:G0, normalization=:mddf) == kbi(R; correction=:none, normalization=:mddf)
     @test kbi(R) == kbi(R; correction=:W7, normalization=:ganguly)
 
     # Compare with direct evaluation of the running integrals
@@ -392,9 +398,9 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
     hg = R.md_count ./ ρg .- R.md_count_random ./ ρb
     direct(h, j, w) = units.Angs3tocm3permol * sum(h[i] * w(R.d[i] / (j * dr)) for i in 1:j)
     W7(x) = (1 - x)^4 * (1 + 35x / 16) * (1 + 1225x^2 / 256) * (1 + 29x / 16 + 5x^2 / 4 + 5x^3 / 16)
-    g1 = kbi(R; correction=:G1, normalization=:bulk)
-    g2 = kbi(R; correction=:G2, normalization=:bulk)
-    w7 = kbi(R; correction=:W7, normalization=:bulk)
+    g1 = kbi(R; correction=:G1, normalization=:mddf)
+    g2 = kbi(R; correction=:G2, normalization=:mddf)
+    w7 = kbi(R; correction=:W7, normalization=:mddf)
     w7g = kbi(R)
     fv = finite_volume_kbi(R)
     for j in (100, 500, 1000, length(R.d))

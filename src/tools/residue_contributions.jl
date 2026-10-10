@@ -716,7 +716,7 @@ end
     # Test extracting proximal contributions to the KBIs
     rc_kbi = ResidueContributions(result, glicines; type=:kbi, dmax=12.0)
     @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ kbi(result)[end]
-    rc_kbi = ResidueContributions(result, glicines; type=:kbi, dmax=12.0, correction=:none, normalization=:bulk)
-    @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ result.kb[end]
+    rc_kbi = ResidueContributions(result, glicines; type=:kbi, dmax=12.0, correction=:none, normalization=:mddf)
+    @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ kbi(result; correction=:none, normalization=:mddf)[end]
 
 end

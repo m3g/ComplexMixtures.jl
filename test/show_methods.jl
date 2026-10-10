@@ -11,7 +11,7 @@
     trajectory_file = "$data_dir/toy/cross.pdb"
     trajectory_format = "PDBTraj"
 
-    @test parse_show(Options()) ≈ """
+    @test parse_show(Options(cutoff=10.0)) ≈ """
         --------------------------------------------------------------------------------
          Options - ComplexMixtures 
          --------------------------------------------------------------------------------
@@ -20,10 +20,9 @@
              Last frame to be considered (-1 is last): lastframe = -1
              Stride: stride = 1
         
-         Bulk region, cutoff, and histogram:
+         Cutoff and histogram:
              Bin step of histogram: binstep = 0.02
-             Bulk range: >= 10.0
-             (dbulk = 10.0, cutoff = 10.0, usecutoff = false)
+             Cutoff: cutoff = 10.0 (bulk density estimated beyond the cutoff)
         
          Computation details: 
              Reference atom for random rotations: irefatom = -1
@@ -80,7 +79,7 @@
         Simulation Concentration: 0.061501445941746814 mol L⁻¹
         Estimated solute partial molar volume: -Inf cm³ mol⁻¹
         
-        Bulk range: >= 10.0 Å
+        Bulk range: > 10.0 Å
         Molar volume of the solute domain: 0.0 cm³ mol⁻¹
         
         Auto-correlation: false

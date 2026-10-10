@@ -31,7 +31,7 @@ solvent = AtomSelection(water,natomspermol=3)
 
 The MDDF calculation is executed with:
 ```julia
-results = mddf("trajectory.dcd", solute, solvent, Options(bulk_range=(8.0, 12.0)))
+results = mddf("trajectory.dcd", solute, solvent, Options(cutoff=12.0))
 ```
 
 ## Atomic contributions in the result data structure
@@ -180,7 +180,7 @@ atoms = read_pdb("system.pdb")
 protein = select(atoms, "protein")
 solute = AtomSelection(protein; nmols=1)
 solvent = AtomSelection(select(atoms, "resname GLYC"); natomspermol=14)
-R = mddf("glyc50_traj.dcd", solute, solvent, Options(bulk_range=(10,12)))
+R = mddf("glyc50_traj.dcd", solute, solvent, Options(cutoff=12.0))
 ```
 
 The contributions of charged, polar but not charged, and non-polar residues to the KBI can be computed with:

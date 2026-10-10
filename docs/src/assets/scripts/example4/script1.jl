@@ -22,9 +22,9 @@ water = select(system, "water")
 # AtomSelection object, informing the number of atoms per molecule of Glycerol
 glyc_selection = AtomSelection(glyc, natomspermol=14)
 
-# We define a large solute domain (large dbulk) to obtain a good convergence
+# We define a large solute domain (large cutoff) to obtain a good convergence
 # for the KB integral. The mddf converges at much shorter distances.   
-options = Options(bulk_range=(20.0, 25.0))
+options = Options(cutoff=25.0)
 mddf_glyc = mddf(trajectory_file, glyc_selection, options)
 
 # Save results for later analysis

@@ -9,7 +9,7 @@ to obtain the MDDF. These options can be defined by the user and passed to the
 `mddf` function, using, for example: 
 
 ```julia
-options = Options(lastframe=1000, bulk_range=(8.0, 12.0))
+options = Options(lastframe=1000, cutoff=12.0)
 results = mddf(trajectory_file, solute, solvent, options)
 ```
 
@@ -28,38 +28,28 @@ only one in five frames will be considered.
 `binstep`: Real, length of the bin step of the histograms, default =
 0.02 Angstroms.
 
-`bulk_range`: This parameter defines the range of distances from the 
-solute that will be considered as the `bulk` region of the solution.
-The density of the bulk solution is estimated by counting the number
-of molecules of the solvent in this region, and by performing a 
-numerical integration of its volume. Set this range to a region of the
-solution where the MDDF is converged to 1 for practical purposes. Tuning
-this parameter is crucial for a proper convergence of the MDDFs and
-KB integrals. 
+`cutoff`: Real, the maximum distance to the solute considered in the
+construction of the histograms. The bulk density of the solvent is estimated
+from the molecules beyond the cutoff, by exclusion: from the number of solvent
+molecules beyond the cutoff and from the volume of this region, computed by numerical
+integration. Set this distance to a value beyond which the distribution function
+is converged to 1 for practical purposes. Default: 10 Angstroms, but
+setting it according to the system is highly encouraged. The dependence of 
+the density of the solvent on the distance to the solute, beyond the correlation 
+length, can be inspected with the [`reference_density`](@ref) function.
 
 !!! compat
-    The `bulk_range` option was introduced in version 2.1.0.
+    Since version 2.19.1, the bulk density is always estimated from the region beyond the 
+    `cutoff`. The `bulk_range`, `dbulk`, and `usecutoff` options are deprecated: 
+    `bulk_range=(dbulk, cutoff)` (and `dbulk`, `cutoff` with `usecutoff=true`) are mapped to 
+    `cutoff`, and `dbulk` alone is mapped to `cutoff=dbulk`. A warning is issued in these cases.
+    In previous versions, `bulk_range=(dbulk, cutoff)` defined a range of distances from which 
+    the bulk density was estimated.
 
 ## Lower level options
 
 These will probably never be set by the user, unless if dealing with 
 some special system (large very large, or very low density system).
-
-`dbulk`: Real, distance from which the solution is to be considered as a
-bulk solution, that is, where the presence of the solute does not affect
-the structure of the solution anymore. By default, all molecules at
-distances greater than 10.0 Angstroms are considered bulk molecules. 
-However, the definition of `bulk_range` is highly encouraged. 
-
-`cutoff`: Real, the maximum distance to be considered in the
-construction of histograms. Default: 10 Angstroms.
-
-`usecutoff`: `true/false`: If true, the cutoff distance might be
-different from `dbulk` and the density of the solvent in bulk will be
-estimated from the density within `dbulk` and `cutoff`. If `false`, the
-density of the solvent is estimated from the density outside `dbulk` by
-exclusion. Default: `false`. The definition of `bulk_range` instead
-is highly encouraged. 
 
 `irefatom`: Integer, index of the reference atom in the solvent molecule
 used to compute the shell volumes and domain volumes in the Monte-Carlo

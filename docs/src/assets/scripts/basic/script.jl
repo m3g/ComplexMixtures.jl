@@ -22,7 +22,7 @@ solvent = AtomSelection(tmao, natomspermol=14)
 
 # Run the calculation over the trajectory.dcd file and get results: 
 # this is the computationally intensive part of the calculation.
-results = mddf("./trajectory.dcd", solute, solvent, Options(bulk_range=(8.0, 12.0)))
+results = mddf("./trajectory.dcd", solute, solvent, Options(cutoff=12.0))
 
 # Save the results to recover them later if required
 save(results, "./results.json")

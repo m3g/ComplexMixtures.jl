@@ -87,7 +87,7 @@ and the same distribution function, decomposed into the contributions of the hyd
 !!! note
     To change the options of the calculation, set the `Options` structure accordingly and pass it as a parameter to `mddf`. For example:
     ```julia
-    options = Options(bulk_range=(10.0, 15.0), stride=5)
+    options = Options(cutoff=15.0, stride=5)
     mddf(trajectory_file, solute, solvent, options)
     ```
     The complete set of options available is described [here](@ref options).
@@ -214,9 +214,9 @@ atoms = read_pdb("mixture.pdb")
 glyc_C2 = AtomSelection(select(atoms, "resname GLYC and name C2"), natomspermol=1)
 water_O = AtomSelection(select(atoms, "water and name OH2"), natomspermol=1)
 # glycerol-glycerol: solute and solvent are the same
-R_cc = mddf("mixture.dcd", glyc_C2, Options(bulk_range=(15.0, 20.0)))
+R_cc = mddf("mixture.dcd", glyc_C2, Options(cutoff=20.0))
 # glycerol-water 
-R_cw = mddf("mixture.dcd", glyc_C2, water_O, Options(bulk_range=(15.0, 20.0)))
+R_cw = mddf("mixture.dcd", glyc_C2, water_O, Options(cutoff=20.0))
 # KB integrals (L/mol), and the bulk concentration of glycerol (mol/L)
 G_cc = kbi(R_cc) / 1000
 G_cw = kbi(R_cw) / 1000

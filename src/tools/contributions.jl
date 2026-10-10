@@ -329,13 +329,14 @@ end
     kbi_polar = contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi)
     kbi_nonpolar = contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi)
     @test kbi(results) ≈ kbi_polar + kbi_nonpolar
-    for correction in (:none, :G1, :G2, :W7), normalization in (:bulk, :ganguly)
+    for correction in (:none, :G1, :G2, :W7), normalization in (:mddf, :ganguly)
         kp = contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi, correction, normalization)
         knp = contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi, correction, normalization)
         @test kbi(results; correction, normalization) ≈ kp + knp
     end
-    @test results.kb ≈ contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi, correction=:none, normalization=:bulk) +
-                       contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi, correction=:none, normalization=:bulk)
+    @test results.kb ≈ kbi(results)
+    @test kbi(results; correction=:none, normalization=:mddf) ≈ contributions(results, SoluteGroup(select(atoms, "polar")); type=:kbi, correction=:none, normalization=:mddf) +
+                       contributions(results, SoluteGroup(select(atoms, "nonpolar")); type=:kbi, correction=:none, normalization=:mddf)
 
     # This is probably unused, but possible
     kbi_tmao_O = contributions(results, SolventGroup(select(atoms, "resname TMAO and element O")); type=:kbi)

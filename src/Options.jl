@@ -49,10 +49,7 @@ end
         irefatom::Int = -1,
         n_random_samples::Int = 10,
         binstep::Float64 = 0.02,
-        dbulk::Union{Nothing,Real} = nothing,
         cutoff::Union{Nothing,Real} = nothing,
-        usecutoff::Union{Nothing,Bool} = nothing,
-        bulk_range=nothing,
         lcell::Int = 1,
         GC::Bool = true,
         GC_threshold::Float64 = 0.3,
@@ -64,6 +61,17 @@ end
 
 Create an Options object with the specified options. 
 
+The `cutoff` is the maximum distance to the solute for which the distribution functions are 
+computed. The bulk density of the solvent is estimated from the solvent molecules beyond the cutoff.
+The default value is `cutoff = 10.0`, but it is recommended to set it according to the size of 
+the system and to the correlation length of the distribution function.
+
+!!! compat
+    Since version 2.19.1, the bulk density is always estimated from the region beyond the `cutoff`. 
+    The `dbulk`, `usecutoff`, and `bulk_range` options are deprecated, and are mapped to the `cutoff`:
+    `bulk_range=(dbulk, cutoff)` and `dbulk=..., cutoff=..., usecutoff=true` set the `cutoff`, and 
+    `dbulk=...` (without `cutoff`) sets `cutoff=dbulk`.
+
 """
 function Options(;
     firstframe::Int=1,
@@ -72,8 +80,8 @@ function Options(;
     irefatom::Int=-1,
     n_random_samples::Int=10,
     binstep::Float64=0.02,
-    dbulk::Union{Nothing,Real}=nothing,
     cutoff::Union{Nothing,Real}=nothing,
+    dbulk::Union{Nothing,Real}=nothing,
     usecutoff::Union{Nothing,Bool}=nothing,
     bulk_range=nothing,
     lcell::Int=1,
@@ -84,9 +92,6 @@ function Options(;
     nthreads::Int=0,
     silent::Bool=false
 )
-
-    # warning flag for default values of dbulk, cutoff, and usecutoff
-    warn = false
 
     # Check for simple input errors
     if stride < 1
@@ -103,74 +108,16 @@ function Options(;
         """))
     end
 
-    if !isnothing(bulk_range) && any(!isnothing, (dbulk, cutoff, usecutoff))
-        throw(ArgumentError("""\n
-            The bulk_range argument implies that dbulk, cutoff, and usecutoff are not needed. 
-
-        """))
-    end
-    if all(isnothing, (bulk_range, dbulk, cutoff, usecutoff))
-        dbulk = 10.0
-        cutoff = 10.0
-        usecutoff = false
-        warn = true
-    elseif !isnothing(bulk_range)
-        if length(bulk_range) != 2
-            throw(ArgumentError("""\n
-                bulk_range must be a tuple or vector with two elements, corresponding to dbulk and cutoff.
-                Example: Options(;bulk_range = (8.0, 12.0))
-
-            """))
-        end
-        dbulk, cutoff = bulk_range
-        usecutoff = true
-    else
-        if isnothing(dbulk)
-            dbulk = 10.0
-            warn = true
-        end
-        if isnothing(usecutoff)
-            usecutoff = false
-            warn = true
-        end
-        if isnothing(cutoff)
-            if usecutoff
-                cutoff = dbulk + 4.0
-                warn = true
-            else
-                warn = true
-                cutoff = dbulk
-            end
-        else
-            if !usecutoff
-                throw(ArgumentError("in MDDF options: cutoff was defined with usecutoff set to false"))
-            end
-        end
-    end
-    if warn && !silent
-        @warn """\n
-            Using default values for dbulk, cutoff and/or usecutoff: 
-            
-                dbulk = $(dbulk)
-                cutoff = $(cutoff)
-                usecutoff = $(usecutoff)
-            
-            It is recommended to set bulk_range manually, according to the 
-            system size and correlations of the distribution function with, 
-            for example: Options(bulk_range = (8.0, 12.0))
-
-        """ _file = nothing _line = nothing
-    end
-    if usecutoff && dbulk >= cutoff
-        throw(ArgumentError(" in MDDF options: The bulk volume is zero (dbulk must be smaller than cutoff). "))
+    cutoff = _cutoff_from_deprecated_options(cutoff, dbulk, usecutoff, bulk_range, silent)
+    if cutoff <= 0
+        throw(ArgumentError("in MDDF options: cutoff must be positive."))
     end
     if (cutoff / binstep) % 1 > 1.e-5
         throw(ArgumentError("in MDDF options: cutoff must be a multiple of binstep."))
     end
-    if (dbulk / binstep) % 1 > 1.e-5
-        throw(ArgumentError("in MDDF options: dbulk must be a multiple of binstep."))
-    end
 
+    # The bulk density is estimated from the region beyond the cutoff: dbulk = cutoff, 
+    # usecutoff = false (these fields are kept for compatibility with saved results).
     return Options(
         firstframe,
         lastframe,
@@ -178,9 +125,9 @@ function Options(;
         irefatom,
         n_random_samples,
         binstep,
-        dbulk,
         cutoff,
-        usecutoff,
+        cutoff,
+        false,
         lcell,
         GC,
         GC_threshold,
@@ -191,39 +138,97 @@ function Options(;
     )
 end
 
+#=
+    _cutoff_from_deprecated_options(cutoff, dbulk, usecutoff, bulk_range, silent)
+
+Maps the deprecated `dbulk`, `usecutoff`, and `bulk_range` options to the `cutoff`.
+
+=#
+function _cutoff_from_deprecated_options(cutoff, dbulk, usecutoff, bulk_range, silent)
+    if all(isnothing, (bulk_range, dbulk, usecutoff))
+        if isnothing(cutoff)
+            silent || @warn """\n
+                Using the default value of the cutoff: cutoff = 10.0. 
+
+                It is recommended to set the cutoff according to the size of the system and
+                to the correlation length of the distribution function, for example: 
+                
+                    Options(cutoff = 12.0)
+
+            """ _file = nothing _line = nothing
+            return 10.0
+        end
+        return cutoff
+    end
+    if !isnothing(bulk_range)
+        if any(!isnothing, (dbulk, cutoff, usecutoff))
+            throw(ArgumentError("""\n
+                The bulk_range argument implies that dbulk, cutoff, and usecutoff are not needed. 
+
+            """))
+        end
+        if length(bulk_range) != 2
+            throw(ArgumentError("""\n
+                bulk_range must be a tuple or vector with two elements.
+                Note: bulk_range is deprecated, use Options(cutoff = ...) instead.
+
+            """))
+        end
+        if bulk_range[1] >= bulk_range[2]
+            throw(ArgumentError("in MDDF options: the elements of bulk_range must be increasing."))
+        end
+        new_cutoff = bulk_range[2]
+    elseif usecutoff == true
+        new_cutoff = isnothing(cutoff) ? (isnothing(dbulk) ? 14.0 : dbulk + 4.0) : cutoff
+    else
+        if !isnothing(dbulk) && !isnothing(cutoff) && dbulk != cutoff
+            throw(ArgumentError("in MDDF options: cutoff was defined with usecutoff set to false"))
+        end
+        new_cutoff = isnothing(dbulk) ? (isnothing(cutoff) ? 10.0 : cutoff) : dbulk
+    end
+    silent || @warn """\n
+        The `dbulk`, `usecutoff`, and `bulk_range` options are deprecated. The bulk density 
+        of the solvent is now estimated from the region beyond the cutoff. Using:
+
+            Options(cutoff = $(new_cutoff))
+
+    """ _file = nothing _line = nothing
+    return float(new_cutoff)
+end
+
 @testitem "Options" begin
     using ComplexMixtures
-    o = Options()
-    @test o.dbulk == 10.0
+    o = Options(silent=true)
     @test o.cutoff == 10.0
+    @test o.dbulk == o.cutoff
     @test o.usecutoff == false
-    o = Options(bulk_range=(10.0, 14.0))
-    @test o.dbulk == 10.0
-    @test o.cutoff == 14.0
-    @test o.usecutoff == true
-    o = Options(dbulk=10.0)
-    @test o.dbulk == 10.0
-    @test o.cutoff == 10.0
-    @test o.usecutoff == false
-    o = Options(dbulk=10.0, usecutoff=false)
-    @test o.dbulk == 10.0
-    @test o.cutoff == 10.0
-    @test o.usecutoff == false
-    o = Options(bulk_range=(10.0, 14.0))
-    @test o.dbulk == 10.0
-    @test o.cutoff == 14.0
-    @test o.usecutoff == true
-    o = Options(cutoff=12.0, usecutoff=true)
+    o = Options(cutoff=12.0)
     @test o.cutoff == 12.0
-    o = Options(dbulk=10.0, usecutoff=true)
+    @test o.dbulk == 12.0
+    @test o.usecutoff == false
+    @test_logs (:warn,) Options()
+    @test_logs Options(cutoff=12.0)
+
+    # Deprecated options
+    o = Options(bulk_range=(10.0, 14.0), silent=true)
+    @test (o.dbulk, o.cutoff, o.usecutoff) == (14.0, 14.0, false)
+    @test_logs (:warn,) Options(bulk_range=(10.0, 14.0))
+    o = Options(dbulk=10.0, silent=true)
+    @test (o.dbulk, o.cutoff, o.usecutoff) == (10.0, 10.0, false)
+    o = Options(dbulk=10.0, usecutoff=false, silent=true)
+    @test o.cutoff == 10.0
+    o = Options(cutoff=12.0, usecutoff=true, silent=true)
+    @test o.cutoff == 12.0
+    o = Options(dbulk=10.0, usecutoff=true, silent=true)
     @test o.cutoff == 14.0
+    o = Options(dbulk=8.0, cutoff=12.0, usecutoff=true, silent=true)
+    @test o.cutoff == 12.0
 
     # input errors
-    @test_throws ArgumentError Options(dbulk=10.0, binstep=0.3)
-    @test_throws ArgumentError Options(dbulk=10.0, cutoff=10.0, usecutoff=true)
-    @test_throws ArgumentError Options(dbulk=6.0, cutoff=10.0, binstep=0.3, usecutoff=true)
-    @test_throws ArgumentError Options(dbulk=8.0, cutoff=10.0, binstep=0.3, usecutoff=true)
-    @test_throws ArgumentError Options(bulk_range=(10.0, 12.0), binstep=0.3)
+    @test_throws ArgumentError Options(cutoff=10.0, binstep=0.3)
+    @test_throws ArgumentError Options(cutoff=-1.0)
+    @test_throws ArgumentError Options(dbulk=10.0, binstep=0.3, silent=true)
+    @test_throws ArgumentError Options(bulk_range=(10.0, 12.1), binstep=0.3, silent=true)
     @test_throws ArgumentError Options(stride=0)
     @test_throws ArgumentError Options(lastframe=1, firstframe=2)
     @test_throws ArgumentError Options(bulk_range=(12.0, 10.0))
@@ -233,7 +238,6 @@ end
     @test_throws ArgumentError Options(dbulk=10.0, cutoff=15.0, usecutoff=false)
     @test_throws ArgumentError Options(n_random_samples=0)
     @test_throws ArgumentError Options(bulk_range=[1.0])
-    @test_throws ArgumentError Options(cutoff=12.0)
 end
 
 function Base.show(io::IO, o::Options)
@@ -246,10 +250,9 @@ function Base.show(io::IO, o::Options)
         Last frame to be considered (-1 is last): lastframe = $(o.lastframe)
         Stride: stride = $(o.stride)
 
-    Bulk region, cutoff, and histogram:
+    Cutoff and histogram:
         Bin step of histogram: binstep = $(o.binstep)
-        Bulk range: $(o.usecutoff ? "$(o.dbulk) - $(o.cutoff)" : ">= $(o.dbulk)")
-        (dbulk = $(o.dbulk), cutoff = $(o.cutoff), usecutoff = $(o.usecutoff))
+        Cutoff: cutoff = $(o.cutoff) (bulk density estimated beyond the cutoff)
    
     Computation details: 
         Reference atom for random rotations: irefatom = $(o.irefatom)

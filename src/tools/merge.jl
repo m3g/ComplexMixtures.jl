@@ -144,6 +144,8 @@ function Base.merge(results::Vector{<:Result})
         R.volume.domain += w * result.volume.domain
         R.volume.shell += w * result.volume.shell
     end
+    # The KBI is not linear in the counts: recompute it from the merged counts
+    _set_kb!(R)
     return R
 end
 
