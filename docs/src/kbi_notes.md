@@ -23,6 +23,10 @@
 - **Asphaltene in heptane/toluene** (one asphaltene model molecule of 54 atoms, 2080 heptane and 1230 toluene
   molecules, cubic box of ~90 Å, 1000 frames). The MDDFs of the asphaltene relative to each solvent component
   were computed with `dbulk=20.0` and `cutoff=30.0`. This is discussed in a [separate section](@ref kbi_notes_asphaltene).
+- **Protein in an aqueous solution of EMIM/Cl/BF4** (ubiquitin, 1004 EMIM⁺, 502 Cl⁻, 502 BF4⁻, 18315
+  water molecules, box of ~90×92×96 Å). 18 independent simulations of 10 ns (1000 frames) each, 
+  started from independent initial configurations. The protein–EMIM MDDFs were computed with
+  `bulk_range=(20.0, 25.0)`. This is discussed in a [separate section](@ref kbi_notes_replicas).
 
 Throughout, ``L`` is the upper limit of integration, and the estimators ``G_0``, ``G_1`` and ``G_2`` are
 those of [`kbi`](@ref).
@@ -441,6 +445,78 @@ Practical recommendations:
   ~1.4%/``\sqrt{5}`` ≈ 0.6%, which is only marginally sufficient to distinguish a random scatter from a
   systematic +1.4%. 8 to 10 simulations would provide a clearer test.
 
+## [Independent simulations: protein in an EMIM/Cl/BF4 aqueous solution](@id kbi_notes_replicas)
+
+This system tests the protocol suggested above. The protein–EMIM correlations are strong, and the
+KBI is large (of the order of the excluded volume of the protein). The MDDFs were computed independently
+for each of the 18 simulations, and the counts of all simulations were merged with `merge`. With the
+`bulk_range=(20.0, 25.0)` the domain within the cutoff is 42% of the volume of the box, thus the Ganguly
+reference density is estimated from the remaining 58%. For each simulation, and for the merged
+result, the KBIs were computed with the `bulk_range` and Ganguly normalizations, with and without the 
+``W_7^{(3)}`` weight (using the functions shown in the previous sections), together with the offset 
+``\delta = \rho_{\rm out}(\text{cutoff})/\rho_{\rm bulk} - 1``. The standard errors (SEM) are computed 
+from the dispersion of the results of the independent simulations.
+
+```julia
+Rs = [load("EMI_$i.json") for i in replicas] # one Result per independent simulation
+M = merge(Rs)                                  # merged counts
+```
+
+![EMIM KBIs from independent simulations](./figures/kbi_notes/emim_replicas.png)
+
+**The offsets are fluctuations.** The offset ``\delta`` is positive in 9 of the 18 simulations. Its mean 
+is ``+0.06 \pm 0.33\%`` (SEM), compatible with zero, and its standard deviation is 1.4%, similar to the
+offsets observed for the asphaltene. 
+
+**The offset explains the dispersion of the KBIs.** In each simulation, the Ganguly KBI drifts
+with ``L`` in the direction determined by the sign of ``\delta``: up if the density outside the cutoff is
+lower than in the bulk window (``\delta < 0``), and down otherwise. At ``L = 20`` Å the KBIs (Ganguly +
+``W_7^{(3)}``) of the individual simulations are linearly correlated with ``\delta`` (``r = -0.87``), and the
+linear fit gives -5378 cm³ mol⁻¹ at ``\delta = 0``, close to the KBI of the merged data. 
+
+**The merged KBI is flat.** In the individual simulations the Ganguly KBIs vary from -10700 to +500 
+cm³ mol⁻¹ at 25 Å, while the KBI of the merged data is flat from ~8 Å. KBIs (cm³ mol⁻¹) of the merged 
+data, ± SEM:
+
+| L (Å) | `bulk_range` | `bulk_range` + ``W_7^{(3)}`` | Ganguly | Ganguly + ``W_7^{(3)}`` |
+|:--:|:--:|:--:|:--:|:--:|
+| 10 | -5230 ± 179 | -5474 ± 121 | -5361 ± 234 | -5588 ± 146 |
+| 15 | -5267 ± 263 | -5332 ± 158 | -5418 ± 385 | -5457 ± 204 |
+| 20 | -5276 ± 308 | -5287 ± 200 | -5452 ± 533 | -5422 ± 276 |
+| 25 | -5193 ± 278 | -5262 ± 236 | -5406 ± 676 | -5410 ± 353 |
+
+The slopes of the weighted KBIs in the 12–25 Å range, computed for each simulation, are compatible 
+with zero: ``+7 \pm 16`` cm³ mol⁻¹ Å⁻¹ (Ganguly + ``W_7^{(3)}``, positive in 10 of 18 simulations) and 
+``+9 \pm 11`` cm³ mol⁻¹ Å⁻¹ (`bulk_range` + ``W_7^{(3)}``, positive in 12 of 18).
+
+- All estimators agree within their uncertainties beyond ~12 Å. The KBI is ``-5400 \pm 250`` cm³ mol⁻¹ 
+  (Ganguly + ``W_7^{(3)}``, 15–20 Å).
+- The ``W_7^{(3)}`` weight reduces the SEM by a factor of 1.5–2 relative to the unweighted KBI with the 
+  same normalization.
+- In each simulation, the Ganguly normalization has the largest dispersion, because the volume 
+  amplifies the offset of each simulation. Its advantage appears only after averaging: it is not biased by the 
+  normalization in the bulk window, which conceals the offset in the `bulk_range` KBIs of the individual simulations. 
+  Here, the two normalizations agree within ~150 cm³ mol⁻¹, within the SEM.
+- The number of simulations is what makes the test conclusive: the mean of ``\delta`` is determined to
+  ±0.33% with 18 simulations, and would be determined to ±0.6% with 5.
+- A finite-size error is not detected, but it can only be bounded at the level of the SEM (~0.3% in 
+  the density, ~250 cm³ mol⁻¹ in the KBI).
+
+The recommended protocol, thus, is:
+
+1. Perform several (preferably more than 8) simulations from independent initial configurations.
+2. For each simulation, compute the KBIs with the Ganguly and `bulk_range` normalizations, with the
+   ``W_7^{(3)}`` weight, the offset ``\delta``, and the slope of the weighted KBI at long distances.
+3. Merge the counts, compute the Ganguly + ``W_7^{(3)}`` KBI of the merged data, and report its average in 
+   a range of ``L`` beyond the decay of the correlations, with the SEM computed from the independent simulations.
+4. Verify that ``\delta`` and the slopes change sign among the simulations, and that their means are
+   compatible with zero. If they are not, the error is systematic, and a larger box must be tested.
+
+For systems with more than one solvent component, differences of KBIs (as in preferential solvation)
+should be computed for each simulation, and the SEM of the difference obtained from these, because the 
+offsets of the components are correlated (in the asphaltene example, they are anticorrelated, and the
+errors of the difference add).
+
 ## Summary
 
 1. For small solutes with oscillatory correlations (water), the corrected RDF estimators (``G_2``, 
@@ -462,6 +538,11 @@ Practical recommendations:
    the uncertainty of the KBIs at large ``L``. Weighted estimates at ``L`` just beyond the decay of
    the correlations (~10–15 Å) are the most robust. Independent simulations distinguish
    fluctuations from systematic errors: the offset of the reference density must change sign among them.
+7. For a protein in an EMIM/Cl/BF4 solution, the KBIs of 18 independent simulations drift with ``L`` by
+   thousands of cm³ mol⁻¹, in directions determined by the offsets of their reference densities. 
+   The offsets average to zero, and the KBI of the merged data, with the Ganguly normalization and 
+   the ``W_7^{(3)}`` weight, is flat, with a SEM of ~5%. Independent simulations are, thus, the most
+   effective way to reduce and to estimate the sampling error of the KBIs.
 
 ## Possible additions to the package (not implemented)
 
