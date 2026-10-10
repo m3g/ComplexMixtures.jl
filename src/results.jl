@@ -354,13 +354,17 @@ function _mddf_final_results!(R::Result, options::Options)
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
 
+    # Density of the random (ideal-gas) distribution: samples.solvent_nmols molecules 
+    # (one less than the number of solvent molecules if the solute and solvent are the same)
+    # in the volume of the system
+    density_random = samples.solvent_nmols / R.volume.total
+
     # Bulk density: the density of the solvent beyond the cutoff, with the solvent molecules
     # classified by their minimum distance to the solute, as in the MDDF. The volume of the 
-    # region within the cutoff is that of the random distribution, with density R.density.solvent 
-    # (with this definition, the bulk density is equal to the reference density of the Ganguly 
-    # normalization at the cutoff).
+    # region within the cutoff is that of the random distribution (with this definition, the 
+    # bulk density is equal to the reference density of the Ganguly normalization at the cutoff).
     n_solvent_in_bulk = samples.solvent_nmols - sum(R.md_count)
-    v_solvent_in_bulk = R.volume.total - sum(R.md_count_random) / R.density.solvent
+    v_solvent_in_bulk = R.volume.total - sum(R.md_count_random) / density_random
     R.density.solvent_bulk = n_solvent_in_bulk / v_solvent_in_bulk
 
     # Now that we know the the volume of the domain and the density of the solvent in the 
@@ -368,7 +372,7 @@ function _mddf_final_results!(R::Result, options::Options)
     # gas distribution must have more molecules, with same bulk density, that the true
     # distribution, because we have to take into consieration the available volume which is
     # occupied by the solute
-    density_fix = R.density.solvent_bulk / R.density.solvent
+    density_fix = R.density.solvent_bulk / density_random
     return renormalize!(R, density_fix; silent=options.silent)
 end
 
