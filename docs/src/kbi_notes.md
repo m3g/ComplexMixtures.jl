@@ -295,8 +295,10 @@ around zero, and not a monotonic tail.
 **Reference density.** The ratio ``\rho_{\rm out}(d)/\rho_{\rm bulk}`` is approximately constant, 
 but different from one: ~0.995 for heptane and ~1.010–1.014 for toluene. That is, the 20–30 Å shell
 used to estimate the bulk density is enriched in heptane by 0.5% and depleted in toluene by 1% 
-relative to the rest of the box. These differences correspond to less than one molecule in the
-shell, and are not a perturbation caused by the solute, which is much smaller. They are, most likely, 
+relative to the rest of the box. These differences correspond to only two or three molecules in the
+shell (which contains, on average, ~400 heptane and ~225 toluene molecules), and are much larger than 
+the closed-system depletion caused by the solute (``\rho G/V \approx 0.1\%`` for heptane, and 
+negligible for toluene). They are, most likely, 
 composition fluctuations of the mixture not averaged out in 1000 frames of a single solute 
 molecule. Because the integration volume grows with ``L``, an offset of 1% in the reference density
 produces a drift of ~1% of ``V(L)`` in the KBI, which is ~250 cm³ mol⁻¹ at 25 Å, and of the order 
@@ -331,6 +333,114 @@ KBIs in cm³ mol⁻¹:
   the reference densities of the components are affected by slow composition fluctuations, which
   require longer sampling (or more solute molecules) than the decay of ``g(d)`` itself suggests.
 
+### Where is the reference density uniform?
+
+A natural test of the bulk-density estimate is to compute the density of everything beyond a distance 
+``x``, for ``x`` varying from `dbulk` to the cutoff, and to check if it is constant. The number of 
+molecules beyond the cutoff plus those in ``[x, \text{cutoff}]`` is ``N - N_{\rm in}(x)``, and the 
+same holds for the volume, so this density is exactly the Ganguly ``\rho_{\rm out}(x)``. Because ~90% 
+of the volume beyond any ``x < \text{cutoff}`` lies beyond the cutoff, ``\rho_{\rm out}(x)`` is 
+dominated by the outer region, and is nearly independent of ``x``. A sharper diagnostic is to 
+compare the differential densities: the density in thin shells, ``\rho[d, d+1\,\text{Å}]``, the 
+density in ``[d, \text{cutoff}]``, and the density beyond the cutoff:
+
+![Asphaltene reference densities](./figures/kbi_notes/asphaltene_reference_density.png)
+
+| | ``x`` (Å) | ``\rho(>x)/\rho_b`` | ``\rho[x,\text{cutoff}]/\rho_b`` | KBI(``L``=10) | KBI(15) | KBI(20) |
+|:--|:--:|:--:|:--:|:--:|:--:|:--:|
+| Heptane | 10 | 0.9962 | 1.0010 | -619 | -433 | -274 |
+| | 20 | 0.9953 | 0.9993 | -607 | -406 | -225 |
+| | 27.5 | 0.9945 | 0.9979 | -597 | -382 | -180 |
+| Toluene | 10 | 1.0105 | 1.0025 | -146 | -209 | -496 |
+| | 20 | 1.0114 | 1.0030 | -157 | -234 | -542 |
+| | 27.5 | 1.0133 | 1.0089 | -180 | -284 | -637 |
+
+(``\rho_b`` is the `bulk_range` density; the KBIs, in cm³ mol⁻¹, are computed with ``\rho(>x)`` as the
+reference density. Beyond the cutoff, ``\rho/\rho_b`` is 0.9942 for heptane and 1.0137 for toluene.)
+
+- The densities within the cutoff sphere agree with each other: the shell densities of heptane
+  scatter around one, and ``\rho[x,\text{cutoff}]`` stays within 0.1–0.3% of ``\rho_b``. For toluene, 
+  ``\rho[x,\text{cutoff}]`` increases from ~1.000 to ~1.009 approaching the cutoff, thus the density 
+  is still varying at 30 Å.
+- The discrepancy is between the inside and the outside of the cutoff sphere. The choice of ``x`` 
+  changes the KBIs by only 20–40 cm³ mol⁻¹ at ``L = 10`` Å, while any reference density taken from the 
+  outer region gives KBIs that differ from the `bulk_range` KBIs by several hundred cm³ mol⁻¹ at 
+  ``L \geq 20`` Å.
+- The shell densities fluctuate by ±1–2%, as much as the offset being detected. The test is
+  limited by the sampling.
+
+With the ``G_2`` or ``W_7^{(3)}`` weights applied to each of these integrands, the oscillations are 
+removed and the drift is reduced by a factor of ~3, but not eliminated: a constant offset in the reference
+density gives a contribution to the integral that grows with the volume, which the weights can attenuate, 
+but not correct.
+
+![Asphaltene reference densities with weights](./figures/kbi_notes/asphaltene_reference_density_weights.png)
+
+KBIs (cm³ mol⁻¹) with the ``W_7^{(3)}`` weight:
+
+| | L (Å) | `bulk_range` | ``\rho_{\rm ref} = \rho(>10\,\text{Å})`` | ``\rho_{\rm ref} = \rho(>\text{cutoff})`` |
+|:--|:--:|:--:|:--:|:--:|
+| Heptane | 10 | -570 | -551 | -541 |
+| | 15 | -530 | -491 | -470 |
+| | 20 | -513 | -445 | -409 |
+| | 25 | -498 | -391 | -334 |
+| Toluene | 10 | -2 | -53 | -69 |
+| | 15 | 80 | -23 | -53 |
+| | 20 | 107 | -70 | -122 |
+| | 25 | 98 | -180 | -263 |
+
+At ``L`` = 10–15 Å all reference densities agree within 60–130 cm³ mol⁻¹, and the preferential 
+solvation by toluene is ~420–610 cm³ mol⁻¹. Beyond ~15 Å the result is controlled by the reference
+density, and the apparent convergence of the weighted `bulk_range` KBIs is enforced by the 
+normalization in the bulk window.
+
+### Fluctuation or finite-size effect?
+
+Three observations suggest that the reference-density offsets are sampling fluctuations of the 
+composition of the mixture, and not a size effect:
+
+1. **The closed-system effect of the solute is too small.** The depletion of the bulk caused by the
+   solute is ``\rho G/V``, ~0.1% for heptane (``G \approx -500`` cm³ mol⁻¹, ``V \approx 7.3\times 10^5`` Å³), 
+   and negligible for toluene (``G \approx 0``). The observed offsets are -0.6% and +1.4%.
+2. **The offsets are an exchange of components at constant volume.** Weighted by the molar volumes
+   (~147 cm³ mol⁻¹ for heptane, ~107 cm³ mol⁻¹ for toluene), the density offsets cancel: 
+   ``0.00284 \times (-0.0058) \times 147 \approx -0.0024`` and ``0.00168 \times 0.0137 \times 107 \approx +0.0025``. 
+   The region within the cutoff has a slightly different molar fraction than the rest of the box, 
+   at the same packing. (A reproducible long-range preferential solvation would have the same 
+   signature in a single simulation, thus this is not a proof.)
+3. **The magnitude is compatible with sampling noise.** The 20–30 Å shell contains, on average, ~225
+   toluene molecules, such that the relative fluctuation of their number in each frame is 
+   ``\sim 1/\sqrt{225} \approx 7\%``. A residual error of 1.4% requires only ~25 effectively independent
+   samples, which is plausible for 1000 correlated frames of a single, slowly diffusing, solute.
+
+The test is to perform independent simulations, and compute for each of them, and for each component,
+the offset
+
+```math
+\delta_k = \frac{\rho_k(>\text{cutoff})}{\rho_{k,\rm bulk}} - 1.
+```
+
+- If the offsets are fluctuations, ``\delta_k`` changes sign among the simulations, its mean is 
+  compatible with zero within the standard error, and the KBIs obtained with the `bulk_range` and 
+  ``\rho(>\text{cutoff})`` normalizations converge to each other as more simulations are added.
+- If the offsets are systematic (a size or closed-system effect, or a real long-range gradient), 
+  ``\delta_k`` has the same sign and similar magnitude in all simulations, and is not removed by 
+  averaging. In this case, a simulation of a larger box with the same composition distinguishes a
+  size effect, which should scale approximately as ``1/V``.
+
+Practical recommendations:
+
+- The simulations must start from independent initial configurations (for instance, different 
+  Packmol seeds and velocities), and not only from different velocities of the same equilibrated 
+  structure, otherwise the slow composition fluctuations may remain correlated.
+- Each simulation should be analyzed separately, to obtain ``\delta_k`` and the KBIs with their standard
+  errors. The results can then be combined with `merge(results::Vector{<:Result})`, which merges the 
+  counts, so that the bulk density is estimated from all the data, which is preferable to averaging
+  the KBIs.
+- If the offset is pure noise, with 5 simulations the standard error of its mean would be 
+  ~1.4%/``\sqrt{5}`` ≈ 0.6%, which is only marginally sufficient to distinguish a random scatter from a
+  systematic +1.4%. 8 to 10 simulations would provide a clearer test.
+
 ## Summary
 
 1. For small solutes with oscillatory correlations (water), the corrected RDF estimators (``G_2``, 
@@ -350,7 +460,8 @@ KBIs in cm³ mol⁻¹:
 6. Small solutes with short correlation lengths are not exempt from normalization errors. For the
    asphaltene in heptane/toluene, 1% differences in the reference densities of the components dominate
    the uncertainty of the KBIs at large ``L``. Weighted estimates at ``L`` just beyond the decay of
-   the correlations (~10–15 Å) are the most robust.
+   the correlations (~10–15 Å) are the most robust. Independent simulations distinguish
+   fluctuations from systematic errors: the offset of the reference density must change sign among them.
 
 ## Possible additions to the package (not implemented)
 
@@ -360,6 +471,8 @@ KBIs in cm³ mol⁻¹:
 - Allow the weight functions (``G_1``, ``G_2``, ``W_7^{(3)}``) to be applied to MDDF results, with a 
   note on the caveat for monotonic integrands.
 - Report the slope of the weighted KBI at long distances.
+- Report the offset ``\rho(>\text{cutoff})/\rho_{\rm bulk} - 1``, so that it can be compared among
+  independent simulations.
 - Test the protein–glycerol system in a larger box, or with longer sampling, to verify if 
   ``\rho_{\rm out}(d)`` becomes flat.
 
