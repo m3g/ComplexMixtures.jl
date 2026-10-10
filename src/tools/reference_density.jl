@@ -11,7 +11,8 @@ the system, relative to the bulk density, as computed by [`reference_density`](@
 - `outside::Vector{Float64}`: the density of the solvent beyond each distance, ``\\rho_{\\rm out}(d)``, 
    relative to `bulk`. This is the reference density of the Ganguly normalization of [`kbi`](@ref).
 - `window::Vector{Float64}`: the density of the solvent between each distance and the cutoff,
-   relative to `bulk`. 
+   relative to `bulk`. It is not computed (`NaN`) for distances closer to the cutoff than the
+   width of the shells, where the volume of the region is small and the estimate is noisy.
 - `shell_d::Vector{Float64}` and `shell::Vector{Float64}`: the density of the solvent in shells
    of width `shell_width`, relative to `bulk`, and the distances of the centers of the shells.
 
@@ -48,8 +49,14 @@ For each distance ``d`` to the solute, the following densities are computed:
 
 - `outside`: the density beyond ``d``, ``\\rho_{\\rm out}(d) = [N - N_{\\rm in}(d)]/[V - V(d)]``, 
   which is the reference density of the Ganguly normalization of [`kbi`](@ref).
-- `window`: the density between ``d`` and the cutoff. 
+- `window`: the density between ``d`` and the cutoff (not computed within `shell_width` of the cutoff). 
 - `shell`: the density in shells of width `shell_width`.
+
+The density beyond ``d`` is the reference density of the Ganguly normalization. Its deviation from the
+bulk density is the deviation of the density between ``d`` and the cutoff, scaled by the fraction of the volume
+beyond ``d`` that is within the cutoff. Thus, the density between ``d`` and the cutoff is the most sensitive 
+indicator of the non-uniformity of the density, while the density beyond ``d`` is the one that affects the KBIs 
+computed with the Ganguly normalization.
 
 If the bulk density is properly estimated, all these ratios must be close to one, 
 for ``d`` beyond the correlation length of the distribution. A density in the `window` that varies
@@ -82,12 +89,12 @@ function reference_density(R::Result; shell_width::Real=1.0)
     Vd = cumsum(R.md_count_random) ./ ρb # Volume of the domain within d
     Nin = cumsum(R.md_count) # Number of solvent molecules within d
     outside = _ganguly_density(R) ./ ρb
+    nb = max(1, round(Int, shell_width / R.files[1].options.binstep))
     window = fill(NaN, length(R.d))
-    for i in 1:length(R.d)-1
+    for i in 1:length(R.d)-nb
         ΔV = Vd[end] - Vd[i]
         ΔV > 0 && (window[i] = (Nin[end] - Nin[i]) / ΔV / ρb)
     end
-    nb = max(1, round(Int, shell_width / R.files[1].options.binstep))
     shell_d = Float64[]
     shell = Float64[]
     for k in 1:nb:length(R.d)-nb+1
@@ -110,6 +117,8 @@ end
     ρb = R.density.solvent_bulk
     @test rd.window[i] ≈ sum(R.md_count[i+1:end]) / (sum(R.md_count_random[i+1:end]) / ρb) / ρb
     @test isnan(rd.window[end])
+    @test all(isnan, rd.window[end-49:end])
+    @test !isnan(rd.window[end-50])
     @test all(x -> isapprox(x, 1.0; atol=1e-3), filter(isfinite, rd.window[findfirst(>=(5.0), R.d):end-50]))
     @test all(x -> isapprox(x, 1.0; atol=0.05), rd.shell[findfirst(>=(5.0), rd.shell_d):end])
     @test length(rd.shell) == length(R.d) ÷ 50

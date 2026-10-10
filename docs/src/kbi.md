@@ -242,8 +242,12 @@ rd = reference_density(R)
 plot(rd; size=(600, 400))
 ```
 
-Beyond the correlation length of the distribution, all these densities should be close to one. Here, for 
-water, they differ from one by less than 10⁻³, except for the noise of the density in the shells. If the
+The plot shows the deviations of these densities from the bulk density, in percent. Beyond the correlation 
+length of the distribution, all deviations should be close to zero. Here, for water, they are smaller than 0.1%,
+except for the noise of the density in the shells. The density beyond ``d`` is the reference density of the
+Ganguly normalization, and its deviation is the one that affects the KBIs. The density between ``d`` and the
+cutoff is a more sensitive indicator of the non-uniformity of the density, because the deviation of the density
+beyond ``d`` is diluted by the volume beyond the cutoff. If the
 density between ``d`` and the cutoff varies as ``d`` approaches the cutoff, or if the densities are systematically
 different from one, the density of the solvent is not uniform beyond the correlation length. This may be caused 
 by insufficient sampling or by long-range effects, and the KBIs will depend on the reference density used to
