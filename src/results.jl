@@ -131,6 +131,9 @@ function Result(
     # Number of bins of the histogram
     nbins = setbin(options.cutoff, options.binstep)
 
+    # Set the default number of random samples, which depends on the type of correlation
+    options = _set_n_random_samples(options, isautocorrelation(trajectory))
+
     # If frame weights are provided, the length of the weights vector has to at least
     # of the of number of the last frame to be read, and the sum of the weights of the
     # frames to be considered must be greater than zero
@@ -217,15 +220,13 @@ Type of calculation: auto or cross-correlations - have different sampling scheme
 
 Choose self and cross versions
 
-In both the self and (cross) non-self cases, the number of random samples is 
-n_random_samples*solvent.nmols. However, in the non-self distribution
-the sampling of solvent distances is proportional to the number of solute
-molecules, thus the md count has to be averaged by solute.nmols. In the
-case of the self-distribution, we compute n(n-1)/2 distances, and we will
-divide this by n random samples, which is the sampling of the random
-distribution. Therefore, we must weight the self-distance count by dividing
-it by (n-1)/2, so that we have a count proportional to n as well, leading
-to the correct weight relative to the random sample. 
+The md counts are averaged over the solute molecules (solute.nmols) and the random counts 
+over the random samples (n_random_samples per frame). In the cross-correlation case, each 
+random sample has a single reference solute molecule. In the self-correlation case, each random 
+sample is a random configuration of all molecules, with each molecule as a reference, and the 
+contributions of each reference molecule are weighted by 1/solute.nmols in mddf_frame!, such 
+that each configuration counts as one random sample. In the self-correlation case each reference 
+molecule sees solvent.nmols - 1 other molecules.
 =#
 function set_samples(R::Result)
     if R.autocorrelation
@@ -511,7 +512,9 @@ end
     @test length(R.mddf) == 500
     @test R.nbins == 500
     @test R.files[1].nframes_read == 20
-    @test R.files[1].options == Options()
+    # n_random_samples is set to the default for cross-correlations (10)
+    @test R.files[1].options == ComplexMixtures._set_n_random_samples(Options(), false)
+    @test R.files[1].options.n_random_samples == 10
     @test length(R.rdf_count) == 500
     @test length(R.rdf_count_random) == 500
     @test R.solute == AtomSelection(collect(1:1463), nmols=1, natomspermol=1463, group_names=name.(protein))

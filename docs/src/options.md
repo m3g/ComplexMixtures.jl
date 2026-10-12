@@ -57,12 +57,33 @@ volume estimates. The final `rdf` data is reported for this atom as
 well. By default, we choose the atom which is closer to the center of
 coordinates of the molecule, but any choice should be fine. 
 
-`n_random_samples`: Integer, how many samples of random molecules are
-generated for each solvent molecule to compute the shell volumes and
-random MDDF counts. Default: 10. Increase this only if you have short
-trajectory and want to obtain reproducible results for that short
-trajectory. For long trajectories (most desirable and common), this
-value can even be decreased to speed up the calculations. 
+`n_random_samples`: Integer, the number of random (ideal-gas) samples computed for each
+frame, used to compute the shell volumes and the random MDDF counts that normalize the
+distributions. The random samples are generated as follows:
+
+- For cross-correlations (the solute and solvent are different molecules), one solute
+  molecule is chosen at random, and all solvent molecules are placed with random positions and 
+  orientations (with internal coordinates copied from solvent molecules in the bulk). The 
+  minimum distances of the random solvent molecules to the chosen solute molecule are computed. 
+  The default is 10 samples per frame.
+
+- For self-correlations (the solute and solvent are the same molecules), all molecules are placed
+  with random positions and orientations (keeping their internal coordinates), and the minimum
+  distances of each molecule to all other molecules are computed, exactly as for the actual 
+  frame. Thus, each sample is a random configuration of the system, which provides one reference
+  molecule for each molecule of the system. The default is 1 sample per frame.
+
+The number of random samples per frame should be large enough such that the random counts 
+are sampled at least as well as the actual minimum-distance counts. For self-correlations, or
+for a single solute molecule, the defaults satisfy this condition. Increase `n_random_samples` 
+if you have short trajectories and want to obtain reproducible results for them.
+
+!!! compat
+    The all-to-all random configurations for self-correlations, and the default of 1 random sample 
+    per frame for them, were introduced in version 2.19.1. Previously, self-correlations used 10 
+    random samples per frame, each with a single reference molecule, which resulted in noisy 
+    normalizations (and KB integrals) because the random counts were much less sampled than the 
+    actual counts. 
 
 `seed`: Seed for random number generator. If `-1`, the seed will be
 generated from the entropy of the system. If your results are dependent

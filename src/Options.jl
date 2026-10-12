@@ -47,7 +47,7 @@ end
         lastframe::Int = -1,
         stride::Int = 1,
         irefatom::Int = -1,
-        n_random_samples::Int = 10,
+        n_random_samples::Union{Nothing,Int} = nothing,
         binstep::Float64 = 0.02,
         cutoff::Union{Nothing,Real} = nothing,
         lcell::Int = 1,
@@ -60,6 +60,14 @@ end
     )
 
 Create an Options object with the specified options. 
+
+`n_random_samples` is the number of random (ideal-gas) samples computed per frame, used to normalize
+the distributions. For self-correlations (solute and solvent are the same molecules), each sample is
+a configuration in which all molecules are placed with random positions and orientations, and the 
+distances of every molecule to all other molecules are computed, as for the actual frame. For 
+cross-correlations, each sample is a random configuration of the solvent molecules around one solute
+molecule, chosen at random. By default (`n_random_samples = nothing`), 1 sample per frame is used 
+for self-correlations, and 10 samples per frame for cross-correlations.
 
 The `cutoff` is the maximum distance to the solute for which the distribution functions are 
 computed. The bulk density of the solvent is estimated from the solvent molecules beyond the cutoff.
@@ -78,7 +86,7 @@ function Options(;
     lastframe::Int=-1,
     stride::Int=1,
     irefatom::Int=-1,
-    n_random_samples::Int=10,
+    n_random_samples::Union{Nothing,Int}=nothing,
     binstep::Float64=0.02,
     cutoff::Union{Nothing,Real}=nothing,
     dbulk::Union{Nothing,Real}=nothing,
@@ -100,7 +108,7 @@ function Options(;
     if lastframe > 0 && lastframe < firstframe
         throw(ArgumentError("in MDDF options: lastframe must be greater or equal to firstframe. "))
     end
-    if n_random_samples < 1
+    if !isnothing(n_random_samples) && n_random_samples < 1
         throw(ArgumentError("""\n 
             in MDDF options: n_random_samples must be greater than 0. 
             To skip the normalization of the distribution, use the coordination_number(...) function instead of mddf(...).
@@ -123,7 +131,8 @@ function Options(;
         lastframe,
         stride,
         irefatom,
-        n_random_samples,
+        # 0 means automatic: the value is set when the computation is initialized (see _set_n_random_samples)
+        isnothing(n_random_samples) ? 0 : n_random_samples,
         binstep,
         cutoff,
         cutoff,
@@ -135,6 +144,24 @@ function Options(;
         StableRNG,
         nthreads,
         silent
+    )
+end
+
+#=
+    _set_n_random_samples(options::Options, autocorrelation::Bool)
+
+Returns a copy of the options with the default number of random samples per frame,
+if it was not set by the user: 1 for self-correlations (all-to-all random configurations),
+and 10 for cross-correlations.
+
+=#
+function _set_n_random_samples(o::Options, autocorrelation::Bool)
+    o.n_random_samples > 0 && return o
+    return Options(
+        o.firstframe, o.lastframe, o.stride, o.irefatom,
+        autocorrelation ? 1 : 10,
+        o.binstep, o.dbulk, o.cutoff, o.usecutoff, o.lcell, o.GC, o.GC_threshold,
+        o.seed, o.StableRNG, o.nthreads, o.silent,
     )
 end
 
@@ -209,6 +236,15 @@ end
     @test_logs (:warn,) Options()
     @test_logs Options(cutoff=12.0)
 
+    # Default number of random samples: 1 for self-correlations, 10 for cross-correlations
+    o = Options(cutoff=12.0)
+    @test o.n_random_samples == 0
+    @test ComplexMixtures._set_n_random_samples(o, true).n_random_samples == 1
+    @test ComplexMixtures._set_n_random_samples(o, false).n_random_samples == 10
+    o = Options(cutoff=12.0, n_random_samples=5)
+    @test ComplexMixtures._set_n_random_samples(o, true).n_random_samples == 5
+    @test ComplexMixtures._set_n_random_samples(o, false).n_random_samples == 5
+
     # Deprecated options
     o = Options(bulk_range=(10.0, 14.0), silent=true)
     @test (o.dbulk, o.cutoff, o.usecutoff) == (14.0, 14.0, false)
@@ -256,7 +292,7 @@ function Base.show(io::IO, o::Options)
    
     Computation details: 
         Reference atom for random rotations: irefatom = $(o.irefatom)
-        Number of random samples per frame: n_random_samples = $(o.n_random_samples)
+        Number of random samples per frame: n_random_samples = $(o.n_random_samples == 0 ? "automatic (1 for self-correlations, 10 otherwise)" : o.n_random_samples)
         Linked cell partition: lcell = $(o.lcell)
         Force garbage collection: GC = $(o.GC)
         Memory threshold for GC: GC_threshold = $(o.GC_threshold)
