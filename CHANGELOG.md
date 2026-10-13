@@ -24,7 +24,7 @@ Version 3.0.0-DEV
 - ![BREAKING][badge-breaking] `R.kb` is now equal to `kbi(R)` (W₇⁽³⁾ weight and Ganguly normalization). The uncorrected KBI is obtained with `kbi(R; correction=:none, normalization=:mddf)`. Results saved with previous versions keep the stored `R.kb`; use `kbi(R)` to compute the corrected KBI from them. `merge` recomputes `R.kb` from the merged counts.
 - ![FEATURE][badge-feature] `reference_density(R)`: density of the solvent beyond each distance, between each distance and the cutoff, and in shells, relative to the bulk density, to inspect the uniformity of the density beyond the correlation length. With `Plots` loaded, `plot(reference_density(R))` plots these densities.
 - ![INFO][badge-info] Documentation revised: `kbi(R)` is the recommended way to obtain the KBIs from a `Result`.
-- ![INFO][badge-info] Migration guide from 2.19 to 3.0 in the introduction of the documentation, with a warning about the cost of large `n_random_samples` values in self-correlations.
+- ![INFO][badge-info] The "Breaking changes" page of the documentation was renamed to "Version compatibility", and contains the migration guides from 1.X to 2.X and from 2.19 to 3.0, with a warning about the cost of large `n_random_samples` values in self-correlations.
 
 Version 2.19.0
 --------------
