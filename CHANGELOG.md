@@ -10,7 +10,7 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 3.0.0-DEV
+Version 3.0.0
 --------------
 - ![FEATURE][badge-feature] `kbi(R; correction, normalization)`: the weight functions (`:G1`, `:G2`) are now applied to the KBIs computed from minimum-distance distribution functions, thus to solutes of any shape. New `:W7` weight (the ``W_7^{(3)}`` weight of Santos). New `normalization` keyword: `:ganguly` (reference density outside the solute domain at each distance, following Ganguly and van der Vegt) or `:mddf` (the bulk density, as in the normalization of `R.mddf`).
 - ![BREAKING][badge-breaking] The defaults of `kbi` changed from `correction=:none` to `correction=:W7, normalization=:ganguly`. The previous default is obtained with `kbi(R; correction=:none, normalization=:mddf)`. The `:G1` and `:G2` corrections are computed from the MDDF counts (`R.md_count`) instead of the counts of the distances to the reference atom of the solvent (`R.rdf_count`). For single-atom solutes and solvents, the results are the same. `:G0` is now equivalent to `:none`.
