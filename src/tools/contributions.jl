@@ -314,10 +314,11 @@ end
 
     solute = AtomSelection(protein, nmols=1)
     traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
-    results = mddf(traj)
+    # Dependent on the random number seed
+    results = mddf(traj, Options(seed=321, StableRNG=true, nthreads=1, silent=true))
     @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
     @test_throws ArgumentError contributions(results, SoluteGroup([50000]))
-    @test sum(contributions(results, SolventGroup([1483]))) ≈ 0.3961968338913652 atol=0.1
+    @test sum(contributions(results, SolventGroup([1483]))) ≈ 0.33397680724208806
     @test_throws ArgumentError contributions(results, SolventGroup([1483, 1483]))
 
     # Testing decomposition of solute contributions

@@ -1,5 +1,8 @@
 using TestItemRunner
 
+# Do not open plot windows (GR backend of Plots) when running the tests
+ENV["GKSwstype"] = "nul"
+
 @testmodule AllocTest begin
     # This module defines the Allocs struct and the comparison operators
     # to conditionally compare the number of allocations based on the

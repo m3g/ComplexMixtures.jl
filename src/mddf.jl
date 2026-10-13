@@ -370,10 +370,11 @@ function mddf_frame!(
     update_volume!(r_chunk, system, frame_weight)
 
     # Random set of *solute* molecules to use as references for the ideal gas distributions
-    # (none for self-correlations, for which the random distribution is computed from the 
-    # all-to-all distances of random configurations)
+    # (none if the random distribution is computed from all-to-all distances of random 
+    # configurations: self-correlations, or more than one solute molecule)
+    all_to_all = _all_to_all_random(r_chunk)
     for i in eachindex(buff.ref_solutes)
-        buff.ref_solutes[i] = r_chunk.autocorrelation ? 0 : rand(RNG, 1:r_chunk.solute.nmols)
+        buff.ref_solutes[i] = all_to_all ? 0 : rand(RNG, 1:r_chunk.solute.nmols)
     end
 
     #
@@ -426,16 +427,19 @@ function mddf_frame!(
 
     end # loop over solute molecules
 
-    # Self-correlation: the ideal-gas distribution is computed from random configurations of
-    # all molecules, with each molecule as a reference. Each configuration provides solute.nmols 
-    # samples, which are weighted by 1/solute.nmols, such that the normalization is the same as
-    # that of n_random_samples single-reference samples.
-    if r_chunk.autocorrelation
+    # Self-correlations, or more than one solute molecule: the ideal-gas distribution is computed 
+    # from random configurations of all solvent molecules, with each solute molecule as a reference
+    # (for self-correlations, the solute molecules are the randomized molecules; otherwise, they are
+    # the actual solute molecules of the frame). Each configuration provides solute.nmols samples, 
+    # which are weighted by 1/solute.nmols, such that the normalization is the same as that of 
+    # n_random_samples single-reference samples.
+    if all_to_all
         nmols = r_chunk.solute.nmols
         for _ in 1:r_chunk.files[1].options.n_random_samples
             randomize_all!(system, buff, r_chunk, RNG)
             for isolute in 1:nmols
-                system.xpositions .= viewmol(isolute, system.ypositions, r_chunk.solute)
+                solute_coordinates = r_chunk.autocorrelation ? system.ypositions : buff.solute_read
+                system.xpositions .= viewmol(isolute, solute_coordinates, r_chunk.solute)
                 minimum_distances!(system, r_chunk, isolute)
                 update_counters!(r_chunk, system, frame_weight / nmols, Val(:random))
             end
@@ -447,10 +451,20 @@ function mddf_frame!(
 end
 
 #=
+    _all_to_all_random(R::Result)
+
+Returns `true` if the ideal-gas distribution is computed from random configurations of all
+solvent molecules, with every solute molecule as a reference: for self-correlations, and 
+for cross-correlations with more than one solute molecule.
+
+=#
+_all_to_all_random(R::Result) = R.autocorrelation || R.solute.nmols > 1
+
+#=
     randomize_all!(system, buff, R, RNG)
 
 Randomizes the positions and orientations of all solvent molecules, keeping their
-internal coordinates (used for self-correlations).
+internal coordinates (used for self-correlations and for more than one solute molecule).
 
 =#
 function randomize_all!(system::AbstractParticleSystem, buff::Buffer, R::Result, RNG)

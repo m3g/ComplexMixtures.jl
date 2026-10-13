@@ -76,7 +76,13 @@ glycerol relative to the protein, and the corresponding KB integral:
 </center>
 ```
 
-and the same distribution function, decomposed into the contributions of the hydroxyl and aliphatic groups of glycerol:
+The plot shows the KBI computed with finite-size corrections (`kbi(results)`), which is the default
+output and the best estimate of the integral, and the uncorrected (raw - truncated) KBI. The 
+uncorrected KBI can be useful to interpret how local interactions contribute to the exclusion or 
+accumulation of the solvent at short distances. See the [Kirkwood-Buff integrals](@ref kbi) section
+for further information on the corrections.
+
+The distribution function can be decomposed into the contributions of the hydroxyl and aliphatic groups of glycerol:
 
 ```@raw html
 <center>
@@ -99,7 +105,7 @@ solute, it is dominated by the excluded volume of the solute, and is thus large 
 components (about -20 L mol⁻¹ for both water and glycerol here). The thermodynamically relevant quantity
 is the *difference* between the KB integrals of the cosolvent and of water, which defines the 
 **preferential interaction parameter** of the cosolvent (``c``, glycerol) relative to water (``w``), 
-around the protein (``p``) [1,2]:
+around the protein (``p``) ([Shimizu, 2004](https://doi.org/10.1073/pnas.0305836101); [Martínez and Shimizu, 2017](https://doi.org/10.1021/acs.jctc.7b00599)):
 
 ```math
 \Gamma_{pc} = \rho_c \left( G_{pc} - G_{pw} \right)
@@ -118,7 +124,7 @@ activity of the cosolvent, ``a_c``, at constant temperature and pressure:
 \left(\frac{\partial \mu_p}{\partial \ln a_c}\right)_{T,P} = -RT\,\Gamma_{pc}
 ```
 
-and, therefore, on the concentration of the cosolvent [1]:
+and, therefore, on the concentration of the cosolvent ([Shimizu, 2004](https://doi.org/10.1073/pnas.0305836101)):
 
 ```math
 \left(\frac{\partial \mu_p}{\partial \rho_c}\right)_{T,P} = 
@@ -228,16 +234,6 @@ nonideality = @. 1 + ρ_c * (G_cc - G_cw)
 The value of ``\partial \mu_p / \partial \rho_c`` computed above, assuming ideality, must then be divided by
 this factor.
 
-### References
-
-1. S. Shimizu, Estimating hydration changes upon biomolecular reactions from osmotic stress, high pressure,
-   and preferential hydration experiments. *Proc. Natl. Acad. Sci. USA* 101, 1195–1199 (2004).
-   [DOI: 10.1073/pnas.0305836101](https://doi.org/10.1073/pnas.0305836101)
-2. L. Martínez, S. Shimizu, Molecular interpretation of preferential interactions in protein solvation: 
-   a solvent-shell perspective by means of minimum-distance distribution functions.
-   *J. Chem. Theory Comput.* 13, 6358–6372 (2017). 
-   [DOI: 10.1021/acs.jctc.7b00599](https://doi.org/10.1021/acs.jctc.7b00599)
-
 ## [2D density map](@id 2D-map-example1)
 
 In this followup from the example above, we compute group contributions of the solute (the protein) to the MDDFs,
@@ -298,7 +294,7 @@ Here, the MDDF is decomposed at each distance according to the contributions of 
 
 2. Which is the contribution of that atom (or residue) to the distribution function.
 
-Therefore, by filtering the 3D density map at each distance one can visualize over the solute structure which are the regions that mostly interact with the solvent of choice at each distance. The views are created with the `visualize` function of [PDBTools](https://m3g.github.io/PDBTools.jl/stable/visualization/) (version 3.41.0 or greater), and the script saves them as the `grid_hbonds.html` and `grid_second_peak.html` files, which can be opened in any web browser. Typical views are shown below (rotate, zoom, and hover over the points to identify the protein atoms):
+Therefore, by filtering the 3D density map at each distance one can visualize over the solute structure which are the regions that mostly interact with the solvent of choice at each distance. The views are created with the `visualize` function of [PDBTools](https://m3g.github.io/PDBTools.jl/stable/visualization/) (version 3.41.0 or greater), which renders them with [3Dmol.js](https://3dmol.csb.pitt.edu) ([Rego and Koes, 2015](https://doi.org/10.1093/bioinformatics/btu829)), and the script saves them as the `grid_hbonds.html` and `grid_second_peak.html` files, which can be opened in any web browser. Typical views are shown below (rotate, zoom, and hover over the points to identify the protein atoms):
 
 ```@example example1-grid3D
 using ComplexMixtures, PDBTools # hide
@@ -351,7 +347,3 @@ Alternatively, open Julia and copy/paste the commands of `script3.jl` or use `in
 ### Visualization with VMD
 
 The grid can also be written to a PDB file and visualized with other software. An example of the visualization of the grid of this example with [VMD](https://www.ks.uiuc.edu/Research/vmd/) is available [here](@ref grid3D-vmd).
-
-### References
-
-The interactive 3D views were rendered with [3Dmol.js](https://3dmol.csb.pitt.edu), through the `visualize` function of [PDBTools](https://m3g.github.io/PDBTools.jl/stable/visualization/): N. Rego and D. Koes, 3Dmol.js: molecular visualization with WebGL, Bioinformatics 31, 1322-1324 (2015). [https://doi.org/10.1093/bioinformatics/btu829](https://doi.org/10.1093/bioinformatics/btu829)

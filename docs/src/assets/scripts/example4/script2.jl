@@ -5,7 +5,6 @@ using PDBTools
 using ComplexMixtures
 using Plots
 using LaTeXStrings
-using EasyFit: movavg
 
 # Load a PDB file of the system
 system = read_pdb("./equilibrated.pdb")
@@ -50,30 +49,16 @@ plot(layout=(2, 1))
 #
 # Group contributions to glycerol-glycerol auto correlation
 #
-x = mddf_glyc.d # distances
-# Total mddf
-y = movavg(mddf_glyc.mddf; n=10).x
-plot!(x, y, label="Total", subplot=1)
-# Hydroxyls
-y = movavg(mddf_glyc_hydroxyls; n=10).x
-plot!(x, y, label="Hydroxyls", subplot=1)
-# Aliphatic
-y = movavg(mddf_glyc_aliphatic; n=10).x
-plot!(x, y, label="Aliphatic", subplot=1)
+plot!(mddf_glyc.d, mddf_glyc.mddf, label="Total", subplot=1)
+plot!(mddf_glyc.d, mddf_glyc_hydroxyls, label="Hydroxyls", subplot=1)
+plot!(mddf_glyc.d, mddf_glyc_aliphatic, label="Aliphatic", subplot=1)
 
 #
 # Group contributions to glycerol-water correlation
 #
-x = mddf_glyc_water.d # distances
-# Total mddf
-y = movavg(mddf_glyc_water.mddf; n=10).x
-plot!(x, y, label="Total", subplot=2)
-# Hydroxyls
-y = movavg(mddf_glyc_water_hydroxyls; n=10).x
-plot!(x, y, label="Hydroxyls", subplot=2)
-# Aliphatic
-y = movavg(mddf_glyc_water_aliphatic; n=10).x
-plot!(x, y, label="Aliphatic", subplot=2)
+plot!(mddf_glyc_water.d, mddf_glyc_water.mddf, label="Total", subplot=2)
+plot!(mddf_glyc_water.d, mddf_glyc_water_hydroxyls, label="Hydroxyls", subplot=2)
+plot!(mddf_glyc_water.d, mddf_glyc_water_aliphatic, label="Aliphatic", subplot=2)
 
 # plot settings
 plot!(ylabel="Glyc-Glyc MDDF", xlim=(1.0, 8.0), subplot=1)

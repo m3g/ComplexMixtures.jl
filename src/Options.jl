@@ -65,9 +65,12 @@ Create an Options object with the specified options.
 the distributions. For self-correlations (solute and solvent are the same molecules), each sample is
 a configuration in which all molecules are placed with random positions and orientations, and the 
 distances of every molecule to all other molecules are computed, as for the actual frame. For 
-cross-correlations, each sample is a random configuration of the solvent molecules around one solute
-molecule, chosen at random. By default (`n_random_samples = nothing`), 1 sample per frame is used 
-for self-correlations, and 10 samples per frame for cross-correlations.
+cross-correlations with more than one solute molecule, each sample is a configuration in which all
+solvent molecules are placed with random positions and orientations, and the distances of the solvent
+molecules to every solute molecule are computed. For a single solute molecule, each sample is a random 
+configuration of the solvent molecules around it. By default (`n_random_samples = nothing`), 1 sample 
+per frame is used for self-correlations and for more than one solute molecule, and 10 samples per frame
+for a single solute molecule.
 
 The `cutoff` is the maximum distance to the solute for which the distribution functions are 
 computed. The bulk density of the solvent is estimated from the solvent molecules beyond the cutoff.
@@ -148,18 +151,18 @@ function Options(;
 end
 
 #=
-    _set_n_random_samples(options::Options, autocorrelation::Bool)
+    _set_n_random_samples(options::Options, all_to_all::Bool)
 
 Returns a copy of the options with the default number of random samples per frame,
-if it was not set by the user: 1 for self-correlations (all-to-all random configurations),
-and 10 for cross-correlations.
+if it was not set by the user: 1 for all-to-all random configurations (self-correlations,
+or more than one solute molecule), and 10 for a single solute molecule.
 
 =#
-function _set_n_random_samples(o::Options, autocorrelation::Bool)
+function _set_n_random_samples(o::Options, all_to_all::Bool)
     o.n_random_samples > 0 && return o
     return Options(
         o.firstframe, o.lastframe, o.stride, o.irefatom,
-        autocorrelation ? 1 : 10,
+        all_to_all ? 1 : 10,
         o.binstep, o.dbulk, o.cutoff, o.usecutoff, o.lcell, o.GC, o.GC_threshold,
         o.seed, o.StableRNG, o.nthreads, o.silent,
     )
@@ -292,7 +295,7 @@ function Base.show(io::IO, o::Options)
    
     Computation details: 
         Reference atom for random rotations: irefatom = $(o.irefatom)
-        Number of random samples per frame: n_random_samples = $(o.n_random_samples == 0 ? "automatic (1 for self-correlations, 10 otherwise)" : o.n_random_samples)
+        Number of random samples per frame: n_random_samples = $(o.n_random_samples == 0 ? "automatic (1 for self-correlations or more than one solute molecule, 10 otherwise)" : o.n_random_samples)
         Linked cell partition: lcell = $(o.lcell)
         Force garbage collection: GC = $(o.GC)
         Memory threshold for GC: GC_threshold = $(o.GC_threshold)

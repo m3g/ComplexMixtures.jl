@@ -132,7 +132,7 @@ function Result(
     nbins = setbin(options.cutoff, options.binstep)
 
     # Set the default number of random samples, which depends on the type of correlation
-    options = _set_n_random_samples(options, isautocorrelation(trajectory))
+    options = _set_n_random_samples(options, isautocorrelation(trajectory) || trajectory.solute.nmols > 1)
 
     # If frame weights are provided, the length of the weights vector has to at least
     # of the of number of the last frame to be read, and the sum of the weights of the
@@ -221,11 +221,11 @@ Type of calculation: auto or cross-correlations - have different sampling scheme
 Choose self and cross versions
 
 The md counts are averaged over the solute molecules (solute.nmols) and the random counts 
-over the random samples (n_random_samples per frame). In the cross-correlation case, each 
-random sample has a single reference solute molecule. In the self-correlation case, each random 
-sample is a random configuration of all molecules, with each molecule as a reference, and the 
-contributions of each reference molecule are weighted by 1/solute.nmols in mddf_frame!, such 
-that each configuration counts as one random sample. In the self-correlation case each reference 
+over the random samples (n_random_samples per frame). For a single solute molecule, each 
+random sample has a single reference solute molecule. In the self-correlation case, or for more
+than one solute molecule, each random sample is a random configuration of all solvent molecules, 
+with each solute molecule as a reference, and the contributions of each reference molecule are 
+weighted by 1/solute.nmols in mddf_frame!, such that each configuration counts as one random sample. In the self-correlation case each reference 
 molecule sees solvent.nmols - 1 other molecules.
 =#
 function set_samples(R::Result)
@@ -512,7 +512,7 @@ end
     @test length(R.mddf) == 500
     @test R.nbins == 500
     @test R.files[1].nframes_read == 20
-    # n_random_samples is set to the default for cross-correlations (10)
+    # n_random_samples is set to the default for a single solute molecule (10)
     @test R.files[1].options == ComplexMixtures._set_n_random_samples(Options(), false)
     @test R.files[1].options.n_random_samples == 10
     @test length(R.rdf_count) == 500

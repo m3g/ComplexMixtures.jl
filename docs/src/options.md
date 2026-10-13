@@ -61,11 +61,16 @@ coordinates of the molecule, but any choice should be fine.
 frame, used to compute the shell volumes and the random MDDF counts that normalize the
 distributions. The random samples are generated as follows:
 
-- For cross-correlations (the solute and solvent are different molecules), one solute
-  molecule is chosen at random, and all solvent molecules are placed with random positions and 
-  orientations (with internal coordinates copied from solvent molecules in the bulk). The 
-  minimum distances of the random solvent molecules to the chosen solute molecule are computed. 
-  The default is 10 samples per frame.
+- For cross-correlations (the solute and solvent are different molecules) with more than one 
+  solute molecule, all solvent molecules are placed with random positions and orientations 
+  (keeping their internal coordinates), and the minimum distances of the random solvent molecules 
+  to every solute molecule are computed, as for the actual frame. Thus, each sample provides one
+  reference for each solute molecule. The default is 1 sample per frame.
+
+- For cross-correlations with a single solute molecule (for example, a protein), all solvent 
+  molecules are placed with random positions and orientations (with internal coordinates copied 
+  from solvent molecules in the bulk), and the minimum distances of the random solvent molecules 
+  to the solute molecule are computed. The default is 10 samples per frame.
 
 - For self-correlations (the solute and solvent are the same molecules), all molecules are placed
   with random positions and orientations (keeping their internal coordinates), and the minimum
@@ -74,16 +79,16 @@ distributions. The random samples are generated as follows:
   molecule for each molecule of the system. The default is 1 sample per frame.
 
 The number of random samples per frame should be large enough such that the random counts 
-are sampled at least as well as the actual minimum-distance counts. For self-correlations, or
-for a single solute molecule, the defaults satisfy this condition. Increase `n_random_samples` 
+are sampled at least as well as the actual minimum-distance counts. The defaults satisfy this 
+condition. Increase `n_random_samples` 
 if you have short trajectories and want to obtain reproducible results for them.
 
 !!! compat
-    The all-to-all random configurations for self-correlations, and the default of 1 random sample 
-    per frame for them, were introduced in version 2.19.1. Previously, self-correlations used 10 
-    random samples per frame, each with a single reference molecule, which resulted in noisy 
-    normalizations (and KB integrals) because the random counts were much less sampled than the 
-    actual counts. 
+    The all-to-all random configurations for self-correlations and for cross-correlations with more
+    than one solute molecule, and the default of 1 random sample per frame for them, were introduced 
+    in version 2.19.1. Previously, these calculations used 10 random samples per frame, each with a 
+    single reference molecule, which resulted in noisy normalizations (and KB integrals) because the
+    random counts were much less sampled than the actual counts. 
 
 `seed`: Seed for random number generator. If `-1`, the seed will be
 generated from the entropy of the system. If your results are dependent

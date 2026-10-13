@@ -59,9 +59,10 @@ plot!(results.d, results.mddf,
 )
 hline!([1], linestyle=:dash, linecolor=:gray, subplot=1)
 # plot KB integral
-plot!(results.d, results.kb / 1000, #to L/mol
+plot!(results.d, [ 1e-3 * kbi(results) 1e-3 * kbi(results; correction=:none) ], #to L/mol
     xlabel=L"r/\AA",
     ylabel=L"G_{us}/\mathrm{L~mol^{-1}}",
+    label=[ "KBI (with finite-size corrections)" "KBI (raw)" ],
     subplot=2
 )
 # size and margin

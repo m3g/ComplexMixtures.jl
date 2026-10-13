@@ -181,8 +181,8 @@ function Plots.plot(rd::ReferenceDensity; kargs...)
     plt = Plots.plot(rd.shell_d, dev.(rd.shell);
         label="Local (shells)", color=:gray, alpha=0.7, marker=:circle, markersize=2, linewidth=1,
     )
-    Plots.plot!(plt, rd.d, dev.(rd.window); label="Between d and the cutoff", linewidth=2)
-    Plots.plot!(plt, rd.d, dev.(rd.outside); label="Beyond d (Ganguly reference)", linewidth=2)
+    Plots.plot!(plt, rd.d, dev.(rd.window); label="Between \$d\$ and the cutoff", linewidth=2)
+    Plots.plot!(plt, rd.d, dev.(rd.outside); label="Beyond \$d\$ (Ganguly reference)", linewidth=2)
     Plots.hline!(plt, [0.0]; label=nothing, color=:black, linestyle=:dash)
     # Set the limits from the region beyond the first solvation shell
     imin = findfirst(>=(0.5), rd.shell)
@@ -191,7 +191,8 @@ function Plots.plot(rd::ReferenceDensity; kargs...)
     vals = filter(isfinite, vcat(rd.window[i0:end], rd.outside[i0:end]))
     δ = isempty(vals) ? 2.0 : max(0.5, 2 * maximum(abs.(dev.(vals))))
     Plots.plot!(plt;
-        xlabel="d / Å", ylabel="(ρ/ρ_bulk - 1) / %", xlims=(dmin, last(rd.d)), ylims=(-δ, δ),
+        xlabel="\$d~/~\\mathrm{\\AA}\$", ylabel="\$(\\rho/\\rho_{\\mathrm{bulk}} - 1)~/~\\%\$", 
+        xlims=(dmin, last(rd.d)), ylims=(-δ, δ),
         framestyle=:box, kargs...
     )
     return plt

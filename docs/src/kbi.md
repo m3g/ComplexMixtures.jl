@@ -50,37 +50,38 @@ by the volume element, and the integral oscillates around its limiting value eve
 
 ### Weight functions
 
-Krüger and Vlugt [1,2] derived, from the theory of finite-volume KBIs, weight functions that estimate
-``G_\infty`` from the RDF known up to ``L``:
+Weight functions that estimate ``G_\infty`` from the RDF known up to ``L`` were derived from the
+theory of finite-volume KBIs ([Krüger et al., 2013](https://doi.org/10.1021/jz301992u); [Krüger and Vlugt, 2018](https://doi.org/10.1103/PhysRevE.97.051301)):
 
 ```math
 G_W(L) = \int_0^L \left[g(d) - 1\right] \frac{dV(d)}{dd}\, W(d/L)\, dd
 ```
 
-Santos [3] showed that these weights follow from a purely mathematical identity, valid for any 
-one-dimensional integral, and generalized them to a family of weights, ``W_n^{(k)}(x)``, that vanish
-more smoothly at ``x = d/L = 1``. Since the identity does not depend on the origin of the integrand, 
+These weights follow from a purely mathematical identity, valid for any 
+one-dimensional integral, from which they can be generalized to a family of weights, ``W_n^{(k)}(x)``, 
+that vanish more smoothly at ``x = d/L = 1`` ([Santos, 2018](https://doi.org/10.1103/PhysRevE.98.063302)). Since the identity does not depend on the origin of the integrand, 
 the weights can be applied to the KBI computed from MDDFs. The available weights are:
 
 | `correction` | Weight, ``W(x)``, ``x = d/L`` | |
 |:---------:|:-------------------------------|:---------|
 | `:none` (or `:G0`) | ``1`` | The truncated integral. Large oscillations. |
-| `:G1` | ``1 - x^3`` | Ref. [1]. |
-| `:G2` | ``1 - \frac{23}{8}x^3 + \frac{3}{4}x^4 + \frac{9}{8}x^5`` | Ref. [2], Eq. 24. |
-| `:W7` | ``(1-x)^4 (1 + \frac{35}{16}x)(1 + \frac{1225}{256}x^2)(1 + \frac{29}{16}x + \frac{5}{4}x^2 + \frac{5}{16}x^3)`` | Ref. [3]. Default. |
+| `:G1` | ``1 - x^3`` | ([Krüger et al., 2013](https://doi.org/10.1021/jz301992u)) |
+| `:G2` | ``1 - \frac{23}{8}x^3 + \frac{3}{4}x^4 + \frac{9}{8}x^5`` | ([Krüger and Vlugt, 2018](https://doi.org/10.1103/PhysRevE.97.051301), Eq. 24) |
+| `:W7` | ``(1-x)^4 (1 + \frac{35}{16}x)(1 + \frac{1225}{256}x^2)(1 + \frac{29}{16}x + \frac{5}{4}x^2 + \frac{5}{16}x^3)`` | ([Santos, 2018](https://doi.org/10.1103/PhysRevE.98.063302)). Default. |
 
 The weights go to zero at ``d = L``, thus the oscillations of ``g(d)`` near the truncation point do
 not propagate to the integral:
 
 ```@example kbi
-using Plots
+using Plots, LaTeXStrings
+Plots.default(fontfamily="Computer Modern", linewidth=2, framestyle=:box, grid=false)
 x = range(0, 1, length=200)
 W7(x) = (1-x)^4 * (1 + 35x/16) * (1 + 1225x^2/256) * (1 + 29x/16 + 5x^2/4 + 5x^3/16)
-plot(x, ones(length(x)); label="G₀ (:none)", linewidth=2)
-plot!(x, @. 1 - x^3; label="G₁ (:G1)", linewidth=2)
-plot!(x, @. 1 - 23/8 * x^3 + 3/4 * x^4 + 9/8 * x^5; label="G₂ (:G2)", linewidth=2)
-plot!(x, W7.(x); label="W₇⁽³⁾ (:W7)", linewidth=2)
-plot!(xlabel="x = d/L", ylabel="W(x)", framestyle=:box, size=(500, 350))
+plot(x, ones(length(x)); label=L"$G_0$ (:none)")
+plot!(x, @. 1 - x^3; label=L"$G_1$ (:G1)")
+plot!(x, @. 1 - 23/8 * x^3 + 3/4 * x^4 + 9/8 * x^5; label=L"$G_2$ (:G2)")
+plot!(x, W7.(x); label=L"$W_7^{(3)}$ (:W7)")
+plot!(xlabel=L"x = d/L", ylabel=L"W(x)", size=(500, 350))
 ```
 
 The weights correct the truncation of the integral when ``g(d) - 1`` oscillates around zero at ``L``. 
@@ -104,7 +105,7 @@ distances, because the volume element grows with ``L``. Two normalizations are a
   ```
   where ``N`` is the number of solvent molecules (minus one if the solute and the solvent are the same), 
   ``N_{\rm in}(d)`` is the average number of solvent molecules within ``d``, and ``V`` is the volume of the box.
-  This is the correction for closed systems proposed by Ganguly and van der Vegt [4].
+  This is the correction for closed systems ([Ganguly and van der Vegt, 2013](https://doi.org/10.1021/ct301017q)).
 
 If the two normalizations give different KBIs at the distances of interest, the estimate of the 
 reference density is a source of error that must be considered. The density of the solvent in different 
@@ -136,11 +137,11 @@ g0 = kbi(R; correction=:none, normalization=:mddf) # truncated
 g2 = kbi(R; correction=:G2)
 w7 = kbi(R) # correction=:W7, normalization=:ganguly
 w7O = kbi(RO) # O-O RDF
-plot(R.d, g0; label="G₀ (truncated)", linewidth=2, color=:gray)
-plot!(R.d, g2; label="G₂", linewidth=2)
-plot!(R.d, w7; label="W₇⁽³⁾ (default)", linewidth=2, color=:black)
-plot!(RO.d, w7O; label="W₇⁽³⁾, O–O RDF", linewidth=2, linestyle=:dash)
-plot!(xlabel="L / Å", ylabel="KBI / cm³ mol⁻¹", ylims=(-30, 0), xlims=(3, 25), framestyle=:box, size=(600, 400))
+plot(R.d, g0; label=L"$G_0$ (truncated)", color=:gray)
+plot!(R.d, g2; label=L"$G_2$")
+plot!(R.d, w7; label=L"$W_7^{(3)}$ (default)", color=:black)
+plot!(RO.d, w7O; label=L"$W_7^{(3)}$, O–O RDF", linestyle=:dash)
+plot!(xlabel=L"L~/~\mathrm{\AA}", ylabel=L"\mathrm{KBI}~/~\mathrm{cm^3~mol^{-1}}", ylims=(-30, 0), xlims=(3, 25), size=(600, 400))
 ```
 
 The truncated integral, ``G_0``, oscillates significantly, and drifts upwards at long distances. The 
@@ -173,7 +174,7 @@ depends on the water model, and on the sampling.
 ### Finite-volume KBIs and extrapolation
 
 For radial distribution functions, an alternative estimate of ``G_\infty`` is provided by the theory
-of finite-volume KBIs [1,2]. The KBI of a sphere of diameter ``L`` is
+of finite-volume KBIs ([Krüger et al., 2013](https://doi.org/10.1021/jz301992u); [Krüger and Vlugt, 2018](https://doi.org/10.1103/PhysRevE.97.051301)). The KBI of a sphere of diameter ``L`` is
 
 ```math
 G(L) = \int_0^L h(r)\, 4\pi r^2 \left(1 - \frac{3}{2}x + \frac{1}{2}x^3\right) dr, \quad x = \frac{r}{L},
@@ -196,8 +197,8 @@ fv = finite_volume_kbi(RO)
 ```
 
 ```@example kbi
-plot(1 ./ fv.L, fv.G; label="G(L)", linewidth=2)
-plot!(xlabel="1/L / Å⁻¹", ylabel="G(L) / cm³ mol⁻¹", xlims=(0, 0.25), ylims=(-20, 0), framestyle=:box, size=(600, 400))
+plot(1 ./ fv.L, fv.G; label=L"G(L)")
+plot!(xlabel=L"1/L~/~\mathrm{\AA^{-1}}", ylabel=L"G(L)~/~\mathrm{cm^3~mol^{-1}}", xlims=(0, 0.25), ylims=(-20, 0), size=(600, 400))
 ```
 
 The function [`extrapolate_kbi`](@ref) fits the linear relation to the data in a range of values of ``L``,
@@ -211,7 +212,7 @@ The line obtained can be compared with the data, to check if the relation is lin
 
 ```@example kbi
 x = range(0, 0.1, length=10)
-plot!(x, ext.Ginf .+ ext.F .* x; label="Fit, 10 ≤ L ≤ 20 Å", linewidth=2, linestyle=:dash)
+plot!(x, ext.Ginf .+ ext.F .* x; label=L"Fit, $10 \leq L \leq 20$ Å", linestyle=:dash)
 vspan!([1 / 20, 1 / 10]; alpha=0.2, color=:gray, label=nothing)
 ```
 
@@ -284,17 +285,3 @@ finite_volume_kbi
 extrapolate_kbi
 ComplexMixtures.FiniteVolumeKBI
 ```
-
-## References
-
-1. P. Krüger, S. K. Schnell, D. Bedeaux, S. Kjelstrup, T. J. H. Vlugt, J.-M. Simon,
-   Kirkwood–Buff Integrals for Finite Volumes. *J. Phys. Chem. Lett.* 4, 235 (2013).
-   [DOI: 10.1021/jz301992u](https://doi.org/10.1021/jz301992u)
-2. P. Krüger, T. J. H. Vlugt, Size and shape dependence of finite-volume Kirkwood-Buff integrals.
-   *Phys. Rev. E* 97, 051301(R) (2018). 
-   [DOI: 10.1103/PhysRevE.97.051301](https://doi.org/10.1103/PhysRevE.97.051301)
-3. A. Santos, Finite-size estimates of Kirkwood-Buff and similar integrals. 
-   [arXiv:1806.00821](https://arxiv.org/abs/1806.00821) (2018).
-4. P. Ganguly, N. F. A. van der Vegt, Convergence of Sampling Kirkwood–Buff Integrals of Aqueous Solutions 
-   with Molecular Dynamics Simulations. *J. Chem. Theory Comput.* 9, 1347 (2013).
-   [DOI: 10.1021/ct301017q](https://doi.org/10.1021/ct301017q)

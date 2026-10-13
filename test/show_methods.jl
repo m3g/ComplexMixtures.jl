@@ -26,7 +26,7 @@
         
          Computation details: 
              Reference atom for random rotations: irefatom = -1
-             Number of random samples per frame: n_random_samples = automatic (1 for self-correlations, 10 otherwise)
+             Number of random samples per frame: n_random_samples = automatic (1 for self-correlations or more than one solute molecule, 10 otherwise)
              Linked cell partition: lcell = 1
              Force garbage collection: GC = true
              Memory threshold for GC: GC_threshold = 0.3
