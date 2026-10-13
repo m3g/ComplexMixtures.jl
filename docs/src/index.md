@@ -31,10 +31,9 @@ of the solvents components to thermodynamic properties, like protein
 structural stability, solubility, and others.
 
 !!! compat
-    Important: This manual refers to version 2 of ComplexMixtures.jl. There
-    are syntax changes relative to the 1.X series, and analysis scripts 
-    written for the previous versions won't work. The list of changes
-    necessary to updated the scripts is described [here](@ref updating-scripts).
+    Important: This manual refers to version 3 of ComplexMixtures.jl. The changes relative
+    to previous versions, and how to update scripts written for them, are described in
+    [Version compatibility](@ref version-compatibility).
 
 ## Help!
 
@@ -193,4 +192,3 @@ img[style*="float: right"] { margin: 0 0 1em 1.5em; }
 * I. P. de Oliveira, L. Martínez, **Molecular basis for competitive solvation of the Burkholderia cepacia lipase by sorbitol and urea.**
   *Phys. Chem. Chem. Phys.* 18, 21797-21808, 2016.
   [[Full Text]](https://pubs.rsc.org/en/content/articlelanding/2016/cp/c6cp01789d#!divAbstract)
-

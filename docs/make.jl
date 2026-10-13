@@ -48,12 +48,11 @@ makedocs(
             "Kirkwood-Buff integrals" => "kbi.md",
             "Tools" => "tools.md",
         ],
-#        "Updating scripts" => "updating_scripts.md",
         "References" => Any[
             "Primary citations" => "citations.md",
             "Applications" => "applications.md",
             "See also" => "seealso.md",
-            "Breaking changes" => "breaking_changes.md",
+            "Version compatibility" => "version_compatibility.md",
         ],
     ],
 )
@@ -62,4 +61,5 @@ deploydocs(
     target="build",
     branch="gh-pages",
     versions=["stable" => "v^", "v#.#"],
+    push_preview=true,
 )
