@@ -5,7 +5,6 @@ using PDBTools
 using ComplexMixtures
 using Plots
 using LaTeXStrings
-using EasyFit: movavg
 
 # Load a PDB file of the system
 system = read_pdb("./equilibrated.pdb")

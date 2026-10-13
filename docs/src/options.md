@@ -9,7 +9,7 @@ to obtain the MDDF. These options can be defined by the user and passed to the
 `mddf` function, using, for example: 
 
 ```julia
-options = Options(lastframe=1000, bulk_range=(8.0, 12.0))
+options = Options(lastframe=1000, cutoff=12.0)
 results = mddf(trajectory_file, solute, solvent, options)
 ```
 
@@ -28,38 +28,28 @@ only one in five frames will be considered.
 `binstep`: Real, length of the bin step of the histograms, default =
 0.02 Angstroms.
 
-`bulk_range`: This parameter defines the range of distances from the 
-solute that will be considered as the `bulk` region of the solution.
-The density of the bulk solution is estimated by counting the number
-of molecules of the solvent in this region, and by performing a 
-numerical integration of its volume. Set this range to a region of the
-solution where the MDDF is converged to 1 for practical purposes. Tuning
-this parameter is crucial for a proper convergence of the MDDFs and
-KB integrals. 
+`cutoff`: Real, the maximum distance to the solute considered in the
+construction of the histograms. The bulk density of the solvent is estimated
+from the molecules beyond the cutoff, by exclusion: from the number of solvent
+molecules beyond the cutoff and from the volume of this region, computed by numerical
+integration. Set this distance to a value beyond which the distribution function
+is converged to 1 for practical purposes. Default: 10 Angstroms, but
+setting it according to the system is highly encouraged. The dependence of 
+the density of the solvent on the distance to the solute, beyond the correlation 
+length, can be inspected with the [`reference_density`](@ref) function.
 
 !!! compat
-    The `bulk_range` option was introduced in version 2.1.0.
+    Since version 3.0.0, the bulk density is always estimated from the region beyond the 
+    `cutoff`. The `bulk_range`, `dbulk`, and `usecutoff` options are deprecated: 
+    `bulk_range=(dbulk, cutoff)` (and `dbulk`, `cutoff` with `usecutoff=true`) are mapped to 
+    `cutoff`, and `dbulk` alone is mapped to `cutoff=dbulk`. A warning is issued in these cases.
+    In previous versions, `bulk_range=(dbulk, cutoff)` defined a range of distances from which 
+    the bulk density was estimated.
 
 ## Lower level options
 
 These will probably never be set by the user, unless if dealing with 
 some special system (large very large, or very low density system).
-
-`dbulk`: Real, distance from which the solution is to be considered as a
-bulk solution, that is, where the presence of the solute does not affect
-the structure of the solution anymore. By default, all molecules at
-distances greater than 10.0 Angstroms are considered bulk molecules. 
-However, the definition of `bulk_range` is highly encouraged. 
-
-`cutoff`: Real, the maximum distance to be considered in the
-construction of histograms. Default: 10 Angstroms.
-
-`usecutoff`: `true/false`: If true, the cutoff distance might be
-different from `dbulk` and the density of the solvent in bulk will be
-estimated from the density within `dbulk` and `cutoff`. If `false`, the
-density of the solvent is estimated from the density outside `dbulk` by
-exclusion. Default: `false`. The definition of `bulk_range` instead
-is highly encouraged. 
 
 `irefatom`: Integer, index of the reference atom in the solvent molecule
 used to compute the shell volumes and domain volumes in the Monte-Carlo
@@ -67,12 +57,38 @@ volume estimates. The final `rdf` data is reported for this atom as
 well. By default, we choose the atom which is closer to the center of
 coordinates of the molecule, but any choice should be fine. 
 
-`n_random_samples`: Integer, how many samples of random molecules are
-generated for each solvent molecule to compute the shell volumes and
-random MDDF counts. Default: 10. Increase this only if you have short
-trajectory and want to obtain reproducible results for that short
-trajectory. For long trajectories (most desirable and common), this
-value can even be decreased to speed up the calculations. 
+`n_random_samples`: Integer, the number of random (ideal-gas) samples computed for each
+frame, used to compute the shell volumes and the random MDDF counts that normalize the
+distributions. The random samples are generated as follows:
+
+- For cross-correlations (the solute and solvent are different molecules) with more than one 
+  solute molecule, all solvent molecules are placed with random positions and orientations 
+  (keeping their internal coordinates), and the minimum distances of the random solvent molecules 
+  to every solute molecule are computed, as for the actual frame. Thus, each sample provides one
+  reference for each solute molecule. The default is 1 sample per frame.
+
+- For cross-correlations with a single solute molecule (for example, a protein), all solvent 
+  molecules are placed with random positions and orientations (with internal coordinates copied 
+  from solvent molecules in the bulk), and the minimum distances of the random solvent molecules 
+  to the solute molecule are computed. The default is 10 samples per frame.
+
+- For self-correlations (the solute and solvent are the same molecules), all molecules are placed
+  with random positions and orientations (keeping their internal coordinates), and the minimum
+  distances of each molecule to all other molecules are computed, exactly as for the actual 
+  frame. Thus, each sample is a random configuration of the system, which provides one reference
+  molecule for each molecule of the system. The default is 1 sample per frame.
+
+The number of random samples per frame should be large enough such that the random counts 
+are sampled at least as well as the actual minimum-distance counts. The defaults satisfy this 
+condition. Increase `n_random_samples` 
+if you have short trajectories and want to obtain reproducible results for them.
+
+!!! compat
+    The all-to-all random configurations for self-correlations and for cross-correlations with more
+    than one solute molecule, and the default of 1 random sample per frame for them, were introduced 
+    in version 3.0.0. Previously, these calculations used 10 random samples per frame, each with a 
+    single reference molecule, which resulted in noisy normalizations (and KB integrals) because the
+    random counts were much less sampled than the actual counts. 
 
 `seed`: Seed for random number generator. If `-1`, the seed will be
 generated from the entropy of the system. If your results are dependent

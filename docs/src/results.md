@@ -9,7 +9,7 @@ the MDDF, KB integrals, and atomic contributions. The following section
 will assume that the computation was performed by calling the `mddf`
 function with 
 ```julia
-results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
+results = mddf(trajectory_file, solute, solvent, Options(cutoff=12.0))
 ``` 
 such that the `results` variable contain the `Result` data structure. By
 default, the histograms contain 500 bins (`binstep=0.002` and
@@ -70,9 +70,20 @@ plot(results.d,results.mddf,xlabel="d/A",ylabel="mddf(d) / L/mol")
 
 ## Kirkwood-Buff integral: `results.kb`
 
-The `results.kb` vector will contain the Kirkwood-Buff integral computed
-as a function of the minimum-distance to the solute. For properly
-sampled simulations, it is expected to converge at large distances.  
+The `results.kb` vector contains the Kirkwood-Buff integral, in cm³ mol⁻¹, computed
+as a function of the minimum-distance to the solute, with corrections for the truncation 
+of the integral at a finite distance and for the reference density. For properly
+sampled simulations, it is expected to converge at large distances. 
+
+`results.kb` is equal to `kbi(results)`. The [`kbi`](@ref) function can be used to compute 
+the KB integral with other corrections, or without them (`kbi(results; correction=:none, normalization=:mddf)`,
+the truncated integral of the MDDF). See the [Kirkwood-Buff integrals](@ref kbi) section.
+
+!!! compat
+    The corrections are applied to `results.kb` since version 3.0.0. In results computed and
+    saved with previous versions, `results.kb` contains the truncated (uncorrected) KB integral. 
+    Use `kbi(results)` to obtain the corrected KB integral from them.
+
 ```julia-repl
 julia> results.kb
 500-element Array{Float64,1}:
@@ -97,7 +108,7 @@ plot(
     results.d, 
     results.kb / 1000, # convert to L / mol
     xlabel="d/A",
-    ylabel="mddf(d) / L/mol"
+    ylabel="KB / L/mol"
 ) 
 ```
 
@@ -161,7 +172,7 @@ The complete data available is:
 | Parameter | Meaning | Type of value | Comment | 
 |:----------|:--------|:-------------:|:--------|
 | `nbins` | Number of bins of the histograms. | `Int` | | 
-| `dbulk` | Distance from solute of bulk solution. | `Float64` |  |
+| `dbulk` | Distance from solute of bulk solution. Equal to `cutoff` since version 3.0.0. | `Float64` |  |
 | `cutoff` | Maximum distance to be considered for histograms. | `Float64`  | | 
 | `autocorrelation` | The solute is the same as the solvent? | `Bool` | Automatically set if `solute == solvent`. |  
 | `solute` | Properties of the solute | `AtomSelection` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solute. |

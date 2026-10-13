@@ -24,8 +24,8 @@ acr = select(system, "resname FACR or resname ACR or resname LACR")
 solute = AtomSelection(acr, nmols=1)
 solvent = AtomSelection(dmf, natomspermol=12)
 
-# Use a large dbulk distance for better KB convergence
-options = Options(bulk_range=(20.0, 25.0))
+# Use a large cutoff for better KB convergence
+options = Options(cutoff=25.0)
 
 # Compute the mddf and associated properties
 results = mddf(trajectory_file, solute, solvent, options)

@@ -165,7 +165,7 @@ function build_particle_system(
         xpositions=zeros(SVector{3,Float64}, trajectory.solute.natomspermol),
         ypositions=zeros(SVector{3,Float64}, trajectory.solvent.nmols * trajectory.solvent.natomspermol),
         unitcell,
-        cutoff=options.usecutoff ? options.cutoff : options.dbulk,
+        cutoff=options.cutoff,
         output=fill(zero(MinimumDistance), trajectory.solvent.nmols),
         output_name=:list,
         lcell=options.lcell,

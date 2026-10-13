@@ -37,7 +37,7 @@ julia> R = mddf(
            joinpath(data_dir,"NAMD/trajectory.dcd"), 
            solute, 
            solvent, 
-           Options(bulk_range=(8.0,12.0), silent=true)
+           Options(cutoff=12.0, silent=true)
         );
 
 julia> i5 = findfirst(>=(5), R.d) # index for distance ≈ 5 Å
@@ -90,7 +90,7 @@ julia> R = mddf(
            joinpath(data_dir,"NAMD/trajectory.dcd"), 
            solute, 
            solvent, 
-           Options(bulk_range=(8.0,12.0), silent=true)
+           Options(cutoff=12.0, silent=true)
         );
 
 julia> i5 = findfirst(>=(5), R.d) # index for distance ≈ 5 Å

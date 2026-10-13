@@ -144,6 +144,8 @@ function Base.merge(results::Vector{<:Result})
         R.volume.domain += w * result.volume.domain
         R.volume.shell += w * result.volume.shell
     end
+    # The KBI is not linear in the counts: recompute it from the merged counts
+    _set_kb!(R)
     return R
 end
 
@@ -184,7 +186,7 @@ end
     @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
-    @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+    @test R.density.solvent_bulk ≈ 2 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
     @test R.weights == [0.5, 0.5]
 
     # Test loading a saved merged file

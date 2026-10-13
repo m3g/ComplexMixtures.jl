@@ -52,9 +52,7 @@ end
 #
 # Defines is a molecule is a bulk molecule
 #
-inbulk(md::MinimumDistance, options::Options) =
-    options.usecutoff ? (md.within_cutoff && md.d > options.dbulk) :
-    !md.within_cutoff
+inbulk(md::MinimumDistance, ::Options) = !md.within_cutoff
 
 #=
     randomize_solvent!(system, buff, n_solvent_in_bulk, options, RNG)
@@ -173,7 +171,7 @@ julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
 julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
 
-julia> options = Options(lastframe=10, bulk_range=(10.0, 15.0));
+julia> options = Options(lastframe=10, cutoff=15.0);
 
 julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
 
@@ -239,6 +237,7 @@ function mddf(
     # data structures
     options.silent || println("Evaluate trajectory meta-data and go to first frame ...")
     trajectory_data = TrajectoryMetaData(trajectory, options)
+
 
     # Structure in which the final results will be stored
     R = Result(trajectory, options; trajectory_data, frame_weights)
@@ -371,8 +370,11 @@ function mddf_frame!(
     update_volume!(r_chunk, system, frame_weight)
 
     # Random set of *solute* molecules to use as references for the ideal gas distributions
+    # (none if the random distribution is computed from all-to-all distances of random 
+    # configurations: self-correlations, or more than one solute molecule)
+    all_to_all = _all_to_all_random(r_chunk)
     for i in eachindex(buff.ref_solutes)
-        buff.ref_solutes[i] = rand(RNG, 1:r_chunk.solute.nmols)
+        buff.ref_solutes[i] = all_to_all ? 0 : rand(RNG, 1:r_chunk.solute.nmols)
     end
 
     #
@@ -425,7 +427,55 @@ function mddf_frame!(
 
     end # loop over solute molecules
 
+    # Self-correlations, or more than one solute molecule: the ideal-gas distribution is computed 
+    # from random configurations of all solvent molecules, with each solute molecule as a reference
+    # (for self-correlations, the solute molecules are the randomized molecules; otherwise, they are
+    # the actual solute molecules of the frame). Each configuration provides solute.nmols samples, 
+    # which are weighted by 1/solute.nmols, such that the normalization is the same as that of 
+    # n_random_samples single-reference samples.
+    if all_to_all
+        nmols = r_chunk.solute.nmols
+        for _ in 1:r_chunk.files[1].options.n_random_samples
+            randomize_all!(system, buff, r_chunk, RNG)
+            for isolute in 1:nmols
+                solute_coordinates = r_chunk.autocorrelation ? system.ypositions : buff.solute_read
+                system.xpositions .= viewmol(isolute, solute_coordinates, r_chunk.solute)
+                minimum_distances!(system, r_chunk, isolute)
+                update_counters!(r_chunk, system, frame_weight / nmols, Val(:random))
+            end
+        end
+        system.ypositions .= buff.solvent_read
+    end
+
     return r_chunk
+end
+
+#=
+    _all_to_all_random(R::Result)
+
+Returns `true` if the ideal-gas distribution is computed from random configurations of all
+solvent molecules, with every solute molecule as a reference: for self-correlations, and 
+for cross-correlations with more than one solute molecule.
+
+=#
+_all_to_all_random(R::Result) = R.autocorrelation || R.solute.nmols > 1
+
+#=
+    randomize_all!(system, buff, R, RNG)
+
+Randomizes the positions and orientations of all solvent molecules, keeping their
+internal coordinates (used for self-correlations and for more than one solute molecule).
+
+=#
+function randomize_all!(system::AbstractParticleSystem, buff::Buffer, R::Result, RNG)
+    uc = system.unitcell
+    cmin, cmax = CellListMap.get_computing_box(system)
+    for imol = 1:R.solvent.nmols
+        y_new = viewmol(imol, system.ypositions, R.solvent)
+        y_new .= viewmol(imol, buff.solvent_read, R.solvent)
+        random_move!(y_new, R.files[1].irefatom, uc, cmin, cmax, RNG)
+    end
+    return system
 end
 
 #=
@@ -528,7 +578,7 @@ julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
 julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
 
-julia> options = Options(lastframe=10, bulk_range=(10.0, 15.0));
+julia> options = Options(lastframe=10, cutoff=15.0);
 
 julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
 
@@ -610,7 +660,7 @@ end
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
         @test R.density.solute ≈ 1 / R.volume.total
         @test R.density.solvent ≈ 3 / R.volume.total
-        @test R.density.solvent_bulk ≈ 2 / R.volume.bulk
+        @test R.density.solvent_bulk ≈ 2 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
         @test sum(R.md_count) ≈ 1
         @test sum(R.coordination_number) ≈ 51
         C = coordination_number(trajectory_file, protein, water, options; trajectory_format, low_memory)
@@ -737,7 +787,7 @@ end
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
-        @test R.density.solvent_bulk ≈ 1 / R.volume.bulk
+        @test R.density.solvent_bulk ≈ 1 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
 
         # with both frames
         options = Options(
@@ -753,7 +803,7 @@ end
         @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
-        @test R.density.solvent_bulk ≈ 0.5 / R.volume.bulk
+        @test R.density.solvent_bulk ≈ 0.5 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
     end
 end
 

@@ -12,6 +12,8 @@ struct MultipleResidueContribution end
         results::Result, atoms::AbstractVector{<:PDBTools.Atom};
         dmin=1.5, dmax=3.5,
         type=:mddf,
+        correction=:W7,
+        normalization=:ganguly,
     )
 
 Compute the residue contributions to the solute-solvent pair distribution function.
@@ -28,6 +30,8 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 - `dmin::Float64`: The minimum distance to consider. Default is `1.5`.
 - `dmax::Float64`: The maximum distance to consider. Default is `3.5`.
 - `type::Symbol`: The type of the pair distribution function (`:mddf`, `:md_count`, `:coordination_number`, or `:kbi`). Default is `:mddf`.
+- `correction::Symbol` and `normalization::Symbol`: Only used if `type=:kbi`. The weight function and the 
+  reference density used to compute the KBI contributions, as in [`kbi`](@ref). Defaults: `:W7` and `:ganguly`.
 - `silent::Bool`: If `true`, the progress bar is not shown. Default is `false`.
 
 A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
@@ -158,6 +162,8 @@ function ResidueContributions(
     results::Result, atoms::AbstractVector{<:PDBTools.Atom};
     dmin=1.5, dmax=3.5,
     type=:mddf,
+    correction::Symbol=:W7,
+    normalization::Symbol=:ganguly,
     silent=false,
     nthreads=Threads.nthreads(),
 )
@@ -185,7 +191,7 @@ function ResidueContributions(
     Threads.@threads for (ichunk, residue_inds) in enumerate(ChunkSplitters.index_chunks(residues; n=nthreads))
         _warn_zero_md_count = ichunk == 1 ? (!silent) : false
         for ires in residue_inds
-            rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, _warn_zero_md_count)
+            rescontrib[ires] .= contributions(results, SoluteGroup(residues[ires]); type, correction, normalization, _warn_zero_md_count)
             _warn_zero_md_count = false
             silent || next!(p)
         end
@@ -709,6 +715,8 @@ end
 
     # Test extracting proximal contributions to the KBIs
     rc_kbi = ResidueContributions(result, glicines; type=:kbi, dmax=12.0)
-    @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ result.kb[end]
+    @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ kbi(result)[end]
+    rc_kbi = ResidueContributions(result, glicines; type=:kbi, dmax=12.0, correction=:none, normalization=:mddf)
+    @test sum(rc_kbi[i][end] for i in eachindex(rc_kbi)) ≈ kbi(result; correction=:none, normalization=:mddf)[end]
 
 end

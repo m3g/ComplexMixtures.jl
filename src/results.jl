@@ -131,6 +131,9 @@ function Result(
     # Number of bins of the histogram
     nbins = setbin(options.cutoff, options.binstep)
 
+    # Set the default number of random samples, which depends on the type of correlation
+    options = _set_n_random_samples(options, isautocorrelation(trajectory) || trajectory.solute.nmols > 1)
+
     # If frame weights are provided, the length of the weights vector has to at least
     # of the of number of the last frame to be read, and the sum of the weights of the
     # frames to be considered must be greater than zero
@@ -217,15 +220,13 @@ Type of calculation: auto or cross-correlations - have different sampling scheme
 
 Choose self and cross versions
 
-In both the self and (cross) non-self cases, the number of random samples is 
-n_random_samples*solvent.nmols. However, in the non-self distribution
-the sampling of solvent distances is proportional to the number of solute
-molecules, thus the md count has to be averaged by solute.nmols. In the
-case of the self-distribution, we compute n(n-1)/2 distances, and we will
-divide this by n random samples, which is the sampling of the random
-distribution. Therefore, we must weight the self-distance count by dividing
-it by (n-1)/2, so that we have a count proportional to n as well, leading
-to the correct weight relative to the random sample. 
+The md counts are averaged over the solute molecules (solute.nmols) and the random counts 
+over the random samples (n_random_samples per frame). For a single solute molecule, each 
+random sample has a single reference solute molecule. In the self-correlation case, or for more
+than one solute molecule, each random sample is a random configuration of all solvent molecules, 
+with each solute molecule as a reference, and the contributions of each reference molecule are 
+weighted by 1/solute.nmols in mddf_frame!, such that each configuration counts as one random sample. In the self-correlation case each reference 
+molecule sees solvent.nmols - 1 other molecules.
 =#
 function set_samples(R::Result)
     if R.autocorrelation
@@ -347,31 +348,32 @@ function _mddf_final_results!(R::Result, options::Options)
     R.volume.total = R.volume.total / Q
     @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
 
-    # Solute domain volume
-    ibulk = setbin(R.dbulk + 0.5 * R.files[1].options.binstep, R.files[1].options.binstep)
-    R.volume.domain = sum(@view(R.volume.shell[1:ibulk-1]))
-
-    # Bulk volume and density properties: either the bulk is considered everything
-    # that is not the domain, or the bulk is the region between d_bulk and cutoff,
-    # if R.files[1].options.usecutoff is true (meaning that there is a cutoff different from
-    # that of the bulk distance)
-    if !R.files[1].options.usecutoff
-        R.volume.bulk = R.volume.total - R.volume.domain
-        n_solvent_in_bulk = samples.solvent_nmols - sum(R.rdf_count)
-    else
-        n_solvent_in_bulk = sum(@view(R.rdf_count[ibulk:R.nbins]))
-        R.volume.bulk = sum(@view(R.volume.shell[ibulk:R.nbins]))
-    end
+    # Solute domain volume: the volume within the cutoff, from the distances of the 
+    # reference atoms of the solvent molecules to the solute
+    R.volume.domain = sum(R.volume.shell)
+    R.volume.bulk = R.volume.total - R.volume.domain
     R.density.solvent = R.solvent.nmols / R.volume.total
     R.density.solute = R.solute.nmols / R.volume.total
-    R.density.solvent_bulk = n_solvent_in_bulk / R.volume.bulk
+
+    # Density of the random (ideal-gas) distribution: samples.solvent_nmols molecules 
+    # (one less than the number of solvent molecules if the solute and solvent are the same)
+    # in the volume of the system
+    density_random = samples.solvent_nmols / R.volume.total
+
+    # Bulk density: the density of the solvent beyond the cutoff, with the solvent molecules
+    # classified by their minimum distance to the solute, as in the MDDF. The volume of the 
+    # region within the cutoff is that of the random distribution (with this definition, the 
+    # bulk density is equal to the reference density of the Ganguly normalization at the cutoff).
+    n_solvent_in_bulk = samples.solvent_nmols - sum(R.md_count)
+    v_solvent_in_bulk = R.volume.total - sum(R.md_count_random) / density_random
+    R.density.solvent_bulk = n_solvent_in_bulk / v_solvent_in_bulk
 
     # Now that we know the the volume of the domain and the density of the solvent in the 
     # bulk region, we can rescale the random counts to take into account that the the ideal
     # gas distribution must have more molecules, with same bulk density, that the true
     # distribution, because we have to take into consieration the available volume which is
     # occupied by the solute
-    density_fix = R.density.solvent_bulk / R.density.solvent
+    density_fix = R.density.solvent_bulk / density_random
     return renormalize!(R, density_fix; silent=options.silent)
 end
 
@@ -401,10 +403,6 @@ function renormalize!(R::Result, density_fix::Number; silent)
                 warned_already = true
             end
         end
-        R.kb[ibin] =
-            units.Angs3tocm3permol *
-            (1 / R.density.solvent_bulk) *
-            (R.coordination_number[ibin] - R.coordination_number_random[ibin])
 
         # For the RDF
         if R.rdf_count_random[ibin] > 0.0
@@ -423,6 +421,24 @@ function renormalize!(R::Result, density_fix::Number; silent)
             (1 / R.density.solvent_bulk) *
             (R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
 
+    end
+    _set_kb!(R)
+    return R
+end
+
+#=
+    _set_kb!(R::Result)
+
+Sets `R.kb` to the KBI computed with the default options of `kbi`. If the bulk density
+is zero, the KBI is not defined, and the uncorrected expression is used (resulting in `Inf` or `NaN`).
+
+=#
+function _set_kb!(R::Result)
+    if R.density.solvent_bulk > 0
+        R.kb .= kbi(R)
+    else
+        @. R.kb = units.Angs3tocm3permol * (1 / R.density.solvent_bulk) *
+                  (R.coordination_number - R.coordination_number_random)
     end
     return R
 end
@@ -496,7 +512,9 @@ end
     @test length(R.mddf) == 500
     @test R.nbins == 500
     @test R.files[1].nframes_read == 20
-    @test R.files[1].options == Options()
+    # n_random_samples is set to the default for a single solute molecule (10)
+    @test R.files[1].options == ComplexMixtures._set_n_random_samples(Options(), false)
+    @test R.files[1].options.n_random_samples == 10
     @test length(R.rdf_count) == 500
     @test length(R.rdf_count_random) == 500
     @test R.solute == AtomSelection(collect(1:1463), nmols=1, natomspermol=1463, group_names=name.(protein))
@@ -699,7 +717,7 @@ end
 
 function _bulk_range_from_R(R)
     if R.dbulk == R.cutoff
-        return ">= $(R.dbulk) Å"
+        return "> $(R.cutoff) Å"
     else
         return "$(R.dbulk) - $(R.cutoff) Å"
     end
@@ -759,6 +777,12 @@ end
     overview(R::Result)
 
 Function that outputs the volumes and densities in the most natural units.
+
+The solute partial molar volume is estimated as the volume of the system minus the volume
+occupied by the solvent at the bulk density, ``V - N/\rho_{\rm bulk}``. This estimate is 
+the difference of two large numbers, and is very sensitive to the bulk density: an error of 
+0.1% in the bulk density corresponds to an error of 0.1% of the volume of the system. 
+It is only meaningful if the solvent has a single component.
 """
 function overview(R::Result)
 

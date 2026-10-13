@@ -132,7 +132,7 @@ kmax = maximum(abs, kbi)
 visualize(protein; color_by=kbi, colormap=:rwb, color_range=(kmax / 2, -kmax / 2), height=500)
 ```
 
-The sum of the contributions of all residues is the total KB integral (`results.kb[end]`). Since glycerol is excluded
+The sum of the contributions of all residues is the total KB integral (`kbi(results)[end]`). Since glycerol is excluded
 from the volume of the protein, the total KB integral is negative, as are the contributions of most residues (blue). 
 The residues with positive contributions (red), like Asp14 and Glu112, are the ones that interact with glycerol 
 strongly enough to overcome this exclusion.

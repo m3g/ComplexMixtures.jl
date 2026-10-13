@@ -36,6 +36,7 @@ export contributions
 export gr
 export grid3D, volumetric_data
 export kbi, finite_volume_kbi, extrapolate_kbi
+export reference_density
 
 # Testing data
 const src_dir = @__DIR__
@@ -91,6 +92,7 @@ include("./tools/grid3D.jl")
 include("./tools/write.jl")
 include("./tools/renormalize.jl")
 include("./tools/kbi.jl")
+include("./tools/reference_density.jl")
 
 # Precompilation directives
 include("precompile.jl")

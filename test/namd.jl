@@ -9,7 +9,7 @@
     #
     dir = "$data_dir/NAMD"
     atoms = read_pdb("$dir/structure.pdb")
-    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, bulk_range=(8.0, 10.0))
+    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, cutoff=10.0)
 
     # Example 1: protein-tmao
     # save(R,"$dir/protein_tmao.json")

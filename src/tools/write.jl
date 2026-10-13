@@ -49,14 +49,8 @@ function Base.write(
         println(output, @sprintf("# Number of atoms solute: %i8", natoms(R.solute)))
         println(output, @sprintf("# Number of atoms of the solvent: %i8", natoms(R.solvent)))
         println(output, @sprintf("#"))
-        if R.files[1].options.usecutoff
-            ibulk = setbin(R.files[1].options.dbulk, R.files[1].options.binstep)
-            bulkerror = mean(R.mddf[ibulk:R.nbins])
-            sdbulkerror = std(R.mddf[ibulk:R.nbins])
-            println(output, "#")
-            println(output, "# Using cutoff distance: $(R.cutoff)")
-            println(output, @sprintf("# Average and standard deviation of bulk-gmd: %11.5f +/- %12.5f", bulkerror, sdbulkerror))
-        end
+        println(output, "#")
+        println(output, "# Using cutoff distance: $(R.cutoff)")
         println(output,
             """
             #

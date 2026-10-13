@@ -29,7 +29,7 @@ solvent = AtomSelection(water, natomspermol=3)
 # We want to get reasonably converged KB integrals, which usually
 # require large solute domains. Distribution functions converge 
 # rapidly (~10Angs or less), on the other side.
-options = Options(bulk_range=(15.0, 20.0))
+options = Options(cutoff=20.0)
 
 # Compute the mddf and associated properties
 mddf_water_POPC = mddf(trajectory_file, solute, solvent, options)

@@ -72,11 +72,11 @@ Faster convergence of KB integrals is not only more convenient — it is essenti
 
 ### [Finite-size corrections](@id concepts_finite_size)
 
-Even when the bulk solution is reached, a KB integral truncated at a finite distance oscillates around its limiting value, and its value depends on the distance at which it is read. For radial distribution functions, this truncation error can be greatly reduced with the theory of finite-volume KB integrals developed by Krüger and Vlugt, which provides weighted integrals and extrapolation procedures that estimate the infinite-volume KB integral from a distribution function known only up to a finite distance.
+The KB integrals computed by ComplexMixtures.jl include, by default, corrections for the two main sources of finite-size error in simulations: the truncation of the integral at a finite distance, and the error in the reference (bulk) density. The corrected integral is available directly in the `kb` field of the results of [`mddf`](@ref), and can be recomputed with different corrections, or without them, using the [`kbi`](@ref) function, as described in the [Kirkwood-Buff integrals](@ref kbi) section.
 
-That theory relies on the geometry of the distances between pairs of *points* inside a sphere (or another simple convex volume). It does not apply directly to minimum-distance distributions: the solute domain defined by minimum distances has the shape of the solute itself, which is irregular and fluctuates along the simulation. **Currently, there is no equivalent theory for finite-size corrections of MDDF-based KB integrals**, and these must be computed as truncated integrals, read from the range of distances where they are stable.
+*Truncation*: Even when the bulk solution is reached, a KB integral truncated at a finite distance oscillates around its limiting value, and its value depends on the distance at which it is read. For radial distribution functions, weight functions derived from the theory of finite-volume KB integrals greatly reduce this truncation error ([Krüger and Vlugt, 2018](https://doi.org/10.1103/PhysRevE.97.051301)). These weights follow from a purely mathematical identity, valid for any one-dimensional integral ([Santos, 2018](https://doi.org/10.1103/PhysRevE.98.063302)), which implies that they can also be applied to KB integrals computed from minimum-distance distribution functions.
 
-The corrections are thus useful when the solute can be represented by a single atom — typically in mixtures of small molecules, such as water and common solvents and cosolvents — where the RDF is the natural distribution function. ComplexMixtures.jl implements them for this case, as described in the [Kirkwood-Buff integrals: convergence and finite-size corrections](@ref kbi) section.
+*Reference density*: In simulations with a fixed number of molecules, the accumulation or depletion of solvent around the solute changes the density of the rest of the box. Small errors in the reference density are amplified by the volume element, and appear as a drift of the KB integral at long distances. The correction for this effect uses, as reference, the density of the solvent outside the domain of the solute at each distance ([Ganguly and van der Vegt, 2013](https://doi.org/10.1021/ct301017q)).
 
 ## How ComplexMixtures.jl uses these concepts
 
@@ -86,7 +86,7 @@ The [ComplexMixtures.jl](https://github.com/m3g/ComplexMixtures.jl) package impl
 
 2. **Atomic and group decomposition**: natural decomposition of the MDDF into the contributions of individual atoms or chemical groups of both solute and solvent, enabling a detailed chemical interpretation of solvation. See [Atomic and group contributions](@ref contributions).
 
-3. **Reliable KB integrals**: KB integrals that converge at shorter distances compared to RDF-based computations, yielding more robust thermodynamic data from standard simulation box sizes, and finite-size corrections for KB integrals computed from RDFs. See [Results](@ref results) and [Kirkwood-Buff integrals](@ref kbi).
+3. **Reliable KB integrals**: KB integrals that converge at shorter distances compared to RDF-based computations, yielding more robust thermodynamic data from standard simulation box sizes, and finite-size corrections of the KB integrals. See [Results](@ref results) and [Kirkwood-Buff integrals](@ref kbi).
 
 4. **Density maps**: two-dimensional representations of solvent density around each residue of macromolecules, connecting structure and solvation at the residue level, and three-dimensional representations of the solvent density around the structure. See [2D density maps](@ref 2D_per_residue) and [3D density maps](@ref grid3D).
 

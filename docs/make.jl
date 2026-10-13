@@ -1,3 +1,5 @@
+# Do not open plot windows (GR backend of Plots) when building the docs
+ENV["GKSwstype"] = "nul"
 using Documenter
 using ComplexMixtures
 using PDBTools
@@ -9,6 +11,7 @@ makedocs(
     ],
     format = Documenter.HTML(
         top_menu = true,
+        assets = ["assets/external_links.js"],
         # pages with interactive 3D views of structures
         size_threshold_ignore = ["density_maps_3D.md", "example1.md"],
     ),
