@@ -26,7 +26,7 @@ The uncorrected (truncated) integral of the MDDF is obtained with `kbi(R; correc
 
 !!! compat
     The `kbi` function was introduced in version 2.19.0. Its application to MDDFs, the `:W7` correction,
-    and the `normalization` option were introduced in version 2.19.1, in which the defaults were set 
+    and the `normalization` option were introduced in version 3.0.0, in which the defaults were set 
     to `correction=:W7` and `normalization=:ganguly`, and `R.kb` was set to `kbi(R)`. In previous versions,
     `R.kb` contained the uncorrected KBI.
 

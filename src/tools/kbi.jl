@@ -83,9 +83,9 @@ See also [`finite_volume_kbi`](@ref) and [`extrapolate_kbi`](@ref).
 
 !!! compat
     This function was introduced in version 2.19.0. The `:W7` correction and the `normalization` 
-    keyword were introduced in version 2.19.1, in which the corrections were extended to MDDFs, 
+    keyword were introduced in version 3.0.0, in which the corrections were extended to MDDFs, 
     and the defaults were changed from `correction=:none` (and the normalization of the MDDF) to 
-    `correction=:W7, normalization=:ganguly`. Since version 2.19.1, `R.kb` is equal to `kbi(R)`.
+    `correction=:W7, normalization=:ganguly`. Since version 3.0.0, `R.kb` is equal to `kbi(R)`.
 
 """
 function kbi(R::Result; correction::Symbol=:W7, normalization::Symbol=:ganguly)

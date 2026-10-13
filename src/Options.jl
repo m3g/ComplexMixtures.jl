@@ -78,7 +78,7 @@ The default value is `cutoff = 10.0`, but it is recommended to set it according 
 the system and to the correlation length of the distribution function.
 
 !!! compat
-    Since version 2.19.1, the bulk density is always estimated from the region beyond the `cutoff`. 
+    Since version 3.0.0, the bulk density is always estimated from the region beyond the `cutoff`. 
     The `dbulk`, `usecutoff`, and `bulk_range` options are deprecated, and are mapped to the `cutoff`:
     `bulk_range=(dbulk, cutoff)` and `dbulk=..., cutoff=..., usecutoff=true` set the `cutoff`, and 
     `dbulk=...` (without `cutoff`) sets `cutoff=dbulk`.

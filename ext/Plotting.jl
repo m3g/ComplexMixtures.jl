@@ -173,7 +173,7 @@ density beyond each distance (the reference density of the Ganguly normalization
 Keyword arguments are passed to `Plots.plot`.
 
 !!! compat
-    This function requires loading the `Plots` package, and was introduced in version 2.19.1.
+    This function requires loading the `Plots` package, and was introduced in version 3.0.0.
 
 """
 function Plots.plot(rd::ReferenceDensity; kargs...)

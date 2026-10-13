@@ -17,7 +17,7 @@ the system, relative to the bulk density, as computed by [`reference_density`](@
    of width `shell_width`, relative to `bulk`, and the distances of the centers of the shells.
 
 !!! compat
-    This structure was introduced in version 2.19.1.
+    This structure was introduced in version 3.0.0.
 
 """
 struct ReferenceDensity
@@ -80,7 +80,7 @@ julia> plot(rd)
 ```
 
 !!! compat
-    This function was introduced in version 2.19.1.
+    This function was introduced in version 3.0.0.
 
 """
 function reference_density(R::Result; shell_width::Real=1.0)

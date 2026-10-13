@@ -47,7 +47,7 @@ results = mddf(trajectory_file, solute, solvent, options)
     *highly recommended* to set it according to the system.
 
     The `bulk_range` option, which defined a range of distances from which the bulk density was 
-    estimated, is deprecated since version 2.19.1.
+    estimated, is deprecated since version 3.0.0.
 
 See the [Options](@ref options) section for further details and other options
 to set.

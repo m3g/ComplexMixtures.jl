@@ -39,7 +39,7 @@ the density of the solvent on the distance to the solute, beyond the correlation
 length, can be inspected with the [`reference_density`](@ref) function.
 
 !!! compat
-    Since version 2.19.1, the bulk density is always estimated from the region beyond the 
+    Since version 3.0.0, the bulk density is always estimated from the region beyond the 
     `cutoff`. The `bulk_range`, `dbulk`, and `usecutoff` options are deprecated: 
     `bulk_range=(dbulk, cutoff)` (and `dbulk`, `cutoff` with `usecutoff=true`) are mapped to 
     `cutoff`, and `dbulk` alone is mapped to `cutoff=dbulk`. A warning is issued in these cases.
@@ -86,7 +86,7 @@ if you have short trajectories and want to obtain reproducible results for them.
 !!! compat
     The all-to-all random configurations for self-correlations and for cross-correlations with more
     than one solute molecule, and the default of 1 random sample per frame for them, were introduced 
-    in version 2.19.1. Previously, these calculations used 10 random samples per frame, each with a 
+    in version 3.0.0. Previously, these calculations used 10 random samples per frame, each with a 
     single reference molecule, which resulted in noisy normalizations (and KB integrals) because the
     random counts were much less sampled than the actual counts. 
 
