@@ -12,6 +12,7 @@ ComplexMixtures.jl Changelog
 
 Version 3.0.1-DEV
 --------------
+- ![INFO][badge-info] Documentation: relation between the weighted KBIs and the finite-volume KBIs (the `:G1` weight removes the ``1/L`` term analytically), and limits of the finite-volume interpretation for MDDFs. The `kbi` docstring was simplified to focus on usage, referring to the manual for the theory.
 
 Version 3.0.0
 --------------
