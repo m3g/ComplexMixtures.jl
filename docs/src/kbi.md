@@ -87,6 +87,15 @@ plot!(xlabel=L"x = d/L", ylabel=L"W(x)", size=(500, 350))
 The weights correct the truncation of the integral when ``g(d) - 1`` oscillates around zero at ``L``. 
 They do not correct slowly decaying (monotonic) tails of the distribution, nor errors in the reference density.
 
+The weighted integrals are direct estimates of ``G_\infty``, and need not be extrapolated (see 
+[Finite-volume KBIs and extrapolation](@ref kbi_finite_volume)). The price of the weights is a smooth bias, 
+``\sum_{k \geq 3} w_k S_k / L^k``, where ``w_k`` are the coefficients of the polynomial ``W(x)`` and
+``S_k = \int \left[g(d) - 1\right] d^k\, dV(d)`` are the moments of the integrand. The bias vanishes 
+as ``1/L^3`` for large ``L``, if the integrand vanishes beyond a distance shorter than ``L``. For large 
+solutes, the moments of the integrand of the MDDF are large (the volume element is proportional to the 
+surface of the solute), and the weighted KBI may approach its limit slowly, while the truncated integral 
+is already stable. Thus, comparing both is advisable.
+
 ### Reference density
 
 The distribution function is the ratio between the density of the solvent at each distance and a 
@@ -171,7 +180,7 @@ As a reference, the KBI of a pure liquid is related to its isothermal compressib
 value is ``G_\infty \approx 1.1 - 18.1 \approx -17`` cm³ mol⁻¹. The exact value obtained from the simulation 
 depends on the water model, and on the sampling.
 
-### Finite-volume KBIs and extrapolation
+### [Finite-volume KBIs and extrapolation](@id kbi_finite_volume)
 
 For radial distribution functions, an alternative estimate of ``G_\infty`` is provided by the theory
 of finite-volume KBIs ([Krüger et al., 2013](https://doi.org/10.1021/jz301992u); [Krüger and Vlugt, 2018](https://doi.org/10.1103/PhysRevE.97.051301)). The KBI of a sphere of diameter ``L`` is
@@ -184,10 +193,21 @@ where ``r`` is the distance between two points *inside* the sphere. For large ``
 ``G(L) = G_\infty + F_\infty/L + O(1/L^2)``, where ``F_\infty`` is a surface term. ``G(L)`` is not an estimate 
 of ``G_\infty``, but ``G_\infty`` can be obtained by extrapolating ``G(L)`` to ``1/L \to 0``. 
 
-This theory applies to two-point integrals over open subvolumes, and not to the KBIs computed from MDDFs,
-which are integrals around a fixed solute. Thus, [`finite_volume_kbi`](@ref) requires a single-atom solute
-(it issues a warning otherwise), and uses the distribution of the distances to the reference atom of the solvent
-(`R.rdf_count`).
+The weighted KBIs of the previous section are related to this theory, but do not require extrapolation.
+The ``1/L`` term is a surface effect of the subvolume (pairs of molecules near its boundary have partners 
+outside it), which is absent from the running integrals around a molecule. The `:G1` weight, ``1 - x^3``, 
+is exactly ``d[L\,G(L)]/dL``: if ``G(L) = G_\infty + F_\infty/L``, this derivative is ``G_\infty``. 
+The weighted integrals are thus the extrapolation performed analytically, and, when they are flat 
+as a function of ``L``, there is nothing left to extrapolate.
+
+The finite-volume theory concerns two-point integrals over open spherical subvolumes, and the 
+interpretation of ``G(L)`` as the KBI of a subvolume holds only for RDFs. For an MDDF there is 
+no corresponding spherical subvolume (the region within a distance of the solute has a shape that 
+depends on the solute). Applied to the integrand of an MDDF, the formula above still tends to 
+``G_\infty`` as ``L \to \infty``, as does any weighted integral with ``W(0) = 1``, but the ``1/L`` 
+dependence is not justified, and the slope of the extrapolation has no physical meaning. Thus, 
+[`finite_volume_kbi`](@ref) is meant for single-atom solutes (it issues a warning otherwise), and 
+uses the distribution of the distances to the reference atom of the solvent (`R.rdf_count`).
 
 The [`finite_volume_kbi`](@ref) function computes the finite-volume KBIs of spheres of diameter ``L``,
 for all ``L`` up to the cutoff. The plot of ``G(L)`` as a function of ``1/L`` must be linear for large enough ``L``:

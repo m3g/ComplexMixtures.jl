@@ -1,56 +1,33 @@
 """
     kbi(R::Result; correction::Symbol=:W7, normalization::Symbol=:ganguly)
 
-Compute the Kirkwood-Buff integral (KBI) from the minimum-distance distribution function (MDDF)
-in the `Result` object `R`, as a function of the upper integration limit ``L``. This is the 
-recommended way to obtain the KBI from a `Result`.
+Compute the Kirkwood-Buff integral (KBI) from the results of a minimum-distance distribution 
+function (MDDF) calculation, `R`, as a function of the upper limit of integration, ``L``. 
 
-The output is a vector with the same length as `R.d`, in units of cm³ mol⁻¹, where the element 
-`i` is the KBI computed with ``L`` equal to the upper limit of bin `i`.
+Returns a vector with the same length as `R.d`, in cm³ mol⁻¹, where element `i` is the KBI computed 
+with ``L`` equal to the upper limit of bin `i`. `R.kb` contains the KBI computed with the default 
+options, `R.kb == kbi(R)`.
 
-The KBI is computed as
+# Keyword arguments
 
-```math
-G(L) = \\int_0^L \\left[\\frac{\\rho(d)}{\\rho_{\\rm ref}(d)} - \\frac{\\rho_{\\rm id}(d)}{\\rho_{\\rm bulk}}\\right] W(d/L)\\, dV(d)
-```
+- `correction`: the weight function that corrects for the truncation of the integral at ``L``:
+    - `:W7` (default): the ``W_7^{(3)}`` weight of Santos.
+    - `:G2`: the weight of Krüger and Vlugt (Eq. 24).
+    - `:G1`: the weight of Krüger et al., ``1 - (d/L)^3``.
+    - `:none` (or `:G0`): no weight, the truncated integral.
+- `normalization`: the reference density of the solvent:
+    - `:ganguly` (default): the density of the solvent outside the domain of the solute within
+      each distance, following Ganguly and van der Vegt.
+    - `:mddf`: the bulk density of the solvent (estimated beyond the cutoff), at all distances, 
+      which is the normalization of `R.mddf`.
 
-where ``\\rho(d)`` and ``\\rho_{\\rm id}(d)`` are the densities of the solvent at distance ``d`` of the
-solute, in the simulation and in the ideal-gas reference, ``W(x)`` is a weight function that corrects 
-for the truncation of the integral at a finite distance (``W(x) = 1`` for the truncated integral), 
-and ``\\rho_{\\rm ref}(d)`` is the reference density.
+The corrections apply to MDDFs, thus to solutes and solvents of any shape, and to radial distribution
+functions. Report the value (or average) of the KBI in the range of ``L`` where it is stable. The 
+differences between the results obtained with different corrections and normalizations are an 
+indication of the uncertainty of the result. 
 
-# Corrections (weight functions)
-
-- `:W7` (default): the weight ``W_7^{(3)}(x) = (1-x)^4 (1 + \\frac{35}{16}x)(1 + \\frac{1225}{256}x^2)(1 + \\frac{29}{16}x + \\frac{5}{4}x^2 + \\frac{5}{16}x^3)``
-  recommended by Santos [3], which vanishes smoothly at ``x = 1``.
-- `:G2`: the weight of Krüger and Vlugt [2] (Eq. 24), ``W(x) = 1 - \\frac{23}{8}x^3 + \\frac{3}{4}x^4 + \\frac{9}{8}x^5``.
-- `:G1`: the weight of Krüger et al. [1], ``W(x) = 1 - x^3``.
-- `:none` (or `:G0`): the truncated integral, ``W(x) = 1``.
-
-The weight functions were derived for radial distribution functions, but, as shown by Santos [3], 
-they follow from a purely mathematical identity, valid for any one-dimensional integral. Thus, 
-they can be applied to the integrand of the KBI computed from MDDFs. The weights correct the 
-truncation of the integral when the integrand oscillates around zero at ``L``. They do not correct 
-slowly decaying (monotonic) tails of the distribution, nor errors in the reference density.
-
-# Normalizations (reference density)
-
-- `:ganguly` (default): the reference density at each distance is the density of the solvent 
-  molecules outside the domain of the solute within ``d``, as proposed by Ganguly and van der Vegt [4]:
-  ``\\rho_{\\rm ref}(d) = [N - N_{\\rm in}(d)]/[V - V(d)]``, where ``N`` is the number of solvent
-  molecules (minus one if the solute and solvent are the same), ``N_{\\rm in}(d)`` is the number of 
-  solvent molecules within ``d``, and ``V(d)`` is the volume of the domain within ``d``. This corrects 
-  for the depletion (or excess) of solvent molecules in the bulk of a closed simulation box.
-- `:mddf`: the reference density is the bulk density of the solvent, `R.density.solvent_bulk` 
-  (the density of the solvent beyond the cutoff), at all distances. This is the normalization of 
-  the MDDF, `R.mddf`, thus the KBI is the integral of `R.mddf`. 
-
-The normalizations differ by the region of the system from which the reference density is estimated, 
-which is the region beyond ``d`` (`:ganguly`), or the region beyond the cutoff (`:mddf`). They coincide 
-at ``d`` equal to the cutoff. If they lead to different KBIs, the estimate of the reference density is a 
-source of error that must be considered.
-
-`R.kb` contains the KBI computed with the default options, `kbi(R)`.
+See the [Kirkwood-Buff integrals](@ref kbi) section of the manual for a description of the 
+corrections, references, and examples.
 
 # Examples
 
@@ -65,21 +42,7 @@ true
 julia> G0 = kbi(R; correction=:none, normalization=:mddf); # truncated integral of the MDDF
 ```
 
-# References
-
-1. P. Krüger, S. K. Schnell, D. Bedeaux, S. Kjelstrup, T. J. H. Vlugt, J.-M. Simon,
-   Kirkwood–Buff Integrals for Finite Volumes. *J. Phys. Chem. Lett.* 4, 235 (2013).
-   [DOI: 10.1021/jz301992u](https://doi.org/10.1021/jz301992u)
-2. P. Krüger, T. J. H. Vlugt, Size and shape dependence of finite-volume Kirkwood-Buff integrals.
-   *Phys. Rev. E* 97, 051301(R) (2018).
-   [DOI: 10.1103/PhysRevE.97.051301](https://doi.org/10.1103/PhysRevE.97.051301)
-3. A. Santos, Finite-size estimates of Kirkwood-Buff and similar integrals.
-   [arXiv:1806.00821](https://arxiv.org/abs/1806.00821) (2018).
-4. P. Ganguly, N. F. A. van der Vegt, Convergence of Sampling Kirkwood–Buff Integrals of Aqueous Solutions 
-   with Molecular Dynamics Simulations. *J. Chem. Theory Comput.* 9, 1347 (2013).
-   [DOI: 10.1021/ct301017q](https://doi.org/10.1021/ct301017q)
-
-See also [`finite_volume_kbi`](@ref) and [`extrapolate_kbi`](@ref).
+See also [`finite_volume_kbi`](@ref), [`extrapolate_kbi`](@ref), and [`reference_density`](@ref).
 
 !!! compat
     This function was introduced in version 2.19.0. The `:W7` correction and the `normalization` 
@@ -217,7 +180,8 @@ function _rdf_excess(R::Result; caller::String)
             selection must contain only one atom per molecule. 
 
             Here, the number of atoms per molecule of the solute is $(R.solute.natomspermol), implying
-            a minimum-distance distribution function, for which these estimators are not valid.
+            a minimum-distance distribution function, for which the finite-volume interpretation 
+            of these estimators (and the 1/L dependence of the KBIs on L) is not justified.
 
             """
         end _file = nothing _line = nothing
@@ -293,9 +257,17 @@ done with the [`extrapolate_kbi`](@ref) function.
 
 Returns a [`FiniteVolumeKBI`](@ref) object, with fields `L` (Å) and `G` (cm³ mol⁻¹).
 
-This is only valid for radial distribution functions, thus the solute must contain a single atom 
-per molecule. The finite-volume theory applies to two-point integrals over open subvolumes, and 
-not to the KBIs computed from MDDFs.
+The finite-volume theory concerns two-point integrals over open spherical subvolumes, thus ``G(L)`` 
+is the KBI of a subvolume, and ``F_\\infty`` a surface term, only for radial distribution functions 
+(the solute must contain a single atom per molecule). For an MDDF there is no corresponding spherical 
+subvolume: the weighted integral still tends to ``G_\\infty`` as ``L \\to \\infty``, as any weighted 
+integral with ``W(0) = 1``, but the ``1/L`` dependence is not justified, and the slope of the 
+extrapolation has no physical meaning. For MDDFs, use [`kbi`](@ref).
+
+The weighted estimates of [`kbi`](@ref) do not require extrapolation: the `:G1` weight, 
+``W(x) = 1 - x^3``, is ``d[L\\,G(L)]/dL``, which removes the ``1/L`` term of ``G(L)`` analytically.
+The extrapolation is useful when ``G(L)`` is available but the running integrals around a 
+molecule are not, or as a cross-check of the weighted estimates.
 
 # Example
 
@@ -426,6 +398,11 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
     @test ext.Ginf ≈ -16.3 atol = 0.2
     @test ext.F ≈ 22.8 atol = 1.0
     @test extrapolate_kbi(R, (10.0, 20.0)) == ext
+    # The G1 weight is d[L G(L)]/dL of the finite-volume KBI (removes the 1/L term)
+    LG = fv.L .* fv.G
+    for j in (300, 500, 1000)
+        @test g1[j] ≈ (LG[j+1] - LG[j-1]) / (fv.L[j+1] - fv.L[j-1]) atol = 1e-2
+    end
 
     # Extrapolation of exact data
     L = collect(1.0:0.5:30.0)
