@@ -68,7 +68,6 @@ function randomize_solvent!(
     RNG,
 )
     uc = system.unitcell
-    cmin, cmax = CellListMap.get_computing_box(system)
     for isolvent = 1:R.solvent.nmols
         # Choose randomly one molecule from the bulk, if there are bulk molecules
         if n_solvent_in_bulk > 0
@@ -81,7 +80,7 @@ function randomize_solvent!(
         # Copy the coordinates of the random solvent molecule chosen
         y_new .= viewmol(jmol, buff.solvent_read, R.solvent)
         # Randomize rotations and translation for this molecule 
-        random_move!(y_new, R.files[1].irefatom, uc, cmin, cmax, RNG)
+        random_move!(y_new, R.files[1].irefatom, uc, RNG)
     end
 end
 
@@ -469,11 +468,10 @@ internal coordinates (used for self-correlations and for more than one solute mo
 =#
 function randomize_all!(system::AbstractParticleSystem, buff::Buffer, R::Result, RNG)
     uc = system.unitcell
-    cmin, cmax = CellListMap.get_computing_box(system)
     for imol = 1:R.solvent.nmols
         y_new = viewmol(imol, system.ypositions, R.solvent)
         y_new .= viewmol(imol, buff.solvent_read, R.solvent)
-        random_move!(y_new, R.files[1].irefatom, uc, cmin, cmax, RNG)
+        random_move!(y_new, R.files[1].irefatom, uc, RNG)
     end
     return system
 end

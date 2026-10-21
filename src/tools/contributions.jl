@@ -318,7 +318,7 @@ end
     results = mddf(traj, Options(seed=321, StableRNG=true, nthreads=1, silent=true))
     @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
     @test_throws ArgumentError contributions(results, SoluteGroup([50000]))
-    @test sum(contributions(results, SolventGroup([1483]))) ≈ 0.33397680724208806
+    @test sum(contributions(results, SolventGroup([1483]))) ≈ 0.37691511538069067
     @test_throws ArgumentError contributions(results, SolventGroup([1483, 1483]))
 
     # Testing decomposition of solute contributions

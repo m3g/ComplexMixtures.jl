@@ -96,9 +96,9 @@ end
 end
 
 #=
-    random_move!(x, 
+    random_move!(x,
                  irefatom::Integer,
-                 uc, cmin, cmax,
+                 uc,
                  RNG)
 
 Function that generates a new random position for a molecule, updating the coordinates of  in x.
@@ -107,17 +107,13 @@ Function that generates a new random position for a molecule, updating the coord
 function random_move!(
     x,
     irefatom::Integer,
-    uc, cmin, cmax,
+    uc,
     RNG,
 )
-    # To avoid boundary problems, the center of coordinates are generated in a 
-    # much larger region, and wrapped aftwerwards
-    scale = 10^4
-
-    # Generate random coordinates for the center of mass
-    newcm = SVector{3}(
-        scale * (cmin[i] + rand(RNG, Float64) * (cmax[i] - cmin[i])) for i = 1:3
-    )
+    # Generate random coordinates for the center of mass: uniform fractional
+    # coordinates mapped by the unit cell matrix (whose columns are the cell vectors)
+    # are uniformly distributed in the cell, for orthorhombic or triclinic cells
+    newcm = uc * SVector{3}(rand(RNG, Float64) for _ = 1:3)
 
     # Generate random rotation angles. The rotation matrix is Rx(beta)*Ry(gamma)*Rz(theta),
     # for which the uniform measure on rotations is ∝ cos(gamma), with gamma in [-π/2, π/2]
@@ -164,13 +160,12 @@ end
         unitcell=SVector(10.0, 10.0, 10.0),
         output=0.0,
     )
-    cmin, cmax = CellListMap.get_computing_box(system)
     uc = system.unitcell
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, cmin, cmax, RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, RNG))
     system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, cmin, cmax, RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, RNG))
     system.xpositions .= [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, cmin, cmax, RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, RNG))
 
     # Triclinic cell
     x = [-1.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
@@ -180,12 +175,20 @@ end
         unitcell=@SMatrix[10.0 5.0 0.0; 0.0 10.0 0.0; 0.0 0.0 10.0],
         output=0.0,
     )
-    cmin, cmax = CellListMap.get_computing_box(system)
     uc = system.unitcell
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, cmin, cmax, RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, RNG))
     system.xpositions .= [-9.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, cmin, cmax, RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, RNG))
     system.xpositions .= [4.0 .+ 2 * rand(SVector{3,Float64}) for _ = 1:5]
-    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, cmin, cmax, RNG))
+    @test check_internal_distances(x, ComplexMixtures.random_move!(copy(x), 1, uc, RNG))
+
+    # The centers of coordinates are uniformly distributed in the (triclinic) cell:
+    # their fractional coordinates are uniform in [0,1)
+    s = [inv(uc) * sum(ComplexMixtures.random_move!(copy(x), 1, uc, RNG)) / length(x) for _ = 1:10^4]
+    @test all(si -> all(c -> 0 <= c < 1, si), s)
+    for k in 1:3
+        hist = [count(si -> (i - 1) / 10 <= si[k] < i / 10, s) for i in 1:10]
+        @test all(h -> 850 < h < 1150, hist)
+    end
 
 end
