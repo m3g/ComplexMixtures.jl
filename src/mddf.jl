@@ -313,8 +313,6 @@ function mddf(
                         @. buff_chunk.solvent_read = trajectory.x_solvent
                         # Read weight of this frame
                         unitcell_frame = convert_unitcell(trajectory_data.unitcell, getunitcell(trajectory))
-                        # Display progress bar
-                        next!(progress)
                     end
                 end # release reading lock
                 #
@@ -328,6 +326,12 @@ function mddf(
                     else
                         coordination_number_frame!(r_chunk, system_chunk, buff_chunk, frame_weight)
                     end
+                    # Display progress bar (after the computation of the frame, such that
+                    # the progress does not jump when the threads read their first frames).
+                    # The update predictor of ProgressMeter is ignored because frames computed
+                    # by different threads finish in bursts, which makes the predictor skip
+                    # many frames between updates (the display is still updated at most every dt).
+                    next!(progress; ignore_predictor=true)
                 end # compute if
             end # frame range for this chunk
             # Sum the results of this chunk into the total results data structure

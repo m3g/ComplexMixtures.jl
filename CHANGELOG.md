@@ -14,6 +14,7 @@ Version 3.0.1-DEV
 --------------
 - ![INFO][badge-info] Documentation: relation between the weighted KBIs and the finite-volume KBIs (the `:G1` weight removes the ``1/L`` term analytically), and limits of the finite-volume interpretation for MDDFs. The `kbi` docstring was simplified to focus on usage, referring to the manual for the theory.
 - ![ENHANCEMENT][badge-enhancement] The centers of the randomly placed molecules of the ideal-gas (random) distributions are generated from uniform fractional coordinates of the unit cell, which is exactly uniform for orthorhombic and triclinic cells. Previously, they were generated in a large region derived from the computing box of `CellListMap` and wrapped into the cell. The sampling no longer depends on internals of `CellListMap` (changes in which modified the random configurations generated for a given seed). Results obtained with a given random seed change within their statistical uncertainty.
+- ![ENHANCEMENT][badge-enhancement] The progress bar of `mddf` advances when the computation of each frame is finished, instead of when the frame is read, and is updated at most every second regardless of how the frames finish across threads. Previously, it jumped by the number of threads when the first frames were read, and could skip many frames between updates.
 
 Version 3.0.0
 --------------
