@@ -11,8 +11,8 @@ DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 FortranFiles = "c58ffaec-ab22-586d-bfc5-781a99fd0b10"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-MolSimToolkitShared = "aea21201-7910-416e-b888-414710bebccb"
 PDBTools = "e29189f1-7114-4dbd-93d0-c5673a921a58"
+PDBToolsBase = "c8914394-62c2-4233-bff1-d1ad7c5159d7"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
@@ -28,48 +28,48 @@ LazyArtifacts = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [sources]
-Documenter = {rev = "top_menu_from_pages", url = "https://github.com/lmiq/Documenter.jl"}
+# Until PDBToolsBase and PDBTools 4 are registered
+PDBTools = {url = "https://github.com/m3g/PDBTools.jl", rev = "pdbtoolsbase"}
+PDBToolsBase = {url = "https://github.com/m3g/PDBToolsBase.jl", rev = "main"}
 
 [extensions]
 Plotting = "Plots"
 TestFilesExt = "LazyArtifacts"
 
 [compat]
-Aqua = "0.8.16"
+Aqua = "0.8.18"
 BenchmarkTools = "1.6.2"
 CellListMap = "0.10.1"
-Chemfiles = "0.10.3"
+Chemfiles = "0.10.31"
 ChunkSplitters = "3.1"
 DelimitedFiles = "1.9"
 DocStringExtensions = "0.9.1"
-Documenter = "1.17"
 FortranFiles = "0.6.2"
 JSON = "1.6.1"
-LazyArtifacts = "1.10"
-LinearAlgebra = "1.10"
-MolSimToolkitShared = "1.6"
-PDBTools = "3.41.0"
+LazyArtifacts = "1.11"
+LinearAlgebra = "1.11"
+PDBTools = "4"
+PDBToolsBase = "1"
 Plots = "1.39"
 PrecompileTools = "1.2.1"
-Printf = "1.10"
+Printf = "1.11"
 ProgressMeter = "1.10.1"
-Random = "1.10"
+Random = "1.11"
 RandomNumbers = "1.5"
 ShowMethodTesting = "1.3.0"
 StableRNGs = "1"
 StaticArrays = "1.9"
-Statistics = "1.10"
-Test = "1.10"
+Statistics = "1.11"
+Test = "1.11"
 TestItemRunner = "1.1"
 TestItems = "1"
-julia = "1.10"
+julia = "1.11"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CellListMap = "69e1c6dd-3888-40e6-b3c8-31ac5f578864"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
-Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 LazyArtifacts = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 PDBTools = "e29189f1-7114-4dbd-93d0-c5673a921a58"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -79,4 +79,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 
 [targets]
-test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner", "Aqua", "DelimitedFiles", "Documenter", "LazyArtifacts", "Random", "Plots", "ShowMethodTesting"]
+test = ["Test", "PDBTools", "StaticArrays", "CellListMap", "BenchmarkTools", "TestItemRunner", "Aqua", "DelimitedFiles", "LazyArtifacts", "Random", "Plots", "ShowMethodTesting"]

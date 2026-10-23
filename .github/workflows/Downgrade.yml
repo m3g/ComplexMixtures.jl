@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         version:
-          - '1.10.0'
+          - '1.11.0'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v3
@@ -24,6 +24,6 @@ jobs:
           version: ${{ matrix.version }}
       - uses: cjdoris/julia-downgrade-compat-action@v1
         with:
-          skip: Pkg,TOML
+          skip: Pkg,TOML,PDBTools,PDBToolsBase
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1

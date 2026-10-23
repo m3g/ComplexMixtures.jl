@@ -155,7 +155,7 @@ function grid3D(
     end
 
     if !isnothing(output_file)
-        PDBTools.writePDB(grid, output_file)
+        PDBTools.write_pdb(output_file, grid)
         silent || println("Grid written to $output_file")
     end
     return grid

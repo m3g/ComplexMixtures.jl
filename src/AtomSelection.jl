@@ -498,7 +498,7 @@ or group name.
 
 The possible constructors are:
 
-    SoluteGroup(atoms::Vector{<:PDBTools.Atom})
+    SoluteGroup(atoms::AbstractVector{<:PDBTools.Atom})
     SoluteGroup(atom_indices::AbstractVector{<:Integer})
     SoluteGroup(atom_names::AbstractVector{<:AbstractString})
     SoluteGroup(group_name::AbstractString)
@@ -619,14 +619,14 @@ function SolventGroup(args...; kargs...)
     """)))
 end
 
-SoluteGroup(atoms::Vector{<:PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
+SoluteGroup(atoms::AbstractVector{<:PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
 SoluteGroup(atom_indices::AbstractVector{<:Integer}) = SoluteGroup(nothing, nothing, atom_indices, nothing)
 SoluteGroup(atom_names::Vector{<:AbstractString}) = SoluteGroup(nothing, nothing, nothing, atom_names)
 SoluteGroup(group_name::AbstractString) = SoluteGroup(nothing, group_name, nothing, nothing)
 SoluteGroup(group_index::Integer) = SoluteGroup(group_index, nothing, nothing, nothing)
 SoluteGroup(residue::PDBTools.Residue) = SoluteGroup(nothing, nothing, PDBTools.index.(residue), nothing)
 
-SolventGroup(atoms::Vector{<:PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
+SolventGroup(atoms::AbstractVector{<:PDBTools.Atom}) = SolventGroup(nothing, nothing, PDBTools.index.(atoms), nothing)
 SolventGroup(atom_indices::AbstractVector{<:Integer}) = SolventGroup(nothing, nothing, atom_indices, nothing)
 SolventGroup(atom_names::Vector{<:AbstractString}) = SolventGroup(nothing, nothing, nothing, atom_names)
 SolventGroup(group_name::AbstractString) = SolventGroup(nothing, group_name, nothing, nothing)
