@@ -1,14 +1,15 @@
 @testitem "show methods" begin
     using ShowMethodTesting
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select
 
     # Test simple three-molecule system: cross correlation
-    atoms = read_pdb("$data_dir/toy/cross.pdb")
+    atoms = read_pdb(test_file("toy_cross.pdb"))
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    trajectory_file = "$data_dir/toy/cross.pdb"
+    trajectory_file = test_file("toy_cross.pdb")
     trajectory_format = "PDBTraj"
 
     @test parse_show(Options(cutoff=10.0)) ≈ """
@@ -58,7 +59,7 @@
     )
     R = coordination_number(trajectory_file, protein, water, options; trajectory_format, low_memory)
 
-    @test parse_show(R;  repl = Dict(r"Version.*" => "Version")) ≈ 
+    @test parse_show(R;  repl = Dict(r"Version.*" => "Version", r"\S*toy_cross.pdb" => "toy_cross.pdb")) ≈ 
         """
         --------------------------------------------------------------------------------
         MDDF Overview - ComplexMixtures - Version
@@ -86,7 +87,7 @@
         
         Trajectory files and weights:
         
-           /home/leandro/.julia/dev/ComplexMixtures/test/data/toy/cross.pdb - w = 1.0
+           toy_cross.pdb - w = 1.0
         
         Long range MDDF mean (expected 1.0): 0.0 ± 0.0
         Long range RDF mean (expected 1.0): 0.0 ± 0.0

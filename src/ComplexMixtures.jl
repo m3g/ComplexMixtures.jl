@@ -38,11 +38,10 @@ export grid3D, volumetric_data
 export kbi, finite_volume_kbi, extrapolate_kbi
 export reference_density
 
-# Testing data
-const src_dir = @__DIR__
-const test_dir = joinpath(src_dir,"../test")
-const data_dir = normpath("$test_dir/data")
-const pdb_file_example = normpath("$data_dir/NAMD/structure.pdb")
+# test_file(name): path of the test file `name`. The test files are lazy artifacts (see
+# Artifacts.toml), downloaded on the first call. The method is defined in the TestFilesExt
+# extension, loaded with `using LazyArtifacts`.
+function test_file end
 
 # Input and Output data structures
 include("./io.jl")

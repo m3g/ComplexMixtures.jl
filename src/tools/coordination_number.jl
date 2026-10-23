@@ -25,16 +25,18 @@ function from the `PDBTools` package.
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures: data_dir
+julia> using LazyArtifacts
 
-julia> ats = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
+julia> using ComplexMixtures: test_file
+
+julia> ats = read_pdb(test_file("protein_tmao.pdb"));
 
 julia> solute = AtomSelection(select(ats, "protein"); nmols=1);
 
 julia> solvent = AtomSelection(select(ats, "resname TMAO"); natomspermol=14);
 
 julia> R = mddf(
-           joinpath(data_dir,"NAMD/trajectory.dcd"), 
+           test_file("protein_tmao.dcd"), 
            solute, 
            solvent, 
            Options(cutoff=12.0, silent=true)
@@ -68,9 +70,11 @@ If group contributions were precomputed, the name of the group can be used to co
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures: data_dir
+julia> using LazyArtifacts
 
-julia> ats = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
+julia> using ComplexMixtures: test_file
+
+julia> ats = read_pdb(test_file("protein_tmao.pdb"));
 
 julia> solute = AtomSelection(
            select(ats, "protein"); 
@@ -87,7 +91,7 @@ AtomSelection
 julia> solvent = AtomSelection(select(ats, "resname TMAO"); natomspermol=14);
 
 julia> R = mddf(
-           joinpath(data_dir,"NAMD/trajectory.dcd"), 
+           test_file("protein_tmao.dcd"), 
            solute, 
            solvent, 
            Options(cutoff=12.0, silent=true)
@@ -108,14 +112,14 @@ coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contrib
 @testitem "coordination_number" begin
     using ComplexMixtures: coordination_number, contributions, mddf, Trajectory, Options, AtomSelection, load
     using PDBTools: read_pdb, select
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
 
-    dir = "$data_dir/NAMD"
-    atoms = read_pdb("$dir/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     options = Options(lastframe=1, seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=200)
-    traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     R = mddf(traj, options)
 
     # Test self-consistency

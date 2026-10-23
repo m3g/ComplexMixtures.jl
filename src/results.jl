@@ -197,12 +197,13 @@ end
 
 @testitem "input: argument errors" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select
-    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    trajectory = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao, water)
+    trajectory = Trajectory(test_file("protein_tmao.dcd"), tmao, water)
     @test_throws ArgumentError mddf(trajectory, Options(lastframe=100))
     @test_throws ArgumentError mddf(trajectory, Options(irefatom=1000))
     @test_throws ArgumentError mddf(trajectory, Options(lastframe=5), frame_weights=[1.0, 1.0, 1.0])
@@ -486,14 +487,15 @@ end
 
 @testitem "Result - empty" begin
     #using ComplexMixtures: Result, Trajectory, Options, AtomSelection
-    using ComplexMixtures: data_dir, pdb_file_example
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select, name
-    atoms = read_pdb(pdb_file_example)
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
     solute = AtomSelection(protein, nmols=1)
     solvent = AtomSelection(tmao, natomspermol=14)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", solute, solvent)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
     options = Options()
     # At this point we can only test an empty Result struct
     R = Result(traj, options)
@@ -502,7 +504,7 @@ end
     @test length(R.d) == 500
     @test R.dbulk == 10.0
     @test (R.density.solute, R.density.solvent, R.density.solvent_bulk) == (0.0, 0.0, 0.0)
-    @test normpath(R.files[1].filename) == normpath("$data_dir/NAMD/trajectory.dcd")
+    @test normpath(R.files[1].filename) == normpath(test_file("protein_tmao.dcd"))
     @test R.files[1].irefatom == 1
     @test length(R.kb) == 500
     @test length(R.kb_rdf) == 500
@@ -599,8 +601,9 @@ end
 
 @testitem "Result - load/save" begin
     using ComplexMixtures: load
-    using ComplexMixtures: data_dir
-    r1 = load("$data_dir/NAMD/protein_tmao.json")
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    r1 = load(test_file("namd_protein_tmao.json"))
     tmp = tempname()
     save(r1, tmp)
     r2 = load(tmp)
@@ -611,9 +614,9 @@ end
     r2 = load(tmp)
     @test r1 == r2
     # Test throwing an error incompatible versions of ComplexMixtures
-    @test_throws "newer version" load("$data_dir/legacy/wrong_version_jsons/too_new.json")
-    @test_throws "older" load("$data_dir/legacy/wrong_version_jsons/too_old.json")
-    @test_throws "Result object" load("$data_dir/legacy/wrong_version_jsons/broken_json_2.18.0.json")
+    @test_throws "newer version" load(test_file("legacy_too_new.json"))
+    @test_throws "older" load(test_file("legacy_too_old.json"))
+    @test_throws "Result object" load(test_file("legacy_broken_json_2.18.0.json"))
     rm(tmp)
     tmpfile = tempname()
     open(tmpfile, "w") do io
@@ -623,14 +626,14 @@ end
     rm(tmpfile)
 
     # Test load and save with substrings
-    r1 = load(@view("$data_dir/NAMD/protein_tmao.json---"[1:end-3]))
+    r1 = load(@view((test_file("namd_protein_tmao.json")*"---")[1:end-3]))
     tmp = @view(tempname()[1:end-1])
     save(r1, tmp)
     r2 = load(tmp)
     @test r1 == r2
 
     # The file format is preserved: saving a loaded file reproduces it
-    file = "$data_dir/NAMD/Protein_in_Glycerol/protein_glyc.json"
+    file = test_file("glycerol_protein_glyc.json")
     r1 = load(file)
     tmp = tempname()
     save(tmp, r1)

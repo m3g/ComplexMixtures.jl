@@ -47,11 +47,13 @@ A ResidueContributions object can be saved to a JSON file using the `save` funct
 ```jldoctest
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures: data_dir; ComplexMixtures._testing_show_method[] = true; # testing mode
+julia> using LazyArtifacts
 
-julia> atoms = read_pdb(data_dir*"/NAMD/Protein_in_Glycerol/system.pdb");
+julia> using ComplexMixtures: test_file; ComplexMixtures._testing_show_method[] = true; # testing mode
 
-julia> results = load(data_dir*"/NAMD/Protein_in_Glycerol/protein_glyc.json");
+julia> atoms = read_pdb(test_file("glycerol_system.pdb"));
+
+julia> results = load(test_file("glycerol_protein_glyc.json"));
 
 julia> rc = ResidueContributions(results, select(atoms, "protein"); silent=true)
 
@@ -535,13 +537,14 @@ end
 
 @testitem "ResidueContribution" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir, pdb_file_example
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools
 
-    atoms = read_pdb(pdb_file_example)
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, water)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, water)
     options = Options(;
         seed=1,
         stride=1,
@@ -691,7 +694,7 @@ end
         group_atom_indices=[index.(acidic_residues), index.(basic_residues)],
         group_names=["acidic residues", "basic residues"]
     )
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, water)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, water)
     result = mddf(traj, Options(lastframe=2))
     @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein"))
 
@@ -699,7 +702,7 @@ end
     glicines = select(atoms, "protein and resname GLY")
     solute = AtomSelection(glicines; natomspermol=7)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", solute, water)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute, water)
     options = Options(;
         seed=1,
         stride=1,

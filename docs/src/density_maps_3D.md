@@ -43,9 +43,10 @@ with `ComplexMixtures` for testing:
 
 ```@example grid3D
 using ComplexMixtures, PDBTools
-using ComplexMixtures: data_dir
-atoms = read_pdb(joinpath(data_dir, "NAMD", "Protein_in_Glycerol", "system.pdb"))
-results = load(joinpath(data_dir, "NAMD", "Protein_in_Glycerol", "protein_glyc.json"))
+using LazyArtifacts
+using ComplexMixtures: test_file
+atoms = read_pdb(test_file("glycerol_system.pdb"))
+results = load(test_file("glycerol_protein_glyc.json"))
 protein = select(atoms, "protein")
 nothing # hide
 ```

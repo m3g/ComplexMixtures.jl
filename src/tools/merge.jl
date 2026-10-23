@@ -152,13 +152,14 @@ end
 @testitem "merge" begin
     using ComplexMixtures: mddf, merge
     using PDBTools: read_pdb, select, selindex
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
 
     # Test simple three-molecule system
-    atoms = read_pdb("$data_dir/toy/cross.pdb")
+    atoms = read_pdb(test_file("toy_cross.pdb"))
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
+    traj = Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
 
     options = Options(
         seed=321,
@@ -203,7 +204,7 @@ end
     # Two-atom system
     at1 = AtomSelection([1], nmols=1)
     at2 = AtomSelection([2], nmols=1)
-    traj = Trajectory("$data_dir/toy/self_monoatomic.pdb", at1, at2, format="PDBTraj")
+    traj = Trajectory(test_file("toy_self_monoatomic.pdb"), at1, at2, format="PDBTraj")
     R1 = mddf(traj, Options(lastframe=1))
     @test sum(R1.md_count) == 1
     R2 = mddf(traj, Options(firstframe=2))
@@ -224,14 +225,14 @@ end
 
     # Test throwing merging incompatible results
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
+    traj = Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
     R1 = mddf(traj, options)
     protein = AtomSelection(
         select(atoms, "protein and model 1"), nmols=1,
         group_names=["acidic"],
         group_atom_indices=[selindex(atoms, "protein and acidic")]
     )
-    traj = Trajectory("$data_dir/toy/cross.pdb", protein, water, format="PDBTraj")
+    traj = Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
     R2 = mddf(traj, options)
 
     @test_throws "solute and solvent selections of the sets must be the same" merge([R1,R2])

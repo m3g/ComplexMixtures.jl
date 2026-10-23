@@ -130,9 +130,10 @@ thus the distribution is the O–O RDF:
 
 ```@example kbi
 using ComplexMixtures
-using ComplexMixtures: data_dir
-R = load(joinpath(data_dir, "NAMD", "water", "rw_20_25.json"))
-RO = load(joinpath(data_dir, "NAMD", "water", "rwO_20_25.json"))
+using LazyArtifacts
+using ComplexMixtures: test_file
+R = load(test_file("namd_rw_20_25.json"))
+RO = load(test_file("namd_rwO_20_25.json"))
 R.solute.natomspermol, RO.solute.natomspermol
 ```
 

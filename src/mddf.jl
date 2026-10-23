@@ -28,12 +28,13 @@ end
 @testitem "Buffer" begin
     using ComplexMixtures
     using PDBTools
-    using ComplexMixtures: pdb_file_example, data_dir
-    atoms = read_pdb(pdb_file_example)
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     R = Result(traj, options)
     b0 = ComplexMixtures.Buffer(
         solute_read=similar(traj.x_solute),
@@ -162,9 +163,11 @@ The `options` parameter is optional. If not set, the default `Options()` structu
 ```julia-repl
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures: data_dir
+julia> using LazyArtifacts
 
-julia> atoms = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
+julia> using ComplexMixtures: test_file
+
+julia> atoms = read_pdb(test_file("protein_tmao.pdb"));
 
 julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
@@ -172,7 +175,7 @@ julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
 
 julia> options = Options(lastframe=10, cutoff=15.0);
 
-julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
+julia> trajectory_file = test_file("protein_tmao.dcd");
 
 julia> results = mddf(trajectory_file, solute, solvent, options);
 ```
@@ -572,9 +575,11 @@ The `options` parameter is optional. If not set, the default `Options()` structu
 ```julia-repl
 julia> using ComplexMixtures, PDBTools
 
-julia> using ComplexMixtures: data_dir
+julia> using LazyArtifacts
 
-julia> atoms = read_pdb(joinpath(data_dir,"NAMD/structure.pdb"));
+julia> using ComplexMixtures: test_file
+
+julia> atoms = read_pdb(test_file("protein_tmao.pdb"));
 
 julia> solute = AtomSelection(select(atoms, "protein"), nmols=1);
 
@@ -582,7 +587,7 @@ julia> solvent = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14);
 
 julia> options = Options(lastframe=10, cutoff=15.0);
 
-julia> trajectory_file = joinpath(data_dir,"NAMD/trajectory.dcd");
+julia> trajectory_file = test_file("protein_tmao.dcd");
 
 julia> results = coordination_number(trajectory_file, solute, solvent, options);
 ```
@@ -639,13 +644,14 @@ end
 @testitem "mddf - toy system" begin
     using ComplexMixtures
     using PDBTools: read_pdb, select
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
 
     # Test simple three-molecule system: cross correlation
-    atoms = read_pdb("$data_dir/toy/cross.pdb")
+    atoms = read_pdb(test_file("toy_cross.pdb"))
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    trajectory_file = "$data_dir/toy/cross.pdb"
+    trajectory_file = test_file("toy_cross.pdb")
     trajectory_format = "PDBTraj"
     for nthreads in [1, 2], lastframe in [1, 2], low_memory in [true, false]
         options = Options(;
@@ -679,9 +685,9 @@ end
     @test_throws ArgumentError mddf(trajectory_file, protein, water, Options(); frame_weights=[1.0], trajectory_format)
 
     # Self correlation
-    atoms = read_pdb("$data_dir/toy/self_monoatomic.pdb")
+    atoms = read_pdb(test_file("toy_self_monoatomic.pdb"))
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
-    trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+    trajectory_file = test_file("toy_self_monoatomic.pdb")
     trajectory_format = "PDBTraj"
     # without atoms in the bulk
     for nthreads in [1, 2], low_memory in [false, true]
@@ -716,7 +722,7 @@ end
     cd(current_dir)
 
     # Different frame_weight input types
-    trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+    trajectory_file = test_file("toy_self_monoatomic.pdb")
     options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
     R1 = mddf(trajectory_file, atom, options; trajectory_format)
     options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
@@ -742,7 +748,7 @@ end
     for low_memory in [false, true]
         local trajectory_file, options, R1, R2
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, lastframe=1)
-        trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+        trajectory_file = test_file("toy_self_monoatomic.pdb")
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[1.0, 0.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
@@ -760,10 +766,10 @@ end
         @test R1.md_count == R2.md_count
         @test R1.rdf_count == R2.rdf_count
         # Check with the duplicated-first-frame trajectory 
-        trajectory_file = "$data_dir/toy/self_monoatomic_duplicated_first_frame.pdb"
+        trajectory_file = test_file("toy_self_monoatomic_duplicated_first_frame.pdb")
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=1, lastframe=3)
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
-        trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+        trajectory_file = test_file("toy_self_monoatomic.pdb")
         options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[2.0, 1.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
@@ -811,18 +817,19 @@ end
 
 @testitem "mddf - available methods" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select
-    atoms = read_pdb("$data_dir/toy/cross.pdb")
+    atoms = read_pdb(test_file("toy_cross.pdb"))
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    trajectory_file = "$data_dir/toy/cross.pdb"
+    trajectory_file = test_file("toy_cross.pdb")
     
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
     t = Trajectory(trajectory_file, atom; format="PDBTraj")
 
     options = Options()
-    trajectory_file = "$data_dir/toy/self_monoatomic.pdb"
+    trajectory_file = test_file("toy_self_monoatomic.pdb")
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
     r1 = mddf(trajectory_file, atom, atom)
     r2 = mddf(trajectory_file, atom, atom, Options())
@@ -839,7 +846,7 @@ end
 
     # Test input with substrings
     options = Options()
-    trajectory_file = @view("$data_dir/toy/self_monoatomic.pdb---"[1:end-3])
+    trajectory_file = @view((test_file("toy_self_monoatomic.pdb")*"---")[1:end-3])
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
     r1 = mddf(trajectory_file, atom, atom)
     r2 = mddf(trajectory_file, atom, atom, Options())
@@ -849,13 +856,14 @@ end
 
 @testitem "mddf - real system" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection
-    using ComplexMixtures: data_dir, pdb_file_example
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select
 
-    atoms = read_pdb(pdb_file_example)
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    trajectory_file = "$data_dir/NAMD/trajectory.dcd"
+    trajectory_file = test_file("protein_tmao.dcd")
 
     # Throw error in incorrect call to coordination_number
     @test_throws ArgumentError coordination_number(trajectory_file, protein, tmao, Options(); coordination_number_only=true)
@@ -874,7 +882,7 @@ end
             silent=true
         )
         # Test actual system: cross correlation
-        R = mddf("$data_dir/NAMD/trajectory.dcd", protein, tmao, options; low_memory)
+        R = mddf(test_file("protein_tmao.dcd"), protein, tmao, options; low_memory)
         # Deterministic
         @test R.volume.total ≈ 603078.4438609097
         @test sum(R.md_count) ≈ 25.250000000000007
@@ -891,7 +899,7 @@ end
         @test R.kb_rdf[end] ≈ -6360.471034166915 rtol = 0.5
 
         # Self correlation
-        R = mddf("$data_dir/NAMD/trajectory.dcd", tmao, options; low_memory)
+        R = mddf(test_file("protein_tmao.dcd"), tmao, options; low_memory)
         # Deterministic
         @test R.volume.total ≈ 603078.4438609097
         @test sum(R.md_count) ≈ 2.8939226519337016
@@ -912,19 +920,19 @@ end
         # Test varying frame weights: the trajectory below has 3 frames
         # extracted from NAMD/trajectory.dcd, and the 2 first frames are the
         # first frame duplicated.
-        R1 = mddf("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao, Options(); low_memory)
-        R2 = mddf("$data_dir/NAMD/trajectory.dcd", tmao, Options(lastframe=2); frame_weights=[2.0, 1.0], low_memory)
+        R1 = mddf(test_file("namd_traj_duplicated_first_frame.dcd"), tmao, Options(); low_memory)
+        R2 = mddf(test_file("protein_tmao.dcd"), tmao, Options(lastframe=2); frame_weights=[2.0, 1.0], low_memory)
         @test R2.md_count ≈ R1.md_count
         @test all(R2.solute_group_count == R1.solute_group_count)
         @test all(R2.solvent_group_count == R1.solvent_group_count)
-        R2 = mddf("$data_dir/NAMD/trajectory.dcd", tmao, Options(lastframe=2); frame_weights=[0.5, 0.25], low_memory)
+        R2 = mddf(test_file("protein_tmao.dcd"), tmao, Options(lastframe=2); frame_weights=[0.5, 0.25], low_memory)
         @test R2.md_count ≈ R1.md_count
         @test all(R2.solute_group_count == R1.solute_group_count)
         @test all(R2.solvent_group_count == R1.solvent_group_count)
         @test R2.volume.total ≈ R1.volume.total
         # Varying weights with stride
-        R1 = mddf("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao, Options(firstframe=2, lastframe=3); low_memory)
-        R2 = mddf("$data_dir/NAMD/traj_duplicated_first_frame.dcd", tmao, Options(lastframe=3, stride=2); frame_weights=[1.0, 100.0, 1.0], low_memory)
+        R1 = mddf(test_file("namd_traj_duplicated_first_frame.dcd"), tmao, Options(firstframe=2, lastframe=3); low_memory)
+        R2 = mddf(test_file("namd_traj_duplicated_first_frame.dcd"), tmao, Options(lastframe=3, stride=2); frame_weights=[1.0, 100.0, 1.0], low_memory)
         @test R2.md_count ≈ R1.md_count
         @test all(R2.solute_group_count == R1.solute_group_count)
         @test all(R2.solvent_group_count == R1.solvent_group_count)

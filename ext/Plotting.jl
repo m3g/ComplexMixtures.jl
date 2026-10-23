@@ -200,8 +200,9 @@ end
 
 @testitem "plot ReferenceDensity" begin
     using ComplexMixtures, Plots
-    using ComplexMixtures: data_dir
-    R = load("$data_dir/NAMD/water/rw_20_25.json")
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    R = load(test_file("namd_rw_20_25.json"))
     tmpplot = tempname() * ".png"
     plt = plot(reference_density(R); title="water")
     savefig(plt, tmpplot)
@@ -211,12 +212,13 @@ end
 
 @testitem "contourf" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using Plots
     using PDBTools
     # Load example output file (computed in the previous script)
-    protein = read_pdb(joinpath(data_dir, "Gromacs/system.pdb"), "protein")
-    results = load(joinpath(data_dir, "Gromacs/protein_EMI.json"))
+    protein = read_pdb(test_file("gromacs_system.pdb"), "protein")
+    results = load(test_file("gromacs_protein_EMI.json"))
     tmpplot = tempname() * ".png"
 
     # Add some strange residue names to the protein

@@ -201,16 +201,17 @@ Base.write(
 
 @testitem "write" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using DelimitedFiles
     using PDBTools
-    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     # Using or not bulk-range
     options1 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, bulk_range=(8.0, 10.0))
     options2 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, dbulk=8.0, usecutoff=false)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao, chemfiles=true)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao, chemfiles=true)
     for options in (options1, options2)
         r = mddf(traj, options)
         tmpfile = tempname() * ".dat"
