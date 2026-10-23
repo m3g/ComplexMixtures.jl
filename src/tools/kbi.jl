@@ -352,8 +352,9 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
 
 @testitem "kbi" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir, units
-    R = load("$data_dir/NAMD/water/rwO_20_25.json")
+    using LazyArtifacts
+    using ComplexMixtures: test_file, units
+    R = load(test_file("namd_rwO_20_25.json"))
 
     @test_throws "Invalid KBI correction option" kbi(R; correction=:abc)
     @test_throws "Invalid KBI normalization option" kbi(R; normalization=:abc)
@@ -413,7 +414,7 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
     @test_throws ArgumentError extrapolate_kbi(fv, (30.0, 40.0))
 
     # Multi-atom solute (MDDF): no warning for kbi, warning for finite_volume_kbi
-    R = load("$data_dir/NAMD/water/rw_20_25.json")
+    R = load(test_file("namd_rw_20_25.json"))
     @test_logs kbi(R; correction=:G2)
     @test_logs kbi(R)
     @test_logs (:warn,) finite_volume_kbi(R)
@@ -429,14 +430,14 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
 
     # For results computed with the current version, the reference density of the Ganguly 
     # normalization at the cutoff is the bulk density
-    R = load("$data_dir/NAMD/protein_tmao.json")
+    R = load(test_file("namd_protein_tmao.json"))
     @test ComplexMixtures._ganguly_density(R)[end] ≈ R.density.solvent_bulk
-    R = load("$data_dir/NAMD/tmao_tmao.json")
+    R = load(test_file("namd_tmao_tmao.json"))
     @test R.autocorrelation
     @test ComplexMixtures._ganguly_density(R)[end] ≈ R.density.solvent_bulk
 
     # Not normalized results
-    R = load("$data_dir/NAMD/water/rw_20_25.json")
+    R = load(test_file("namd_rw_20_25.json"))
     R.density.solvent_bulk = 0.0
     @test_throws "bulk solvent density is zero" kbi(R)
 end

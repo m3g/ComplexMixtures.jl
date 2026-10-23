@@ -211,9 +211,9 @@ stored.
 ## Example
 
 ```jldoctest
-julia> using ComplexMixtures, PDBTools
+julia> using ComplexMixtures, PDBTools, LazyArtifacts
 
-julia> pdbfile = ComplexMixtures.pdb_file_example;
+julia> pdbfile = ComplexMixtures.test_file("protein_tmao.pdb");
 
 julia> atoms = PDBTools.read_pdb(pdbfile, "resname TMAO");
 
@@ -373,9 +373,9 @@ end
 
 @testitem "AtomSelection - indices" begin
     using PDBTools
-    using ComplexMixtures
+    using ComplexMixtures, LazyArtifacts
     import Random: shuffle!
-    pdbfile = ComplexMixtures.pdb_file_example
+    pdbfile = ComplexMixtures.test_file("protein_tmao.pdb")
     atoms = read_pdb(pdbfile, "protein and residue 2")
     indices = index.(atoms)
     s = AtomSelection(indices, nmols=1, natomspermol=11)
@@ -405,6 +405,7 @@ end
 @testitem "AtomSelection - argument errors" begin
     import ComplexMixtures
     #using ComplexMixtures: AtomSelection
+    using LazyArtifacts
     using PDBTools: select, read_pdb, Select
     @test_throws ArgumentError AtomSelection([1, 2, 3])
     @test_throws ArgumentError AtomSelection([1, 2, 3]; natomspermol=2)
@@ -423,7 +424,7 @@ end
     @test_logs (:warn,) AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[1, 2], [3]])
     @test_logs (:warn,) AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[2, 1], [3]], group_names=["A", "B"])
 
-    pdb = read_pdb(ComplexMixtures.pdb_file_example)
+    pdb = read_pdb(ComplexMixtures.test_file("protein_tmao.pdb"))
     @test_throws ArgumentError AtomSelection(
         select(pdb, "protein and name CA"),
         nmols=1,
@@ -463,9 +464,9 @@ end
 
 @testitem "AtomSelection Vector{<:PDBTools.Atom}" begin
     using ComplexMixtures
-    using PDBTools
+    using PDBTools, LazyArtifacts
     import Random: shuffle!
-    pdbfile = ComplexMixtures.pdb_file_example
+    pdbfile = ComplexMixtures.test_file("protein_tmao.pdb")
     atoms = PDBTools.read_pdb(pdbfile, "protein and residue 2")
     s = AtomSelection(atoms, nmols=1, natomspermol=11)
     @test s.indices == [12 + i for i = 1:11]
@@ -515,9 +516,9 @@ See the `contributions` help entry for additional information.
 ## Defining solute groups with different input types:
 
 ```jldoctest
-julia> using ComplexMixtures, PDBTools
+julia> using ComplexMixtures, PDBTools, LazyArtifacts
 
-julia> atoms = PDBTools.read_pdb(ComplexMixtures.pdb_file_example, "protein"); 
+julia> atoms = PDBTools.read_pdb(ComplexMixtures.test_file("protein_tmao.pdb"), "protein"); 
 
 julia> SoluteGroup(select(atoms, "protein and resname ASP")) # vector of PDBTools.Atom(s)
 SoluteGroup defined by:
@@ -635,8 +636,9 @@ SolventGroup(residue::PDBTools.Residue) = SolventGroup(nothing, nothing, PDBTool
 @testitem "SoluteGroup and SolventGroup" begin
     using ComplexMixtures
     using PDBTools: read_pdb, select, name, eachresidue
-    using ComplexMixtures: pdb_file_example
-    pdb = read_pdb(pdb_file_example)
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    pdb = read_pdb(test_file("protein_tmao.pdb"))
     @test fieldnames(SoluteGroup) == fieldnames(SolventGroup)
 
     sg = SoluteGroup(select(pdb, "protein and residue 2"))

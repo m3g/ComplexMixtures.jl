@@ -1,13 +1,13 @@
 
 @testitem "Allocations" setup=[AllocTest] begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools
     using BenchmarkTools
     using .AllocTest: Allocs
 
-    dir = "$data_dir/NAMD"
-    atoms = read_pdb("$dir/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     options = Options(
         lastframe=1,
         nthreads=1,
@@ -42,7 +42,7 @@
         @benchmark AtomSelection($tmao_atoms, natomspermol=14) samples = 1 evals = 1
     @test t_selection2.allocs <= Allocs(100)
 
-    trajfile = "$dir/trajectory.dcd" # because of the interpolation of @benchmark
+    trajfile = test_file("protein_tmao.dcd") # because of the interpolation of @benchmark
     traj = Trajectory(trajfile, protein, tmao)
     t_trajectory =
         @benchmark Trajectory($trajfile, $protein, $tmao) samples = 1 evals = 1

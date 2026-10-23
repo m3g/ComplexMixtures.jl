@@ -50,12 +50,13 @@ end
 
 @testitem "Radial distribution" begin
     using ComplexMixtures: gr, mddf, Trajectory, Options, AtomSelection
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select
-    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
     OH2 = AtomSelection(select(atoms, "water and name OH2"), natomspermol=1)
-    traj = Trajectory("$data_dir/Gromacs/trajectory.xtc", OH2)
+    traj = Trajectory(test_file("gromacs_trajectory.xtc"), OH2)
     R = mddf(traj, options)
     gr1, kb1 = gr(R)
     @test R.rdf_count ≈ R.md_count
@@ -65,8 +66,9 @@ end
 
 @testitem "Radial distribution - multi-atom solute" begin
     using ComplexMixtures: gr, load
-    using ComplexMixtures: data_dir
-    R = load("$data_dir/NAMD/protein_tmao.json")
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    R = load(test_file("namd_protein_tmao.json"))
     @test R.solute.natomspermol > 1
     g, kb = gr(R)
     @test g == R.rdf

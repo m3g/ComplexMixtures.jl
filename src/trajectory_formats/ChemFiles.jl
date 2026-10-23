@@ -166,15 +166,16 @@ end
 
 @testitem "getunitcell" begin
     using ComplexMixtures
-    using ComplexMixtures: pdb_file_example, data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools
     using StaticArrays
 
-    atoms = read_pdb(pdb_file_example)
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     options = Options(stride=4, seed=321, StableRNG=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", protein, tmao)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     ComplexMixtures.opentraj!(traj)
     ComplexMixtures.firstframe!(traj)
     ComplexMixtures.nextframe!(traj)

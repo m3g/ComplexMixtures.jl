@@ -1,28 +1,28 @@
 
 @testitem "NAMD with ChemFiles" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select
 
     #
     # Tests with NAMD-DCD trajectory
     #
 
-    dir = "$data_dir/NAMD"
-    atoms = read_pdb("$dir/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, cutoff=10.0)
 
     # Example 1: protein-tmao
-    # save(R,"$dir/protein_tmao.json")
-    R_save = load("$dir/protein_tmao.json")
+    # save(R,test_file("namd_protein_tmao.json"))
+    R_save = load(test_file("namd_protein_tmao.json"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$dir/trajectory.dcd", protein, tmao, chemfiles=true)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao, chemfiles=true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
     # test substring input
-    traj = Trajectory(@view("$dir/trajectory.dcd---"[1:end-3]), protein, tmao, chemfiles=true)
+    traj = Trajectory(@view((test_file("protein_tmao.dcd")*"---")[1:end-3]), protein, tmao, chemfiles=true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
@@ -40,32 +40,32 @@
     rm(temp_output)
 
     # Example 2: water-tmao
-    # save(R,"$dir/water_tmao.json")
-    R_save = load("$dir/water_tmao.json")
+    # save(R,test_file("namd_water_tmao.json"))
+    R_save = load(test_file("namd_water_tmao.json"))
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$dir/trajectory.dcd", tmao, water, chemfiles=true)
+    traj = Trajectory(test_file("protein_tmao.dcd"), tmao, water, chemfiles=true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
     # test substring input
-    traj = Trajectory(@view("$dir/trajectory.dcd---"[1:end-3]), tmao, water, chemfiles=true)
+    traj = Trajectory(@view((test_file("protein_tmao.dcd")*"---")[1:end-3]), tmao, water, chemfiles=true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
     # Example 3: tmao-tmao
-    # save(R,"$dir/tmao_tmao.json")
-    R_save = load("$dir/tmao_tmao.json")
+    # save(R,test_file("namd_tmao_tmao.json"))
+    R_save = load(test_file("namd_tmao_tmao.json"))
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory("$dir/trajectory.dcd", tmao, tmao, chemfiles=true)
+    traj = Trajectory(test_file("protein_tmao.dcd"), tmao, tmao, chemfiles=true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 
     # Example 3: water-water
-    # save(R,"$dir/water_water.json")
-    R_save = load("$dir/water_water.json")
+    # save(R,test_file("namd_water_water.json"))
+    R_save = load(test_file("namd_water_water.json"))
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$dir/trajectory.dcd", water, water, chemfiles=true)
+    traj = Trajectory(test_file("protein_tmao.dcd"), water, water, chemfiles=true)
     R = mddf(traj, options)
     @test isapprox(R, R_save, debug=true)
 

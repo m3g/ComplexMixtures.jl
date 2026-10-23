@@ -275,9 +275,9 @@ end
 @testitem "grid3D" begin
     using PDBTools
     using ComplexMixtures
-    using ComplexMixtures: data_dir
-    dir = "$data_dir/NAMD"
-    atoms = read_pdb("$dir/structure.pdb")
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
 
     # Test argument error: no custom groups can be defined
     protein = AtomSelection(select(atoms, "protein"); group_atom_indices=[findall(sel"resname ARG", atoms)], nmols=1)
@@ -290,14 +290,14 @@ end
         silent=true,
         n_random_samples=100,
     )
-    traj = Trajectory("$dir/trajectory.dcd", protein, tmao)
+    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     R = mddf(traj, options)
     @test_throws ArgumentError grid3D(R, atoms, tempname())
 
     # Test properties of the grid around a specific residue
     solute = AtomSelection(select(atoms, "protein and residue 46"), nmols=1)
     solvent = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
     grid_file = tempname() * ".pdb"
     options = Options(
         stride=5,
@@ -341,7 +341,8 @@ end
 @testitem "volumetric_data" begin
     using PDBTools
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     # Points on a regular grid
     grid = [Atom(x=0.5 * i, y=0.5 * j, z=1.0, beta=float(i + j)) for i in 1:3 for j in 1:2]
     v = volumetric_data(grid)
@@ -368,10 +369,10 @@ end
     @test_throws ArgumentError volumetric_data(grid; sigma=-1.0)
     @test_throws ArgumentError volumetric_data([grid; Atom(x=0.7, y=0.5, z=1.0)]; step=0.5)
     # Grid from a simulation
-    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     solute = AtomSelection(select(atoms, "protein and residue 46"), nmols=1)
     solvent = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", solute, solvent)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
     R = mddf(traj, Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true))
     grid = grid3D(R, atoms; silent=true)
     v = volumetric_data(grid; sigma=0.5)
@@ -382,11 +383,12 @@ end
 @testitem "grid3D with multiple solute molecules" begin
     using PDBTools
     using ComplexMixtures
-    using ComplexMixtures: data_dir
-    atoms = read_pdb("$data_dir/NAMD/structure.pdb")
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory("$data_dir/NAMD/trajectory.dcd", tmao, water)
+    traj = Trajectory(test_file("protein_tmao.dcd"), tmao, water)
     R = mddf(traj, Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true))
     grid1 = grid3D(R, atoms; silent=true)
     # The grid is built around a single molecule: the closest atoms belong to the first molecule

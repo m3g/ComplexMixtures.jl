@@ -1,7 +1,9 @@
 PrecompileTools.@setup_workload begin
     # Putting some things in `@setup_workload` instead of `@compile_workload` can reduce the size of the
     # precompile file and potentially make loading faster.
-    dir = "$data_dir/NAMD"
+    # A small system (a few residues of the protein and two TMAO molecules, one frame),
+    # extracted from the protein-TMAO test system
+    dir = joinpath(@__DIR__, "..", "test", "precompile")
     atoms = PDBTools.read_pdb("$dir/structure.pdb", "protein or resname TMAO")
     prot = PDBTools.select(atoms, "protein and resnum < 4")
     tmao = PDBTools.select(atoms, "resname TMAO and resnum <= 2")

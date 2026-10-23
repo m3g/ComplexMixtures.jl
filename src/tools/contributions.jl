@@ -40,11 +40,10 @@ or proximal contributions to the Kirkwood-Buff integrals.
 # Examples
 
 ```jldoctest
-julia> using ComplexMixtures, PDBTools
+julia> using ComplexMixtures, PDBTools, LazyArtifacts
 
-julia> dir = ComplexMixtures.data_dir*"/Gromacs";
 
-julia> atoms = read_pdb(dir*"/system.pdb");
+julia> atoms = read_pdb(ComplexMixtures.test_file("gromacs_system.pdb"));
 
 julia> protein = select(atoms, "protein");
 
@@ -62,7 +61,7 @@ AtomSelection
     Atoms per molecule: 20
     Number of groups: 20
 
-julia> results = load(dir*"/protein_EMI.json"); # load pre-calculated results
+julia> results = load(ComplexMixtures.test_file("gromacs_protein_EMI.json")); # load pre-calculated results
 
 julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"])); # contribution of CA and CB atoms to the MDDF
 
@@ -253,16 +252,17 @@ end
 
 @testitem "contributions" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools
-    atoms = read_pdb("$data_dir/PDB/trajectory.pdb", "model 1")
+    atoms = read_pdb(test_file("pdb_trajectory.pdb"), "model 1")
     protein = select(atoms, "protein")
     tmao = select(atoms, "resname TMAO")
 
     # No custom groups
     solute = AtomSelection(protein, nmols=1)
     solvent = AtomSelection(tmao, natomspermol=14)
-    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
+    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     results = mddf(traj)
     @test sum(contributions(results, SoluteGroup(select(protein, "acidic")); type=:md_count)) ≈ 4.4
     @test sum(contributions(results, SoluteGroup(select(protein, "basic")); type=:md_count)) ≈ 2.4
@@ -286,7 +286,7 @@ end
         ]
     )
     solvent = AtomSelection(tmao, natomspermol=14)
-    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
+    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     results = mddf(traj)
 
     @test sum(contributions(results, SoluteGroup("acidic"); type=:md_count)) ≈ 4.4
@@ -313,7 +313,7 @@ end
     @test_throws ArgumentError contributions(results, SolventGroup(["NOT_FOUND"]))
 
     solute = AtomSelection(protein, nmols=1)
-    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
+    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     # Dependent on the random number seed
     results = mddf(traj, Options(seed=321, StableRNG=true, nthreads=1, silent=true))
     @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
@@ -348,7 +348,7 @@ end
     # The solute has only one molecule.
     ala_residues = select(atoms, "resname ALA")
     solute = AtomSelection(ala_residues, nmols=1)
-    traj = Trajectory("$data_dir/PDB/trajectory.pdb", solute, solvent, format="PDBTraj")
+    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     results = mddf(traj)
     @test results.mddf ≈ contributions(results, SoluteGroup(ala_residues))
     r = collect(eachresidue(ala_residues))
@@ -365,11 +365,11 @@ end
 @testitem "custom group contributions" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load,
         SoluteGroup, SolventGroup, contributions
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select, Select, iswater, chain, resnum
 
-    dir = "$data_dir/NAMD"
-    atoms = read_pdb("$dir/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     #
@@ -397,7 +397,7 @@ end
         ],
         group_names=["H1", "H2", "OH2", "OH2_2", "OH_3"]
     )
-    traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
     R = mddf(traj)
 
     @test !all(==(0), contributions(R, SoluteGroup("H1")))
@@ -433,7 +433,7 @@ end
         ],
         group_names=["H1", "H2", "OH2"]
     )
-    traj = Trajectory("$dir/trajectory.dcd", solute)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute)
     R = mddf(traj, options)
 
     @test !all(==(0), contributions(R, SoluteGroup("H1")))
@@ -469,7 +469,7 @@ end
         ],
         group_names=["B", "C"]
     )
-    traj = Trajectory("$dir/trajectory.dcd", solute)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute)
     R = mddf(traj, options)
     @test !all(==(0), contributions(R, SoluteGroup("B")))
     @test !all(==(0), contributions(R, SoluteGroup("C")))
@@ -482,12 +482,12 @@ end
 @testitem "shuffled indices custom group contributions" begin
     using ComplexMixtures: mddf, Trajectory, Options, AtomSelection, load,
         SoluteGroup, SolventGroup, contributions
-    using ComplexMixtures: data_dir
+    using LazyArtifacts
+    using ComplexMixtures: test_file
     using PDBTools: read_pdb, select, Select, iswater, chain, resnum
     import Random: shuffle!
 
-    dir = "$data_dir/NAMD"
-    atoms = read_pdb("$dir/structure.pdb")
+    atoms = read_pdb(test_file("protein_tmao.pdb"))
     options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
 
     #
@@ -513,7 +513,7 @@ end
         ],
         group_names=["H1", "H2", "OH2"]
     )
-    traj = Trajectory("$dir/trajectory.dcd", solute, solvent)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
     R = mddf(traj)
 
     @test !all(==(0), contributions(R, SoluteGroup("H1")))
@@ -547,7 +547,7 @@ end
         ],
         group_names=["H1", "H2", "OH2"]
     )
-    traj = Trajectory("$dir/trajectory.dcd", solute)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute)
     R = mddf(traj, options)
 
     @test !all(==(0), contributions(R, SoluteGroup("H1")))
@@ -583,7 +583,7 @@ end
         ],
         group_names=["B", "C"]
     )
-    traj = Trajectory("$dir/trajectory.dcd", solute)
+    traj = Trajectory(test_file("protein_tmao.dcd"), solute)
     R = mddf(traj, options)
     @test !all(==(0), contributions(R, SoluteGroup("B")))
     @test !all(==(0), contributions(R, SoluteGroup("C")))

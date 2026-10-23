@@ -13,9 +13,9 @@ the decrease of the MDDF by a factor of 2. The KB integrals will be also updated
 accordingly.
 
 ```jldoctest
-julia> using ComplexMixtures
+julia> using ComplexMixtures, LazyArtifacts
 
-julia> R = load(ComplexMixtures.data_dir*"/NAMD/protein_tmao.json");
+julia> R = load(ComplexMixtures.test_file("namd_protein_tmao.json"));
 
 julia> R_new = renormalize(R, 2*R.density.solvent_bulk, "sites/Angs3");
 
@@ -44,8 +44,9 @@ end
 
 @testitem "renormalize" begin
     using ComplexMixtures 
-    using ComplexMixtures: data_dir, units
-    R = load(joinpath(data_dir,"NAMD/protein_tmao.json"))
+    using LazyArtifacts
+    using ComplexMixtures: test_file, units
+    R = load(test_file("namd_protein_tmao.json"))
     @test R.density.solvent != R.density.solvent_bulk
     new_density = 2 * R.density.solvent_bulk * units.SitesperAngs3tomolperL
     R_new = renormalize(R, new_density)

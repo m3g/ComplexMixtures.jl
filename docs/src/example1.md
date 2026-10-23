@@ -298,10 +298,11 @@ Therefore, by filtering the 3D density map at each distance one can visualize ov
 
 ```@example example1-grid3D
 using ComplexMixtures, PDBTools # hide
-using ComplexMixtures: data_dir # hide
-atoms = read_pdb(joinpath(data_dir, "NAMD", "Protein_in_Glycerol", "system.pdb")) # hide
+using LazyArtifacts # hide
+using ComplexMixtures: test_file # hide
+atoms = read_pdb(test_file("glycerol_system.pdb")) # hide
 protein = select(atoms, "protein") # hide
-results = load(joinpath(data_dir, "NAMD", "Protein_in_Glycerol", "protein_glyc.json")) # hide
+results = load(test_file("glycerol_protein_glyc.json")) # hide
 grid = grid3D(results, atoms; dmin=1.5, dmax=3.5, silent=true) # hide
 hbonds = filter(p -> occup(p) < 2.0 && beta(p) > 0.1, grid) # hide
 visualize( # hide

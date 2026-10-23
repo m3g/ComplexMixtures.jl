@@ -108,8 +108,9 @@ end
 
 @testitem "reference_density" begin
     using ComplexMixtures
-    using ComplexMixtures: data_dir
-    R = load("$data_dir/NAMD/water/rw_20_25.json")
+    using LazyArtifacts
+    using ComplexMixtures: test_file
+    R = load(test_file("namd_rw_20_25.json"))
     rd = reference_density(R)
     @test rd.bulk == R.density.solvent_bulk
     @test rd.outside ≈ ComplexMixtures._ganguly_density(R) ./ R.density.solvent_bulk

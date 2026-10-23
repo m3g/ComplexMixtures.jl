@@ -2,6 +2,10 @@
 ENV["GKSwstype"] = "nul"
 using Documenter
 using ComplexMixtures
+using LazyArtifacts
+# Download the test files before the doctests, so that the download messages are not part of their output
+ComplexMixtures.test_file("protein_tmao.pdb")
+ComplexMixtures.test_file("toy_cross.pdb")
 using PDBTools
 using Plots
 makedocs(

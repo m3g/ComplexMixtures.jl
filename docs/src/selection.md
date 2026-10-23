@@ -31,9 +31,9 @@ atom and group contributions to MDDFs and coordination numbers.
 For example, here we define a protein of a system as the solute:
 
 ```jldoctest
-julia> using ComplexMixtures, PDBTools
+julia> using ComplexMixtures, PDBTools, LazyArtifacts
 
-julia> atoms = read_pdb(ComplexMixtures.pdb_file_example);
+julia> atoms = read_pdb(ComplexMixtures.test_file("protein_tmao.pdb"));
 
 julia> protein = select(atoms, "protein");
 
@@ -122,9 +122,9 @@ Thus, one may need to predefine the groups in which the contributions will be an
 Here, we illustrate this feature by preselecting the acidic and basic residues of a protein:
 
 ```julia
-julia> using ComplexMixtures, PDBTools
+julia> using ComplexMixtures, PDBTools, LazyArtifacts
 
-julia> atoms = read_pdb(ComplexMixtures.pdb_file_example);
+julia> atoms = read_pdb(ComplexMixtures.test_file("protein_tmao.pdb"));
 
 julia> protein = select(atoms, "protein");
 

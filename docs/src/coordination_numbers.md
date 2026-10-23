@@ -29,10 +29,10 @@ In the following example we compute the coordination number of the atoms of `res
 
 ```julia
 # Load necessary packages
-using ComplexMixtures, PDBTools 
+using ComplexMixtures, PDBTools, LazyArtifacts
 # Load data structure and previously computed results from a mddf calculation 
-pdb = read_pdb("test/data/NAMD/structure.pdb")
-R = load("test/data/NAMD/protein_tmao.json")
+pdb = read_pdb(ComplexMixtures.test_file("protein_tmao.pdb"))
+R = load(ComplexMixtures.test_file("namd_protein_tmao.json"))
 # Define which is the solute
 solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1)
 # We intend to compute the contributions of residue 50 only
