@@ -38,7 +38,7 @@ Plotting = "Plots"
 TestFilesExt = "LazyArtifacts"
 
 [compat]
-Aqua = "0.8.16"
+Aqua = "0.8.18"
 BenchmarkTools = "1.6.2"
 CellListMap = "0.10.1"
 Chemfiles = "0.10.31"
