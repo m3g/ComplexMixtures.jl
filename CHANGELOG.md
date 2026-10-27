@@ -11,17 +11,21 @@ ComplexMixtures.jl Changelog
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
 Version 3.0.2-DEV
---------------
+-------------
 - ![INFO][badge-info] Depends on PDBTools 4, built on [PDBToolsBase.jl](https://github.com/m3g/PDBToolsBase.jl). The shared functions `save`, `load` and `coordination_number` are those of PDBToolsBase, instead of MolSimToolkitShared, which is no longer a dependency. Requires Julia 1.11 or later.
 - ![ENHANCEMENT][badge-enhancement] `SoluteGroup` and `SolventGroup` accept any `AbstractVector` of atoms, such as the `Structure`s returned by `read_pdb` and `select` in PDBTools 4.
 - ![INFO][badge-info] The test files are no longer part of the package installation: they are lazy artifacts (from [MolSimTestFiles](https://github.com/m3g/MolSimTestFiles)), downloaded when needed, and obtained with `ComplexMixtures.test_file(name)`, which is available after `using LazyArtifacts` (a package extension, so LazyArtifacts is not loaded with the package). It replaces `ComplexMixtures.data_dir` and `ComplexMixtures.pdb_file_example` in the examples (e.g. `ComplexMixtures.test_file("protein_tmao.pdb")`). The precompilation workload uses a small system that remains in the package.
 - ![INFO][badge-info] The test files are no longer part of the package installation: they are lazy artifacts (from [MolSimTestFiles](https://github.com/m3g/MolSimTestFiles)), downloaded when needed, and obtained with `ComplexMixtures.test_file(name)`, which is available after `using LazyArtifacts` (a package extension, so LazyArtifacts is not loaded with the package). It replaces `ComplexMixtures.data_dir` and `ComplexMixtures.pdb_file_example` in the examples (e.g. `ComplexMixtures.test_file("protein_tmao.pdb")`). The precompilation workload uses a small system that remains in the package.
+
+
+Version 3.0.1
+-------------
 - ![INFO][badge-info] Documentation: relation between the weighted KBIs and the finite-volume KBIs (the `:G1` weight removes the ``1/L`` term analytically), and limits of the finite-volume interpretation for MDDFs. The `kbi` docstring was simplified to focus on usage, referring to the manual for the theory.
 - ![ENHANCEMENT][badge-enhancement] The centers of the randomly placed molecules of the ideal-gas (random) distributions are generated from uniform fractional coordinates of the unit cell, which is exactly uniform for orthorhombic and triclinic cells. Previously, they were generated in a large region derived from the computing box of `CellListMap` and wrapped into the cell. The sampling no longer depends on internals of `CellListMap` (changes in which modified the random configurations generated for a given seed). Results obtained with a given random seed change within their statistical uncertainty.
 - ![ENHANCEMENT][badge-enhancement] The progress bar of `mddf` advances when the computation of each frame is finished, instead of when the frame is read, and is updated at most every second regardless of how the frames finish across threads. Previously, it jumped by the number of threads when the first frames were read, and could skip many frames between updates.
 
 Version 3.0.0
---------------
+-------------
 - ![FEATURE][badge-feature] `kbi(R; correction, normalization)`: the weight functions (`:G1`, `:G2`) are now applied to the KBIs computed from minimum-distance distribution functions, thus to solutes of any shape. New `:W7` weight (the ``W_7^{(3)}`` weight of Santos). New `normalization` keyword: `:ganguly` (reference density outside the solute domain at each distance, following Ganguly and van der Vegt) or `:mddf` (the bulk density, as in the normalization of `R.mddf`).
 - ![BREAKING][badge-breaking] The defaults of `kbi` changed from `correction=:none` to `correction=:W7, normalization=:ganguly`. The previous default is obtained with `kbi(R; correction=:none, normalization=:mddf)`. The `:G1` and `:G2` corrections are computed from the MDDF counts (`R.md_count`) instead of the counts of the distances to the reference atom of the solvent (`R.rdf_count`). For single-atom solutes and solvents, the results are the same. `:G0` is now equivalent to `:none`.
 - ![FEATURE][badge-feature] `contributions(...; type=:kbi)` and `ResidueContributions(...; type=:kbi)` accept the `correction` and `normalization` options of `kbi`, with the same defaults, such that the contributions sum to `kbi(R)`. ![BREAKING][badge-breaking] Previously, they summed to the uncorrected KBI.
