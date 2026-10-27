@@ -10,13 +10,11 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 3.0.2-DEV
+Version 3.1.0
 -------------
+- ![FEATURE][badge-feature] `SoluteGroup` and `SolventGroup` accept any `AbstractVector` of atoms, such as the `Structure`s returned by `read_pdb` and `select` in PDBTools 4.
 - ![INFO][badge-info] Depends on PDBTools 4, built on [PDBToolsBase.jl](https://github.com/m3g/PDBToolsBase.jl). The shared functions `save`, `load` and `coordination_number` are those of PDBToolsBase, instead of MolSimToolkitShared, which is no longer a dependency. Requires Julia 1.11 or later.
-- ![ENHANCEMENT][badge-enhancement] `SoluteGroup` and `SolventGroup` accept any `AbstractVector` of atoms, such as the `Structure`s returned by `read_pdb` and `select` in PDBTools 4.
 - ![INFO][badge-info] The test files are no longer part of the package installation: they are lazy artifacts (from [MolSimTestFiles](https://github.com/m3g/MolSimTestFiles)), downloaded when needed, and obtained with `ComplexMixtures.test_file(name)`, which is available after `using LazyArtifacts` (a package extension, so LazyArtifacts is not loaded with the package). It replaces `ComplexMixtures.data_dir` and `ComplexMixtures.pdb_file_example` in the examples (e.g. `ComplexMixtures.test_file("protein_tmao.pdb")`). The precompilation workload uses a small system that remains in the package.
-- ![INFO][badge-info] The test files are no longer part of the package installation: they are lazy artifacts (from [MolSimTestFiles](https://github.com/m3g/MolSimTestFiles)), downloaded when needed, and obtained with `ComplexMixtures.test_file(name)`, which is available after `using LazyArtifacts` (a package extension, so LazyArtifacts is not loaded with the package). It replaces `ComplexMixtures.data_dir` and `ComplexMixtures.pdb_file_example` in the examples (e.g. `ComplexMixtures.test_file("protein_tmao.pdb")`). The precompilation workload uses a small system that remains in the package.
-
 
 Version 3.0.1
 -------------
