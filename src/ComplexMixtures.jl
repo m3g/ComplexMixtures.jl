@@ -21,7 +21,7 @@ export Trajectory, Options, Result
 export AtomSelection, SoluteGroup, SolventGroup
 
 # Functions
-import MolSimToolkitShared: save, load
+import PDBToolsBase: save, load
 export mddf
 export overview
 export save, load, write, merge
@@ -29,7 +29,7 @@ export atom_group, atom_group_name, atom_group_names
 export renormalize
 
 # Tools
-import MolSimToolkitShared: coordination_number
+import PDBToolsBase: coordination_number
 export coordination_number
 export ResidueContributions
 export contributions

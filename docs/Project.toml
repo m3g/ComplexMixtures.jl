@@ -5,6 +5,7 @@ LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LazyArtifacts = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
 PDBTools = "e29189f1-7114-4dbd-93d0-c5673a921a58"
+PDBToolsBase = "c8914394-62c2-4233-bff1-d1ad7c5159d7"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [sources]
@@ -12,4 +13,4 @@ ComplexMixtures = {path = ".."}
 Documenter = {rev = "top_menu_from_pages", url = "https://github.com/lmiq/Documenter.jl"}
 
 [compat]
-PDBTools = "3.41.0"
+PDBTools = "4"
