@@ -10,6 +10,9 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 3.1.1-DEV
+-------------
+
 Version 3.1.0
 -------------
 - ![FEATURE][badge-feature] `SoluteGroup` and `SolventGroup` accept any `AbstractVector` of atoms, such as the `Structure`s returned by `read_pdb` and `select` in PDBTools 4.
