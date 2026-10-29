@@ -10,6 +10,9 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 4.0.1-DEV
+-------------
+
 Version 4.0.0
 -------------
 - ![BREAKING][badge-breaking] The `Result` data structure was renamed to `MDDFResult`.
