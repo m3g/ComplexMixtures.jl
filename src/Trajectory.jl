@@ -1,4 +1,4 @@
-"""
+#=
     Trajectory(filename::AbstractString, solute::AtomSelection, solvent::AtomSelection; format::AbstractString = "", chemfiles = false)
 
 Trajectory constructor data type. 
@@ -7,7 +7,7 @@ Defaults to reading with the Chemfiles infrastructure, except for DCD and PDB tr
 
 See memory issue (https://github.com/chemfiles/Chemfiles.jl/issues/44)
 
-"""
+=#
 abstract type Trajectory end
 
 # Mutable struct to contain the stream of the trajectory: mutable such that
@@ -126,16 +126,16 @@ end
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
     # Throw if trajectory type is not available
-    @test_throws ArgumentError Trajectory(test_file("pdb_trajectory.pdb"), protein, tmao; format="XXX")
+    @test_throws ArgumentError ComplexMixtures.Trajectory(test_file("pdb_trajectory.pdb"), protein, tmao; format="XXX")
 
     # NAMD DCD file
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     @test traj.nframes == 20
     @test traj.lastatom == 4012
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.42188262939453, 84.42188262939453, 84.42188262939453)
 
     # PDB file
-    traj = Trajectory(
+    traj = ComplexMixtures.Trajectory(
         test_file("pdb_trajectory.pdb"),
         protein,
         tmao,
@@ -145,11 +145,11 @@ end
     @test ComplexMixtures.natoms(traj.solvent) == 2534
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(84.47962951660156, 84.47962951660156, 84.47962951660156)
     # Test determining format from file extension
-    traj = Trajectory(test_file("pdb_trajectory.pdb"), protein, tmao)
+    traj = ComplexMixtures.Trajectory(test_file("pdb_trajectory.pdb"), protein, tmao)
     @test ComplexMixtures.natoms(traj.solute) == 1463
 
     # Chemfiles with NAMD
-    traj = Trajectory(
+    traj = ComplexMixtures.Trajectory(
         test_file("protein_tmao.dcd"),
         protein,
         tmao,
@@ -164,7 +164,7 @@ end
     atoms = read_pdb(test_file("gromacs_system.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol=20)
-    traj = Trajectory(test_file("gromacs_trajectory.xtc"), protein, emi)
+    traj = ComplexMixtures.Trajectory(test_file("gromacs_trajectory.xtc"), protein, emi)
     @test traj.nframes == 26
     @test ComplexMixtures.convert_unitcell(ComplexMixtures.getunitcell(traj)) ≈ SVector(95.11481285095215, 95.11481285095215, 95.13440132141113)
     @test ComplexMixtures.natoms(traj.solute) == 1231
@@ -174,7 +174,7 @@ end
 
 #
 # This structure and function are used to retrieve metadata from the trajectory
-# that is used to initialize the Result and ParticleSystem structures, without
+# that is used to initialize the MDDFResult and ParticleSystem structures, without
 # having to open the trajectory again. This allows the parallel initialization of
 # these data structures. 
 #
@@ -257,7 +257,7 @@ end
     atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
 
     options = Options()
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)

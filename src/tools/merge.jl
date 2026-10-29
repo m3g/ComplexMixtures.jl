@@ -1,13 +1,13 @@
 """
-    merge(r::Vector{Result})
+    merge(r::Vector{MDDFResult})
 
 Merges the results of MDDF calculations obtained by running the same
 analysis on multiple trajectories, or multiple parts of the same trajectory. It returns
-a Result structure of the same type, with all the functions and counters representing averages
-of the set provided weighted by the number of frames read in each Result set.
+a MDDFResult structure of the same type, with all the functions and counters representing averages
+of the set provided weighted by the number of frames read in each MDDFResult set.
 
 """
-function Base.merge(results::Vector{<:Result})
+function Base.merge(results::Vector{<:MDDFResult})
     nframes_read = 0
     for ir in eachindex(results)
         for file in results[ir].files
@@ -32,7 +32,7 @@ function Base.merge(results::Vector{<:Result})
 
                 """))
             end
-            for field in fieldnames(Result)
+            for field in fieldnames(MDDFResult)
                 a_i = getfield(results[ir], field)
                 if a_i isa AbstractArray
                     a_j = getfield(results[jr], field)
@@ -86,7 +86,7 @@ function Base.merge(results::Vector{<:Result})
     solvent_group_count_random = [zeros(results[1].nbins) for _ in 1:length(results[1].solvent_group_count)]
 
     # Structure for merged results
-    R = Result(
+    R = MDDFResult(
         nbins=results[1].nbins,
         dbulk=results[1].dbulk,
         cutoff=results[1].cutoff,
@@ -118,8 +118,8 @@ function Base.merge(results::Vector{<:Result})
         end
         @. R.mddf += w * result.mddf
         @. R.kb += w * result.kb
-        @. R.rdf += w * result.rdf
-        @. R.kb_rdf += w * result.kb_rdf
+        @. R.proximal += w * result.proximal
+        @. R.kb_proximal += w * result.kb_proximal
         @. R.md_count += w * result.md_count
         @. R.md_count_random += w * result.md_count_random
         @. R.coordination_number += w * result.coordination_number
@@ -132,10 +132,10 @@ function Base.merge(results::Vector{<:Result})
             @. R.solvent_group_count[i] += w * result.solvent_group_count[i]
             @. R.solvent_group_count_random[i] += w * result.solvent_group_count_random[i]
         end
-        @. R.rdf_count += w * result.rdf_count
-        @. R.rdf_count_random += w * result.rdf_count_random
-        @. R.sum_rdf_count += w * result.sum_rdf_count
-        @. R.sum_rdf_count_random += w * result.sum_rdf_count_random
+        @. R.proximal_count += w * result.proximal_count
+        @. R.proximal_count_random += w * result.proximal_count_random
+        @. R.sum_proximal_count += w * result.sum_proximal_count
+        @. R.sum_proximal_count_random += w * result.sum_proximal_count_random
         R.density.solute += w * result.density.solute
         R.density.solvent += w * result.density.solvent
         R.density.solvent_bulk += w * result.density.solvent_bulk
@@ -159,7 +159,7 @@ end
     atoms = read_pdb(test_file("toy_cross.pdb"))
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
     water = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=3)
-    traj = Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
 
     options = Options(
         seed=321,
@@ -193,7 +193,7 @@ end
     # Test loading a saved merged file
     dir = mktempdir()
     save(R, "$dir/merged.json")
-    R_save = load("$dir/merged.json")
+    R_save = load(MDDFResult, "$dir/merged.json")
     @test isapprox(R, R_save, debug=true)
 
     # Test merging files for which weights are provided for the frames
@@ -204,7 +204,7 @@ end
     # Two-atom system
     at1 = AtomSelection([1], nmols=1)
     at2 = AtomSelection([2], nmols=1)
-    traj = Trajectory(test_file("toy_self_monoatomic.pdb"), at1, at2, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("toy_self_monoatomic.pdb"), at1, at2, format="PDBTraj")
     R1 = mddf(traj, Options(lastframe=1))
     @test sum(R1.md_count) == 1
     R2 = mddf(traj, Options(firstframe=2))
@@ -225,14 +225,14 @@ end
 
     # Test throwing merging incompatible results
     protein = AtomSelection(select(atoms, "protein and model 1"), nmols=1)
-    traj = Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
     R1 = mddf(traj, options)
     protein = AtomSelection(
         select(atoms, "protein and model 1"), nmols=1,
         group_names=["acidic"],
         group_atom_indices=[selindex(atoms, "protein and acidic")]
     )
-    traj = Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("toy_cross.pdb"), protein, water, format="PDBTraj")
     R2 = mddf(traj, options)
 
     @test_throws "solute and solvent selections of the sets must be the same" merge([R1,R2])

@@ -1,4 +1,4 @@
-# [Result data structure](@id results)
+# [MDDFResult data structure](@id results)
 
 ```@meta
 CollapsedDocStrings = true
@@ -11,13 +11,13 @@ function with
 ```julia
 results = mddf(trajectory_file, solute, solvent, Options(cutoff=12.0))
 ``` 
-such that the `results` variable contain the `Result` data structure. By
+such that the `results` variable contain the `MDDFResult` data structure. By
 default, the histograms contain 500 bins (`binstep=0.002` and
 `cutoff=10.`) such that all data-vectors will contain 500 lines.
 
 To learn how to save and load saved data, read the [next](@ref save) section.
 
-## The Result data structure: main data
+## The MDDFResult data structure: main data
 
 The most important data to be read from `results` are the distances,
 minimum-distance distribution function, and KB integrals. These data is
@@ -135,7 +135,7 @@ plot(
 
 ## Coordination number and other data
 
-Obtaining the MDDF involves the computation of some intermediate properties that are frequently useful for additional solution structure analysis. In particular, the coordination numbers are computed. For example, the coordination number as a function from the distance to the solute can be retrieved from a `Results` data structure with:
+Obtaining the MDDF involves the computation of some intermediate properties that are frequently useful for additional solution structure analysis. In particular, the coordination numbers are computed. For example, the coordination number as a function from the distance to the solute can be retrieved from a `MDDFResult` data structure with:
 ```julia
 coordination_number = results.coordination_number
 ```
@@ -167,7 +167,7 @@ The complete data available is:
 | `weights` | Weights of each file in the final counts. | `Vector{Float64}` | If the trajectories have different lengths or number of frames, the weights are adapted accordingly. | 
 |    |     |    |   | 
 
-### Other Result parameters available which are set at Options:
+### Other MDDFResult parameters available which are set at Options:
 
 | Parameter | Meaning | Type of value | Comment | 
 |:----------|:--------|:-------------:|:--------|
@@ -177,11 +177,11 @@ The complete data available is:
 | `autocorrelation` | The solute is the same as the solvent? | `Bool` | Automatically set if `solute == solvent`. |  
 | `solute` | Properties of the solute | `AtomSelection` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solute. |
 | `solvent` | Properties of the solvent. | `AtomSelection` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solvent. | 
-| `irefatom` | This is a reference atom that is used to generate random rotations and translations internally. | `Int` | Counts of the distributions for this atom are performed automatically to obtain radial (or proximal) distribution functions. Can be used for testing purposes. |
-| `rdf_count` | This is the `md_count` minimum distance count of `irefatom`. | `Vector{Float64}` | This corresponds to the conventional radial distribution function if the solute contains only one atom. | 
-| `rdf_count_random` | Minimum distance of `irefatom` count for the random distribution. | `Vector{Float64}` | |
-| `rdf` | Distribution function computed from the `irefatom` distribution.| `Vector{Float64}` |  It is a conventional `rdf` if the solute has only one atom. | 
-| `kb_rdf` | Kirkwood-Buff integral computed from the `irefatom` distribution. | `Vector{Float64}` | This must converge, at long distances, to the same value as `kb`, and can be used for testing. | 
+| `irefatom` | This is a reference atom that is used to generate random rotations and translations internally. | `Int` | Counts of the distributions for this atom are performed automatically to obtain radial (or proximal ([Mehrotra, Marchese, Beveridge, *J. Am. Chem. Soc.* 1981](https://doi.org/10.1021/ja00393a030); [Lounnas, Pettitt, *Proteins* 1994](https://doi.org/10.1002/prot.340180206))) distribution functions. Can be used for testing purposes. |
+| `proximal_count` | This is the `md_count` minimum distance count of `irefatom`. | `Vector{Float64}` | This corresponds to the conventional radial distribution function if the solute contains only one atom. | 
+| `proximal_count_random` | Minimum distance of `irefatom` count for the random distribution. | `Vector{Float64}` | |
+| `proximal` | Proximal distribution function ([Mehrotra, Marchese, Beveridge, *J. Am. Chem. Soc.* 1981](https://doi.org/10.1021/ja00393a030); [Lounnas, Pettitt, *Proteins* 1994](https://doi.org/10.1002/prot.340180206)) computed from the `irefatom` distribution.| `Vector{Float64}` |  It is a conventional radial distribution function if the solute has only one atom. | 
+| `kb_proximal` | Kirkwood-Buff integral computed from the `irefatom` distribution. | `Vector{Float64}` | This must converge, at long distances, to the same value as `kb`, and can be used for testing. | 
 | `options` | Calculation options. | `Options` | Carries (some redundant) options set by the user. | 
 | `lastframe_read` | Last frame read from the trajectory. | `Int` | | 
 | `n_frames_read` | Number of frames read from the trajectory. | `Int` | Can differ from `lastframe_read` if `stride != 1` | 
@@ -191,8 +191,8 @@ The complete data available is:
 ## Reference functions
 
 ```@docs
-Result
-overview(::Result)
+MDDFResult
+overview(::MDDFResult)
 ComplexMixtures.Density
 ```
 

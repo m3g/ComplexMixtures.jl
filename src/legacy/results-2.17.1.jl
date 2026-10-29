@@ -10,7 +10,7 @@ Structure to contain the results of the MDDF calculation.
 
 $(TYPEDFIELDS)
 
-The Result{Vector{Float64}} parametric type is necessary only for reading the JSON saved file. 
+The MDDFResult{Vector{Float64}} parametric type is necessary only for reading the JSON saved file. 
 
 =#
 @kwdef mutable struct Result_2_17_1
@@ -70,22 +70,23 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
 
 end
 
-function load(filename, ::Type{Result_2_17_1})
+function _load(filename, ::Type{Result_2_17_1})
     R_old = try
         open(filename, "r") do io
             JSON.parse(io, Result_2_17_1)
         end
     catch
         throw(ArgumentError("""\n 
-            The file $filename does not appear to contain a Result object.
+            The file $filename does not appear to contain a MDDFResult object.
 
         """))
     end
-    # Convert legacy Result_2.17_1 to current Result data structure
-    # This conversion must be updated if a new Result data structure is set.
-    return Result(;
+    # Convert legacy Result_2.17_1 to current MDDFResult data structure
+    # This conversion must be updated if a new MDDFResult data structure is set.
+    return MDDFResult(;
         # ComplexMixtures version that generated this results
-        Version = R_old.Version,
+        # The converted data structure is in the format of the current version
+        Version = pkgversion(@__MODULE__),
         # Histogram properties
         nbins = R_old.nbins,
         dbulk = R_old.dbulk,
@@ -110,12 +111,12 @@ function load(filename, ::Type{Result_2_17_1})
         solvent_group_count_random = Vector{Vector{Float64}}[], # empty in v"2.17.1"
 
         # Data to compute a RDF and the KB integral from this count
-        rdf_count = R_old.rdf_count,
-        rdf_count_random = R_old.rdf_count_random,
-        sum_rdf_count = R_old.sum_rdf_count,
-        sum_rdf_count_random = R_old.sum_rdf_count_random,
-        rdf = R_old.rdf,
-        kb_rdf = R_old.kb_rdf,
+        proximal_count = R_old.rdf_count,
+        proximal_count_random = R_old.rdf_count_random,
+        sum_proximal_count = R_old.sum_rdf_count,
+        sum_proximal_count_random = R_old.sum_rdf_count_random,
+        proximal = R_old.rdf,
+        kb_proximal = R_old.kb_rdf,
 
         # Overall densities and volumes
         density = R_old.density,
@@ -135,13 +136,13 @@ end
     using ComplexMixtures
     using LazyArtifacts
     using ComplexMixtures: test_file
-    r_old = load(test_file("legacy_tmao_tmao.json"))
+    r_old = load(MDDFResult, test_file("legacy_tmao_tmao.json"))
     raw = ComplexMixtures.JSON.parsefile(test_file("legacy_tmao_tmao.json"))
     @test r_old.mddf ≈ Float64.(raw["mddf"])
     @test r_old.kb ≈ Float64.(raw["kb"])
     @test r_old.md_count_random ≈ Float64.(raw["md_count_random"])
     @test r_old.solute_group_count_random == Vector{Float64}[]
     @test r_old.solvent_group_count_random == Vector{Float64}[]
-    @test_throws "Result object" load(test_file("legacy_broken_json.json"))
+    @test_throws "MDDFResult object" load(MDDFResult, test_file("legacy_broken_json.json"))
 
 end

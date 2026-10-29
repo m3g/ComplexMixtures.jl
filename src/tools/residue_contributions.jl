@@ -9,7 +9,7 @@ struct MultipleResidueContribution end
 ## Constructor function: 
 
     ResidueContributions(
-        results::Result, atoms::AbstractVector{<:PDBTools.Atom};
+        results::MDDFResult, atoms::AbstractVector{<:PDBTools.Atom};
         dmin=1.5, dmax=3.5,
         type=:mddf,
         correction=:W7,
@@ -22,7 +22,7 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
 
 # Arguments
 
-- `results::Result`: The result object obtained from the `mddf` function.
+- `results::MDDFResult`: The result object obtained from the `mddf` function.
 - `atoms::AbstractVector{<:PDBTools.Atom}`: The vector of atoms of the solute, or a part of it.
 
 # Optional arguments
@@ -34,7 +34,7 @@ or to perform arithmetic operations with other `ResidueContributions` objects.
   reference density used to compute the KBI contributions, as in [`kbi`](@ref). Defaults: `:W7` and `:ganguly`.
 - `silent::Bool`: If `true`, the progress bar is not shown. Default is `false`.
 
-A structure of type `ResultContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
+A structure of type `ResidueContributions` can be used to plot the residue contributions to the solute-solvent pair distribution function,
 using the `Plots.contourf` function, and to perform arithmetic operations with other `ResidueContributions` objects, 
 multiplying or dividing by a scalar, and slicing (see examples below). 
 
@@ -53,7 +53,7 @@ julia> using ComplexMixtures: test_file; ComplexMixtures._testing_show_method[] 
 
 julia> atoms = read_pdb(test_file("glycerol_system.pdb"));
 
-julia> results = load(test_file("glycerol_protein_glyc.json"));
+julia> results = load(MDDFResult, test_file("glycerol_protein_glyc.json"));
 
 julia> rc = ResidueContributions(results, select(atoms, "protein"); silent=true)
 
@@ -73,7 +73,7 @@ julia> rc = ResidueContributions(results, select(atoms, "protein"); silent=true)
 julia> save("residue_contributions.json", rc)
 "ResidueContributions saved in JSON file: residue_contributions.json"
 
-julia> rc = load("residue_contributions.json", ResidueContributions);
+julia> rc = load(ResidueContributions, "residue_contributions.json");
 ```
 
 ## Plotting 
@@ -146,11 +146,6 @@ contourf(rc_diff) # plots a contour map of the difference
 rc3 = 3 * rc1
 rc4 = rc2 / 2
 ```
-
-!!! compat
-    Slicing, indexing, and multiplication and division by scalars were introduces in v2.7.0.
-    Saving and loading was introduced in v2.8.0. Iterators were introduced in v2.10.0.
-
 """
 @kwdef struct ResidueContributions{N<:Union{SingleResidueContribution,MultipleResidueContribution}}
     Version::VersionNumber = pkgversion(@__MODULE__)
@@ -161,7 +156,7 @@ rc4 = rc2 / 2
 end
 
 function ResidueContributions(
-    results::Result, atoms::AbstractVector{<:PDBTools.Atom};
+    results::MDDFResult, atoms::AbstractVector{<:PDBTools.Atom};
     dmin=1.5, dmax=3.5,
     type=:mddf,
     correction::Symbol=:W7,
@@ -487,7 +482,7 @@ Save the `ResidueContributions` object to a JSON file.
 using ComplexMixtures
 rc = ResidueContributions(results, SoluteGroup(protein))
 save("residue_contributions.json", rc)
-rc = load("residue_contributions.json", ResidueContributions)
+rc = load(ResidueContributions, "residue_contributions.json")
 ```
 
 """
@@ -500,7 +495,7 @@ function save(filename::AbstractString, rc::ResidueContributions)
 end
 
 """
-    load(filename::AbstractString, ResidueContributions)
+    load(ResidueContributions, filename::AbstractString)
 
 Function to load the residue contributions saved into a JSON file into the `ResidueContributions` data structure.
 
@@ -510,11 +505,11 @@ Function to load the residue contributions saved into a JSON file into the `Resi
 using ComplexMixtures
 rc = ResidueContributions(results, SoluteGroup(protein))
 save("residue_contributions.json", rc)
-rc = load("residue_contributions.json", ResidueContributions)
+rc = load(ResidueContributions, "residue_contributions.json")
 ```
 
 """
-function load(filename::AbstractString, ::Type{ResidueContributions})
+function load(::Type{ResidueContributions}, filename::AbstractString)
     filename = expanduser(filename)
     _check_version(filename)
     rc = try
@@ -544,7 +539,7 @@ end
     atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, water)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, water)
     options = Options(;
         seed=1,
         stride=1,
@@ -580,11 +575,13 @@ end
     # a full set of residue contributions
     tmpfile = tempname() * ".json"
     save(tmpfile, rc)
-    rc_load = load(tmpfile, ResidueContributions)
+    rc_load = load(ResidueContributions, tmpfile)
+    @test rc == rc_load
+    rc_load = load(ResidueContributions, tmpfile)
     @test rc == rc_load
     # a single residue contribution
     save(tmpfile, rc[1])
-    rc_load = load(tmpfile, ResidueContributions)
+    rc_load = load(ResidueContributions, tmpfile)
     @test rc[1] == rc_load
     rm(tmpfile)
 
@@ -592,7 +589,7 @@ end
     open(tmpfile, "w") do io
         println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
     end
-    @test_throws ArgumentError load(tmpfile, ResidueContributions)
+    @test_throws ArgumentError load(ResidueContributions, tmpfile)
 
     # version issues
     N = ComplexMixtures.MultipleResidueContribution
@@ -604,7 +601,7 @@ end
         xticks=rc.xticks
     )
     save(tmpfile, rc_future)
-    @test_throws ArgumentError load(tmpfile, ResidueContributions)
+    @test_throws ArgumentError load(ResidueContributions, tmpfile)
     rc_past = ResidueContributions{N}(
         Version=v"1.0.0",
         d=rc.d,
@@ -613,7 +610,7 @@ end
         xticks=rc.xticks
     )
     save(tmpfile, rc_past)
-    @test_throws ArgumentError load(tmpfile, ResidueContributions)
+    @test_throws ArgumentError load(ResidueContributions, tmpfile)
     rm(tmpfile)
 
     # indexing
@@ -694,7 +691,7 @@ end
         group_atom_indices=[index.(acidic_residues), index.(basic_residues)],
         group_names=["acidic residues", "basic residues"]
     )
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, water)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, water)
     result = mddf(traj, Options(lastframe=2))
     @test_throws ArgumentError ResidueContributions(result, select(atoms, "protein"))
 
@@ -702,7 +699,7 @@ end
     glicines = select(atoms, "protein and resname GLY")
     solute = AtomSelection(glicines; natomspermol=7)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory(test_file("protein_tmao.dcd"), solute, water)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), solute, water)
     options = Options(;
         seed=1,
         stride=1,

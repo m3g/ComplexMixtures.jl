@@ -17,7 +17,7 @@ using Statistics: mean, std
 using TestItems: @testitem, @testmodule
 
 # Data types
-export Trajectory, Options, Result
+export Options, MDDFResult
 export AtomSelection, SoluteGroup, SolventGroup
 
 # Functions
@@ -64,6 +64,7 @@ include("./viewmol.jl")
 # Structures and functions to store and report results
 include("./results.jl")
 include("./legacy/results-2.17.1.jl") # Legacy compatibility
+include("./legacy/results-3.1.0.jl") # Legacy compatibility
 
 
 # Comparison operators for ComplexMixtures types

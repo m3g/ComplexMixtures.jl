@@ -9,7 +9,7 @@ using PDBTools
 
 system = read_pdb("./equilibrated.pdb")
 acr = select(system, "resname FACR or resname ACR or resname LACR")
-results = load("./mddf.json")
+results = load(MDDFResult, "./mddf.json")
 
 # The PDB file does not contain the element column, and the element of
 # the atoms is guessed from the atom names. Here, the CL (terminal methyl

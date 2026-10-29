@@ -8,7 +8,7 @@ protein = cm.select(atoms, "protein")
 glyc = cm.select(atoms, "resname GLYC")
 
 # load previously computed MDDF results
-results = cm.load("./glyc50.json")
+results = cm.load(cm.MDDFResult, "./glyc50.json")
 
 # Select GLYC subgroups by atoms by name
 hydroxyls = cm.select(glyc, "name O1 O2 O3 H1 H2 H3")

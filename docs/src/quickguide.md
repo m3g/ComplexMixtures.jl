@@ -121,18 +121,6 @@ solvent = AtomSelection(tmao, natomspermol=14)
     `natomspermol` keyword). This is generally more practical for small
     molecules than to provide the number of molecules.
 
-### Set the Trajectory structure
-
-The `solute` and `solvent` data structures are then fed into the
-`Trajectory` data structure, together with the trajectory file name,
-with:
-```julia
-trajectory = Trajectory("trajectory.dcd", solute, solvent)
-```
-In the case, the trajectory is of NAMD "`DCD`" format. All formats
-supported by [Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) 
-are automatically recognized. 
-
 ### Finally, run the computation and get the results:
 
 If default options are used (as the bin size of the histograms, read all
@@ -141,6 +129,9 @@ frames without skipping any), just run the `mddf` with:
 results = mddf(trajectory_file, solute, solvent, Options(cutoff=12.0))
 
 ```
+The format of the trajectory file (here, NAMD `DCD`) is recognized from the file extension.
+All formats supported by [Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) can be used.
+
 Some optional parameters for the computation are available in the
 [Options](@ref options) section. Depending on the number of atoms
 and trajectory length, this can take a while. Computing a MDDF
@@ -200,7 +191,7 @@ save("./results.json", results)
 ```
 And these results can be loaded afterwards with:
 ```julia
-load("./results.json")
+load(MDDFResult, "./results.json")
 ```
 Alternatively, a human-readable set of output files can be obtained to
 be analyzed in other software (or plotted with alternative tools), with

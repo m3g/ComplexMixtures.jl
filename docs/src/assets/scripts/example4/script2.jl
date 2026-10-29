@@ -14,8 +14,8 @@ glyc = select(system, "resname GLLM")
 water = select(system, "water")
 
 # Load previously computed mddfs
-mddf_glyc = load("./mddf_glyc.json")
-mddf_glyc_water = load("./mddf_glyc_water.json")
+mddf_glyc = load(MDDFResult, "./mddf_glyc.json")
+mddf_glyc_water = load(MDDFResult, "./mddf_glyc_water.json")
 
 # Plot some group contributions to the MDDF. We select the atom names
 # corresponding to each type of group of the glycerol molecule.  

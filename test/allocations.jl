@@ -43,13 +43,13 @@
     @test t_selection2.allocs <= Allocs(100)
 
     trajfile = test_file("protein_tmao.dcd") # because of the interpolation of @benchmark
-    traj = Trajectory(trajfile, protein, tmao)
+    traj = ComplexMixtures.Trajectory(trajfile, protein, tmao)
     t_trajectory =
-        @benchmark Trajectory($trajfile, $protein, $tmao) samples = 1 evals = 1
+        @benchmark ComplexMixtures.Trajectory($trajfile, $protein, $tmao) samples = 1 evals = 1
     @test t_trajectory.allocs < Allocs(1500)
 
-    R = Result(traj, options)
-    t_result = @benchmark Result($traj, $options) samples = 1 evals = 1
+    R = MDDFResult(traj, options)
+    t_result = @benchmark MDDFResult($traj, $options) samples = 1 evals = 1
     @test t_result.allocs < Allocs(10000)
 
     ComplexMixtures.opentraj!(traj)

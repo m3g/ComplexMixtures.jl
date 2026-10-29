@@ -507,7 +507,7 @@ The possible constructors are:
 above, each constructor can be replaced by SolventGroup. The resulting data structures 
 are used as input parameters for the `contributions` function:
 
-    contributions(results::Result, group::Union{SoluteGroup, SolventGroup}; type=:mddf)
+    contributions(results::MDDFResult, group::Union{SoluteGroup, SolventGroup}; type=:mddf)
 
 See the `contributions` help entry for additional information.
 

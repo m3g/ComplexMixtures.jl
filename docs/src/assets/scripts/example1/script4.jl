@@ -16,7 +16,7 @@ using Statistics
 atoms = read_pdb("./system.pdb")
 
 # The results for glycerol were computed in script1.jl
-glyc_results = load("./glyc50_results.json")
+glyc_results = load(MDDFResult, "./glyc50_results.json")
 
 # Compute the MDDF of water relative to the protein, from the same trajectory
 protein = select(atoms, "protein")

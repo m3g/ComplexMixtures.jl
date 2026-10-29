@@ -54,10 +54,10 @@ readPDB = jl.pdb.read_pdb
 
 # From ComplexMixtures
 AtomSelection = jl.cm.AtomSelection
-Trajectory = jl.cm.Trajectory
 SoluteGroup = jl.cm.SoluteGroup
 SolventGroup = jl.cm.SolventGroup
 Options = jl.cm.Options
+MDDFResult = jl.cm.MDDFResult
 save = jl.cm.save
 load = jl.cm.load
 write = jl.cm.write

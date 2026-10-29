@@ -114,7 +114,7 @@ end
 
 function Base.show(io::IO, trajectory::NamdDCD)
     print(io, strip(""" 
-          Trajectory in NamdDCD format containing:
+          ComplexMixtures.Trajectory in NamdDCD format containing:
               $(trajectory.nframes) frames.
               Unit cell in current frame: $(print_unitcell(trajectory))
           """))

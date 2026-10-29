@@ -18,10 +18,10 @@ these file names:
 trajectory_files = [ "traj1.xtc" , "traj2.xtc" , "traj3.xtc" ]
 ```
 
-And define an empty vector of `Result` structures:
+And define an empty vector of `MDDFResult` structures:
 
 ```julia
-results = Result[]
+results = MDDFResult[]
 ```
 
 ### Run the calculations in a loop

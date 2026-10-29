@@ -1,5 +1,5 @@
 """
-    kbi(R::Result; correction::Symbol=:W7, normalization::Symbol=:ganguly)
+    kbi(R::MDDFResult; correction::Symbol=:W7, normalization::Symbol=:ganguly)
 
 Compute the Kirkwood-Buff integral (KBI) from the results of a minimum-distance distribution 
 function (MDDF) calculation, `R`, as a function of the upper limit of integration, ``L``. 
@@ -32,7 +32,7 @@ corrections, references, and examples.
 # Examples
 
 ```julia-repl
-julia> R = load("result.json");
+julia> R = load(MDDFResult, "result.json");
 
 julia> G = kbi(R); # W₇⁽³⁾ weight, Ganguly normalization
 
@@ -43,20 +43,13 @@ julia> G0 = kbi(R; correction=:none, normalization=:mddf); # truncated integral 
 ```
 
 See also [`finite_volume_kbi`](@ref), [`extrapolate_kbi`](@ref), and [`reference_density`](@ref).
-
-!!! compat
-    This function was introduced in version 2.19.0. The `:W7` correction and the `normalization` 
-    keyword were introduced in version 3.0.0, in which the corrections were extended to MDDFs, 
-    and the defaults were changed from `correction=:none` (and the normalization of the MDDF) to 
-    `correction=:W7, normalization=:ganguly`. Since version 3.0.0, `R.kb` is equal to `kbi(R)`.
-
 """
-function kbi(R::Result; correction::Symbol=:W7, normalization::Symbol=:ganguly)
+function kbi(R::MDDFResult; correction::Symbol=:W7, normalization::Symbol=:ganguly)
     return _kbi(R, R.md_count, R.md_count_random; correction, normalization)
 end
 
 #=
-    _kbi(R::Result, count, count_random; correction, normalization)
+    _kbi(R::MDDFResult, count, count_random; correction, normalization)
 
 Computes the KBI from the minimum-distance counts `count` and `count_random`, which can 
 be those of the complete solute and solvent, or of a group of atoms (in which case the result
@@ -64,7 +57,7 @@ is the contribution of the group to the KBI). The reference density is always co
 from the total counts.
 
 =#
-function _kbi(R::Result, count::AbstractVector, count_random::AbstractVector; correction::Symbol, normalization::Symbol)
+function _kbi(R::MDDFResult, count::AbstractVector, count_random::AbstractVector; correction::Symbol, normalization::Symbol)
     W = _kbi_weight(Val(correction))
     h = _kbi_integrand(R, count, count_random, Val(normalization))
     return _weighted_running_integral(h, R, W)
@@ -90,7 +83,7 @@ _kbi_weight(::Val{:W7}) = foldl(_polymul, (
 ))
 
 const _kbi_normalizations = (:ganguly, :mddf)
-function _kbi_integrand(::Result, ::AbstractVector, ::AbstractVector, ::Val{normalization}) where {normalization}
+function _kbi_integrand(::MDDFResult, ::AbstractVector, ::AbstractVector, ::Val{normalization}) where {normalization}
     throw(ArgumentError("""\n
         Invalid KBI normalization option: :$normalization. Available normalizations are: 
         $(join(":" .* string.(_kbi_normalizations), ", "))
@@ -98,10 +91,10 @@ function _kbi_integrand(::Result, ::AbstractVector, ::AbstractVector, ::Val{norm
     """))
 end
 
-function _check_normalized(R::Result)
+function _check_normalized(R::MDDFResult)
     if R.density.solvent_bulk == 0
         throw(ArgumentError("""\n
-            The bulk solvent density is zero. The Result object does not contain normalized
+            The bulk solvent density is zero. The MDDFResult object does not contain normalized
             distributions (was it computed with `coordination_number`?).
 
         """))
@@ -109,32 +102,32 @@ function _check_normalized(R::Result)
 end
 
 #=
-    _kbi_integrand(R::Result, count, count_random, normalization)
+    _kbi_integrand(R::MDDFResult, count, count_random, normalization)
 
 Returns, for each bin, the excess volume (in Å³) of the integrand of the KBI, that is, 
 the integral of [ρ(d)/ρ_ref(d) - ρ_id(d)/ρ_bulk] dV(d) over the bin, computed from
 the minimum-distance counts provided.
 
 =#
-function _kbi_integrand(R::Result, count::AbstractVector, count_random::AbstractVector, ::Val{:mddf})
+function _kbi_integrand(R::MDDFResult, count::AbstractVector, count_random::AbstractVector, ::Val{:mddf})
     _check_normalized(R)
     return (count .- count_random) ./ R.density.solvent_bulk
 end
 
-function _kbi_integrand(R::Result, count::AbstractVector, count_random::AbstractVector, ::Val{:ganguly})
+function _kbi_integrand(R::MDDFResult, count::AbstractVector, count_random::AbstractVector, ::Val{:ganguly})
     _check_normalized(R)
     ρ_ref = _ganguly_density(R)
     return @. count / ρ_ref - count_random / R.density.solvent_bulk
 end
 
 #=
-    _ganguly_density(R::Result)
+    _ganguly_density(R::MDDFResult)
 
 Returns the density of the solvent molecules outside the domain of the solute within each
 distance `R.d`, ρ_ref(d) = [N - N_in(d)] / [V - V(d)], in molecules/Å³.
 
 =#
-function _ganguly_density(R::Result)
+function _ganguly_density(R::MDDFResult)
     _check_normalized(R)
     Vd = cumsum(R.md_count_random) ./ R.density.solvent_bulk # Volume of the domain within d
     Nin = cumsum(R.md_count) # Number of solvent molecules within d
@@ -143,14 +136,14 @@ function _ganguly_density(R::Result)
 end
 
 #=
-    _weighted_running_integral(h, R::Result, W)
+    _weighted_running_integral(h, R::MDDFResult, W)
 
 Returns the running integrals ∑ᵢ h[i] W(dᵢ/L) for each upper limit L of the bins, in cm³ mol⁻¹,
 where W is a polynomial with coefficients `W` (constant term first). The integrals are computed
 from the running moments Sₖ(L) = ∑ᵢ h[i] dᵢᵏ, as ∑ₖ W[k+1] Sₖ(L)/Lᵏ.
 
 =#
-function _weighted_running_integral(h::AbstractVector, R::Result, W::AbstractVector)
+function _weighted_running_integral(h::AbstractVector, R::MDDFResult, W::AbstractVector)
     binstep = R.files[1].options.binstep
     G = zeros(length(h))
     for k in eachindex(W)
@@ -165,13 +158,13 @@ function _weighted_running_integral(h::AbstractVector, R::Result, W::AbstractVec
 end
 
 #=
-    _rdf_excess(R::Result; caller)
+    _proximal_excess(R::MDDFResult; caller)
 
 Returns, for each bin, the integral of 4πr²h(r) over the bin, in Å³, computed from the 
 RDF counts and the random reference counts. Checks if the RDF-based estimators apply.
 
 =#
-function _rdf_excess(R::Result; caller::String)
+function _proximal_excess(R::MDDFResult; caller::String)
     _check_normalized(R)
     if R.solute.natomspermol != 1
         @warn begin
@@ -186,19 +179,19 @@ function _rdf_excess(R::Result; caller::String)
             """
         end _file = nothing _line = nothing
     end
-    return (R.rdf_count .- R.rdf_count_random) ./ R.density.solvent_bulk
+    return (R.proximal_count .- R.proximal_count_random) ./ R.density.solvent_bulk
 end
 
 #=
-    _running_moments(R::Result; caller)
+    _running_moments(R::MDDFResult; caller)
 
 Returns the running moments Sk(L) = ∫₀ᴸ 4πr²h(r) rᵏ dr (in Å³⁺ᵏ), for k = 0, 1, 3, 4, 5, 
 and the upper limits L of each bin. The running integrals with polynomial weights
 w(r/L) are linear combinations of these moments.
 
 =#
-function _running_moments(R::Result; caller::String)
-    h = _rdf_excess(R; caller)
+function _running_moments(R::MDDFResult; caller::String)
+    h = _proximal_excess(R; caller)
     d = R.d
     L = [i * R.files[1].options.binstep for i in eachindex(d)]
     return (
@@ -221,10 +214,6 @@ by [`finite_volume_kbi`](@ref).
 
 - `L::Vector{Float64}`: diameters of the spheres (Å).
 - `G::Vector{Float64}`: finite-volume KBIs (cm³ mol⁻¹).
-
-!!! compat
-    This structure was introduced in version 2.19.0.
-
 """
 struct FiniteVolumeKBI
     L::Vector{Float64}
@@ -240,7 +229,7 @@ function Base.show(io::IO, ::MIME"text/plain", fv::FiniteVolumeKBI)
 end
 
 """
-    finite_volume_kbi(R::Result)
+    finite_volume_kbi(R::MDDFResult)
 
 Compute the finite-volume Kirkwood-Buff integrals ``G(L)`` of spheres of diameter ``L``,
 for each ``L`` up to the cutoff of the distribution function, using the exact weight
@@ -272,7 +261,7 @@ molecule are not, or as a cross-check of the weighted estimates.
 # Example
 
 ```julia-repl
-julia> R = load("water.json");
+julia> R = load(MDDFResult, "water.json");
 
 julia> fv = finite_volume_kbi(R);
 
@@ -292,12 +281,8 @@ julia> extrapolate_kbi(fv, (10.0, 20.0))
 2. P. Krüger, T. J. H. Vlugt, Size and shape dependence of finite-volume Kirkwood-Buff integrals.
    *Phys. Rev. E* 97, 051301(R) (2018).
    [DOI: 10.1103/PhysRevE.97.051301](https://doi.org/10.1103/PhysRevE.97.051301)
-
-!!! compat
-    This function was introduced in version 2.19.0.
-
 """
-function finite_volume_kbi(R::Result)
+function finite_volume_kbi(R::MDDFResult)
     (; S0, S1, S3, L) = _running_moments(R; caller="finite_volume_kbi")
     G = @. units.Angs3tocm3permol * (S0 - (3 / 2) * S1 / L + (1 / 2) * S3 / L^3)
     return FiniteVolumeKBI(L, G)
@@ -305,7 +290,7 @@ end
 
 """
     extrapolate_kbi(fv::FiniteVolumeKBI, Lrange::Tuple{Real,Real})
-    extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real})
+    extrapolate_kbi(R::MDDFResult, Lrange::Tuple{Real,Real})
 
 Extrapolate the finite-volume KBIs ``G(L)`` to the infinite-volume limit, by a linear
 least-squares fit of
@@ -323,11 +308,7 @@ The relation is valid only for ``L`` larger than the correlation length of the f
 depends on the range chosen. Plot `fv.G` as a function of `1 ./ fv.L` to choose a range
 where the dependence is linear.
 
-If a `Result` object is provided, the finite-volume KBIs are computed with [`finite_volume_kbi`](@ref).
-
-!!! compat
-    This function was introduced in version 2.19.0.
-
+If a `MDDFResult` object is provided, the finite-volume KBIs are computed with [`finite_volume_kbi`](@ref).
 """
 function extrapolate_kbi(fv::FiniteVolumeKBI, Lrange::Tuple{Real,Real})
     Lmin, Lmax = Lrange
@@ -348,13 +329,13 @@ function extrapolate_kbi(fv::FiniteVolumeKBI, Lrange::Tuple{Real,Real})
     Ginf, F = A \ y
     return (Ginf=Ginf, F=F)
 end
-extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_volume_kbi(R), Lrange)
+extrapolate_kbi(R::MDDFResult, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_volume_kbi(R), Lrange)
 
 @testitem "kbi" begin
     using ComplexMixtures
     using LazyArtifacts
     using ComplexMixtures: test_file, units
-    R = load(test_file("namd_rwO_20_25.json"))
+    R = load(MDDFResult, test_file("namd_rwO_20_25.json"))
 
     @test_throws "Invalid KBI correction option" kbi(R; correction=:abc)
     @test_throws "Invalid KBI normalization option" kbi(R; normalization=:abc)
@@ -414,7 +395,7 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
     @test_throws ArgumentError extrapolate_kbi(fv, (30.0, 40.0))
 
     # Multi-atom solute (MDDF): no warning for kbi, warning for finite_volume_kbi
-    R = load(test_file("namd_rw_20_25.json"))
+    R = load(MDDFResult, test_file("namd_rw_20_25.json"))
     @test_logs kbi(R; correction=:G2)
     @test_logs kbi(R)
     @test_logs (:warn,) finite_volume_kbi(R)
@@ -430,14 +411,14 @@ extrapolate_kbi(R::Result, Lrange::Tuple{Real,Real}) = extrapolate_kbi(finite_vo
 
     # For results computed with the current version, the reference density of the Ganguly 
     # normalization at the cutoff is the bulk density
-    R = load(test_file("namd_protein_tmao.json"))
+    R = load(MDDFResult, test_file("namd_protein_tmao.json"))
     @test ComplexMixtures._ganguly_density(R)[end] ≈ R.density.solvent_bulk
-    R = load(test_file("namd_tmao_tmao.json"))
+    R = load(MDDFResult, test_file("namd_tmao_tmao.json"))
     @test R.autocorrelation
     @test ComplexMixtures._ganguly_density(R)[end] ≈ R.density.solvent_bulk
 
     # Not normalized results
-    R = load(test_file("namd_rw_20_25.json"))
+    R = load(MDDFResult, test_file("namd_rw_20_25.json"))
     R.density.solvent_bulk = 0.0
     @test_throws "bulk solvent density is zero" kbi(R)
 end

@@ -3,7 +3,7 @@
 Union of types to define comparison operators.
 
 =#
-const ComplexMixturesTypes = Union{Result,Density,Volume,AtomSelection,Options}
+const ComplexMixturesTypes = Union{MDDFResult,Density,Volume,AtomSelection,Options}
 
 _isapprox(x, y) = isapprox(x, y)
 _isapprox(x::Vector{<:String}, y::Vector{<:String}) = all(x .== y)

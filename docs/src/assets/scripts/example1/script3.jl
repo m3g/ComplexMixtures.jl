@@ -8,7 +8,7 @@ atoms = read_pdb("./system.pdb")
 protein = select(atoms, "protein")
 
 # Load results of a ComplexMixtures run
-results = load("./glyc50_results.json")
+results = load(MDDFResult, "./glyc50_results.json")
 
 # Compute the 3D density grid. Here we use dmax=3.5 such that the
 # grid is not too large. Provide a file name (e.g. "./grid.pdb") as

@@ -23,7 +23,7 @@ scalefontsizes(1.3);
 system = read_pdb("equilibrated.pdb")
 
 # Load the pre-calculated MDDF of ethanol
-mddf_ethanol_POPC = load("mddf_ethanol_POPC.json")
+mddf_ethanol_POPC = load(MDDFResult, "mddf_ethanol_POPC.json")
 
 #
 # Here we define the POPC groups, from the atom names. Each group

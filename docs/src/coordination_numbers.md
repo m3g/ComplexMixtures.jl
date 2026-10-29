@@ -8,14 +8,14 @@ CollapsedDocStrings = true
 
 The coordination number is the numerical count of how many molecules of a solvent is within a certain distance 
 from the solute. The following function provides the functionality of retrieving coordination numbers and atom
-groups contributions to these numbers, given a `Result` data structure: 
+groups contributions to these numbers, given a `MDDFResult` data structure: 
 
 ```@autodocs
 Modules = [ComplexMixtures]
 Pages = ["coordination_number.jl"]
 ```
 
-The function can be called without any argument besides the `Result` data structure, in which case the coordination number of the complete solute will 
+The function can be called without any argument besides the `MDDFResult` data structure, in which case the coordination number of the complete solute will 
 be returned, as a function of the distance. 
 
 Alternatively, subgroups of the solute or the solvent can be selected, by providing `SoluteGroup` or `SolventGroup` objects as second arguments, 
@@ -32,7 +32,7 @@ In the following example we compute the coordination number of the atoms of `res
 using ComplexMixtures, PDBTools, LazyArtifacts
 # Load data structure and previously computed results from a mddf calculation 
 pdb = read_pdb(ComplexMixtures.test_file("protein_tmao.pdb"))
-R = load(ComplexMixtures.test_file("namd_protein_tmao.json"))
+R = load(MDDFResult, ComplexMixtures.test_file("namd_protein_tmao.json"))
 # Define which is the solute
 solute = AtomSelection(PDBTools.select(pdb, "protein"), nmols=1)
 # We intend to compute the contributions of residue 50 only
@@ -71,7 +71,7 @@ With appropriate input data, this code produces:
     ```
     coordination_number(trajectory_file, solute, solvent, options::Options)
     ```
-    This call will return a `Result` data structure but with all fields requiring 
+    This call will return a `MDDFResult` data structure but with all fields requiring 
     normalization with zeros. In summary, this result
     data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
 

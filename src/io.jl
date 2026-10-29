@@ -81,8 +81,10 @@ function _check_version(filename)
 
         """ _file=nothing _line=nothing
         Result_2_17_1
+    elseif json_version < v"4.0.0-DEV"
+        Result_3_1_0
     else
-        Result
+        MDDFResult
     end
     return load_type
 end

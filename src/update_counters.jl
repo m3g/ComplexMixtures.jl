@@ -36,11 +36,11 @@ function update_group_count!(group_count, ibin, iatom, frame_weight, sol::AtomSe
 end
 
 #
-#    update_counters!(R::Result, system::AbstractParticleSystem)
+#    update_counters!(R::MDDFResult, system::AbstractParticleSystem)
 #
 # Function that updates the minimum-distance counters in `R`
 #
-function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::AbstractFloat)
+function update_counters!(R::MDDFResult, system::AbstractParticleSystem, frame_weight::AbstractFloat)
     for md in system.list
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
@@ -57,14 +57,14 @@ function update_counters!(R::Result, system::AbstractParticleSystem, frame_weigh
         end
         if md.ref_atom_within_cutoff
             ibin = setbin(md.d_ref_atom, R.files[1].options.binstep)
-            R.rdf_count[ibin] += frame_weight
+            R.proximal_count[ibin] += frame_weight
         end
     end
     return R
 end
 
 ## Update counters for the ideal gas distributions
-function update_counters!(R::Result, system::AbstractParticleSystem, frame_weight::AbstractFloat, ::Val{:random})
+function update_counters!(R::MDDFResult, system::AbstractParticleSystem, frame_weight::AbstractFloat, ::Val{:random})
     for md in system.list
         !md.within_cutoff && continue
         ibin = setbin(md.d, R.files[1].options.binstep)
@@ -81,7 +81,7 @@ function update_counters!(R::Result, system::AbstractParticleSystem, frame_weigh
         end
         if md.ref_atom_within_cutoff
             ibin = setbin(md.d_ref_atom, R.files[1].options.binstep)
-            R.rdf_count_random[ibin] += frame_weight
+            R.proximal_count_random[ibin] += frame_weight
         end
     end
     return R

@@ -10,8 +10,15 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 3.1.1-DEV
+Version 4.0.0-DEV
 -------------
+- ![BREAKING][badge-breaking] The `Result` data structure was renamed to `MDDFResult`.
+- ![BREAKING][badge-breaking] Results are loaded with `load(MDDFResult, filename)`, and residue contributions with `load(ResidueContributions, filename)`, consistently with the `load(::Type, filename)` methods of the other packages of the ecosystem (e.g. PDBTools.jl). The `load(filename)` method was removed (it claimed `load(::AbstractString)` for the shared `load` function), as well as the `load(filename, Result)` and `load(filename, ResidueContributions)` methods.
+- ![BREAKING][badge-breaking] The `rdf`, `kb_rdf`, `rdf_count`, `rdf_count_random`, `sum_rdf_count` and `sum_rdf_count_random` fields of the results were renamed to `proximal`, `kb_proximal`, `proximal_count`, `proximal_count_random`, `sum_proximal_count` and `sum_proximal_count_random`. These are proximal distributions, which reduce to radial distribution functions only if the solute has a single atom.
+- ![BREAKING][badge-breaking] `gr(R)` throws an `ArgumentError` if the solute has more than one atom per molecule, instead of returning the `proximal` distribution (which is not a radial distribution function). The `gr(r, count, density, binstep)` method is no longer public.
+- ![BREAKING][badge-breaking] `Trajectory` is no longer exported (it conflicted with `MolSimToolkit.Trajectory`). The trajectory file is provided directly to `mddf` and `coordination_number`.
+- ![INFO][badge-info] Result files saved with versions 2.18.0 to 3.x are converted to the current data structure when loaded. The `Version` field of converted results (also from versions 2.0.0 to 2.17.1) is the current version, since they are saved in the current format.
+- See the [migration guide](https://m3g.github.io/ComplexMixtures.jl/stable/version_compatibility/#migration-4). Closes [#129](https://github.com/m3g/ComplexMixtures.jl/issues/129).
 
 Version 3.1.0
 -------------

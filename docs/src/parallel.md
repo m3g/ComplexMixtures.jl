@@ -42,7 +42,7 @@ There are different ways to deal with this issue:
 1. Use [predefined groups](@ref predefinition-of-groups), to reduce the
    size of the group array contributions.
 2. Use the `low_memory=true` option the call to `mddf` (for example
-   with `mddf(traj, options; low_memory=true)`. 
+   with `mddf(trajectory_file, solute, solvent, options; low_memory=true)`). 
 3. Reduce the number of threads used (with `Options(nthreads=N)`).
 4. Increase the frequency of garbage collection calls:
    ```julia

@@ -120,7 +120,7 @@ function update_list!(
 end
 
 #=
-    minimum_distances!(system::CellListMap.ParticleSystem, R::Result)
+    minimum_distances!(system::CellListMap.ParticleSystem, R::MDDFResult)
 
 Function that computes the list of distances of solvent molecules to a solute molecule. 
 It updates the lists of minimum distances. 
@@ -128,7 +128,7 @@ It updates the lists of minimum distances.
 =#
 function minimum_distances!(
     system::AbstractParticleSystem,
-    R::Result,
+    R::MDDFResult,
     isolute::Int;
 )
     jref_atom = R.files[1].irefatom
@@ -189,7 +189,7 @@ end
 
     # Cross-correlation
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
     system = ComplexMixtures.build_particle_system(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0
@@ -206,7 +206,7 @@ end
     )
 
     # Auto-correlation
-    traj = Trajectory(test_file("protein_tmao.dcd"), tmao)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), tmao)
     tmeta = ComplexMixtures.TrajectoryMetaData(traj, options)
     system = ComplexMixtures.build_particle_system(traj, tmeta.unitcell, options, false, (1, 1))
     @test system.cutoff == 10.0

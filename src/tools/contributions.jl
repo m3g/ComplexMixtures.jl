@@ -23,14 +23,14 @@ end
 
 
 """
-    contributions(R::Result, group::Union{SoluteGroup,SolventGroup}; type = :mddf, correction = :W7, normalization = :ganguly)
+    contributions(R::MDDFResult, group::Union{SoluteGroup,SolventGroup}; type = :mddf, correction = :W7, normalization = :ganguly)
 
 Returns the contributions of the atoms of the solute or solvent to the MDDF, coordination number, MD count,
 or proximal contributions to the Kirkwood-Buff integrals. 
 
 # Arguments
 
-- `R::Result`: The result of a calculation.
+- `R::MDDFResult`: The result of a calculation.
 - `group::Union{SoluteGroup,SolventGroup}`: The group of atoms to consider.
 - `type::Symbol`: The type of contributions to return. Can be `:mddf` (default), `:coordination_number`, `:md_count`, or `:kbi`.
 - `correction::Symbol` and `normalization::Symbol`: Only used if `type=:kbi`. The weight function and the 
@@ -61,7 +61,7 @@ AtomSelection
     Atoms per molecule: 20
     Number of groups: 20
 
-julia> results = load(ComplexMixtures.test_file("gromacs_protein_EMI.json")); # load pre-calculated results
+julia> results = load(MDDFResult, ComplexMixtures.test_file("gromacs_protein_EMI.json")); # load pre-calculated results
 
 julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"])); # contribution of CA and CB atoms to the MDDF
 
@@ -70,7 +70,7 @@ julia> ca_cb = contributions(results, SoluteGroup(["CA", "CB"]); type=:coordinat
 
 """
 function contributions(
-    R::Result,
+    R::MDDFResult,
     group::Union{SoluteGroup,SolventGroup};
     type=:mddf,
     correction::Symbol=:W7,
@@ -262,7 +262,7 @@ end
     # No custom groups
     solute = AtomSelection(protein, nmols=1)
     solvent = AtomSelection(tmao, natomspermol=14)
-    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     results = mddf(traj)
     @test sum(contributions(results, SoluteGroup(select(protein, "acidic")); type=:md_count)) ≈ 4.4
     @test sum(contributions(results, SoluteGroup(select(protein, "basic")); type=:md_count)) ≈ 2.4
@@ -286,7 +286,7 @@ end
         ]
     )
     solvent = AtomSelection(tmao, natomspermol=14)
-    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     results = mddf(traj)
 
     @test sum(contributions(results, SoluteGroup("acidic"); type=:md_count)) ≈ 4.4
@@ -313,7 +313,7 @@ end
     @test_throws ArgumentError contributions(results, SolventGroup(["NOT_FOUND"]))
 
     solute = AtomSelection(protein, nmols=1)
-    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     # Dependent on the random number seed
     results = mddf(traj, Options(seed=321, StableRNG=true, nthreads=1, silent=true))
     @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
@@ -348,7 +348,7 @@ end
     # The solute has only one molecule.
     ala_residues = select(atoms, "resname ALA")
     solute = AtomSelection(ala_residues, nmols=1)
-    traj = Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
+    traj = ComplexMixtures.Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     results = mddf(traj)
     @test results.mddf ≈ contributions(results, SoluteGroup(ala_residues))
     r = collect(eachresidue(ala_residues))

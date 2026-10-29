@@ -94,7 +94,7 @@ end
 
 function Base.show(io::IO, trajectory::ChemFile)
     print(io, strip("""
-           Trajectory read by Chemfiles with:
+           ComplexMixtures.Trajectory read by Chemfiles with:
                $(trajectory.nframes) frames.
                $(trajectory.natoms) atoms.
                Unit cell in current frame: $(convert_unitcell(getunitcell(trajectory)))
@@ -175,7 +175,7 @@ end
     options = Options(stride=4, seed=321, StableRNG=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     ComplexMixtures.opentraj!(traj)
     ComplexMixtures.firstframe!(traj)
     ComplexMixtures.nextframe!(traj)

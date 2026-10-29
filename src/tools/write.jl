@@ -1,6 +1,6 @@
 """
     write(
-        R::Result, filename::AbstractString;
+        R::MDDFResult, filename::AbstractString;
         solute_group_names::AbstractVector{<:AbstractString} = R.solute.group_names,
         solvent_group_names::AbstractVector{<:AbstractString} = R.solvent.group_names,
     )
@@ -12,7 +12,7 @@ If they are not defined, the user can pass the names of the groups as strings in
 
 """
 function Base.write(
-    filename::AbstractString, R::Result;
+    filename::AbstractString, R::MDDFResult;
     solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
     solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
 )
@@ -98,7 +98,7 @@ format(x) = abs(x) < 998 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 #
 # Function that set the group names, given the optional input parameters of the write function
 #
-function set_group_names(R::Result, group_names::Union{Nothing,AbstractVector{<:AbstractString}}, type::Symbol)
+function set_group_names(R::MDDFResult, group_names::Union{Nothing,AbstractVector{<:AbstractString}}, type::Symbol)
     atsel = getfield(R, type)
     atsel_str = type == :solute ? "Solute" : "Solvent"
     if isnothing(group_names)
@@ -120,7 +120,7 @@ end
 # Writing gmd per atom contributions for the solvent
 #
 function write_group_contributions(
-    R::Result,
+    R::MDDFResult,
     filename::AbstractString,
     type::Symbol,
     group_names::AbstractVector{<:AbstractString},
@@ -194,7 +194,7 @@ end
 
 # legacy order
 Base.write(
-    R::Result, filename::AbstractString;
+    R::MDDFResult, filename::AbstractString;
     solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
     solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
 ) = write(filename, R; solute_group_names, solvent_group_names)
@@ -211,7 +211,7 @@ Base.write(
     options2 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, dbulk=8.0, usecutoff=false)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao, chemfiles=true)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao, chemfiles=true)
     for options in (options1, options2)
         r = mddf(traj, options)
         tmpfile = tempname() * ".dat"

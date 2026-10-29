@@ -101,7 +101,7 @@ end
 function Base.show(io::IO, trajectory::PDBTraj)
     (; solute, solvent) = trajectory
     print(io, strip(""" 
-           Trajectory in PDB format with:
+           ComplexMixtures.Trajectory in PDB format with:
                $(trajectory.nframes) frames.
                Solute contains $(ComplexMixtures.natoms(solute)) atoms.
                Solvent contains $(ComplexMixtures.natoms(solvent)) atoms.

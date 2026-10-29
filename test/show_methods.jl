@@ -122,9 +122,9 @@
         atom_indices: [ 10 ] - 1 atoms
         """
 
-    @test parse_show(Trajectory(trajectory_file, protein, water)) ≈
+    @test parse_show(ComplexMixtures.Trajectory(trajectory_file, protein, water)) ≈
         """
-        Trajectory in PDB format with:
+        ComplexMixtures.Trajectory in PDB format with:
             2 frames.
             Solute contains 1 atoms.
             Solvent contains 9 atoms.

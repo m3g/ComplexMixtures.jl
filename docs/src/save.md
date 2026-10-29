@@ -17,19 +17,19 @@ calculation, and `results.json` is the output file to be created. The
 file is written in `JSON` format, thus is not naturally human-readable.
 
 ```@docs
-save(::AbstractString, ::Result)
+save(::AbstractString, ::MDDFResult)
 ```
 
 ## Load saved data
 
 ```julia
-results = load("results.json")
+results = load(MDDFResult, "results.json")
 ```
 The `load` function reads the output of the `save` function above,
 and restores the results data structure.
 
 ```@docs
-load(::AbstractString)
+load(::Type{MDDFResult}, ::AbstractString)
 ```
 
 ## Write data in a human-readable format

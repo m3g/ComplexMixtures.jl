@@ -1,10 +1,10 @@
 """
-    renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
+    renormalize(R::MDDFResult, bulk_density::Number, unit::String="mol/L"; silent=true)
 
-Renormalizes the `Result` structure `R` to a different bulk density of the solvent.
+Renormalizes the `MDDFResult` structure `R` to a different bulk density of the solvent.
 The `unit` argument can be either `"mol/L"` or `"sites/Angs3"` (default is `"mol/L"`).
 
-This function does not modify the input Result structure, but returns a new one.
+This function does not modify the input MDDFResult structure, but returns a new one.
 
 # Example
 
@@ -15,7 +15,7 @@ accordingly.
 ```jldoctest
 julia> using ComplexMixtures, LazyArtifacts
 
-julia> R = load(ComplexMixtures.test_file("namd_protein_tmao.json"));
+julia> R = load(MDDFResult, ComplexMixtures.test_file("namd_protein_tmao.json"));
 
 julia> R_new = renormalize(R, 2*R.density.solvent_bulk, "sites/Angs3");
 
@@ -27,7 +27,7 @@ The `silent` keyword argument controls whether warnings are printed associated t
 bins with zero samples in the ideal-gas histogram.
 
 """
-function renormalize(R::Result, bulk_density::Number, unit::String="mol/L"; silent=true)
+function renormalize(R::MDDFResult, bulk_density::Number, unit::String="mol/L"; silent=true)
     if !(unit in ("mol/L", "sites/Angs3"))
         throw(ArgumentError("""\n
             Concentration unit must be "mol/L" or "sites/Angs3".
@@ -46,33 +46,33 @@ end
     using ComplexMixtures 
     using LazyArtifacts
     using ComplexMixtures: test_file, units
-    R = load(test_file("namd_protein_tmao.json"))
+    R = load(MDDFResult, test_file("namd_protein_tmao.json"))
     @test R.density.solvent != R.density.solvent_bulk
     new_density = 2 * R.density.solvent_bulk * units.SitesperAngs3tomolperL
     R_new = renormalize(R, new_density)
     @test R_new.mddf ≈ 0.5 * R.mddf
-    @test R_new.rdf ≈ 0.5 * R.rdf
+    @test R_new.proximal ≈ 0.5 * R.proximal
     @test contributions(R, SolventGroup(["H11", "H12", "H13", "H21", "H22", "H23"])) ≈ 
           2*contributions(R_new, SolventGroup(["H11", "H12", "H13", "H21", "H22", "H23"]))
     @test R_new.kb ≈ kbi(R_new)
     @test kbi(R_new; correction=:none, normalization=:mddf) ≈ 
         units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
         (((R.density.solvent_bulk/units.Angs3tocm3permol) * kbi(R; correction=:none, normalization=:mddf)) .- R.coordination_number_random)
-    @test R_new.kb_rdf ≈ 
+    @test R_new.kb_proximal ≈ 
         units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
-        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_rdf) .- R.sum_rdf_count_random)
+        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_proximal) .- R.sum_proximal_count_random)
 
     new_density = 2 * R.density.solvent_bulk
     R_new = renormalize(R, new_density, "sites/Angs3")
     @test R_new.mddf ≈ 0.5 * R.mddf
-    @test R_new.rdf ≈ 0.5 * R.rdf
+    @test R_new.proximal ≈ 0.5 * R.proximal
     @test R_new.kb ≈ kbi(R_new)
     @test kbi(R_new; correction=:none, normalization=:mddf) ≈ 
         units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
         (((R.density.solvent_bulk/units.Angs3tocm3permol) * kbi(R; correction=:none, normalization=:mddf)) .- R.coordination_number_random)
-    @test R_new.kb_rdf ≈ 
+    @test R_new.kb_proximal ≈ 
         units.Angs3tocm3permol * (1/R_new.density.solvent_bulk) * 
-        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_rdf) .- R.sum_rdf_count_random)
+        (((R.density.solvent_bulk/units.Angs3tocm3permol) * R.kb_proximal) .- R.sum_proximal_count_random)
 
     @test_throws ArgumentError renormalize(R, new_density, "wrong_units") 
 end
