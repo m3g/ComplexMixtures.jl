@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Polyacrylamide in DMF · ComplexMixtures.jl</title><meta name="title" content="Polyacrylamide in DMF · ComplexMixtures.jl"/><meta property="og:title" content="Polyacrylamide in DMF · ComplexMixtures.jl"/><meta property="twitter:title" content="Polyacrylamide in DMF · ComplexMixtures.jl"/><meta name="description" content="Documentation for ComplexMixtures.jl."/><meta property="og:description" content="Documentation for ComplexMixtures.jl."/><meta property="twitter:description" content="Documentation for ComplexMixtures.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="ComplexMixtures.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="ComplexMixtures.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">ComplexMixtures.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><span class="tocitem">Install and run</span><ul><li><a class="tocitem" href="../installation/">Installation</a></li><li><a class="tocitem" href="../parallel/">Parallel execution</a></li><li><a class="tocitem" href="../python/">From Python</a></li></ul></li><li><a class="tocitem" href="../quickguide/">Quick Guide</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../examples/">Running the examples</a></li><li><a class="tocitem" href="../example1/">Protein in water/glycerol</a></li><li class="is-active"><a class="tocitem" href>Polyacrylamide in DMF</a><ul class="internal"><li><a class="tocitem" href="#data-example2"><span>Data, packages, and execution</span></a></li><li><a class="tocitem" href="#mddf-example2"><span>MDDF and KB integrals</span></a></li><li><a class="tocitem" href="#groups-example2"><span>Group contributions</span></a></li><li><a class="tocitem" href="#2Dmap-example2"><span>2D density map</span></a></li></ul></li><li><a class="tocitem" href="../example3/">POPC membrane in water/ethanol</a></li><li><a class="tocitem" href="../example4/">Water/Glycerol mixture</a></li></ul></li><li><span class="tocitem">Setup and run</span><ul><li><a class="tocitem" href="../selection/">Set solute and solvent</a></li><li><a class="tocitem" href="../mddf/">Computing the MDDF</a></li><li><a class="tocitem" href="../save/">Save and load</a></li><li><a class="tocitem" href="../multiple/">Multiple trajectories</a></li><li><a class="tocitem" href="../options/">Options</a></li></ul></li><li><span class="tocitem">Analysis</span><ul><li><a class="tocitem" href="../results/">Results</a></li><li><a class="tocitem" href="../contributions/">Atomic and group contributions</a></li><li><a class="tocitem" href="../density_maps/">Density maps</a></li><li><a class="tocitem" href="../coordination_numbers/">Coordination numbers</a></li><li><a class="tocitem" href="../tools/">Tools</a></li></ul></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Polyacrylamide in DMF</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Polyacrylamide in DMF</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl/blob/main/docs/src/example2.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Polyacrylamide-in-DMDF"><a class="docs-heading-anchor" href="#Polyacrylamide-in-DMDF">Polyacrylamide in DMDF</a><a id="Polyacrylamide-in-DMDF-1"></a><a class="docs-heading-anchor-permalink" href="#Polyacrylamide-in-DMDF" title="Permalink"></a></h1><p>In this example we illustrate how the solvation structure of a polymer can be studied with ComplexMixtures.jl. The system is a 5-mer segment of polyacrylamide (PAE - capped with methyl groups), solvated with dimethylformamide (DMF). The system is interesting because of the different functional groups and polarities involved in the interactions of DMF with PAE. A snapshot of the system is shown below.</p><center>
+<img width=30% src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/system.png">
+</center><p>The structures of DMF and of the polyacrylamide segment are:</p><center>
+<table><tr>
+<td><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/simulation/dmf.png" height=100px></td>
+<td><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/simulation/polyacrylamide.png" height=100px></td>
+</tr>
+<tr>
+<td align=center>DMF</td>
+<td align=center>Polyacrylamide</td>
+</tr>
+</table>
+</center><h3 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h3><ul><li><a href="#data-example2">Data, packages, and execution</a></li><li><a href="#mddf-example2">MDDF and KB integrals</a></li><li><a href="#groups-example2">Group contributions</a></li><li><a href="#2Dmap-example2">2D density map</a></li></ul><h2 id="data-example2"><a class="docs-heading-anchor" href="#data-example2">Data, packages, and execution</a><a id="data-example2-1"></a><a class="docs-heading-anchor-permalink" href="#data-example2" title="Permalink"></a></h2><p>The files required to run this example are:</p><ul><li><a href="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/Polyacrylamide_in_DMF/simulation/equilibrated.pdb">equilibrated.pdb</a>: The PDB file of the complete system.</li><li><a href="https://www.dropbox.com/scl/fi/jwafhgxaxuzsybw3y8txd/traj_Polyacry.dcd?rlkey=p4bn65m0pkuebpfm0hf158cdm&amp;dl=0">traj_Polyacry.dcd</a>: Trajectory file. This is a 275Mb file, necessary for running from scratch the calculations.</li></ul><p>To run the scripts, we suggest the following procedure:</p><ol><li>Create a directory, for example <code>example2</code>.</li><li>Copy the required data files above to this directory.</li><li>Launch <code>julia</code> in that directory: activate the directory environment, and install the required packages. This launching Julia and executing:<pre><code class="language-julia hljs">import Pkg 
+Pkg.activate(&quot;.&quot;)
+Pkg.add([&quot;ComplexMixtures&quot;, &quot;PDBTools&quot;, &quot;Plots&quot;, &quot;LaTeXStrings&quot;, &quot;EasyFit&quot;])
+exit()</code></pre></li><li>Copy the code of each script in to a file, and execute with:<pre><code class="language-julia hljs">julia -t auto script.jl</code></pre>Alternativelly (and perhaps preferrably), copy line by line the content of the script into the Julia REPL, to follow each step of the calculation.</li></ol><h2 id="mddf-example2"><a class="docs-heading-anchor" href="#mddf-example2">MDDF and KB integrals</a><a id="mddf-example2-1"></a><a class="docs-heading-anchor-permalink" href="#mddf-example2" title="Permalink"></a></h2><p>Here we compute the minimum-distance distribution function, the Kirkwood-Buff integral, and the atomic contributions of the solvent to the density. This example illustrates the regular usage of <code>ComplexMixtures</code>, to compute the minimum distance distribution function, KB-integrals and group contributions. </p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using PDBTools
+using ComplexMixtures
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# The full trajectory file is available at: 
+# https://www.dropbox.com/scl/fi/jwafhgxaxuzsybw2y8txd/traj_Polyacry.dcd?rlkey=p4bn65m0pkuebpfm0hf158cdm&amp;dl=0 
+trajectory_file = &quot;./traj_Polyacry.dcd&quot;
+
+# Load a PDB file of the system
+system = readPDB(&quot;./equilibrated.pdb&quot;)
+
+# Select the atoms corresponding DMF molecules
+dmf = select(system, &quot;resname DMF&quot;)
+
+# Select the atoms corresponding to the Poly-acrylamide
+acr = select(system, &quot;resname FACR or resname ACR or resname LACR&quot;)
+
+# Set the solute and the solvent selections for ComplexMixtures
+solute = AtomSelection(acr, nmols=1)
+solvent = AtomSelection(dmf, natomspermol=12)
+
+# Use a large dbulk distance for better KB convergence
+options = Options(bulk_range=(20.0, 25.0))
+
+# Compute the mddf and associated properties
+results = mddf(trajectory_file, solute, solvent, options)
+
+# Save results to file for later use
+save(results, &quot;./mddf.json&quot;)
+println(&quot;Results saved to ./mddf.json file&quot;)
+
+# Plot the MDDF and KB integrals
+plot_font = &quot;Computer Modern&quot;
+default(
+    fontfamily=plot_font,
+    linewidth=1.5,
+    framestyle=:box,
+    label=nothing,
+    grid=false,
+    palette=:tab10
+)
+scalefontsizes();
+scalefontsizes(1.3);
+
+# Plot the MDDF of DMF relative to PolyACR and its corresponding KB integral
+plot(layout=(2, 1))
+plot!(
+    results.d,
+    movavg(results.mddf, n=9).x, # Smooth example with a running average
+    ylabel=&quot;MDDF&quot;,
+    xlims=(0, 20),
+    subplot=1,
+)
+
+# Plot the KB integral
+plot!(
+    results.d,
+    movavg(results.kb, n=9).x, # smooth kb
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=L&quot;\textrm{KB~/~cm^2~mol^{-1}}&quot;,
+    xlim=(-1, 20),
+    subplot=2
+)
+savefig(&quot;./mddf_kb.png&quot;)
+println(&quot;Plot saved to mddf_kb.png&quot;)</code></pre></details><br><h4 id="Output"><a class="docs-heading-anchor" href="#Output">Output</a><a id="Output-1"></a><a class="docs-heading-anchor-permalink" href="#Output" title="Permalink"></a></h4><p>The distribution of DMF molecules around polyacrylamide is shown below. There is a peak at ~2.5Angs, indicating favorable non-specific interactions between the solvent molecules and the polymer. The peak is followed by a dip and diffuse peaks at higher distances. Thus, the DMF molecules are structured around the polymer, but essentially only in the first solvation shell.  </p><p><img src="../assets/scripts/example2/mddf_kb.png" alt/></p><p>The KB integral in a bicomponent mixture converges to the (negative of the) apparent molar volume of the solute. It is negative, indicating that the accumulation of DMF in the first solvation shell of the polymer is not enough to compensate the excluded volume of the solute. </p><h2 id="groups-example2"><a class="docs-heading-anchor" href="#groups-example2">Group contributions</a><a id="groups-example2-1"></a><a class="docs-heading-anchor-permalink" href="#groups-example2" title="Permalink"></a></h2><p>The MDDF can be decomposed into the contributions of the DMF chemical groups, and on the polyacrylamide chemical groups. In the first panel below we show the contributions of the DMF chemical groups to the distribution function.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using ComplexMixtures
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Some default settings for the plots
+plot_font = &quot;Computer Modern&quot;
+Plots.default(
+    fontfamily=plot_font,
+    linewidth=1.5,
+    framestyle=:box,
+    label=nothing,
+    grid=false,
+)
+
+# Load previusly saved results, computed in the previous script
+results = load(&quot;./mddf.json&quot;)
+
+# Plot with two subplots
+plot(layout=(2, 1))
+
+# Plot the total mddf
+plot!(
+    results.d,
+    movavg(results.mddf, n=10).x, # Smooth example with a running average
+    label=&quot;Total&quot;,
+    subplot=1
+)
+
+# Plot DMF group contributions to the MDDF. We use a named tuple where
+# the keys are the group names, and the values are the atom names of the group
+groups = (
+    &quot;CO&quot; =&gt; [&quot;C&quot;, &quot;O&quot;], # carbonyl
+    &quot;N&quot; =&gt; [&quot;N&quot;],
+    &quot;Methyl groups&quot; =&gt; [&quot;CC&quot;, &quot;CT&quot;, &quot;HC1&quot;, &quot;HC2&quot;, &quot;HC3&quot;, &quot;HT1&quot;, &quot;HT2&quot;, &quot;HT3&quot;],
+)
+for (group_label, group_atoms) in groups
+    # Retrieve the contributions of the atoms of this group
+    group_contrib = contributions(results, SolventGroup(group_atoms))
+    # Plot the contributions of this groups, with the appropriate label
+    plot!(
+        results.d,
+        movavg(group_contrib, n=10).x,
+        label=group_label,
+        subplot=1
+    )
+end
+
+# Adjust scale and label of axis
+plot!(xlim=(1, 5), ylabel=&quot;MDDF&quot;, subplot=1)
+
+#
+# Plot ACR group contributions to the MDDF. This is an interesting case,
+# as the groups are repeated along the polymer chain
+#
+groups = (
+    &quot;CH_3&quot; =&gt; [&quot;CF&quot;, &quot;HF1&quot;, &quot;HF2&quot;, &quot;HF3&quot;, &quot;CL&quot;, &quot;HL1&quot;, &quot;HL2&quot;, &quot;HL3&quot;], # terminal methyles
+    &quot;CO&quot; =&gt; [&quot;OE1&quot;, &quot;CD&quot;], # carbonyl
+    &quot;NH_2&quot; =&gt; [&quot;NE2&quot;, &quot;HE22&quot;, &quot;HE21&quot;], # amine
+    &quot;CHCH_2&quot; =&gt; [&quot;C&quot;, &quot;H2&quot;, &quot;H1&quot;, &quot;CA&quot;, &quot;HA&quot;], # backbone
+)
+# Plot total mddf 
+plot!(
+    results.d,
+    movavg(results.mddf, n=10).x, # Smooth example with a running average
+    label=&quot;Total&quot;,
+    subplot=2
+)
+# Plot group contributions
+for (group_name, atom_names) in groups
+    group_contrib = contributions(results, SoluteGroup(atom_names))
+    plot!(
+        results.d,
+        movavg(group_contrib, n=10).x,
+        label=latexstring(&quot;\\textrm{$group_name}&quot;),
+        subplot=2
+    )
+end
+
+# Adjust scale and label of axis
+plot!(
+    xlim=(1, 5),
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=&quot;MDDF&quot;, subplot=2
+)
+# Save figure
+savefig(&quot;./mddf_groups.png&quot;)
+println(&quot;Created figure file: ./mddf_groups.png&quot;)</code></pre></details><br><h4 id="Output-2"><a class="docs-heading-anchor" href="#Output-2">Output</a><a class="docs-heading-anchor-permalink" href="#Output-2" title="Permalink"></a></h4><p>The decomposition reveals that specific interactions peaking at distances slightly smaller than 2<span>$\AA$</span> exist between the polymer and the carbonyl group of DMF. Thus, there hydrogen bonds between the polymer and this group, which dominate the interactions between the solute and the solvent at short distances. The non-specific interactions peak at 2.5Angs and are composed of contributions of all DMF chemical groups, but particularly of the methyl groups.</p><p><img src="../assets/scripts/example2/mddf_groups.png" alt/></p><p>The decomposition of the same MDDF in the contributions of the chemical groups of the polymer is clearly associated to the DMF contributions. The specific, hydrogen-bonding, interactions, are associated to the polymer amine groups. The amine groups also contribute to the non-specific interactions at greater distances, but these are a sum of the contributions of all polymer groups, polar or aliphatic.</p><h2 id="2Dmap-example2"><a class="docs-heading-anchor" href="#2Dmap-example2">2D density map</a><a id="2Dmap-example2-1"></a><a class="docs-heading-anchor-permalink" href="#2Dmap-example2" title="Permalink"></a></h2><p>We can decompose the MDDF into the contributions of each portion of the polymer chain. The map below displays the contributions of each chemical group of the polymer, now split into the mers of the polymer, to the MDDF.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using ComplexMixtures
+using Plots
+using EasyFit: movavg
+using LaTeXStrings
+using PDBTools
+
+# Here we will produce a 2D plot of group contributions, splitting the
+# contributions of each mer of the polymer into its chemical groups
+
+# Chemical groups of the polymer monomers, defined by the atom types:
+groups = (
+    &quot;CH_{3L}&quot; =&gt; [&quot;CF&quot;, &quot;HF1&quot;, &quot;HF2&quot;, &quot;HF3&quot;], # left-terminal methyl
+    &quot;CO&quot; =&gt; [&quot;OE1&quot;, &quot;CD&quot;], # carbonyl
+    &quot;NH_2&quot; =&gt; [&quot;NE2&quot;, &quot;HE22&quot;, &quot;HE21&quot;], # amine 
+    &quot;CHCH_2&quot; =&gt; [&quot;C&quot;, &quot;H2&quot;, &quot;H1&quot;, &quot;CA&quot;, &quot;HA&quot;], # backbone
+    &quot;CH_{3R}&quot; =&gt; [&quot;CL&quot;, &quot;HL1&quot;, &quot;HL2&quot;, &quot;HL3&quot;], # right-terminal methyles
+)
+
+system = readPDB(&quot;./equilibrated.pdb&quot;)
+acr = select(system, &quot;resname FACR or resname ACR or resname LACR&quot;)
+results = load(&quot;./mddf.json&quot;)
+
+# Here we split the polymer in residues, to extract the contribution of 
+# each chemical group of each polymer mer independently
+group_contribs = Vector{Float64}[]
+labels = LaTeXString[]
+for mer in eachresidue(acr)
+    for (group_label, group_atoms) in groups
+        if resnum(mer) != 1 &amp;&amp; group_label == &quot;CH_{3L}&quot; # first residue only
+            continue
+        end
+        if resnum(mer) != 5 &amp;&amp; group_label == &quot;CH_{3R}&quot; # last residue only
+            continue
+        end
+        # Filter the atoms of this mer that belong to the group
+        mer_group_atoms = filter(at -&gt; name(at) in group_atoms, mer)
+        # Retrive the contribution of this mer atoms to the MDDF
+        atoms_contrib = contributions(results, SoluteGroup(mer_group_atoms))
+        # Smooth the contributions
+        atoms_contrib = movavg(atoms_contrib; n=10).x
+        # Add contributions to the group contributions list
+        push!(group_contribs, atoms_contrib)
+        # Push label to label list, using LaTeX formatting
+        push!(labels, latexstring(&quot;\\textrm{$group_label}&quot;))
+    end
+end
+
+# Convert the group contributions to a matrix
+group_contribs = stack(group_contribs)
+
+# Find the indices of the limits of the map we want
+idmin = findfirst(d -&gt; d &gt; 1.5, results.d)
+idmax = findfirst(d -&gt; d &gt; 3.2, results.d)
+
+# Plot contour map
+Plots.default(fontfamily=&quot;Computer Modern&quot;)
+contourf(
+    1:length(labels),
+    results.d[idmin:idmax],
+    group_contribs[idmin:idmax, :],
+    color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    colorbar=:none, levels=10,
+    xlabel=&quot;Group&quot;, ylabel=L&quot;r/\AA&quot;, xrotation=60,
+    xticks=(1:length(labels), labels),
+    margin=5Plots.Measures.mm # adjust margin 
+)
+savefig(&quot;./map2D_acr.png&quot;)
+println(&quot;Plot saved to map2D_acr.png&quot;)</code></pre></details><br><h4 id="Output-3"><a class="docs-heading-anchor" href="#Output-3">Output</a><a class="docs-heading-anchor-permalink" href="#Output-3" title="Permalink"></a></h4><p>The terminal methyl groups interact strongly with DMF, and strong local density augmentations are visible in particular on the amine groups. These occur at less than 2.0Angs and are characteristic of hydrogen-bond interactions. Interestingly, the DMF molecules are excluded from the aliphatic and carbonyl groups of the polymer, relative to the other groups.</p><p>Finally, it is noticeable that the central mer is more weakly solvated by DMF than the mers approaching the extremes of the polymer chain. This is likely a result of the partial folding of the polymer, that protects that central mers from the solvent in a fraction of the polymer configurations.</p><center>
+<img width=70% src="../assets/scripts/example2/map2D_acr.png">
+</center><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Molecules built with JSME: B. Bienfait and P. Ertl, JSME: a free molecule editor in JavaScript, Journal of Cheminformatics 5:24 (2013) <a href="http://biomodel.uah.es/en/DIY/JSME/draw.en.htm">http://biomodel.uah.es/en/DIY/JSME/draw.en.htm</a></p><p>The system was built with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were perfomed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example1/">« Protein in water/glycerol</a><a class="docs-footer-nextpage" href="../example3/">POPC membrane in water/ethanol »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.4 on <span class="colophon-date" title="Friday 6 June 2025 12:16">Friday 6 June 2025</span>. Using Julia version 1.10.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
