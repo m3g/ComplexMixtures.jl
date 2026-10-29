@@ -180,6 +180,25 @@ end
     @test_throws ArgumentError atom_group(s, "A")
 end
 
+#
+# Error message for invalid arguments of the AtomSelection, SoluteGroup, and SolventGroup 
+# constructors, showing the types of the arguments received and examples of valid calls.
+#
+function _invalid_arguments_error(T, args, kargs, usage)
+    T = nameof(T)
+    received = join(string.(typeof.(args)), ", ")
+    if !isempty(kargs)
+        received *= "; " * join(string.(keys(kargs)), ", ")
+    end
+    throw(ArgumentError("""\n
+        Invalid arguments for $T: ($received)
+
+    $usage
+        Type `? $T` for the documentation.
+
+    """))
+end
+
 """
 
 **AtomSelection constructors**
@@ -276,25 +295,6 @@ AtomSelection
 ```
 
 """
-#
-# Error message for invalid arguments of the AtomSelection, SoluteGroup, and SolventGroup 
-# constructors, showing the types of the arguments received and examples of valid calls.
-#
-function _invalid_arguments_error(T, args, kargs, usage)
-    T = nameof(T)
-    received = join(string.(typeof.(args)), ", ")
-    if !isempty(kargs)
-        received *= "; " * join(string.(keys(kargs)), ", ")
-    end
-    throw(ArgumentError("""\n
-        Invalid arguments for $T: ($received)
-
-    $usage
-        Type `? $T` for the documentation.
-
-    """))
-end
-
 function AtomSelection(args...; kargs...)
     _invalid_arguments_error(AtomSelection, args, kargs, """
         AtomSelection is built from a vector of atoms (for example, from PDBTools.select) or
