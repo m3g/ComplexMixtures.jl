@@ -17,7 +17,7 @@ PrecompileTools.@setup_workload begin
         R = mddf(trajectory_file, solvent, options)
         tmpfile = tempname()
         save(tmpfile, R)
-        load(tmpfile)
+        load(MDDFResult, tmpfile)
         rm(tmpfile)
     end
 end

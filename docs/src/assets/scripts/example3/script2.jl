@@ -24,7 +24,7 @@ system = read_pdb("equilibrated.pdb")
 ethanol = select(system, "resname ETOH")
 
 # Load the pre-calculated MDDF of ethanol
-mddf_ethanol_POPC = load("mddf_ethanol_POPC.json")
+mddf_ethanol_POPC = load(MDDFResult, "mddf_ethanol_POPC.json")
 
 #
 # Contributions of the ethanol groups

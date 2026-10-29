@@ -25,7 +25,7 @@ solvent = AtomSelection(tmao, natomspermol=14)
 results = mddf("./trajectory.dcd", solute, solvent, Options(cutoff=12.0))
 
 # Save the results to recover them later if required
-save(results, "./results.json")
+save("./results.json", results)
 
 # Plot the some of the most important results.
 #

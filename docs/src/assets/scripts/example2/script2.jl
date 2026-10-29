@@ -17,7 +17,7 @@ Plots.default(
 )
 
 # Load previously saved results, computed in the previous script
-results = load("./mddf.json")
+results = load(MDDFResult, "./mddf.json")
 
 # Plot with two subplots
 plot(layout=(2, 1))

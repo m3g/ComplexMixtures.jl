@@ -18,10 +18,10 @@ these file names:
 trajectory_files = [ "traj1.xtc" , "traj2.xtc" , "traj3.xtc" ]
 ```
 
-And define an empty vector of `Result` structures:
+And define an empty vector of `MDDFResult` structures:
 
 ```julia
-results = Result[]
+results = MDDFResult[]
 ```
 
 ### Run the calculations in a loop
@@ -58,7 +58,7 @@ trajectory will have a weight of 0.5 on the final results. The `merge` function
 can be used to merge previously merged results with new results as well.
 
 ```@docs
-merge
+merge(::Vector{<:MDDFResult})
 ```
 
 !!! tip

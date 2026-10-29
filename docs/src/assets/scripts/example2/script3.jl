@@ -21,7 +21,7 @@ groups = (
 
 system = read_pdb("./equilibrated.pdb")
 acr = select(system, "resname FACR or resname ACR or resname LACR")
-results = load("./mddf.json")
+results = load(MDDFResult, "./mddf.json")
 
 # Here we split the polymer in residues, to extract the contribution of 
 # each chemical group of each polymer mer independently

@@ -46,7 +46,7 @@ using ComplexMixtures, PDBTools
 using LazyArtifacts
 using ComplexMixtures: test_file
 atoms = read_pdb(test_file("glycerol_system.pdb"))
-results = load(test_file("glycerol_protein_glyc.json"))
+results = load(MDDFResult, test_file("glycerol_protein_glyc.json"))
 protein = select(atoms, "protein")
 nothing # hide
 ```
@@ -165,7 +165,7 @@ acr = select(system, "resname FACR or resname ACR or resname LACR")
 for atom in acr # set elements: the PDB file has no element column
     atom.pdb_element = string(first(name(atom)))
 end
-results = load("./mddf.json")
+results = load(MDDFResult, "./mddf.json")
 grid = grid3D(results, system; dmin=1.5, dmax=3.5)
 density = volumetric_data(grid; sigma=0.5)
 dmax = maximum(density.data)
@@ -220,6 +220,6 @@ A short tutorial video showing how to open the input and output PDB files in VMD
 
 ```@raw html
 <center>
-<iframe style="width:80%; aspect-ratio: 16/9;" src="https://www.youtube.com/embed/V4Py44IKDh8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe style="width:80%; aspect-ratio: 16/9;" src="https://www.youtube.com/embed/V4Py44IKDh8" title="YouTube video player" referrerpolicy="strict-origin-when-cross-origin" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </center>
 ```

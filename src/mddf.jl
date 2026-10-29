@@ -15,7 +15,7 @@ be used as reference states for ideal gas distributions
     list::Vector{MinimumDistance}
     indices_in_bulk::Vector{Int}
 end
-function Buffer(trajectory::Trajectory, R::Result)
+function Buffer(trajectory::Trajectory, R::MDDFResult)
     return Buffer(
         solute_read=similar(trajectory.x_solute),
         solvent_read=similar(trajectory.x_solvent),
@@ -31,11 +31,11 @@ end
     using LazyArtifacts
     using ComplexMixtures: test_file
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
-    R = Result(traj, options)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
+    R = MDDFResult(traj, options)
     b0 = ComplexMixtures.Buffer(
         solute_read=similar(traj.x_solute),
         solvent_read=similar(traj.x_solvent),
@@ -65,7 +65,7 @@ function randomize_solvent!(
     system::AbstractParticleSystem,
     buff::Buffer,
     n_solvent_in_bulk::Integer,
-    R::Result,
+    R::MDDFResult,
     RNG,
 )
     uc = system.unitcell
@@ -100,7 +100,7 @@ function goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
         if iframe in to_compute_frames && !iszero(frame_weight)
             compute = true
             # Run GC if memory is getting full: this is related to issues with Chemfiles reading scheme
-            if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+            if options.gc && (Sys.free_memory() / Sys.total_memory() < options.gc_threshold)
                 GC.gc()
             end
         end
@@ -152,11 +152,6 @@ The `options` parameter is optional. If not set, the default `Options()` structu
 
 - `chemfiles` is a boolean that, if set to `true`, will use try to use the `Chemfiles` library to read the trajectory file. 
   independently of the file extension. By default, PDB and DCD trajectories are read by specific readers.
-
-!!! compat
-    The current call signature was introduced in version 2.9.0. The previous call signature with the 
-    previous construction of the `Trajectory` object, is still available, but it is no longer recommended 
-    because it more prone to user-level solute and solvent configuration errors. 
 
 ### Examples
 
@@ -235,14 +230,14 @@ function mddf(
     options.silent || println("Initializing data structures ...")
 
     # Compute some meta-data from the trajectory file and the options,
-    # to allow parallel creation of the Result, and ParticleSystem
+    # to allow parallel creation of the MDDFResult, and ParticleSystem
     # data structures
     options.silent || println("Evaluate trajectory meta-data and go to first frame ...")
     trajectory_data = TrajectoryMetaData(trajectory, options)
 
 
     # Structure in which the final results will be stored
-    R = Result(trajectory, options; trajectory_data, frame_weights)
+    R = MDDFResult(trajectory, options; trajectory_data, frame_weights)
 
     # Open the trajectory stream and go to first frame
     opentraj!(trajectory)
@@ -252,7 +247,7 @@ function mddf(
     progress = Progress(options.firstframe; dt=1, enabled=!options.silent)
     for _ in 1:options.firstframe-1
         nextframe!(trajectory)
-        if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+        if options.gc && (Sys.free_memory() / Sys.total_memory() < options.gc_threshold)
             GC.gc()
         end
         next!(progress)
@@ -295,7 +290,7 @@ function mddf(
                 trajectory, trajectory_data.unitcell, options, parallel_cl, nbatches_cl
             )
             buff_chunk = Buffer(trajectory, R)
-            r_chunk = Result(trajectory, options; trajectory_data, frame_weights)
+            r_chunk = MDDFResult(trajectory, options; trajectory_data, frame_weights)
             # Reset the number of frames read by each chunk
             for _ in frame_range
                 # interrupt handler
@@ -357,14 +352,14 @@ cell_volume(system::AbstractParticleSystem) =
 update_volume!(r_chunk, system, frame_weight) = r_chunk.volume.total += frame_weight * cell_volume(system)
 
 #=
-    mddf_frame!(r_chunk::Result, system::AbstractParticleSystem, buff::Buffer, options::Options, frame_weight, RNG)
+    mddf_frame!(r_chunk::MDDFResult, system::AbstractParticleSystem, buff::Buffer, options::Options, frame_weight, RNG)
 
-Computes the MDDF for a single frame. Modifies the data in the `r_chunk` (type `Result`) structure, through
+Computes the MDDF for a single frame. Modifies the data in the `r_chunk` (type `MDDFResult`) structure, through
 the `update_volume!` and `update_counters!` functions.
 
 =#
 function mddf_frame!(
-    r_chunk::Result,
+    r_chunk::MDDFResult,
     system::AbstractParticleSystem,
     buff::Buffer,
     options::Options,
@@ -457,14 +452,14 @@ function mddf_frame!(
 end
 
 #=
-    _all_to_all_random(R::Result)
+    _all_to_all_random(R::MDDFResult)
 
 Returns `true` if the ideal-gas distribution is computed from random configurations of all
 solvent molecules, with every solute molecule as a reference: for self-correlations, and 
 for cross-correlations with more than one solute molecule.
 
 =#
-_all_to_all_random(R::Result) = R.autocorrelation || R.solute.nmols > 1
+_all_to_all_random(R::MDDFResult) = R.autocorrelation || R.solute.nmols > 1
 
 #=
     randomize_all!(system, buff, R, RNG)
@@ -473,7 +468,7 @@ Randomizes the positions and orientations of all solvent molecules, keeping thei
 internal coordinates (used for self-correlations and for more than one solute molecule).
 
 =#
-function randomize_all!(system::AbstractParticleSystem, buff::Buffer, R::Result, RNG)
+function randomize_all!(system::AbstractParticleSystem, buff::Buffer, R::MDDFResult, RNG)
     uc = system.unitcell
     for imol = 1:R.solvent.nmols
         y_new = viewmol(imol, system.ypositions, R.solvent)
@@ -484,14 +479,14 @@ function randomize_all!(system::AbstractParticleSystem, buff::Buffer, R::Result,
 end
 
 #=
-    coordination_number_frame!(r_chunk::Result, system::AbstractParticleSystem, buff::Buffer, frame_weight)
+    coordination_number_frame!(r_chunk::MDDFResult, system::AbstractParticleSystem, buff::Buffer, frame_weight)
 
-Computes the coordination number for a single frame. Modifies the data in the `r_chunk` (type `Result`) structure, through
+Computes the coordination number for a single frame. Modifies the data in the `r_chunk` (type `MDDFResult`) structure, through
 the `update_volume!` and `update_counters!` functions.
 
 =#
 function coordination_number_frame!(
-    r_chunk::Result,
+    r_chunk::MDDFResult,
     system::AbstractParticleSystem,
     buff::Buffer,
     frame_weight::Float64,
@@ -543,7 +538,7 @@ given the trajectory file name, and the definition of the solute and
 solvent groups of atoms as `AtomSelection` data structures. If the `solvent` parameter
 is omitted, a self-coordination number will be computed.
 
-The output is a `Result` structure, which contains the data as the result of a call to `mddf`, except
+The output is a `MDDFResult` structure, which contains the data as the result of a call to `mddf`, except
 that all counters which require normalization of the distribution will be zero. In summary, this result
 data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.
 
@@ -564,11 +559,6 @@ The `options` parameter is optional. If not set, the default `Options()` structu
 
 - `chemfiles` is a boolean that, if set to `true`, will use try to use the `Chemfiles` library to read the trajectory file. 
   independently of the file extension. By default, PDB and DCD trajectories are read by specific readers.
-
-!!! compat
-    The current call signature was introduced in version 2.9.0. The previous call signature with the 
-    previous construction of the `Trajectory` object, is still available, but it is no longer recommended 
-    because it more prone to user-level solute and solvent configuration errors. 
 
 ### Examples
 
@@ -656,7 +646,7 @@ end
     for nthreads in [1, 2], lastframe in [1, 2], low_memory in [true, false]
         options = Options(;
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads,
             silent=true,
             n_random_samples=10^5,
@@ -665,7 +655,7 @@ end
         R = mddf(trajectory_file, protein, water, options; trajectory_format, low_memory)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.01)
         @test R.density.solute ≈ 1 / R.volume.total
         @test R.density.solvent ≈ 3 / R.volume.total
         @test R.density.solvent_bulk ≈ 2 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
@@ -693,7 +683,7 @@ end
     for nthreads in [1, 2], low_memory in [false, true]
         options = Options(;
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads,
             silent=true,
             n_random_samples=10^5,
@@ -702,7 +692,7 @@ end
         R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
         @test sum(R.md_count) ≈ 1.0
@@ -723,22 +713,22 @@ end
 
     # Different frame_weight input types
     trajectory_file = test_file("toy_self_monoatomic.pdb")
-    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
+    options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, firstframe=2)
     R1 = mddf(trajectory_file, atom, options; trajectory_format)
-    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(seed=321, stable_rng=true, nthreads=1, silent=true)
     R2 = mddf(trajectory_file, atom, options; frame_weights=[0.0, 1.0], trajectory_format)
     @test R1.md_count == R2.md_count
-    @test R1.rdf_count == R2.rdf_count
+    @test R1.proximal_count == R2.proximal_count
     # Test different input types for frame_weights 
     R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=BitVector((0, 1)), trajectory_format)
     @test R1.md_count == R2.md_count
-    @test R1.rdf_count == R2.rdf_count
+    @test R1.proximal_count == R2.proximal_count
     R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=[false, true], trajectory_format)
     @test R1.md_count == R2.md_count
-    @test R1.rdf_count == R2.rdf_count
+    @test R1.proximal_count == R2.proximal_count
     R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=[0 1], trajectory_format)
     @test R1.md_count == R2.md_count
-    @test R1.rdf_count == R2.rdf_count
+    @test R1.proximal_count == R2.proximal_count
     @test_throws ArgumentError mddf(trajectory_file, atom, Options(silent=true); frame_weights=[0 1; 0 1], trajectory_format)
 
     #
@@ -747,33 +737,33 @@ end
     # Read only first frame
     for low_memory in [false, true]
         local trajectory_file, options, R1, R2
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, lastframe=1)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, lastframe=1)
         trajectory_file = test_file("toy_self_monoatomic.pdb")
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[1.0, 0.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
-        @test R1.rdf_count == R2.rdf_count
+        @test R1.proximal_count == R2.proximal_count
         # Read only last frame
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, firstframe=2)
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[0.0, 1.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
-        @test R1.rdf_count == R2.rdf_count
+        @test R1.proximal_count == R2.proximal_count
         # Use equal weights
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[0.3, 0.3], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
-        @test R1.rdf_count == R2.rdf_count
+        @test R1.proximal_count == R2.proximal_count
         # Check with the duplicated-first-frame trajectory 
         trajectory_file = test_file("toy_self_monoatomic_duplicated_first_frame.pdb")
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=1, lastframe=3)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, firstframe=1, lastframe=3)
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         trajectory_file = test_file("toy_self_monoatomic.pdb")
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[2.0, 1.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
-        @test R1.rdf_count == R2.rdf_count
+        @test R1.proximal_count == R2.proximal_count
         # Test some different weights
         R2 = mddf(trajectory_file, atom, Options(silent=true); frame_weights=[2.0, 1.0], low_memory, trajectory_format)
         @test sum(R2.md_count) ≈ 2 / 3
@@ -783,7 +773,7 @@ end
         # only with atoms in the bulk
         options = Options(
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads=1,
             silent=true,
             n_random_samples=10^5,
@@ -792,7 +782,7 @@ end
         R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
         @test R.density.solvent_bulk ≈ 1 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
@@ -800,7 +790,7 @@ end
         # with both frames
         options = Options(
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads=1,
             silent=true,
             n_random_samples=10^5,
@@ -808,7 +798,7 @@ end
         R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
         @test R.density.solvent_bulk ≈ 0.5 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
@@ -826,7 +816,7 @@ end
     trajectory_file = test_file("toy_cross.pdb")
     
     atom = AtomSelection(select(atoms, "resname WAT and model 1"), natomspermol=1)
-    t = Trajectory(trajectory_file, atom; format="PDBTraj")
+    t = ComplexMixtures.Trajectory(trajectory_file, atom; format="PDBTraj")
 
     options = Options()
     trajectory_file = test_file("toy_self_monoatomic.pdb")
@@ -876,7 +866,7 @@ end
         options = Options(;
             seed=1,
             stride=1,
-            StableRNG=true,
+            stable_rng=true,
             nthreads,
             n_random_samples=100,
             silent=true
@@ -886,7 +876,7 @@ end
         # Deterministic
         @test R.volume.total ≈ 603078.4438609097
         @test sum(R.md_count) ≈ 25.250000000000007
-        @test sum(R.rdf_count) ≈ 19.550000000000004
+        @test sum(R.proximal_count) ≈ 19.550000000000004
         @test R.density.solute ≈ 1.6581590839128614e-6
         @test R.density.solvent ≈ 0.00030012679418822794
         # Dependent on the random number seed
@@ -894,16 +884,16 @@ end
         @test R.volume.bulk ≈ 528518.2898415865 rtol = 0.1
         @test R.density.solvent_bulk ≈ 0.0003054766563488117 rtol = 0.1
         @test sum(R.mddf) ≈ 527.670164155438 rtol = 0.1
-        @test sum(R.rdf) ≈ 444.71561185073836 rtol = 0.1
+        @test sum(R.proximal) ≈ 444.71561185073836 rtol = 0.1
         @test R.kb[end] ≈ -5775.215792514756 rtol = 0.5
-        @test R.kb_rdf[end] ≈ -6360.471034166915 rtol = 0.5
+        @test R.kb_proximal[end] ≈ -6360.471034166915 rtol = 0.5
 
         # Self correlation
         R = mddf(test_file("protein_tmao.dcd"), tmao, options; low_memory)
         # Deterministic
         @test R.volume.total ≈ 603078.4438609097
         @test sum(R.md_count) ≈ 2.8939226519337016
-        @test sum(R.rdf_count) ≈ 1.858839779005525
+        @test sum(R.proximal_count) ≈ 1.858839779005525
         @test R.density.solute ≈ 0.00030012679418822794
         @test R.density.solvent ≈ 0.00030012679418822794
         # Dependent on the random number seed
@@ -912,9 +902,9 @@ end
             @test R.volume.bulk ≈ 596277.0591884783 rtol = 0.1
             @test R.density.solvent_bulk ≈ 0.00029875568324470034 rtol = 0.1
             @test sum(R.mddf) ≈ 434.7773107740875 rtol = 0.1
-            @test sum(R.rdf) ≈ 345.9169130954568 rtol = 0.1
+            @test sum(R.proximal) ≈ 345.9169130954568 rtol = 0.1
             @test R.kb[end] ≈ -476 rtol = 0.5
-            @test R.kb_rdf[end] ≈ -421 rtol = 0.5
+            @test R.kb_proximal[end] ≈ -421 rtol = 0.5
         end
 
         # Test varying frame weights: the trajectory below has 3 frames

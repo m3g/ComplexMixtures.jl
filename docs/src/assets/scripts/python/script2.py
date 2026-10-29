@@ -2,8 +2,8 @@ import ComplexMixtures as cm
 import matplotlib.pyplot as plt
 
 # Load the actual results obtained with the complete simulation:
-glyc_results = cm.load("./glyc50.json")
-water_results = cm.load("./water.json")
+glyc_results = cm.load(cm.MDDFResult, "./glyc50.json")
+water_results = cm.load(cm.MDDFResult, "./water.json")
 
 # Plot MDDF and KB
 fig, axs = plt.subplots(2)

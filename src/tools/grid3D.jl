@@ -1,6 +1,6 @@
 """
     grid3D(
-        result::Result, atoms, output_file::Union{Nothing,String} = nothing; 
+        result::MDDFResult, atoms, output_file::Union{Nothing,String} = nothing; 
         dmin=1.5, dmax=5.0, step=0.5, silent = false, type = :mddf, molecule = 1,
     )
 
@@ -10,7 +10,7 @@ grid, the closest atom to that position, and distance.
 
 ## Positional arguments
 
-- `result` is a `ComplexMixtures.Result` object 
+- `result` is a `ComplexMixtures.MDDFResult` object 
 - `atoms` is a vector of `PDBTools.Atom`s with all the atoms of the system. 
 - `output_file` is the name of the file where the grid will be written. If `nothing`, the grid is only returned as a matrix. 
 
@@ -40,7 +40,7 @@ julia> using ComplexMixtures, PDBTools
 
 julia> atoms = read_pdb("./system.pdb");
 
-julia> R = ComplexMixtures.load("./results.json");
+julia> R = ComplexMixtures.load(MDDFResult, "./results.json");
 
 julia> grid = grid3D(R, atoms, "grid.pdb");
 ```
@@ -49,7 +49,7 @@ Examples of how the grid can be visualized are provided in the user guide of `Co
 
 """
 function grid3D(
-    result::Result,
+    result::MDDFResult,
     atoms,
     output_file::Union{Nothing,String}=nothing;
     dmin=1.5,
@@ -191,7 +191,7 @@ julia> using ComplexMixtures, PDBTools
 
 julia> atoms = read_pdb("./system.pdb");
 
-julia> R = ComplexMixtures.load("./results.json");
+julia> R = ComplexMixtures.load(MDDFResult, "./results.json");
 
 julia> grid = grid3D(R, atoms; dmin=1.5, dmax=3.5);
 
@@ -201,10 +201,6 @@ julia> write_dx("density.dx", density) # write the data to a file
 
 julia> visualize(select(atoms, "protein") => (;), density => (isovalue=0.05,)) # isosurface of the data
 ```
-
-!!! compat
-    This function is available in ComplexMixtures 2.19.0 or greater, and requires PDBTools 3.41.0 or greater.
-
 """
 function volumetric_data(
     grid::AbstractVector{<:PDBTools.Atom};
@@ -285,24 +281,24 @@ end
     options = Options(
         stride=5,
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
         n_random_samples=100,
     )
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     R = mddf(traj, options)
     @test_throws ArgumentError grid3D(R, atoms, tempname())
 
     # Test properties of the grid around a specific residue
     solute = AtomSelection(select(atoms, "protein and residue 46"), nmols=1)
     solvent = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
     grid_file = tempname() * ".pdb"
     options = Options(
         stride=5,
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
     )
@@ -372,8 +368,8 @@ end
     atoms = read_pdb(test_file("protein_tmao.pdb"))
     solute = AtomSelection(select(atoms, "protein and residue 46"), nmols=1)
     solvent = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
-    R = mddf(traj, Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true))
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
+    R = mddf(traj, Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true))
     grid = grid3D(R, atoms; silent=true)
     v = volumetric_data(grid; sigma=0.5)
     @test v.step ≈ [0.5, 0.5, 0.5]
@@ -388,8 +384,8 @@ end
     atoms = read_pdb(test_file("protein_tmao.pdb"))
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
-    traj = Trajectory(test_file("protein_tmao.dcd"), tmao, water)
-    R = mddf(traj, Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true))
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), tmao, water)
+    R = mddf(traj, Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true))
     grid1 = grid3D(R, atoms; silent=true)
     # The grid is built around a single molecule: the closest atoms belong to the first molecule
     first_molecule = atoms[R.solute.indices[1:14]]

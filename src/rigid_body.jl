@@ -6,7 +6,7 @@
 import RandomNumbers.Xorshifts as RndX
 import StableRNGs
 function init_random(options, ichunk::Int)
-    if options.StableRNG
+    if options.stable_rng
         seed = abs(RndX.rand(Int))
         RNG = StableRNGs.StableRNG(seed)
     else

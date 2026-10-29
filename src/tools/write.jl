@@ -1,6 +1,6 @@
 """
-    write(
-        R::Result, filename::AbstractString;
+    write_tables(
+        filename::AbstractString, R::MDDFResult;
         solute_group_names::AbstractVector{<:AbstractString} = R.solute.group_names,
         solvent_group_names::AbstractVector{<:AbstractString} = R.solvent.group_names,
     )
@@ -11,8 +11,8 @@ If the solute and solvent group names are defined in `R`, the `solute_group_name
 If they are not defined, the user can pass the names of the groups as strings in the `solute_group_names` and `solvent_group_names` arguments.
 
 """
-function Base.write(
-    filename::AbstractString, R::Result;
+function write_tables(
+    filename::AbstractString, R::MDDFResult;
     solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
     solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
 )
@@ -34,7 +34,7 @@ function Base.write(
 
     open(filename, "w") do output
         println(output, @sprintf("#"))
-        println(output, "# Output of ComplexMixtures - MDDF - Version: $(VERSION)")
+        println(output, "# Output of ComplexMixtures - MDDF - Version: $(pkgversion(@__MODULE__))")
         println(output, @sprintf("#"))
         println(output, @sprintf("# Trajectory files and weights:"))
         for i in eachindex(R.files)
@@ -98,7 +98,7 @@ format(x) = abs(x) < 998 ? @sprintf("%12.7f", x) : @sprintf("%12.5e", x)
 #
 # Function that set the group names, given the optional input parameters of the write function
 #
-function set_group_names(R::Result, group_names::Union{Nothing,AbstractVector{<:AbstractString}}, type::Symbol)
+function set_group_names(R::MDDFResult, group_names::Union{Nothing,AbstractVector{<:AbstractString}}, type::Symbol)
     atsel = getfield(R, type)
     atsel_str = type == :solute ? "Solute" : "Solvent"
     if isnothing(group_names)
@@ -120,7 +120,7 @@ end
 # Writing gmd per atom contributions for the solvent
 #
 function write_group_contributions(
-    R::Result,
+    R::MDDFResult,
     filename::AbstractString,
     type::Symbol,
     group_names::AbstractVector{<:AbstractString},
@@ -192,62 +192,43 @@ function write_group_contributions(
     return group_contributions_output
 end
 
-# legacy order
-Base.write(
-    R::Result, filename::AbstractString;
-    solute_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
-    solvent_group_names::Union{Nothing,AbstractVector{<:AbstractString}}=nothing,
-) = write(filename, R; solute_group_names, solvent_group_names)
-
-@testitem "write" begin
+@testitem "write_tables" begin
     using ComplexMixtures
     using LazyArtifacts
     using ComplexMixtures: test_file
     using DelimitedFiles
     using PDBTools
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    # Using or not bulk-range
-    options1 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, bulk_range=(8.0, 10.0))
-    options2 = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true, dbulk=8.0, usecutoff=false)
+    options = Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true, cutoff=10.0)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao, chemfiles=true)
-    for options in (options1, options2)
-        r = mddf(traj, options)
-        tmpfile = tempname() * ".dat"
-        out1, out2, out3 = write(tmpfile, r)
-        r_read = readdlm(out1, comments=true, comment_char='#')
-        # Main output file
-        @test r.d ≈ r_read[:, 1]
-        @test r.mddf ≈ r_read[:, 2]
-        @test r.kb ≈ r_read[:, 3] rtol = 1e-5
-        @test r.md_count ≈ r_read[:, 4]
-        @test r.md_count_random ≈ r_read[:, 5] rtol = 1e-5
-        @test r.coordination_number ≈ r_read[:, 6] rtol = 1e-5
-        @test r.coordination_number_random ≈ r_read[:, 7] rtol = 1e-5
-        @test r.volume.shell ≈ r_read[:, 8] rtol = 1e-5
-        # Solute contributions
-        r_read = readdlm(out2, comments=true, comment_char='#')
-        @test r.d ≈ r_read[:, 1]
-        @test r.mddf ≈ r_read[:, 2]
-        for i in eachindex(r.solute.group_names)
-            @test contributions(r, SoluteGroup([i])) ≈ r_read[:, i+2] rtol = 1e-5
-        end
-        # Solvent contributions
-        r_read = readdlm(out3, comments=true, comment_char='#')
-        @test r.d ≈ r_read[:, 1]
-        @test r.mddf ≈ r_read[:, 2]
-        for (i, name) in enumerate(atom_group_names(r.solvent))
-            @test contributions(r, SolventGroup([name])) ≈ r_read[:, i+2] rtol = 1e-5
-        end
-        rm(tmpfile)
-    end
-    # legacy order of arguments 
-    r = mddf(traj, options1)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao, chemfiles=true)
+    r = mddf(traj, options)
     tmpfile = tempname() * ".dat"
-    out1, out2, out3 = write(r, tmpfile)
+    out1, out2, out3 = write_tables(tmpfile, r)
     r_read = readdlm(out1, comments=true, comment_char='#')
     # Main output file
     @test r.d ≈ r_read[:, 1]
+    @test r.mddf ≈ r_read[:, 2]
+    @test r.kb ≈ r_read[:, 3] rtol = 1e-5
+    @test r.md_count ≈ r_read[:, 4]
+    @test r.md_count_random ≈ r_read[:, 5] rtol = 1e-5
+    @test r.coordination_number ≈ r_read[:, 6] rtol = 1e-5
+    @test r.coordination_number_random ≈ r_read[:, 7] rtol = 1e-5
+    @test r.volume.shell ≈ r_read[:, 8] rtol = 1e-5
+    # Solute contributions
+    r_read = readdlm(out2, comments=true, comment_char='#')
+    @test r.d ≈ r_read[:, 1]
+    @test r.mddf ≈ r_read[:, 2]
+    for i in eachindex(r.solute.group_names)
+        @test contributions(r, SoluteGroup([i])) ≈ r_read[:, i+2] rtol = 1e-5
+    end
+    # Solvent contributions
+    r_read = readdlm(out3, comments=true, comment_char='#')
+    @test r.d ≈ r_read[:, 1]
+    @test r.mddf ≈ r_read[:, 2]
+    for (i, name) in enumerate(atom_group_names(r.solvent))
+        @test contributions(r, SolventGroup([name])) ≈ r_read[:, i+2] rtol = 1e-5
+    end
     rm(tmpfile)
 end

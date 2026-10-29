@@ -18,7 +18,7 @@ protein = select(atoms, "protein")
 
 # Load example output file (computed in the previous script)
 example_output = "./glyc50_results.json"
-results = load(example_output)
+results = load(MDDFResult, example_output)
 
 #
 # Plot a 2D map showing the contributions of some residues

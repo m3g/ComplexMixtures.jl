@@ -42,15 +42,15 @@ There are different ways to deal with this issue:
 1. Use [predefined groups](@ref predefinition-of-groups), to reduce the
    size of the group array contributions.
 2. Use the `low_memory=true` option the call to `mddf` (for example
-   with `mddf(traj, options; low_memory=true)`. 
+   with `mddf(trajectory_file, solute, solvent, options; low_memory=true)`). 
 3. Reduce the number of threads used (with `Options(nthreads=N)`).
 4. Increase the frequency of garbage collection calls:
    ```julia
-   options = Options(GC=true, GC_threshold=0.5)
+   options = Options(gc=true, gc_threshold=0.5)
    R = mddf(trajectory_file, solute, solvent, options)
    ```     
-   The `GC_threshold=0.5` indicates that if the free memory is smaller than 50%
+   The `gc_threshold=0.5` indicates that if the free memory is smaller than 50%
    of the total memory of the machine, a garbage-collection run will occur. The  
-   default parameters are `GC=true` and `GC_threshold=0.3`.  
+   default parameters are `gc=true` and `gc_threshold=0.3`.  
 
 

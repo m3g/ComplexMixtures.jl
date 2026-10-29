@@ -31,7 +31,7 @@ options = Options(cutoff=25.0)
 results = mddf(trajectory_file, solute, solvent, options)
 
 # Save results to file for later use
-save(results, "./mddf.json")
+save("./mddf.json", results)
 println("Results saved to ./mddf.json file")
 
 # Plot the MDDF and KB integrals

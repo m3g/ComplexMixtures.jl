@@ -15,10 +15,6 @@ the system, relative to the bulk density, as computed by [`reference_density`](@
    width of the shells, where the volume of the region is small and the estimate is noisy.
 - `shell_d::Vector{Float64}` and `shell::Vector{Float64}`: the density of the solvent in shells
    of width `shell_width`, relative to `bulk`, and the distances of the centers of the shells.
-
-!!! compat
-    This structure was introduced in version 3.0.0.
-
 """
 struct ReferenceDensity
     d::Vector{Float64}
@@ -39,7 +35,7 @@ function Base.show(io::IO, ::MIME"text/plain", rd::ReferenceDensity)
 end
 
 """
-    reference_density(R::Result; shell_width::Real=1.0)
+    reference_density(R::MDDFResult; shell_width::Real=1.0)
 
 Compute the density of the solvent in different regions of the system, relative to the bulk density
 of the solvent, `R.density.solvent_bulk`, which is estimated from the region beyond the cutoff. 
@@ -72,18 +68,14 @@ With `Plots` loaded, the result can be plotted with `plot(reference_density(R))`
 ```julia-repl
 julia> using ComplexMixtures, Plots
 
-julia> R = load("result.json");
+julia> R = load(MDDFResult, "result.json");
 
 julia> rd = reference_density(R)
 
 julia> plot(rd)
 ```
-
-!!! compat
-    This function was introduced in version 3.0.0.
-
 """
-function reference_density(R::Result; shell_width::Real=1.0)
+function reference_density(R::MDDFResult; shell_width::Real=1.0)
     _check_normalized(R)
     ρb = R.density.solvent_bulk
     Vd = cumsum(R.md_count_random) ./ ρb # Volume of the domain within d
@@ -110,7 +102,7 @@ end
     using ComplexMixtures
     using LazyArtifacts
     using ComplexMixtures: test_file
-    R = load(test_file("namd_rw_20_25.json"))
+    R = load(MDDFResult, test_file("namd_rw_20_25.json"))
     rd = reference_density(R)
     @test rd.bulk == R.density.solvent_bulk
     @test rd.outside ≈ ComplexMixtures._ganguly_density(R) ./ R.density.solvent_bulk

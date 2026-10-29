@@ -27,14 +27,14 @@ options = Options(cutoff=25.0)
 mddf_glyc = mddf(trajectory_file, glyc_selection, options)
 
 # Save results for later analysis
-save(mddf_glyc, "./mddf_glyc.json")
+save("./mddf_glyc.json", mddf_glyc)
 
 # Compute water-glycerol mddf: glyc_selection is the solute, and water is the solvent
 solvent = AtomSelection(water, natomspermol=3)
 mddf_glyc_water = mddf(trajectory_file, glyc_selection, solvent, options)
 
 # Save results for later analysis
-save(mddf_glyc_water, "./mddf_glyc_water.json")
+save("./mddf_glyc_water.json", mddf_glyc_water)
 
 #
 # Plot the MDDFs 

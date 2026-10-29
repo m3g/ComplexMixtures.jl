@@ -1,6 +1,6 @@
 """
-    coordination_number(R::Result) = R.coordination_number
-    coordination_number(R::Result, s::Union{SoluteGroup,SolventGroup})
+    coordination_number(R::MDDFResult) = R.coordination_number
+    coordination_number(R::MDDFResult, s::Union{SoluteGroup,SolventGroup})
 
 Here, the coordination number is the number of molecules of the solvent that are within a certain distance from the solute.
 
@@ -9,7 +9,7 @@ If no group is defined (first call above), the coordination number of the whole 
 If a group is defined (second call above), the contributions of this group of atoms to the coordination number are 
 returned, as a function of the distance to the solute: 
 
-- `R` are the results obtained, that is, a `Result` data structure,
+- `R` are the results obtained, that is, a `MDDFResult` data structure,
 - `s` is the solute or solvent selection (of type `ComplexMixtures.AtomSelection`)
 
 # Examples
@@ -106,8 +106,8 @@ julia> coordination_number(R, SoluteGroup("alanine residues"))[i5]
 
 """
 function coordination_number end
-coordination_number(R::Result) = R.coordination_number
-coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contributions(R, atsel; type=:coordination_number)
+coordination_number(R::MDDFResult) = R.coordination_number
+coordination_number(R::MDDFResult, atsel::Union{SoluteGroup,SolventGroup}) = contributions(R, atsel; type=:coordination_number)
 
 @testitem "coordination_number" begin
     using ComplexMixtures: coordination_number, contributions, mddf, Trajectory, Options, AtomSelection, load
@@ -118,7 +118,7 @@ coordination_number(R::Result, atsel::Union{SoluteGroup,SolventGroup}) = contrib
     atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    options = Options(lastframe=1, seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=200)
+    options = Options(lastframe=1, seed=321, stable_rng=true, nthreads=1, silent=true, n_random_samples=200)
     traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     R = mddf(traj, options)
 

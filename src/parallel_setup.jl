@@ -4,7 +4,7 @@ This function will set the number of chunks and the parameters for the CellListM
 parallelization, given the size of the results data structure and the level of parallelization.
 
 =#
-function parallel_setup(options::Options, R::Result, low_memory::Bool)
+function parallel_setup(options::Options, R::MDDFResult, low_memory::Bool)
 
     # Number of threads available 
     nthreads = options.nthreads == 0 ? Threads.nthreads() : options.nthreads

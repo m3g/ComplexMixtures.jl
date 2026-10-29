@@ -1,5 +1,34 @@
 # [Version compatibility](@id version-compatibility)
 
+## [Migrating from 3.x to 4.0](@id migration-4)
+
+Version 4.0 renames some functions and fields, for consistency with the other packages of the
+ecosystem (PDBTools.jl, MolSimToolkit.jl). The numerical results do not change, and result files 
+saved with previous versions (2.0.0 or greater) are loaded and converted to the current data structure.
+
+| 3.x | 4.0 |
+|:----|:----|
+| `Result` | `MDDFResult` |
+| `load("results.json")` | `load(MDDFResult, "results.json")` |
+| `load("rc.json", ResidueContributions)` | `load(ResidueContributions, "rc.json")` |
+| `R.rdf`, `R.kb_rdf` | `R.proximal`, `R.kb_proximal` |
+| `R.rdf_count`, `R.rdf_count_random` | `R.proximal_count`, `R.proximal_count_random` |
+| `R.sum_rdf_count`, `R.sum_rdf_count_random` | `R.sum_proximal_count`, `R.sum_proximal_count_random` |
+| `gr(R)` with a multi-atom solute | Throws an `ArgumentError`: use `R.proximal`, `R.kb_proximal`. |
+| `gr(r, count, density, binstep)` | Not public: use `gr(R)`. |
+| `Trajectory(file, solute, solvent)` | Not exported: provide the trajectory file to `mddf` directly. |
+| `save(R, "results.json")` | `save("results.json", R)` |
+| `write(R, "results.dat")`, `write("results.dat", R)` | `write_tables("results.dat", R)` |
+| `Options(GC=..., GC_threshold=..., StableRNG=...)` | `Options(gc=..., gc_threshold=..., stable_rng=...)` |
+| `Options(dbulk=...)`, `Options(bulk_range=...)`, `Options(usecutoff=...)` | Removed: use `Options(cutoff=...)`. |
+| `R.Version` | `R.version` |
+| `R.dbulk` | Removed: equal to `R.cutoff` since 3.0. |
+
+The `rdf*` fields were renamed to `proximal*` because they contain the distribution of the 
+minimum distances of the reference atom of the solvent molecules to the solute, which is a
+proximal distribution function ([Mehrotra, Marchese, Beveridge, *J. Am. Chem. Soc.* 1981](https://doi.org/10.1021/ja00393a030); [Lounnas, Pettitt, *Proteins* 1994](https://doi.org/10.1002/prot.340180206)), and reduces to a radial distribution function only if the solute 
+has a single atom.
+
 ## [Migrating from 2.19 to 3.0](@id migration-3)
 
 Scripts written for version 2.19 run with version 3.0, but some defaults changed, and the

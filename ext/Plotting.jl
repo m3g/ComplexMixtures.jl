@@ -3,7 +3,7 @@ module Plotting
 using TestItems: @testitem
 
 import Plots
-using ComplexMixtures: ComplexMixtures, Result, SoluteGroup, SolventGroup, contributions,
+using ComplexMixtures: ComplexMixtures, MDDFResult, SoluteGroup, SolventGroup, contributions,
     ResidueContributions, _set_clims_and_colorscale!, ReferenceDensity
 using PDBTools: PDBTools, Residue, residue_ticks, Atom, eachresidue, resnum
 
@@ -42,7 +42,7 @@ done by passing other keyword arguments to this function, which will be passed t
 ```julia-repl
 julia> using ComplexMixtures, Plots, PDBTools
 
-julia> results = load("mddf.json")
+julia> results = load(MDDFResult, "mddf.json")
 
 julia> atoms = read_pdb("system.pdb", "protein")
 
@@ -60,12 +60,7 @@ To customize the plot, use the `Plot.contourf` keyword parameters, for example:
 julia> plt = contourf(rc; step=5, size=(800,400), title="Title", clims=(-0.1, 0.1))
 ```
 
-!!! compat
-    This function requires loading the `Plots` package.
-
-    Support for all `Plots.contourf` parameters was introduced in ComplexMixtures v2.6.0, and support for
-    `contour` and `heatmap` was introduced in ComplexMixtures v2.11.0. 
-
+This function requires loading the `Plots` package.
 """
 Plots.contourf(rc::ResidueContributions; kargs...) = _density2D(Plots.contourf, rc; kargs...)
 
@@ -172,9 +167,7 @@ density beyond each distance (the reference density of the Ganguly normalization
 
 Keyword arguments are passed to `Plots.plot`.
 
-!!! compat
-    This function requires loading the `Plots` package, and was introduced in version 3.0.0.
-
+This function requires loading the `Plots` package.
 """
 function Plots.plot(rd::ReferenceDensity; kargs...)
     dev(x) = 100 * (x - 1)
@@ -202,7 +195,7 @@ end
     using ComplexMixtures, Plots
     using LazyArtifacts
     using ComplexMixtures: test_file
-    R = load(test_file("namd_rw_20_25.json"))
+    R = load(MDDFResult, test_file("namd_rw_20_25.json"))
     tmpplot = tempname() * ".png"
     plt = plot(reference_density(R); title="water")
     savefig(plt, tmpplot)
@@ -218,7 +211,7 @@ end
     using PDBTools
     # Load example output file (computed in the previous script)
     protein = read_pdb(test_file("gromacs_system.pdb"), "protein")
-    results = load(test_file("gromacs_protein_EMI.json"))
+    results = load(MDDFResult, test_file("gromacs_protein_EMI.json"))
     tmpplot = tempname() * ".png"
 
     # Add some strange residue names to the protein

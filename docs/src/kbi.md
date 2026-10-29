@@ -6,14 +6,14 @@ CollapsedDocStrings = true
 
 ## Computing KBIs: the `kbi` function
 
-The Kirkwood-Buff integrals (KBIs) of a `Result` object are obtained with the [`kbi`](@ref) function:
+The Kirkwood-Buff integrals (KBIs) of a `MDDFResult` object are obtained with the [`kbi`](@ref) function:
 
 ```julia
 G = kbi(R)
 ```
 
 which returns the KBI, in cm³ mol⁻¹, as a function of the upper limit of integration, ``L``, for 
-each distance of `R.d`. The `R.kb` field of the `Result` contains the same values, `R.kb == kbi(R)`.
+each distance of `R.d`. The `R.kb` field of the `MDDFResult` contains the same values, `R.kb == kbi(R)`.
 The `kbi` function allows choosing the corrections applied, and computes the KBIs with the 
 current definitions for results saved with previous versions of the package, in which `R.kb` contained
 the uncorrected KBI. By default, the KBI is computed with a weight function that corrects for the 
@@ -132,8 +132,8 @@ thus the distribution is the O–O RDF:
 using ComplexMixtures
 using LazyArtifacts
 using ComplexMixtures: test_file
-R = load(test_file("namd_rw_20_25.json"))
-RO = load(test_file("namd_rwO_20_25.json"))
+R = load(MDDFResult, test_file("namd_rw_20_25.json"))
+RO = load(MDDFResult, test_file("namd_rwO_20_25.json"))
 R.solute.natomspermol, RO.solute.natomspermol
 ```
 
@@ -208,7 +208,7 @@ depends on the solute). Applied to the integrand of an MDDF, the formula above s
 ``G_\infty`` as ``L \to \infty``, as does any weighted integral with ``W(0) = 1``, but the ``1/L`` 
 dependence is not justified, and the slope of the extrapolation has no physical meaning. Thus, 
 [`finite_volume_kbi`](@ref) is meant for single-atom solutes (it issues a warning otherwise), and 
-uses the distribution of the distances to the reference atom of the solvent (`R.rdf_count`).
+uses the distribution of the distances to the reference atom of the solvent (`R.proximal_count`).
 
 The [`finite_volume_kbi`](@ref) function computes the finite-volume KBIs of spheres of diameter ``L``,
 for all ``L`` up to the cutoff. The plot of ``G(L)`` as a function of ``1/L`` must be linear for large enough ``L``:

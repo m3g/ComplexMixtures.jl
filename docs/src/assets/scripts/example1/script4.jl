@@ -16,7 +16,7 @@ using Statistics
 atoms = read_pdb("./system.pdb")
 
 # The results for glycerol were computed in script1.jl
-glyc_results = load("./glyc50_results.json")
+glyc_results = load(MDDFResult, "./glyc50_results.json")
 
 # Compute the MDDF of water relative to the protein, from the same trajectory
 protein = select(atoms, "protein")
@@ -25,7 +25,7 @@ solute = AtomSelection(protein, nmols=1)
 solvent = AtomSelection(water, natomspermol=3)
 trajectory_file = "./glyc50_traj.dcd"
 water_results = mddf(trajectory_file, solute, solvent, Options(cutoff=15.0))
-save(water_results, "water_results.json")
+save("water_results.json", water_results)
 println("Results saved to water_results.json")
 
 #

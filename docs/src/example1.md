@@ -302,7 +302,7 @@ using LazyArtifacts # hide
 using ComplexMixtures: test_file # hide
 atoms = read_pdb(test_file("glycerol_system.pdb")) # hide
 protein = select(atoms, "protein") # hide
-results = load(test_file("glycerol_protein_glyc.json")) # hide
+results = load(MDDFResult, test_file("glycerol_protein_glyc.json")) # hide
 grid = grid3D(results, atoms; dmin=1.5, dmax=3.5, silent=true) # hide
 hbonds = filter(p -> occup(p) < 2.0 && beta(p) > 0.1, grid) # hide
 visualize( # hide

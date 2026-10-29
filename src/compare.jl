@@ -3,7 +3,7 @@
 Union of types to define comparison operators.
 
 =#
-const ComplexMixturesTypes = Union{Result,Density,Volume,AtomSelection,Options}
+const ComplexMixturesTypes = Union{MDDFResult,Density,Volume,AtomSelection,Options}
 
 _isapprox(x, y) = isapprox(x, y)
 _isapprox(x::Vector{<:String}, y::Vector{<:String}) = all(x .== y)
@@ -27,7 +27,7 @@ function _compare(_similar::F, x::T, y::T; debug=false) where {T<:ComplexMixture
     check = true
     diff_list = Symbol[]
     for field in fieldnames(T)
-        if field in (:files, :Version)
+        if field in (:files, :version)
             continue
         end
         xf = getfield(x, field)

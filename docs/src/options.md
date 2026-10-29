@@ -40,11 +40,8 @@ length, can be inspected with the [`reference_density`](@ref) function.
 
 !!! compat
     Since version 3.0.0, the bulk density is always estimated from the region beyond the 
-    `cutoff`. The `bulk_range`, `dbulk`, and `usecutoff` options are deprecated: 
-    `bulk_range=(dbulk, cutoff)` (and `dbulk`, `cutoff` with `usecutoff=true`) are mapped to 
-    `cutoff`, and `dbulk` alone is mapped to `cutoff=dbulk`. A warning is issued in these cases.
-    In previous versions, `bulk_range=(dbulk, cutoff)` defined a range of distances from which 
-    the bulk density was estimated.
+    `cutoff`. The `bulk_range`, `dbulk`, and `usecutoff` options, which defined other regions
+    for the estimate of the bulk density, were removed in version 4.0.0.
 
 ## Lower level options
 
@@ -53,8 +50,8 @@ some special system (large very large, or very low density system).
 
 `irefatom`: Integer, index of the reference atom in the solvent molecule
 used to compute the shell volumes and domain volumes in the Monte-Carlo
-volume estimates. The final `rdf` data is reported for this atom as
-well. By default, we choose the atom which is closer to the center of
+volume estimates. The proximal distribution function ([Mehrotra, Marchese, Beveridge, *J. Am. Chem. Soc.* 1981](https://doi.org/10.1021/ja00393a030); [Lounnas, Pettitt, *Proteins* 1994](https://doi.org/10.1002/prot.340180206)) of this atom
+is also reported (the `proximal` field of the results). By default, we choose the atom which is closer to the center of
 coordinates of the molecule, but any choice should be fine. 
 
 `n_random_samples`: Integer, the number of random (ideal-gas) samples computed for each
@@ -96,7 +93,7 @@ on the seed, it is probable that you do not have enough sampling. Mostly
 used for testing purposes. Two runs are only identical if ran with
 the same seed and in serial mode.   
 
-`StableRNG` (`::Bool`), defaults to `false`. Use a stable random number
+`stable_rng` (`::Bool`), defaults to `false`. Use a stable random number
 generator from the `StableRNGs` package, to produce identical runs on
 different architectures and Julia versions. Only used for testing. 
 
@@ -106,13 +103,13 @@ of physical cores of the computer.
 `lcell`: Integer, the cell length of the linked-cell method (actually
 the cell length is `cutoff/lcell`). Default: 1.  
 
-`GC`: Bool, force garbage collection, to avoid memory
+`gc`: Bool, force garbage collection, to avoid memory
 overflow. Default: `true`. That this might be required is probably a result of
 something that can vastly improved in memory management. This may slow down
 parallel runs significantly if the GC runs too often.
 
-`GC_threshold`: Float64, minimum fraction of the total memory of the
-system required to force a GC run. That is, if `GC_threshold=0.1`, which
+`gc_threshold`: Float64, minimum fraction of the total memory of the
+system required to force a GC run. That is, if `gc_threshold=0.1`, which
 is the default, every time the free memory becomes less or equal to 10%
 of the total memory available, a GC run occurs.  
 
@@ -166,45 +163,23 @@ Modules = [ComplexMixtures]
 Pages = ["Options.jl"]
 ```
 
-## [Loading trajectories](@id trajectories)
+## [Trajectory formats](@id trajectories)
 
-!!! note 
-    This explicit export of the `Trajectory` object is kept mostly
-    for legacy compatibility (previous to v2.9.0).
-
-To initialize a trajectory file for computation before calling the
-`mddf` or `coordination_number` functions, use the command
-```julia
-trajectory = Trajectory("trajectory.xtc",solute,solvent)
-```
-where `solute` and `solvent` are defined with the `AtomSelection` function 
-described [before](@ref selections). This function opens the stream for
-reading frames, which are read once a time when the coordinates are
-required for computing the MDDF.
-
-This object can be used to feed `mddf` and `coordination_number` with:
-```
-mddf(trajectory, options)
-coordination_number(trajectory, options)
-```
-
-The `Trajectory` function uses
-[Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/) in background,
-and thus the most common trajectory formats are supported, as the ones
-produced with NAMD, Gromacs, LAMMPS, Amber, etc.  
+The trajectory file is provided directly to the `mddf` and `coordination_number` functions.
+PDB and NAMD DCD trajectories are read by specific readers, and other formats are read with
+[Chemfiles](http://chemfiles.org/Chemfiles.jl/latest/), and thus the most common trajectory 
+formats are supported, as the ones produced with NAMD, Gromacs, LAMMPS, Amber, etc.  
 
 !!! tip
-    The format of the trajectory file is automatically determined by
-    Chemfiles from the extension of the file. However, it can be
-    provided by the user with the `format` keyword, for example:
+    The format of the trajectory file is automatically determined from the extension of the file. 
+    However, it can be provided by the user with the `trajectory_format` keyword, for example:
     ```julia
-    trajectory = Trajectory("trajectory.xtc",solute,solvent,format="xtc")
+    results = mddf("trajectory.xtc", solute, solvent, options; trajectory_format="xtc")
     ```
+    and the `chemfiles=true` keyword forces the use of Chemfiles for any file format.
 
-```@autodocs
-Modules = [ComplexMixtures]
-Pages = ["Trajectory.jl"]
-```
+!!! compat
+    The `Trajectory` object is not exported since version 4.0.0. 
 
 ## Stop a computation
 

@@ -17,14 +17,14 @@ using Statistics: mean, std
 using TestItems: @testitem, @testmodule
 
 # Data types
-export Trajectory, Options, Result
+export Options, MDDFResult
 export AtomSelection, SoluteGroup, SolventGroup
 
 # Functions
 import PDBToolsBase: save, load
 export mddf
 export overview
-export save, load, write, merge
+export save, load, write_tables
 export atom_group, atom_group_name, atom_group_names
 export renormalize
 
@@ -63,7 +63,9 @@ include("./viewmol.jl")
 
 # Structures and functions to store and report results
 include("./results.jl")
+include("./legacy/options-3.1.0.jl") # Legacy compatibility
 include("./legacy/results-2.17.1.jl") # Legacy compatibility
+include("./legacy/results-3.1.0.jl") # Legacy compatibility
 
 
 # Comparison operators for ComplexMixtures types
@@ -85,6 +87,7 @@ include("./mddf.jl")
 include("./tools/merge.jl")
 include("./tools/contributions.jl")
 include("./tools/residue_contributions.jl")
+include("./legacy/residue_contributions-3.1.0.jl") # Legacy compatibility
 include("./tools/coordination_number.jl")
 include("./tools/gr.jl")
 include("./tools/grid3D.jl")

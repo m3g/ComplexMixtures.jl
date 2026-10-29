@@ -180,6 +180,25 @@ end
     @test_throws ArgumentError atom_group(s, "A")
 end
 
+#
+# Error message for invalid arguments of the AtomSelection, SoluteGroup, and SolventGroup 
+# constructors, showing the types of the arguments received and examples of valid calls.
+#
+function _invalid_arguments_error(T, args, kargs, usage)
+    T = nameof(T)
+    received = join(string.(typeof.(args)), ", ")
+    if !isempty(kargs)
+        received *= "; " * join(string.(keys(kargs)), ", ")
+    end
+    throw(ArgumentError("""\n
+        Invalid arguments for $T: ($received)
+
+    $usage
+        Type `? $T` for the documentation.
+
+    """))
+end
+
 """
 
 **AtomSelection constructors**
@@ -277,10 +296,14 @@ AtomSelection
 
 """
 function AtomSelection(args...; kargs...)
-    throw(ArgumentError("""\n
-        No constructor for AtomSelection with these arguments. Please check the documentation.
+    _invalid_arguments_error(AtomSelection, args, kargs, """
+        AtomSelection is built from a vector of atoms (for example, from PDBTools.select) or
+        from a vector of atom indices, and the number of molecules or atoms per molecule:
 
-    """))
+            AtomSelection(select(atoms, "resname TMAO"); natomspermol=14)
+            AtomSelection(select(atoms, "protein"); nmols=1)
+            AtomSelection([1, 2, 3]; natomspermol=1)
+    """)
 end
 
 #
@@ -416,6 +439,10 @@ end
     @test_throws ArgumentError AtomSelection(Int[], nmols=1, natomspermol=11)
 
     @test_throws ArgumentError AtomSelection([1, 2, 3], ["A", "B", "C"])
+    @test_throws "Invalid arguments for AtomSelection: (Vector{Int64}, Int64)" AtomSelection([1, 2, 3], 1)
+    @test_throws "Invalid arguments for AtomSelection: (String; natomspermol)" AtomSelection("resname TMAO"; natomspermol=14)
+    @test_throws "Invalid arguments for SoluteGroup: (Float64)" SoluteGroup(1.0)
+    @test_throws "Invalid arguments for SolventGroup: (Int64, Int64)" SolventGroup(1, 2)
     @test_throws MethodError AtomSelection([1, 2, 3]; abc=1)
     @test_throws ArgumentError AtomSelection([1, 2, 3], ["A", "B", "C"]; nmols=1)
     @test_throws ArgumentError AtomSelection([1, 2, 3], natomspermol=1, group_atom_indices=[[1, 2, 2], [3]])
@@ -507,7 +534,7 @@ The possible constructors are:
 above, each constructor can be replaced by SolventGroup. The resulting data structures 
 are used as input parameters for the `contributions` function:
 
-    contributions(results::Result, group::Union{SoluteGroup, SolventGroup}; type=:mddf)
+    contributions(results::MDDFResult, group::Union{SoluteGroup, SolventGroup}; type=:mddf)
 
 See the `contributions` help entry for additional information.
 
@@ -603,20 +630,26 @@ function Base.show(io::IO, sg::Union{SoluteGroup,SolventGroup})
 end
 
 function SoluteGroup(args...; kargs...)
-    throw(ArgumentError(("""\n
-        No constructor for SoluteGroup with these arguments. 
+    _invalid_arguments_error(SoluteGroup, args, kargs, """
+        SoluteGroup is built from a vector of atoms, atom indices, or atom names, from the name
+        or index of a predefined group, or from a PDBTools.Residue:
 
-        Please check the documentation by typing: ? SoluteGroup
-
-    """)))
+            SoluteGroup(select(atoms, "resname ASP"))
+            SoluteGroup([1, 2, 3])
+            SoluteGroup(["N", "CA", "C", "O"])
+            SoluteGroup("acidic residues")
+    """)
 end
 function SolventGroup(args...; kargs...)
-    throw(ArgumentError(("""\n
-        No constructor for SolventGroup with these arguments. 
-            
-        Please check the documentation by typing: ? SolventGroup
+    _invalid_arguments_error(SolventGroup, args, kargs, """
+        SolventGroup is built from a vector of atoms, atom indices, or atom names, from the name
+        or index of a predefined group, or from a PDBTools.Residue:
 
-    """)))
+            SolventGroup(select(atoms, "resname ASP"))
+            SolventGroup([1, 2, 3])
+            SolventGroup(["N", "CA", "C", "O"])
+            SolventGroup("acidic residues")
+    """)
 end
 
 SoluteGroup(atoms::AbstractVector{<:PDBTools.Atom}) = SoluteGroup(nothing, nothing, PDBTools.index.(atoms), nothing)

@@ -159,14 +159,14 @@ rc = ResidueContributions(results1, select(atoms, "protein"));
 # Save rc object to a file (json format):
 save("residue_contributions.json", rc) 
 # Load json file into a new rc_loaded object:
-rc_loaded = load("residue_contributions.json", ResidueContributions)
+rc_loaded = load(ResidueContributions, "residue_contributions.json")
 ```
 
-Note that the `load` function requires, as a second argument, the `ResidueContributions` type, to differentiate
-the method from the loading of the `Result` data structure.
+Note that the `load` function requires, as a first argument, the `ResidueContributions` type, to differentiate
+the method from the loading of the `MDDFResult` data structure.
 
 ```@docs
-load(::AbstractString, ::Type{ResidueContributions})
+load(::Type{ResidueContributions}, ::AbstractString)
 save(::AbstractString, ::ResidueContributions)
 ```
 

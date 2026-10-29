@@ -10,7 +10,7 @@ using ComplexMixtures
 
 # Load the PDB file of the system and the previously computed results
 system = read_pdb("./equilibrated.pdb")
-mddf_glyc_water = load("./mddf_glyc_water.json")
+mddf_glyc_water = load(MDDFResult, "./mddf_glyc_water.json")
 
 # The solute (glycerol) is composed of many molecules: the grid is built
 # around one of them (the first one, by default; it can be chosen with

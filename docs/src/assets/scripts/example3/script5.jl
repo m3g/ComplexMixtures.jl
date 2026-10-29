@@ -23,7 +23,7 @@ scalefontsizes(1.3);
 system = read_pdb("equilibrated.pdb")
 
 # Load the pre-calculated MDDF of ethanol
-mddf_ethanol_POPC = load("mddf_ethanol_POPC.json")
+mddf_ethanol_POPC = load(MDDFResult, "mddf_ethanol_POPC.json")
 
 # Splitting the oleoyl chain into groups along the the chain. 
 # The labels `CH_2` etc stand for `CH₂`, for example, in LaTeX notation, 
@@ -140,7 +140,7 @@ println("The plot was saved as POPC_ethanol_chains.png")
 #
 # Now, plot a similar map for the water interactions with the POPC chain
 #
-mddf_water_POPC = load("mddf_water_POPC.json")
+mddf_water_POPC = load(MDDFResult, "mddf_water_POPC.json")
 plot(layout=(2, 1))
 
 # Plot the contributions of the oleoyl groups

@@ -35,7 +35,7 @@ options = Options(cutoff=20.0)
 mddf_water_POPC = mddf(trajectory_file, solute, solvent, options)
 
 # Save results to file for later use
-save(mddf_water_POPC, "./mddf_water_POPC.json")
+save("./mddf_water_POPC.json", mddf_water_POPC)
 println("Results saved to ./mddf_water_POPC.json file")
 
 # Compute ethanol-POPC distribution and KB integral 
@@ -43,7 +43,7 @@ solvent = AtomSelection(ethanol, natomspermol=9)
 mddf_ethanol_POPC = mddf(trajectory_file, solute, solvent, options)
 
 # Save results for later use
-save(mddf_ethanol_POPC, "./mddf_ethanol_POPC.json")
+save("./mddf_ethanol_POPC.json", mddf_ethanol_POPC)
 println("Results saved to ./mddf_ethanol_POPC.json file")
 
 #

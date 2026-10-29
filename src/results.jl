@@ -55,17 +55,16 @@ Structure to contain the results of the MDDF calculation.
 
 $(TYPEDFIELDS)
 
-The Result{Vector{Float64}} parametric type is necessary only for reading the JSON saved file. 
+The MDDFResult{Vector{Float64}} parametric type is necessary only for reading the JSON saved file. 
 
 """
-@kwdef mutable struct Result
+@kwdef mutable struct MDDFResult
 
     # ComplexMixtures version that generated this results
-    Version::VersionNumber = pkgversion(@__MODULE__)
+    version::VersionNumber = pkgversion(@__MODULE__)
 
     # Histogram properties
     nbins::Int
-    dbulk::Float64
     cutoff::Float64
     d::Vector{Float64} = zeros(nbins)
 
@@ -96,12 +95,12 @@ The Result{Vector{Float64}} parametric type is necessary only for reading the JS
     solvent_group_count_random::Vector{Vector{Float64}}
 
     # Data to compute a RDF and the KB integral from this count
-    rdf_count::Vector{Float64} = zeros(nbins)
-    rdf_count_random::Vector{Float64} = zeros(nbins)
-    sum_rdf_count::Vector{Float64} = zeros(nbins)
-    sum_rdf_count_random::Vector{Float64} = zeros(nbins)
-    rdf::Vector{Float64} = zeros(nbins)
-    kb_rdf::Vector{Float64} = zeros(nbins)
+    proximal_count::Vector{Float64} = zeros(nbins)
+    proximal_count_random::Vector{Float64} = zeros(nbins)
+    sum_proximal_count::Vector{Float64} = zeros(nbins)
+    sum_proximal_count_random::Vector{Float64} = zeros(nbins)
+    proximal::Vector{Float64} = zeros(nbins)
+    kb_proximal::Vector{Float64} = zeros(nbins)
 
     # Overall densities and volumes
     density::Density = Density()
@@ -121,7 +120,7 @@ end
 # Initialize the data structure that is returned from the computation, and checks some
 # input parameters for consistency
 #
-function Result(
+function MDDFResult(
     trajectory::Trajectory,
     options::Options;
     trajectory_data::TrajectoryMetaData=TrajectoryMetaData(trajectory, options),
@@ -170,9 +169,8 @@ function Result(
     solute_group_count_random = [zeros(nbins) for _ in 1:trajectory_data.n_groups_solute]
     solvent_group_count_random = [zeros(nbins) for _ in 1:trajectory_data.n_groups_solvent]
 
-    return Result(
+    return MDDFResult(
         nbins=nbins,
-        dbulk=options.dbulk,
         cutoff=options.cutoff,
         autocorrelation=isautocorrelation(trajectory),
         solute=trajectory.solute,
@@ -214,7 +212,7 @@ end
 #
 # What to show at the REPL
 #
-Base.show(io::IO, R::Result) = show(io, overview(R))
+Base.show(io::IO, R::MDDFResult) = show(io, overview(R))
 
 #=
 Type of calculation: auto or cross-correlations - have different sampling schemes
@@ -229,7 +227,7 @@ with each solute molecule as a reference, and the contributions of each referenc
 weighted by 1/solute.nmols in mddf_frame!, such that each configuration counts as one random sample. In the self-correlation case each reference 
 molecule sees solvent.nmols - 1 other molecules.
 =#
-function set_samples(R::Result)
+function set_samples(R::MDDFResult)
     if R.autocorrelation
         samples = (solvent_nmols=R.solvent.nmols - 1, random=R.files[1].options.n_random_samples)
     else
@@ -287,7 +285,7 @@ end
 # frame weights and the number of frames read, which is used in the case
 # that frame weights were not provided
 #
-function sum_frame_weights(R::Result)
+function sum_frame_weights(R::MDDFResult)
     Q = 0.0
     for file in R.files
         i = file.options.firstframe
@@ -299,7 +297,7 @@ function sum_frame_weights(R::Result)
 end
 
 #=
-    finalresults!(R::Result, options::Options; coordination_number_only)
+    finalresults!(R::MDDFResult, options::Options; coordination_number_only)
 
 Function that computes the final results of all the data computed by averaging according to the sampling of each type of data, and converts to common units.
 
@@ -310,7 +308,7 @@ This function modified the values contained in the R data structure.
 If `coordination_number_only` is true, do not print a warning if there are zero samples in the ideal-gas histogram bins.
 
 =#
-function finalresults!(R::Result, options::Options; coordination_number_only)
+function finalresults!(R::MDDFResult, options::Options; coordination_number_only)
     R = if !coordination_number_only
         _mddf_final_results!(R, options)
     else
@@ -319,7 +317,7 @@ function finalresults!(R::Result, options::Options; coordination_number_only)
     return R
 end
 
-function _mddf_final_results!(R::Result, options::Options)
+function _mddf_final_results!(R::MDDFResult, options::Options)
 
     # Setup the distance vector
     R.d .= shellradius.(1:R.nbins, options.binstep)
@@ -342,12 +340,12 @@ function _mddf_final_results!(R::Result, options::Options)
         @. R.solvent_group_count_random = R.solvent_group_count_random / (samples.random * Q)
     end
     @. R.md_count_random = R.md_count_random / (samples.random * Q)
-    @. R.rdf_count = R.rdf_count / (R.solute.nmols * Q)
-    @. R.rdf_count_random = R.rdf_count_random / (samples.random * Q)
+    @. R.proximal_count = R.proximal_count / (R.solute.nmols * Q)
+    @. R.proximal_count_random = R.proximal_count_random / (samples.random * Q)
 
     # Volume of each bin shell and of the solute domain
     R.volume.total = R.volume.total / Q
-    @. R.volume.shell = R.volume.total * (R.rdf_count_random / samples.solvent_nmols)
+    @. R.volume.shell = R.volume.total * (R.proximal_count_random / samples.solvent_nmols)
 
     # Solute domain volume: the volume within the cutoff, from the distances of the 
     # reference atoms of the solvent molecules to the solute
@@ -378,9 +376,9 @@ function _mddf_final_results!(R::Result, options::Options)
     return renormalize!(R, density_fix; silent=options.silent)
 end
 
-function renormalize!(R::Result, density_fix::Number; silent)
+function renormalize!(R::MDDFResult, density_fix::Number; silent)
     R.md_count_random .*= density_fix 
-    R.rdf_count_random .*= density_fix
+    R.proximal_count_random .*= density_fix
     R.solute_group_count_random .*= density_fix
     R.solvent_group_count_random .*= density_fix
 
@@ -406,21 +404,21 @@ function renormalize!(R::Result, density_fix::Number; silent)
         end
 
         # For the RDF
-        if R.rdf_count_random[ibin] > 0.0
-            R.rdf[ibin] = R.rdf_count[ibin] / R.rdf_count_random[ibin]
+        if R.proximal_count_random[ibin] > 0.0
+            R.proximal[ibin] = R.proximal_count[ibin] / R.proximal_count_random[ibin]
         end
         if ibin == 1
-            R.sum_rdf_count[ibin] = R.rdf_count[ibin]
-            R.sum_rdf_count_random[ibin] = R.rdf_count_random[ibin]
+            R.sum_proximal_count[ibin] = R.proximal_count[ibin]
+            R.sum_proximal_count_random[ibin] = R.proximal_count_random[ibin]
         else
-            R.sum_rdf_count[ibin] = R.sum_rdf_count[ibin-1] + R.rdf_count[ibin]
-            R.sum_rdf_count_random[ibin] =
-                R.sum_rdf_count_random[ibin-1] + R.rdf_count_random[ibin]
+            R.sum_proximal_count[ibin] = R.sum_proximal_count[ibin-1] + R.proximal_count[ibin]
+            R.sum_proximal_count_random[ibin] =
+                R.sum_proximal_count_random[ibin-1] + R.proximal_count_random[ibin]
         end
-        R.kb_rdf[ibin] =
+        R.kb_proximal[ibin] =
             units.Angs3tocm3permol *
             (1 / R.density.solvent_bulk) *
-            (R.sum_rdf_count[ibin] - R.sum_rdf_count_random[ibin])
+            (R.sum_proximal_count[ibin] - R.sum_proximal_count_random[ibin])
 
     end
     _set_kb!(R)
@@ -428,13 +426,13 @@ function renormalize!(R::Result, density_fix::Number; silent)
 end
 
 #=
-    _set_kb!(R::Result)
+    _set_kb!(R::MDDFResult)
 
 Sets `R.kb` to the KBI computed with the default options of `kbi`. If the bulk density
 is zero, the KBI is not defined, and the uncorrected expression is used (resulting in `Inf` or `NaN`).
 
 =#
-function _set_kb!(R::Result)
+function _set_kb!(R::MDDFResult)
     if R.density.solvent_bulk > 0
         R.kb .= kbi(R)
     else
@@ -444,7 +442,7 @@ function _set_kb!(R::Result)
     return R
 end
 
-function _coordination_number_final_results!(R::Result, options::Options)
+function _coordination_number_final_results!(R::MDDFResult, options::Options)
 
     if !options.silent
         @warn begin
@@ -470,7 +468,7 @@ function _coordination_number_final_results!(R::Result, options::Options)
     else
         @. R.solvent_group_count = R.solvent_group_count / (R.solute.nmols * Q)
     end
-    @. R.rdf_count = R.rdf_count / (R.solute.nmols * Q)
+    @. R.proximal_count = R.proximal_count / (R.solute.nmols * Q)
 
     # Volume of each bin shell and of the solute domain
     R.volume.total = R.volume.total / Q
@@ -480,13 +478,13 @@ function _coordination_number_final_results!(R::Result, options::Options)
 
     # Coordination numbers
     cumsum!(R.coordination_number, R.md_count)
-    cumsum!(R.sum_rdf_count, R.rdf_count)
+    cumsum!(R.sum_proximal_count, R.proximal_count)
 
     return R
 end
 
-@testitem "Result - empty" begin
-    #using ComplexMixtures: Result, Trajectory, Options, AtomSelection
+@testitem "MDDFResult - empty" begin
+    #using ComplexMixtures: MDDFResult, Trajectory, Options, AtomSelection
     using LazyArtifacts
     using ComplexMixtures: test_file
     using PDBTools: read_pdb, select, name
@@ -495,19 +493,18 @@ end
     tmao = select(atoms, "resname TMAO")
     solute = AtomSelection(protein, nmols=1)
     solvent = AtomSelection(tmao, natomspermol=14)
-    traj = Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
+    traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
     options = Options()
-    # At this point we can only test an empty Result struct
-    R = Result(traj, options)
+    # At this point we can only test an empty MDDFResult struct
+    R = MDDFResult(traj, options)
     @test R.autocorrelation == false
     @test R.cutoff == 10.0
     @test length(R.d) == 500
-    @test R.dbulk == 10.0
     @test (R.density.solute, R.density.solvent, R.density.solvent_bulk) == (0.0, 0.0, 0.0)
     @test normpath(R.files[1].filename) == normpath(test_file("protein_tmao.dcd"))
     @test R.files[1].irefatom == 1
     @test length(R.kb) == 500
-    @test length(R.kb_rdf) == 500
+    @test length(R.kb_proximal) == 500
     @test R.files[1].lastframe_read == 20
     @test length(R.md_count) == 500
     @test length(R.md_count_random) == 500
@@ -517,8 +514,8 @@ end
     # n_random_samples is set to the default for a single solute molecule (10)
     @test R.files[1].options == ComplexMixtures._set_n_random_samples(Options(), false)
     @test R.files[1].options.n_random_samples == 10
-    @test length(R.rdf_count) == 500
-    @test length(R.rdf_count_random) == 500
+    @test length(R.proximal_count) == 500
+    @test length(R.proximal_count_random) == 500
     @test R.solute == AtomSelection(collect(1:1463), nmols=1, natomspermol=1463, group_names=name.(protein))
     @test R.solvent == AtomSelection(collect(1479:4012), nmols=181, natomspermol=14, group_names=name.(tmao[1:14]))
     @test length(R.solute_group_count) == 1463
@@ -527,7 +524,7 @@ end
     @test all(length.(R.solvent_group_count) .== 500)
     @test length(R.coordination_number) == 500
     @test length(R.coordination_number_random) == 500
-    @test length(R.sum_rdf_count_random) == 500
+    @test length(R.sum_proximal_count_random) == 500
     @test (R.volume.total, R.volume.bulk, R.volume.domain, length(R.volume.shell)) == (0.0, 0.0, 0.0, 500)
     @test R.weights[1] == 1.0
 end
@@ -537,20 +534,18 @@ end
 #
 
 """
-    save(filename::AbstractString, R::Result)
+    save(filename::AbstractString, R::MDDFResult)
 
 Function to write the result data structure to a json file.
 
 """
-function save(filename::AbstractString, R::Result)
+function save(filename::AbstractString, R::MDDFResult)
     filename = expanduser(filename)
     open(filename, "w") do f
         JSON.json(f, R)
     end
     return "Results saved in JSON file: $filename"
 end
-# legacy order
-save(R::Result, filename::AbstractString) = save(filename, R)
 
 #
 # This function tries to read a version number from a result.json
@@ -559,86 +554,90 @@ save(R::Result, filename::AbstractString) = save(filename, R)
 #
 function _get_version(filename)
     str = readuntil(expanduser(filename), ',')
-    v = match(r"\"Version\":\"([^\"]*)\"", str)
+    # The field is `version` since 4.0.0, and `Version` in previous versions
+    v = match(r"\"[Vv]ersion\":\"([^\"]*)\"", str)
     return isnothing(v) ? v"1.0.0" : VersionNumber(v[1])
 end
 
 """
-    load(filename::AbstractString)
+    load(MDDFResult, filename::AbstractString)
 
-Function to load a `ComplexMixtures.Result` data structure. 
+Function to load a `ComplexMixtures.MDDFResult` data structure. 
+
+Files saved with previous versions of ComplexMixtures (2.0.0 or greater) are converted
+to the current `MDDFResult` data structure.
 
 ## Example
 
 ```julia
 using ComplexMixtures
-R = load("results.json")
+R = load(MDDFResult, "results.json")
 ```
 
 """
-function load(filename::AbstractString)
+function load(::Type{MDDFResult}, filename::AbstractString)
     filename = expanduser(filename)
     load_type = _check_version(filename)
-    return load(filename, load_type)
+    return _load(filename, load_type)
 end
 
 #
-# Load Result data structure in current version. 
+# Load MDDFResult data structure in current version. 
 #
-function load(filename::AbstractString, ::Type{Result})
+function _load(filename::AbstractString, ::Type{MDDFResult})
     R = try
         open(filename, "r") do io
-            JSON.parse(io, Result)
+            JSON.parse(io, MDDFResult)
         end
     catch
         throw(ArgumentError("""\n 
-            The file $filename does not appear to contain a Result object.
+            The file $filename does not appear to contain a MDDFResult object.
 
         """))
     end
     return R
 end
 
-@testitem "Result - load/save" begin
+@testitem "MDDFResult - load/save" begin
     using ComplexMixtures: load
     using LazyArtifacts
     using ComplexMixtures: test_file
-    r1 = load(test_file("namd_protein_tmao.json"))
+    r1 = load(MDDFResult, test_file("namd_protein_tmao.json"))
     tmp = tempname()
-    save(r1, tmp)
-    r2 = load(tmp)
-    @test r1 == r2
-    r2 = load(tmp, Result)
+    save(tmp, r1)
+    r2 = load(MDDFResult, tmp)
     @test r1 == r2
     save(tmp, r1)
-    r2 = load(tmp)
+    r2 = load(MDDFResult, tmp)
     @test r1 == r2
     # Test throwing an error incompatible versions of ComplexMixtures
-    @test_throws "newer version" load(test_file("legacy_too_new.json"))
-    @test_throws "older" load(test_file("legacy_too_old.json"))
-    @test_throws "Result object" load(test_file("legacy_broken_json_2.18.0.json"))
+    @test_throws "newer version" load(MDDFResult, test_file("legacy_too_new.json"))
+    @test_throws "older" load(MDDFResult, test_file("legacy_too_old.json"))
+    @test_throws "MDDFResult object" load(MDDFResult, test_file("legacy_broken_json_2.18.0.json"))
     rm(tmp)
     tmpfile = tempname()
     open(tmpfile, "w") do io
         println(io, """{"Version":"$(pkgversion(@__MODULE__))"}""")
     end
-    @test_throws ArgumentError load(tmpfile)
+    @test_throws ArgumentError load(MDDFResult, tmpfile)
     rm(tmpfile)
 
     # Test load and save with substrings
-    r1 = load(@view((test_file("namd_protein_tmao.json")*"---")[1:end-3]))
+    r1 = load(MDDFResult, @view((test_file("namd_protein_tmao.json")*"---")[1:end-3]))
     tmp = @view(tempname()[1:end-1])
-    save(r1, tmp)
-    r2 = load(tmp)
+    save(tmp, r1)
+    r2 = load(MDDFResult, tmp)
     @test r1 == r2
 
     # The file format is preserved: saving a loaded file reproduces it
     file = test_file("glycerol_protein_glyc.json")
-    r1 = load(file)
-    tmp = tempname()
-    save(tmp, r1)
-    @test read(tmp, String) == read(file, String)
-    rm(tmp)
+    r1 = load(MDDFResult, file)
+    tmp1 = tempname()
+    save(tmp1, r1)
+    tmp2 = tempname()
+    save(tmp2, load(MDDFResult, tmp1))
+    @test read(tmp1, String) == read(tmp2, String)
+    rm(tmp1); rm(tmp2)
 
     # Show the trajectory file options, which contain the (float) frame weights
     @test occursin("frame_weights = [ ", sprint(show, r1.files[1]))
@@ -646,12 +645,12 @@ end
 end
 
 #=
-    sum!(R1::Result, R2::Result)
+    sum!(R1::MDDFResult, R2::MDDFResult)
 
 Sum the counts of two Results structures, adding the result to the first structure as in R1 = R1 + R2.
 
 =#
-function sum!(R1::Result, R2::Result)
+function sum!(R1::MDDFResult, R2::MDDFResult)
 
     @. R1.md_count += R2.md_count
     @. R1.md_count_random += R2.md_count_random
@@ -665,21 +664,21 @@ function sum!(R1::Result, R2::Result)
         @. R1.solvent_group_count_random[i] += R2.solvent_group_count_random[i]
     end
 
-    @. R1.rdf_count += R2.rdf_count
-    @. R1.rdf_count_random += R2.rdf_count_random
+    @. R1.proximal_count += R2.proximal_count
+    @. R1.proximal_count_random += R2.proximal_count_random
 
     R1.volume.total += R2.volume.total
 
     return R1
 end
 #=
-    title(R::Result, solute::AtomSelection, solvent::AtomSelection)
-    title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
+    title(R::MDDFResult, solute::AtomSelection, solvent::AtomSelection)
+    title(R::MDDFResult, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
 
 Print some information about the run.
 
 =#
-function title(R::Result, solute::AtomSelection, solvent::AtomSelection)
+function title(R::MDDFResult, solute::AtomSelection, solvent::AtomSelection)
     print(
         """
         $(bars)
@@ -689,7 +688,7 @@ function title(R::Result, solute::AtomSelection, solvent::AtomSelection)
         Solvent: $(atoms_str(natoms(natoms))) belonging to $(mol_str(solvent.nmols))
         """)
 end
-function title(R::Result, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
+function title(R::MDDFResult, solute::AtomSelection, solvent::AtomSelection, nspawn::Int)
     print(
         """ 
         $(bars)
@@ -710,7 +709,7 @@ Structure that is used to dispatch the show of a overview.
 
 =#
 @kwdef mutable struct Overview
-    R::Result
+    R::MDDFResult
     domain_molar_volume::Float64 = 0.0
     density::Density = Density()
     solvent_molar_volume::Float64 = 0.0
@@ -718,20 +717,13 @@ Structure that is used to dispatch the show of a overview.
     solute_molar_volume::Float64 = 0.0
 end
 
-function _bulk_range_from_R(R)
-    if R.dbulk == R.cutoff
-        return "> $(R.cutoff) Å"
-    else
-        return "$(R.dbulk) - $(R.cutoff) Å"
-    end
-end
 
 function Base.show(io::IO, ov::Overview)
     println(
         io,
         """
  $bars
- MDDF Overview - ComplexMixtures - Version $(ov.R.Version)
+ MDDF Overview - ComplexMixtures - Version $(ov.R.version)
  $bars
 
  Solvent properties:
@@ -749,7 +741,7 @@ function Base.show(io::IO, ov::Overview)
  Simulation Concentration: $(ov.density.solute) mol L⁻¹
  Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
 
- Bulk range: $(_bulk_range_from_R(ov.R))
+ Bulk range: > $(ov.R.cutoff) Å
  Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
 
  Auto-correlation: $(ov.R.autocorrelation)
@@ -763,8 +755,8 @@ function Base.show(io::IO, ov::Overview)
     ifar = trunc(Int, ov.R.nbins - 1.0 / ov.R.files[1].options.binstep)
     long_range_mean = mean(ov.R.mddf[ifar:ov.R.nbins])
     long_range_std = std(ov.R.mddf[ifar:ov.R.nbins])
-    long_range_mean_rdf = mean(ov.R.rdf[ifar:ov.R.nbins])
-    long_range_std_rdf = std(ov.R.rdf[ifar:ov.R.nbins])
+    long_range_mean_rdf = mean(ov.R.proximal[ifar:ov.R.nbins])
+    long_range_std_rdf = std(ov.R.proximal[ifar:ov.R.nbins])
     print(
         io,
         """
@@ -777,7 +769,7 @@ function Base.show(io::IO, ov::Overview)
 end
 
 """
-    overview(R::Result)
+    overview(R::MDDFResult)
 
 Function that outputs the volumes and densities in the most natural units.
 
@@ -787,7 +779,7 @@ the difference of two large numbers, and is very sensitive to the bulk density: 
 0.1% in the bulk density corresponds to an error of 0.1% of the volume of the system. 
 It is only meaningful if the solvent has a single component.
 """
-function overview(R::Result)
+function overview(R::MDDFResult)
 
     ov = Overview(R=R)
 
