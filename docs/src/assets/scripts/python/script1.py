@@ -28,11 +28,11 @@ solvent = cm.AtomSelection(glyc, natomspermol=14)
 results = cm.mddf("./glyc50_sample.dcd", solute, solvent, cm.Options(cutoff=12.0))
 
 # Save the reults to recover them later if required
-cm.save(results,"./glyc50.json")
+cm.save("./glyc50.json", results)
 print("Results saved to glyc50.json")
 
 # Compute the water distribution function around the protein:
 solvent = cm.AtomSelection(water, natomspermol=3)
 results = cm.mddf("./glyc50_sample.dcd", solute, solvent, cm.Options(cutoff=12.0))
-cm.save(results,"./water.json")
+cm.save("./water.json", results)
 print("Results saved to water.json")

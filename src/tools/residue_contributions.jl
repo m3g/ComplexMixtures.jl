@@ -148,7 +148,7 @@ rc4 = rc2 / 2
 ```
 """
 @kwdef struct ResidueContributions{N<:Union{SingleResidueContribution,MultipleResidueContribution}}
-    Version::VersionNumber = pkgversion(@__MODULE__)
+    version::VersionNumber = pkgversion(@__MODULE__)
     d::Vector{Float64}
     residue_contributions::Vector{Vector{Float64}}
     resnums::Vector{Int}
@@ -511,10 +511,15 @@ rc = load(ResidueContributions, "residue_contributions.json")
 """
 function load(::Type{ResidueContributions}, filename::AbstractString)
     filename = expanduser(filename)
-    _check_version(filename)
+    json_version = _get_version(filename)
+    _loading_version_errors(json_version, pkgversion(@__MODULE__))
     rc = try
         open(filename, "r") do io
-            JSON.parse(io, ResidueContributions{MultipleResidueContribution})
+            if json_version < v"4.0.0-DEV"
+                _convert(JSON.parse(io, ResidueContributions_3_1_0))
+            else
+                JSON.parse(io, ResidueContributions{MultipleResidueContribution})
+            end
         end
     catch
         throw(ArgumentError("""\n
@@ -543,7 +548,7 @@ end
     options = Options(;
         seed=1,
         stride=1,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=2,
         silent=true
     )
@@ -594,7 +599,7 @@ end
     # version issues
     N = ComplexMixtures.MultipleResidueContribution
     rc_future = ResidueContributions{N}(
-        Version=v"1000.0.0",
+        version=v"1000.0.0",
         d=rc.d,
         residue_contributions=rc.residue_contributions,
         resnums=rc.resnums,
@@ -603,7 +608,7 @@ end
     save(tmpfile, rc_future)
     @test_throws ArgumentError load(ResidueContributions, tmpfile)
     rc_past = ResidueContributions{N}(
-        Version=v"1.0.0",
+        version=v"1.0.0",
         d=rc.d,
         residue_contributions=rc.residue_contributions,
         resnums=rc.resnums,
@@ -611,6 +616,14 @@ end
     )
     save(tmpfile, rc_past)
     @test_throws ArgumentError load(ResidueContributions, tmpfile)
+    # Files saved with versions < 4.0.0 (`Version` field)
+    save(tmpfile, rc)
+    str = replace(read(tmpfile, String), "\"version\":\"$(pkgversion(ComplexMixtures))\"" => "\"Version\":\"3.1.0\"")
+    @test occursin("\"Version\":\"3.1.0\"", str)
+    write(tmpfile, str)
+    rc_legacy = load(ResidueContributions, tmpfile)
+    @test rc_legacy == rc
+    @test rc_legacy.version == pkgversion(ComplexMixtures)
     rm(tmpfile)
 
     # indexing
@@ -703,10 +716,10 @@ end
     options = Options(;
         seed=1,
         stride=1,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=2,
         silent=true,
-        bulk_range=(8,12),
+        cutoff=12.0,
     )
     result = mddf(traj, options)
     rc = ResidueContributions(result, glicines)

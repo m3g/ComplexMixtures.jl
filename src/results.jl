@@ -61,11 +61,10 @@ The MDDFResult{Vector{Float64}} parametric type is necessary only for reading th
 @kwdef mutable struct MDDFResult
 
     # ComplexMixtures version that generated this results
-    Version::VersionNumber = pkgversion(@__MODULE__)
+    version::VersionNumber = pkgversion(@__MODULE__)
 
     # Histogram properties
     nbins::Int
-    dbulk::Float64
     cutoff::Float64
     d::Vector{Float64} = zeros(nbins)
 
@@ -172,7 +171,6 @@ function MDDFResult(
 
     return MDDFResult(
         nbins=nbins,
-        dbulk=options.dbulk,
         cutoff=options.cutoff,
         autocorrelation=isautocorrelation(trajectory),
         solute=trajectory.solute,
@@ -502,7 +500,6 @@ end
     @test R.autocorrelation == false
     @test R.cutoff == 10.0
     @test length(R.d) == 500
-    @test R.dbulk == 10.0
     @test (R.density.solute, R.density.solvent, R.density.solvent_bulk) == (0.0, 0.0, 0.0)
     @test normpath(R.files[1].filename) == normpath(test_file("protein_tmao.dcd"))
     @test R.files[1].irefatom == 1
@@ -549,8 +546,6 @@ function save(filename::AbstractString, R::MDDFResult)
     end
     return "Results saved in JSON file: $filename"
 end
-# legacy order
-save(R::MDDFResult, filename::AbstractString) = save(filename, R)
 
 #
 # This function tries to read a version number from a result.json
@@ -559,7 +554,8 @@ save(R::MDDFResult, filename::AbstractString) = save(filename, R)
 #
 function _get_version(filename)
     str = readuntil(expanduser(filename), ',')
-    v = match(r"\"Version\":\"([^\"]*)\"", str)
+    # The field is `version` since 4.0.0, and `Version` in previous versions
+    v = match(r"\"[Vv]ersion\":\"([^\"]*)\"", str)
     return isnothing(v) ? v"1.0.0" : VersionNumber(v[1])
 end
 
@@ -608,7 +604,7 @@ end
     using ComplexMixtures: test_file
     r1 = load(MDDFResult, test_file("namd_protein_tmao.json"))
     tmp = tempname()
-    save(r1, tmp)
+    save(tmp, r1)
     r2 = load(MDDFResult, tmp)
     @test r1 == r2
     save(tmp, r1)
@@ -629,7 +625,7 @@ end
     # Test load and save with substrings
     r1 = load(MDDFResult, @view((test_file("namd_protein_tmao.json")*"---")[1:end-3]))
     tmp = @view(tempname()[1:end-1])
-    save(r1, tmp)
+    save(tmp, r1)
     r2 = load(MDDFResult, tmp)
     @test r1 == r2
 
@@ -721,20 +717,13 @@ Structure that is used to dispatch the show of a overview.
     solute_molar_volume::Float64 = 0.0
 end
 
-function _bulk_range_from_R(R)
-    if R.dbulk == R.cutoff
-        return "> $(R.cutoff) Å"
-    else
-        return "$(R.dbulk) - $(R.cutoff) Å"
-    end
-end
 
 function Base.show(io::IO, ov::Overview)
     println(
         io,
         """
  $bars
- MDDF Overview - ComplexMixtures - Version $(ov.R.Version)
+ MDDF Overview - ComplexMixtures - Version $(ov.R.version)
  $bars
 
  Solvent properties:
@@ -752,7 +741,7 @@ function Base.show(io::IO, ov::Overview)
  Simulation Concentration: $(ov.density.solute) mol L⁻¹
  Estimated solute partial molar volume: $(ov.solute_molar_volume) cm³ mol⁻¹
 
- Bulk range: $(_bulk_range_from_R(ov.R))
+ Bulk range: > $(ov.R.cutoff) Å
  Molar volume of the solute domain: $(ov.domain_molar_volume) cm³ mol⁻¹
 
  Auto-correlation: $(ov.R.autocorrelation)

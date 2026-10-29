@@ -31,7 +31,7 @@ end
     using LazyArtifacts
     using ComplexMixtures: test_file
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
@@ -100,7 +100,7 @@ function goto_nextframe!(iframe, R, trajectory, to_compute_frames, options)
         if iframe in to_compute_frames && !iszero(frame_weight)
             compute = true
             # Run GC if memory is getting full: this is related to issues with Chemfiles reading scheme
-            if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+            if options.gc && (Sys.free_memory() / Sys.total_memory() < options.gc_threshold)
                 GC.gc()
             end
         end
@@ -247,7 +247,7 @@ function mddf(
     progress = Progress(options.firstframe; dt=1, enabled=!options.silent)
     for _ in 1:options.firstframe-1
         nextframe!(trajectory)
-        if options.GC && (Sys.free_memory() / Sys.total_memory() < options.GC_threshold)
+        if options.gc && (Sys.free_memory() / Sys.total_memory() < options.gc_threshold)
             GC.gc()
         end
         next!(progress)
@@ -646,7 +646,7 @@ end
     for nthreads in [1, 2], lastframe in [1, 2], low_memory in [true, false]
         options = Options(;
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads,
             silent=true,
             n_random_samples=10^5,
@@ -655,7 +655,7 @@ end
         R = mddf(trajectory_file, protein, water, options; trajectory_format, low_memory)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.01)
         @test R.density.solute ≈ 1 / R.volume.total
         @test R.density.solvent ≈ 3 / R.volume.total
         @test R.density.solvent_bulk ≈ 2 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
@@ -683,7 +683,7 @@ end
     for nthreads in [1, 2], low_memory in [false, true]
         options = Options(;
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads,
             silent=true,
             n_random_samples=10^5,
@@ -692,7 +692,7 @@ end
         R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
         @test sum(R.md_count) ≈ 1.0
@@ -713,9 +713,9 @@ end
 
     # Different frame_weight input types
     trajectory_file = test_file("toy_self_monoatomic.pdb")
-    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
+    options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, firstframe=2)
     R1 = mddf(trajectory_file, atom, options; trajectory_format)
-    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(seed=321, stable_rng=true, nthreads=1, silent=true)
     R2 = mddf(trajectory_file, atom, options; frame_weights=[0.0, 1.0], trajectory_format)
     @test R1.md_count == R2.md_count
     @test R1.proximal_count == R2.proximal_count
@@ -737,16 +737,16 @@ end
     # Read only first frame
     for low_memory in [false, true]
         local trajectory_file, options, R1, R2
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, lastframe=1)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, lastframe=1)
         trajectory_file = test_file("toy_self_monoatomic.pdb")
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[1.0, 0.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
         @test R1.proximal_count == R2.proximal_count
         # Read only last frame
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=2)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, firstframe=2)
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[0.0, 1.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
         @test R1.proximal_count == R2.proximal_count
@@ -757,10 +757,10 @@ end
         @test R1.proximal_count == R2.proximal_count
         # Check with the duplicated-first-frame trajectory 
         trajectory_file = test_file("toy_self_monoatomic_duplicated_first_frame.pdb")
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true, firstframe=1, lastframe=3)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true, firstframe=1, lastframe=3)
         R1 = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         trajectory_file = test_file("toy_self_monoatomic.pdb")
-        options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+        options = Options(seed=321, stable_rng=true, nthreads=1, silent=true)
         R2 = mddf(trajectory_file, atom, options; frame_weights=[2.0, 1.0], low_memory, trajectory_format)
         @test R1.md_count == R2.md_count
         @test R1.proximal_count == R2.proximal_count
@@ -773,7 +773,7 @@ end
         # only with atoms in the bulk
         options = Options(
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads=1,
             silent=true,
             n_random_samples=10^5,
@@ -782,7 +782,7 @@ end
         R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
         @test R.density.solvent_bulk ≈ 1 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
@@ -790,7 +790,7 @@ end
         # with both frames
         options = Options(
             seed=321,
-            StableRNG=true,
+            stable_rng=true,
             nthreads=1,
             silent=true,
             n_random_samples=10^5,
@@ -798,7 +798,7 @@ end
         R = mddf(trajectory_file, atom, options; low_memory, trajectory_format)
         @test R.volume.total == 27000.0
         @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-        @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.1)
+        @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.1)
         @test R.density.solute ≈ 2 / R.volume.total
         @test R.density.solvent ≈ 2 / R.volume.total
         @test R.density.solvent_bulk ≈ 0.5 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
@@ -866,7 +866,7 @@ end
         options = Options(;
             seed=1,
             stride=1,
-            StableRNG=true,
+            stable_rng=true,
             nthreads,
             n_random_samples=100,
             silent=true

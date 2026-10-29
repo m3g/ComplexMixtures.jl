@@ -65,7 +65,7 @@ The MDDFResult{Vector{Float64}} parametric type is necessary only for reading th
     # in the final merged results. It is proportional to the number of frames
     # and weights provided for the frames in each file. 
     #
-    files::Vector{TrajectoryFileOptions}
+    files::Vector{TrajectoryFileOptions_3_1_0}
     weights::Vector{Float64}
 
 end
@@ -86,10 +86,9 @@ function _load(filename, ::Type{Result_2_17_1})
     return MDDFResult(;
         # ComplexMixtures version that generated this results
         # The converted data structure is in the format of the current version
-        Version = pkgversion(@__MODULE__),
+        version = pkgversion(@__MODULE__),
         # Histogram properties
         nbins = R_old.nbins,
-        dbulk = R_old.dbulk,
         cutoff = R_old.cutoff,
         d = R_old.d,
         # Data to compute the MDDF distribution and corresponding KB integral
@@ -127,7 +126,7 @@ function _load(filename, ::Type{Result_2_17_1})
         # in the final merged results. It is proportional to the number of frames
         # and weights provided for the frames in each file. 
         #
-        files = R_old.files,
+        files = _convert.(R_old.files),
         weights = R_old.weights,
     )
 end

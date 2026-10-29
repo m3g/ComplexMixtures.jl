@@ -64,7 +64,7 @@ end
     using ComplexMixtures: test_file
     using PDBTools: read_pdb, select
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    options = Options(seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(seed=321, stable_rng=true, nthreads=1, silent=true)
     OH2 = AtomSelection(select(atoms, "water and name OH2"), natomspermol=1)
     traj = Trajectory(test_file("gromacs_trajectory.xtc"), OH2)
     R = mddf(traj, options)

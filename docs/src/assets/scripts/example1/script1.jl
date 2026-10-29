@@ -32,7 +32,7 @@ trajectory_file = "./glyc50_traj.dcd"
 
 # Run mddf calculation, and save results
 results = mddf(trajectory_file, solute, solvent, Options(cutoff=15.0))
-save(results, "glyc50_results.json")
+save("glyc50_results.json", results)
 println("Results saved to glyc50_results.json")
 
 #

@@ -17,6 +17,12 @@ saved with previous versions (2.0.0 or greater) are loaded and converted to the 
 | `gr(R)` with a multi-atom solute | Throws an `ArgumentError`: use `R.proximal`, `R.kb_proximal`. |
 | `gr(r, count, density, binstep)` | Not public: use `gr(R)`. |
 | `Trajectory(file, solute, solvent)` | Not exported: provide the trajectory file to `mddf` directly. |
+| `save(R, "results.json")` | `save("results.json", R)` |
+| `write(R, "results.dat")`, `write("results.dat", R)` | `write_tables("results.dat", R)` |
+| `Options(GC=..., GC_threshold=..., StableRNG=...)` | `Options(gc=..., gc_threshold=..., stable_rng=...)` |
+| `Options(dbulk=...)`, `Options(bulk_range=...)`, `Options(usecutoff=...)` | Removed: use `Options(cutoff=...)`. |
+| `R.Version` | `R.version` |
+| `R.dbulk` | Removed: equal to `R.cutoff` since 3.0. |
 
 The `rdf*` fields were renamed to `proximal*` because they contain the distribution of the 
 minimum distances of the reference atom of the solvent molecules to the solute, which is a

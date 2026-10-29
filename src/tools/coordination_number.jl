@@ -118,7 +118,7 @@ coordination_number(R::MDDFResult, atsel::Union{SoluteGroup,SolventGroup}) = con
     atoms = read_pdb(test_file("protein_tmao.pdb"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
-    options = Options(lastframe=1, seed=321, StableRNG=true, nthreads=1, silent=true, n_random_samples=200)
+    options = Options(lastframe=1, seed=321, stable_rng=true, nthreads=1, silent=true, n_random_samples=200)
     traj = Trajectory(test_file("protein_tmao.dcd"), protein, tmao)
     R = mddf(traj, options)
 

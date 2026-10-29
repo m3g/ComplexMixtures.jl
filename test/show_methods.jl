@@ -29,10 +29,10 @@
              Reference atom for random rotations: irefatom = -1
              Number of random samples per frame: n_random_samples = automatic (1 for self-correlations or more than one solute molecule, 10 otherwise)
              Linked cell partition: lcell = 1
-             Force garbage collection: GC = true
-             Memory threshold for GC: GC_threshold = 0.3
-             Seed for random number generator: 321
-             Use stable random number generator: StableRNG = false 
+             Force garbage collection: gc = true
+             Memory threshold for garbage collection: gc_threshold = 0.3
+             Seed for random number generator: seed = 321
+             Use stable random number generator: stable_rng = false 
              Number of threads to use (0 is all): nthreads = 0
              Silent output: false
          --------------------------------------------------------------------------------
@@ -51,7 +51,7 @@
 
     options = Options(;
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads,
         silent=true,
         n_random_samples=10^5,

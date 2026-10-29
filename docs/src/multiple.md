@@ -58,7 +58,7 @@ trajectory will have a weight of 0.5 on the final results. The `merge` function
 can be used to merge previously merged results with new results as well.
 
 ```@docs
-merge
+merge(::Vector{<:MDDFResult})
 ```
 
 !!! tip

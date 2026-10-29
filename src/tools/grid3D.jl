@@ -281,7 +281,7 @@ end
     options = Options(
         stride=5,
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
         n_random_samples=100,
@@ -298,7 +298,7 @@ end
     options = Options(
         stride=5,
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
     )
@@ -369,7 +369,7 @@ end
     solute = AtomSelection(select(atoms, "protein and residue 46"), nmols=1)
     solvent = AtomSelection(select(atoms, "water"), natomspermol=3)
     traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), solute, solvent)
-    R = mddf(traj, Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true))
+    R = mddf(traj, Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true))
     grid = grid3D(R, atoms; silent=true)
     v = volumetric_data(grid; sigma=0.5)
     @test v.step ≈ [0.5, 0.5, 0.5]
@@ -385,7 +385,7 @@ end
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     water = AtomSelection(select(atoms, "water"), natomspermol=3)
     traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), tmao, water)
-    R = mddf(traj, Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true))
+    R = mddf(traj, Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true))
     grid1 = grid3D(R, atoms; silent=true)
     # The grid is built around a single molecule: the closest atoms belong to the first molecule
     first_molecule = atoms[R.solute.indices[1:14]]

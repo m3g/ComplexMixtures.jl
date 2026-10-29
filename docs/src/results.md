@@ -172,7 +172,6 @@ The complete data available is:
 | Parameter | Meaning | Type of value | Comment | 
 |:----------|:--------|:-------------:|:--------|
 | `nbins` | Number of bins of the histograms. | `Int` | | 
-| `dbulk` | Distance from solute of bulk solution. Equal to `cutoff` since version 3.0.0. | `Float64` |  |
 | `cutoff` | Maximum distance to be considered for histograms. | `Float64`  | | 
 | `autocorrelation` | The solute is the same as the solvent? | `Bool` | Automatically set if `solute == solvent`. |  
 | `solute` | Properties of the solute | `AtomSelection` | Contains the number of atoms, number of atoms per molecule and number of molecules of the solute. |

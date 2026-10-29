@@ -315,7 +315,7 @@ end
     solute = AtomSelection(protein, nmols=1)
     traj = ComplexMixtures.Trajectory(test_file("pdb_trajectory.pdb"), solute, solvent, format="PDBTraj")
     # Dependent on the random number seed
-    results = mddf(traj, Options(seed=321, StableRNG=true, nthreads=1, silent=true))
+    results = mddf(traj, Options(seed=321, stable_rng=true, nthreads=1, silent=true))
     @test_throws ArgumentError contributions(results, SoluteGroup("acidic"))
     @test_throws ArgumentError contributions(results, SoluteGroup([50000]))
     @test sum(contributions(results, SolventGroup([1483]))) ≈ 0.37691511538069067
@@ -370,7 +370,7 @@ end
     using PDBTools: read_pdb, select, Select, iswater, chain, resnum
 
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true)
 
     #
     # Test computation of custom group counters
@@ -488,7 +488,7 @@ end
     import Random: shuffle!
 
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true)
 
     #
     # Test computation of custom group counters

@@ -8,10 +8,10 @@
     # Tests with Gromacs-XSC trajectory
     #
     atoms = read_pdb(test_file("gromacs_system.pdb"))
-    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true)
 
     # Example 1: protein-EMIM
-    # save(R,test_file("gromacs_protein_EMI.json"))
+    # save(test_file("gromacs_protein_EMI.json"), R)
     R_save = load(MDDFResult, test_file("gromacs_protein_EMI.json"))
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol=20)
@@ -25,7 +25,7 @@
     @test isapprox(R, R_save, debug=true)
 
     # Example 2: EMIM-DCA
-    # save(R,test_file("gromacs_EMI_DCA.json"))
+    # save(test_file("gromacs_EMI_DCA.json"), R)
     R_save = load(MDDFResult, test_file("gromacs_EMI_DCA.json"))
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol=20)
     dca = AtomSelection(select(atoms, "resname NC"), natomspermol=5)
@@ -34,7 +34,7 @@
     @test isapprox(R, R_save, debug=true)
 
     # Example 3: EMIM-EMIM
-    # save(R,test_file("gromacs_EMI_EMI.json"))
+    # save(test_file("gromacs_EMI_EMI.json"), R)
     R_save = load(MDDFResult, test_file("gromacs_EMI_EMI.json"))
     emi = AtomSelection(select(atoms, "resname EMI"), natomspermol=20)
     traj = ComplexMixtures.Trajectory(test_file("gromacs_trajectory.xtc"), emi)

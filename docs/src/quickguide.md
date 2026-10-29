@@ -196,7 +196,7 @@ load(MDDFResult, "./results.json")
 Alternatively, a human-readable set of output files can be obtained to
 be analyzed in other software (or plotted with alternative tools), with
 ```julia
-write("./results.dat", results)
+write_tables("./results.dat", results)
 ```
 
 

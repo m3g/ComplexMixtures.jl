@@ -40,11 +40,8 @@ length, can be inspected with the [`reference_density`](@ref) function.
 
 !!! compat
     Since version 3.0.0, the bulk density is always estimated from the region beyond the 
-    `cutoff`. The `bulk_range`, `dbulk`, and `usecutoff` options are deprecated: 
-    `bulk_range=(dbulk, cutoff)` (and `dbulk`, `cutoff` with `usecutoff=true`) are mapped to 
-    `cutoff`, and `dbulk` alone is mapped to `cutoff=dbulk`. A warning is issued in these cases.
-    In previous versions, `bulk_range=(dbulk, cutoff)` defined a range of distances from which 
-    the bulk density was estimated.
+    `cutoff`. The `bulk_range`, `dbulk`, and `usecutoff` options, which defined other regions
+    for the estimate of the bulk density, were removed in version 4.0.0.
 
 ## Lower level options
 
@@ -96,7 +93,7 @@ on the seed, it is probable that you do not have enough sampling. Mostly
 used for testing purposes. Two runs are only identical if ran with
 the same seed and in serial mode.   
 
-`StableRNG` (`::Bool`), defaults to `false`. Use a stable random number
+`stable_rng` (`::Bool`), defaults to `false`. Use a stable random number
 generator from the `StableRNGs` package, to produce identical runs on
 different architectures and Julia versions. Only used for testing. 
 
@@ -106,13 +103,13 @@ of physical cores of the computer.
 `lcell`: Integer, the cell length of the linked-cell method (actually
 the cell length is `cutoff/lcell`). Default: 1.  
 
-`GC`: Bool, force garbage collection, to avoid memory
+`gc`: Bool, force garbage collection, to avoid memory
 overflow. Default: `true`. That this might be required is probably a result of
 something that can vastly improved in memory management. This may slow down
 parallel runs significantly if the GC runs too often.
 
-`GC_threshold`: Float64, minimum fraction of the total memory of the
-system required to force a GC run. That is, if `GC_threshold=0.1`, which
+`gc_threshold`: Float64, minimum fraction of the total memory of the
+system required to force a GC run. That is, if `gc_threshold=0.1`, which
 is the default, every time the free memory becomes less or equal to 10%
 of the total memory available, a GC run occurs.  
 

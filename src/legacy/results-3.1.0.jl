@@ -5,7 +5,8 @@ $(TYPEDEF)
 **LEGACY** support for versions 2.18.0 - 3.1.0. This data structure will read 
 the result of a legacy file and be used to construct an updated version of the 
 result data structure. In v4.0.0 the data structure was renamed from `Result` to
-`MDDFResult`, and the `rdf*` fields were renamed to `proximal*`.
+`MDDFResult`, the `rdf*` fields were renamed to `proximal*`, the `Version` field was renamed
+to `version`, and the `dbulk` field was removed.
 
 $(TYPEDFIELDS)
 
@@ -64,7 +65,7 @@ $(TYPEDFIELDS)
     # in the final merged results. It is proportional to the number of frames
     # and weights provided for the frames in each file. 
     #
-    files::Vector{TrajectoryFileOptions}
+    files::Vector{TrajectoryFileOptions_3_1_0}
     weights::Vector{Float64}
 
 end
@@ -84,10 +85,9 @@ function _load(filename, ::Type{Result_3_1_0})
     # This conversion must be updated if a new MDDFResult data structure is set.
     return MDDFResult(;
         # The converted data structure is in the format of the current version
-        Version = pkgversion(@__MODULE__),
+        version = pkgversion(@__MODULE__),
         # Histogram properties
         nbins = R_old.nbins,
-        dbulk = R_old.dbulk,
         cutoff = R_old.cutoff,
         d = R_old.d,
         # Data to compute the MDDF distribution and corresponding KB integral
@@ -118,7 +118,7 @@ function _load(filename, ::Type{Result_3_1_0})
         density = R_old.density,
         volume = R_old.volume,
         # Trajectory files and weights
-        files = R_old.files,
+        files = _convert.(R_old.files),
         weights = R_old.weights,
     )
 end
@@ -131,7 +131,7 @@ end
     @test ComplexMixtures._get_version(file) < v"4.0.0-DEV"
     R = load(MDDFResult, file)
     raw = ComplexMixtures.JSON.parsefile(file)
-    @test R.Version == pkgversion(ComplexMixtures)
+    @test R.version == pkgversion(ComplexMixtures)
     @test R.mddf ≈ Float64.(raw["mddf"])
     @test R.proximal ≈ Float64.(raw["rdf"])
     @test R.proximal_count ≈ Float64.(raw["rdf_count"])
@@ -147,3 +147,4 @@ end
     @test load(MDDFResult, tmp) == R
     rm(tmp)
 end
+

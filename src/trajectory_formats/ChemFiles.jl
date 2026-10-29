@@ -172,7 +172,7 @@ end
     using StaticArrays
 
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    options = Options(stride=4, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(stride=4, seed=321, stable_rng=true, nthreads=1, silent=true)
     protein = AtomSelection(select(atoms, "protein"), nmols=1)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
     traj = ComplexMixtures.Trajectory(test_file("protein_tmao.dcd"), protein, tmao)

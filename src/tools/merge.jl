@@ -88,7 +88,6 @@ function Base.merge(results::Vector{<:MDDFResult})
     # Structure for merged results
     R = MDDFResult(
         nbins=results[1].nbins,
-        dbulk=results[1].dbulk,
         cutoff=results[1].cutoff,
         autocorrelation=results[1].autocorrelation,
         solute=results[1].solute,
@@ -163,7 +162,7 @@ end
 
     options = Options(
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
         n_random_samples=10^5,
@@ -173,7 +172,7 @@ end
 
     options = Options(
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
         n_random_samples=10^5,
@@ -184,7 +183,7 @@ end
     R = merge([R1, R2])
     @test R.volume.total == 27000.0
     @test R.volume.domain ≈ R.volume.total - R.volume.bulk
-    @test isapprox(R.volume.domain, (4π / 3) * R.dbulk^3; rtol=0.01)
+    @test isapprox(R.volume.domain, (4π / 3) * R.cutoff^3; rtol=0.01)
     @test R.density.solute ≈ 1 / R.volume.total
     @test R.density.solvent ≈ 3 / R.volume.total
     @test R.density.solvent_bulk ≈ 2 / (R.volume.total - sum(R.md_count_random) / R.density.solvent_bulk)
@@ -192,7 +191,7 @@ end
 
     # Test loading a saved merged file
     dir = mktempdir()
-    save(R, "$dir/merged.json")
+    save("$dir/merged.json", R)
     R_save = load(MDDFResult, "$dir/merged.json")
     @test isapprox(R, R_save, debug=true)
 
@@ -238,7 +237,7 @@ end
     @test_throws "solute and solvent selections of the sets must be the same" merge([R1,R2])
     options = Options(
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
         n_random_samples=10^5,
@@ -250,12 +249,12 @@ end
 
     options = Options(
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
         n_random_samples=10^5,
         firstframe=2,
-        bulk_range=(4,5),
+        cutoff=5.0,
         binstep=0.01,
     )
     R3 = mddf(traj, options)

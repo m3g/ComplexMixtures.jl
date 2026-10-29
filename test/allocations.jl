@@ -13,12 +13,12 @@
         nthreads=1,
         silent=true,
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
     )
     t = @benchmark Options(
         lastframe=1,
         seed=321,
-        StableRNG=true,
+        stable_rng=true,
         nthreads=1,
         silent=true,
     ) samples = 1 evals = 1

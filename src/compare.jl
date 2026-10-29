@@ -27,7 +27,7 @@ function _compare(_similar::F, x::T, y::T; debug=false) where {T<:ComplexMixture
     check = true
     diff_list = Symbol[]
     for field in fieldnames(T)
-        if field in (:files, :Version)
+        if field in (:files, :version)
             continue
         end
         xf = getfield(x, field)

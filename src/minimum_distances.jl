@@ -184,7 +184,7 @@ end
     import CellListMap
 
     atoms = read_pdb(test_file("protein_tmao.pdb"))
-    options = Options(stride=5, seed=321, StableRNG=true, nthreads=1, silent=true)
+    options = Options(stride=5, seed=321, stable_rng=true, nthreads=1, silent=true)
     tmao = AtomSelection(select(atoms, "resname TMAO"), natomspermol=14)
 
     # Cross-correlation

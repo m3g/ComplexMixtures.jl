@@ -39,7 +39,7 @@ you can read them with another analysis program, plotting graphic, or
 just want to inspect the data visually, use:
 
 ```julia
-write("results.dat", results)
+write_tables("results.dat", results)
 ```
 Three files will be created by this function:
 

@@ -16,9 +16,7 @@ struct Options
 
     # Histogram and bulk region options
     binstep::Float64
-    dbulk::Float64
     cutoff::Float64
-    usecutoff::Bool
 
     # Linked cell length will be (cutoff/lcell), might be tuned for maximum
     # performance
@@ -26,12 +24,12 @@ struct Options
 
     # Force garbage collection in parallel runs to avoid memory overflow, 
     # whenever free memory in the system is smaller than GC_threshold
-    GC::Bool
-    GC_threshold::Float64
+    gc::Bool
+    gc_threshold::Float64
 
     # Random number generator options
     seed::Int
-    StableRNG::Bool
+    stable_rng::Bool
 
     # Manually chose on how many threads to run (0 to use all threads)
     nthreads::Int
@@ -51,10 +49,10 @@ end
         binstep::Float64 = 0.02,
         cutoff::Union{Nothing,Real} = nothing,
         lcell::Int = 1,
-        GC::Bool = true,
-        GC_threshold::Float64 = 0.3,
+        gc::Bool = true,
+        gc_threshold::Float64 = 0.3,
         seed::Int = 321,
-        StableRNG::Bool = false,
+        stable_rng::Bool = false,
         nthreads::Int = 0,
         silent::Bool = false
     )
@@ -85,17 +83,17 @@ function Options(;
     n_random_samples::Union{Nothing,Int}=nothing,
     binstep::Float64=0.02,
     cutoff::Union{Nothing,Real}=nothing,
-    dbulk::Union{Nothing,Real}=nothing,
-    usecutoff::Union{Nothing,Bool}=nothing,
-    bulk_range=nothing,
     lcell::Int=1,
-    GC::Bool=true,
-    GC_threshold::Float64=0.3,
+    gc::Bool=true,
+    gc_threshold::Float64=0.3,
     seed::Int=321,
-    StableRNG::Bool=false,
+    stable_rng::Bool=false,
     nthreads::Int=0,
-    silent::Bool=false
+    silent::Bool=false,
+    kargs...
 )
+
+    _check_invalid_options(kargs)
 
     # Check for simple input errors
     if stride < 1
@@ -112,7 +110,18 @@ function Options(;
         """))
     end
 
-    cutoff = _cutoff_from_deprecated_options(cutoff, dbulk, usecutoff, bulk_range, silent)
+    if isnothing(cutoff)
+        silent || @warn """\n
+            Using the default value of the cutoff: cutoff = 10.0. 
+
+            It is recommended to set the cutoff according to the size of the system and
+            to the correlation length of the distribution function, for example: 
+            
+                Options(cutoff = 12.0)
+
+        """ _file = nothing _line = nothing
+        cutoff = 10.0
+    end
     if cutoff <= 0
         throw(ArgumentError("in MDDF options: cutoff must be positive."))
     end
@@ -120,8 +129,6 @@ function Options(;
         throw(ArgumentError("in MDDF options: cutoff must be a multiple of binstep."))
     end
 
-    # The bulk density is estimated from the region beyond the cutoff: dbulk = cutoff, 
-    # usecutoff = false (these fields are kept for compatibility with saved results).
     return Options(
         firstframe,
         lastframe,
@@ -131,13 +138,11 @@ function Options(;
         isnothing(n_random_samples) ? 0 : n_random_samples,
         binstep,
         cutoff,
-        cutoff,
-        false,
         lcell,
-        GC,
-        GC_threshold,
+        gc,
+        gc_threshold,
         seed,
-        StableRNG,
+        stable_rng,
         nthreads,
         silent
     )
@@ -156,79 +161,53 @@ function _set_n_random_samples(o::Options, all_to_all::Bool)
     return Options(
         o.firstframe, o.lastframe, o.stride, o.irefatom,
         all_to_all ? 1 : 10,
-        o.binstep, o.dbulk, o.cutoff, o.usecutoff, o.lcell, o.GC, o.GC_threshold,
-        o.seed, o.StableRNG, o.nthreads, o.silent,
+        o.binstep, o.cutoff, o.lcell, o.gc, o.gc_threshold,
+        o.seed, o.stable_rng, o.nthreads, o.silent,
     )
 end
 
 #=
-    _cutoff_from_deprecated_options(cutoff, dbulk, usecutoff, bulk_range, silent)
+    _check_invalid_options(kargs)
 
-Maps the deprecated `dbulk`, `usecutoff`, and `bulk_range` options to the `cutoff`.
+Throws informative errors for options removed or renamed in version 4.0.0, and for unknown options.
 
 =#
-function _cutoff_from_deprecated_options(cutoff, dbulk, usecutoff, bulk_range, silent)
-    if all(isnothing, (bulk_range, dbulk, usecutoff))
-        if isnothing(cutoff)
-            silent || @warn """\n
-                Using the default value of the cutoff: cutoff = 10.0. 
-
-                It is recommended to set the cutoff according to the size of the system and
-                to the correlation length of the distribution function, for example: 
-                
-                    Options(cutoff = 12.0)
-
-            """ _file = nothing _line = nothing
-            return 10.0
-        end
-        return cutoff
-    end
-    if !isnothing(bulk_range)
-        if any(!isnothing, (dbulk, cutoff, usecutoff))
+const _renamed_options = Dict(:GC => :gc, :GC_threshold => :gc_threshold, :StableRNG => :stable_rng)
+function _check_invalid_options(kargs)
+    for key in keys(kargs)
+        if key in (:dbulk, :usecutoff, :bulk_range)
             throw(ArgumentError("""\n
-                The bulk_range argument implies that dbulk, cutoff, and usecutoff are not needed. 
+                The `$key` option was removed in version 4.0.0. The bulk density of the solvent 
+                is estimated from the region beyond the cutoff, which is set with:
+
+                    Options(cutoff = ...)
+
+            """))
+        elseif haskey(_renamed_options, key)
+            throw(ArgumentError("""\n
+                The `$key` option was renamed to `$(_renamed_options[key])` in version 4.0.0.
+
+            """))
+        else
+            throw(ArgumentError("""\n
+                Unknown option: `$key`. The valid options are:
+
+                    $(join(fieldnames(Options), ", "))
+
+                Type `? Options` for the documentation.
 
             """))
         end
-        if length(bulk_range) != 2
-            throw(ArgumentError("""\n
-                bulk_range must be a tuple or vector with two elements.
-                Note: bulk_range is deprecated, use Options(cutoff = ...) instead.
-
-            """))
-        end
-        if bulk_range[1] >= bulk_range[2]
-            throw(ArgumentError("in MDDF options: the elements of bulk_range must be increasing."))
-        end
-        new_cutoff = bulk_range[2]
-    elseif usecutoff == true
-        new_cutoff = isnothing(cutoff) ? (isnothing(dbulk) ? 14.0 : dbulk + 4.0) : cutoff
-    else
-        if !isnothing(dbulk) && !isnothing(cutoff) && dbulk != cutoff
-            throw(ArgumentError("in MDDF options: cutoff was defined with usecutoff set to false"))
-        end
-        new_cutoff = isnothing(dbulk) ? (isnothing(cutoff) ? 10.0 : cutoff) : dbulk
     end
-    silent || @warn """\n
-        The `dbulk`, `usecutoff`, and `bulk_range` options are deprecated. The bulk density 
-        of the solvent is now estimated from the region beyond the cutoff. Using:
-
-            Options(cutoff = $(new_cutoff))
-
-    """ _file = nothing _line = nothing
-    return float(new_cutoff)
+    return nothing
 end
 
 @testitem "Options" begin
     using ComplexMixtures
     o = Options(silent=true)
     @test o.cutoff == 10.0
-    @test o.dbulk == o.cutoff
-    @test o.usecutoff == false
     o = Options(cutoff=12.0)
     @test o.cutoff == 12.0
-    @test o.dbulk == 12.0
-    @test o.usecutoff == false
     @test_logs (:warn,) Options()
     @test_logs Options(cutoff=12.0)
 
@@ -241,35 +220,21 @@ end
     @test ComplexMixtures._set_n_random_samples(o, true).n_random_samples == 5
     @test ComplexMixtures._set_n_random_samples(o, false).n_random_samples == 5
 
-    # Deprecated options
-    o = Options(bulk_range=(10.0, 14.0), silent=true)
-    @test (o.dbulk, o.cutoff, o.usecutoff) == (14.0, 14.0, false)
-    @test_logs (:warn,) Options(bulk_range=(10.0, 14.0))
-    o = Options(dbulk=10.0, silent=true)
-    @test (o.dbulk, o.cutoff, o.usecutoff) == (10.0, 10.0, false)
-    o = Options(dbulk=10.0, usecutoff=false, silent=true)
-    @test o.cutoff == 10.0
-    o = Options(cutoff=12.0, usecutoff=true, silent=true)
-    @test o.cutoff == 12.0
-    o = Options(dbulk=10.0, usecutoff=true, silent=true)
-    @test o.cutoff == 14.0
-    o = Options(dbulk=8.0, cutoff=12.0, usecutoff=true, silent=true)
-    @test o.cutoff == 12.0
+    # Removed, renamed, and unknown options
+    @test_throws "removed in version 4.0.0" Options(bulk_range=(10.0, 14.0))
+    @test_throws "removed in version 4.0.0" Options(dbulk=10.0)
+    @test_throws "removed in version 4.0.0" Options(usecutoff=true)
+    @test_throws "renamed to `gc`" Options(GC=true)
+    @test_throws "renamed to `gc_threshold`" Options(GC_threshold=0.5)
+    @test_throws "renamed to `stable_rng`" Options(StableRNG=true)
+    @test_throws "Unknown option: `cutof`" Options(cutof=10.0)
 
     # input errors
     @test_throws ArgumentError Options(cutoff=10.0, binstep=0.3)
     @test_throws ArgumentError Options(cutoff=-1.0)
-    @test_throws ArgumentError Options(dbulk=10.0, binstep=0.3, silent=true)
-    @test_throws ArgumentError Options(bulk_range=(10.0, 12.1), binstep=0.3, silent=true)
     @test_throws ArgumentError Options(stride=0)
     @test_throws ArgumentError Options(lastframe=1, firstframe=2)
-    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0))
-    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0), dbulk=8.0)
-    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0), cutoff=15.0)
-    @test_throws ArgumentError Options(bulk_range=(12.0, 10.0), usecutoff=false)
-    @test_throws ArgumentError Options(dbulk=10.0, cutoff=15.0, usecutoff=false)
     @test_throws ArgumentError Options(n_random_samples=0)
-    @test_throws ArgumentError Options(bulk_range=[1.0])
 end
 
 function Base.show(io::IO, o::Options)
@@ -290,10 +255,10 @@ function Base.show(io::IO, o::Options)
         Reference atom for random rotations: irefatom = $(o.irefatom)
         Number of random samples per frame: n_random_samples = $(o.n_random_samples == 0 ? "automatic (1 for self-correlations or more than one solute molecule, 10 otherwise)" : o.n_random_samples)
         Linked cell partition: lcell = $(o.lcell)
-        Force garbage collection: GC = $(o.GC)
-        Memory threshold for GC: GC_threshold = $(o.GC_threshold)
-        Seed for random number generator: $(o.seed)
-        Use stable random number generator: StableRNG = $(o.StableRNG) 
+        Force garbage collection: gc = $(o.gc)
+        Memory threshold for garbage collection: gc_threshold = $(o.gc_threshold)
+        Seed for random number generator: seed = $(o.seed)
+        Use stable random number generator: stable_rng = $(o.stable_rng) 
         Number of threads to use (0 is all): nthreads = $(o.nthreads)
         Silent output: $(o.silent)
     $bars
