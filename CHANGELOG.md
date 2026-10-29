@@ -10,7 +10,7 @@ ComplexMixtures.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 4.0.0-DEV
+Version 4.0.0
 -------------
 - ![BREAKING][badge-breaking] The `Result` data structure was renamed to `MDDFResult`.
 - ![BREAKING][badge-breaking] Results are loaded with `load(MDDFResult, filename)`, and residue contributions with `load(ResidueContributions, filename)`, consistently with the `load(::Type, filename)` methods of the other packages of the ecosystem (e.g. PDBTools.jl). The `load(filename)` method was removed (it claimed `load(::AbstractString)` for the shared `load` function), as well as the `load(filename, Result)` and `load(filename, ResidueContributions)` methods.
