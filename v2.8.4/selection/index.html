@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Set solute and solvent · ComplexMixtures.jl</title><meta name="title" content="Set solute and solvent · ComplexMixtures.jl"/><meta property="og:title" content="Set solute and solvent · ComplexMixtures.jl"/><meta property="twitter:title" content="Set solute and solvent · ComplexMixtures.jl"/><meta name="description" content="Documentation for ComplexMixtures.jl."/><meta property="og:description" content="Documentation for ComplexMixtures.jl."/><meta property="twitter:description" content="Documentation for ComplexMixtures.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="ComplexMixtures.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="ComplexMixtures.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">ComplexMixtures.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../installation/">Installation</a></li><li><a class="tocitem" href="../parallel/">Parallel execution</a></li><li><a class="tocitem" href="../quickguide/">Quick Guide</a></li><li><a class="tocitem" href="../examples/">Examples:</a></li><li><a class="tocitem" href="../example1/">◦ Protein in water/glycerol</a></li><li><a class="tocitem" href="../example2/">◦ Polyacrylamide in DMF</a></li><li><a class="tocitem" href="../example3/">◦ POPC membrane in water/ethanol</a></li><li><a class="tocitem" href="../example4/">◦ Water/Glycerol mixture</a></li><li class="is-active"><a class="tocitem" href>Set solute and solvent</a><ul class="internal"><li><a class="tocitem" href="#Using-the-PDBTools-package"><span>Using the PDBTools package</span></a></li><li><a class="tocitem" href="#Using-VMD"><span>Using VMD</span></a></li><li><a class="tocitem" href="#predefinition-of-groups"><span>Predefinition of atom groups</span></a></li><li><a class="tocitem" href="#Reference-functions"><span>Reference functions</span></a></li></ul></li><li><a class="tocitem" href="../trajectory/">Loading the trajectory</a></li><li><a class="tocitem" href="../mddf/">Computing the MDDF</a></li><li><a class="tocitem" href="../results/">Results</a></li><li><a class="tocitem" href="../contributions/">Atomic and group contributions</a></li><li><a class="tocitem" href="../save/">Save and load</a></li><li><a class="tocitem" href="../multiple/">Multiple trajectories</a></li><li><a class="tocitem" href="../options/">Options</a></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../python/">From Python</a></li><li><a class="tocitem" href="../updating_scripts/">Updating scripts</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Set solute and solvent</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Set solute and solvent</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl/blob/main/docs/src/selection.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="selections"><a class="docs-heading-anchor" href="#selections">Solute and solvent selections</a><a id="selections-1"></a><a class="docs-heading-anchor-permalink" href="#selections" title="Permalink"></a></h1><p>The solute and solvent are defined by selecting subsets of atoms from the  system. These subsets are defined by the <code>AtomSelection</code> data structures. </p><p>To construct a <code>AtomSelection</code> data structure, one needs to provide, at least, the (1-based) indices of the atoms that belong to the selection, and either the number of atoms of each molecule or the number of molecules in the selection.</p><h2 id="Using-the-PDBTools-package"><a class="docs-heading-anchor" href="#Using-the-PDBTools-package">Using the PDBTools package</a><a id="Using-the-PDBTools-package-1"></a><a class="docs-heading-anchor-permalink" href="#Using-the-PDBTools-package" title="Permalink"></a></h2><p>The <a href="https://m3g.github.io/PDBTools">PDBTools</a> package helps the construction of  the solute and solvent data structures, by providing a convenient selection syntax. Additionally, it sets up the names of the atoms of the system in the data structure, which can be used to retrieve atom and and group contributions to MDDFs and coordination numbers. </p><p>For example, here we define a protein of a system as the solute:</p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures, PDBTools
+
+julia&gt; atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+
+julia&gt; protein = select(atoms, &quot;protein&quot;);
+
+julia&gt; solute = AtomSelection(protein, nmols=1)
+AtomSelection 
+    1463 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1463
+    Number of groups: 1463 </code></pre><p>We need to inform the <code>AtomSelection</code> function about the number of atoms of each molecule (using <code>natomspermol=3</code>, for example), or the number  of molecules (using <code>nmols=1000</code>, for example), such that the atoms belonging to each molecule can be determined without ambiguity. </p><p>Now, we define the solvent of the system as the water molecules:</p><pre><code class="language-julia-repl hljs">julia&gt; water = select(atoms, &quot;water&quot;); 
+
+julia&gt; solvent = AtomSelection(water, natomspermol=3)
+AtomSelection 
+    58014 atoms belonging to 19338 molecule(s).
+    Atoms per molecule: 3
+    Number of groups: 3</code></pre><h2 id="Using-VMD"><a class="docs-heading-anchor" href="#Using-VMD">Using VMD</a><a id="Using-VMD-1"></a><a class="docs-heading-anchor-permalink" href="#Using-VMD" title="Permalink"></a></h2><p><a href="https://www.ks.uiuc.edu/Research/vmd/">VMD</a> is a very popular and powerful package for visualization of simulations. It contains a very versatile library to read topologies and trajectory files, and a powerful selection syntax. The PDBTools.jl (v1.0 or greater) package provides a simple wrapper to VMD that allows using the same syntax at it supports.</p><p>For example, the solute can be defined with: </p><pre><code class="language-julia hljs">using ComplexMixtures, PDBTools
+
+atoms = readPDB(&quot;system.pdb&quot;)
+
+indices, names = select_with_vmd(&quot;./system.pdb&quot;, &quot;protein&quot;, vmd=&quot;/usr/bin/vmd&quot;)
+
+protein = atoms[indices]
+
+solute = AtomSelection(protein, nmols=1)</code></pre><p>The main advantage here is that all the file types that VMD supports are supported. But VMD needs to be installed and is run in background, and it takes a few seconds to be executed. </p><p>The <code>VMDSelect</code> function also accepts an optional keyword parameter <code>srcload</code>, which can be used to load custom scripts within <code>vmd</code> before setting the selection. This allows the definition of <code>tcl</code> scripts with custom selection macros, for instance. The usage would be: </p><pre><code class="language-julia hljs">using PDBTools
+
+indices, names = select_with_vmd(
+    &quot;file.pdb&quot;, 
+    &quot;resname MYRES&quot;; 
+    srcload = [ &quot;mymacros1.tcl&quot;, &quot;mymacros2.tcl&quot; ]
+)</code></pre><p>Which corresponds to <code>source</code>ing each of the macro files in VMD before defining the  selection with the custom <code>MYRES</code> name.</p><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>VMD uses 0-based indexing and <code>VMDselect</code> adjusts that. However, if a selection is performed by index, as with <code>index 1</code>, VMD will select the second atom, and the output will be <code>[2]</code>. AtomSelections by type, name, segment, residue name, etc, won&#39;t be a problem.</p></div></div><h2 id="predefinition-of-groups"><a class="docs-heading-anchor" href="#predefinition-of-groups">Predefinition of atom groups</a><a id="predefinition-of-groups-1"></a><a class="docs-heading-anchor-permalink" href="#predefinition-of-groups" title="Permalink"></a></h2><p>Importantly, this should be only a concern for the solvation analysis of systems in which individual molecules are <strong>very large</strong>. This feature was introduced in version <code>2.0</code> of the package to support the study of small molecule distribution in virus structures, of millions of atoms.  </p><p>By default, the contribution of each <em>type of</em> atom to the coordination number counts is stored, to allow the decomposition of the final MDDFs into any group contribution. However, when a structure, like a virus, has millions of atoms, storing the contribution of each atom becomes prohibitive in terms of memory. Thus, one may need to predefine the groups in which the contributions will be analyzed.</p><p>Here, we illustrate this feature by presselecting the acidic and basic residues of a protein:</p><pre><code class="language-julia hljs">julia&gt; using ComplexMixtures, PDBTools
+
+julia&gt; atoms = readPDB(ComplexMixtures.Testing.pdbfile);
+
+julia&gt; protein = select(atoms, &quot;protein&quot;);
+
+julia&gt; acidic_residues = select(atoms, &quot;protein and acidic&quot;);
+
+julia&gt; basic_residues = select(atoms, &quot;protein and basic&quot;);
+
+julia&gt; solute = AtomSelection(
+        protein, 
+        nmols=1,
+        group_atom_indices = [ index.(acidic_residues), index.(basic_residues) ],
+        group_names = [ &quot;acidic residues&quot;, &quot;basic residues&quot; ]
+    )
+AtomSelection 
+    1463 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1463
+    Number of groups: 2 </code></pre><p>In this example, then, the <code>solute</code> <code>AtomSelection</code> has two groups. The indices of the atoms of the groups are stored in the <code>group_atom_indices</code> vector and the group names in the <code>group_names</code> vector. The <code>atom_group</code> auxiliary function is the most practical way to retrive the indices of the atoms of the group.</p><pre><code class="language-julia-repl hljs">julia&gt; atom_group(solute, &quot;acidic residues&quot;)
+162-element Vector{Int64}:
+   24
+   25
+   26
+    ⋮
+ 1436
+ 1437</code></pre><p>With these group selections predefined, the contributions of these groups to the MDDF or coordination numbers can be retrived directly from the result data structure with, for example:</p><pre><code class="language-julia-repl hljs">julia&gt; trajectory = Trajectory(trajectory_file, solute, solvent)
+
+julia&gt; result = mddf(trajectory, Options(bulk_range=(8.0, 12.0)));
+
+julia&gt; acidic_residue_contributions = contributions(result, SoluteGroup(&quot;acidic residues&quot;))</code></pre><h2 id="Reference-functions"><a class="docs-heading-anchor" href="#Reference-functions">Reference functions</a><a id="Reference-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Reference-functions" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.AtomSelection" href="#ComplexMixtures.AtomSelection"><code>ComplexMixtures.AtomSelection</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">struct AtomSelection</code></pre><p>Structure that contains the information about the solute and solvent molecules.</p><ul><li><p><code>nmols::Int64</code></p></li><li><p><code>natomspermol::Int64</code></p></li><li><p><code>indices::Vector{Int64}</code></p></li><li><p><code>custom_groups::Bool</code></p></li><li><p><code>group_atom_indices::Vector{Vector{Int64}}</code></p></li><li><p><code>group_names::Vector{String}</code></p></li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/7ba2ab15b0581352753a6509c29195c335e615e0/src/AtomSelection.jl#L39-L47">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.AtomSelection-Tuple" href="#ComplexMixtures.AtomSelection-Tuple"><code>ComplexMixtures.AtomSelection</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p><strong>AtomSelection constructors</strong></p><p>The <code>AtomSelection</code> structure carries the information of the molecules that are going to be used to compute the MDDF. The structure can be initialized in different ways:</p><ol><li>Initialize the structure providing a vector of PDBTools.Atom(s).</li></ol><pre><code class="nohighlight hljs">    AtomSelection(
+        atoms::AbstractVector{&lt;:PDBTools.Atom}; 
+        nmols::Integer = 0, 
+        natomspermol::Integer = 0,
+        group_atom_indices::Union{Nothing,Vector{&lt;:Vector{&lt;:Int}}} = nothing,
+        group_names::Vector{&lt;:AbstractString} = String[]
+    ) </code></pre><p>The indices of the atoms will be retrived from the indices of the atoms as defined in the PDB file, thus the PDB file must correspond to the same system as that of the simulation. </p><p>Either the number of molecules (<code>nmols</code>) <strong>or</strong> the number of atoms per molecule (<code>natomspermol</code>) must be provided.</p><p>If <code>group_atom_indices</code> is <code>nothing</code> or <code>group_names</code> is empty, the names of the groups will be retrieved from the atom names, and in the coordination numbers of each individual atom will be  stored.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures, PDBTools
+
+julia&gt; pdbfile = ComplexMixtures.Testing.pdbfile;
+
+julia&gt; atoms = PDBTools.readPDB(pdbfile, &quot;resname TMAO&quot;);
+
+julia&gt; atsel = AtomSelection(atoms, natomspermol=14)
+AtomSelection 
+    2534 atoms belonging to 181 molecule(s).
+    Atoms per molecule: 14
+    Number of groups: 14 
+
+julia&gt; atom_group_name(atsel, 1)
+&quot;N&quot;
+
+julia&gt; atom_group_name(atsel, 5)
+&quot;O1&quot;
+
+julia&gt; length(atom_group_names(atsel))
+14</code></pre><ol><li>Lower level: initialize the structure providing the index of atoms and groups.</li></ol><pre><code class="nohighlight hljs">    AtomSelection(
+        indices::AbstractVector{&lt;:Integer};
+        nmols::Int = 0,
+        natomspermol::Int = 0,
+        group_atom_indices::Union{Nothing,AbstractVector{&lt;:AbstractVector{&lt;:Int}}} = nothing,
+        group_names::AbstractVector{&lt;:AbstractString} = String[]
+    )</code></pre><p>Construct an AtomSelection structure from the most low-level information: the index of atoms and groups.</p><p>Either the number of molecules (<code>nmols</code>) or the number of atoms per molecule (<code>natomspermol</code>) must be provided.</p><p>Groups of atoms can be defined by providing a vector of vectors of atom indices (<code>group_atom_indices</code>), and a vector of group names (<code>group_names</code>). If <code>group_atom_indices</code> is set to <code>nothing</code>, the coordination numbers of each individual atoms wil be stored.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures
+
+julia&gt; AtomSelection([1,2,3], nmols=1)
+AtomSelection 
+    3 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 3
+    Number of groups: 3
+
+julia&gt; AtomSelection([1,2,3], natomspermol=1)
+AtomSelection 
+    3 atoms belonging to 3 molecule(s).
+    Atoms per molecule: 1
+    Number of groups: 1
+
+julia&gt; AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]], group_names=[&quot;G1&quot;, &quot;G2&quot;])
+AtomSelection 
+    3 atoms belonging to 3 molecule(s).
+    Atoms per molecule: 1
+    Number of groups: 2 </code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/7ba2ab15b0581352753a6509c29195c335e615e0/src/AtomSelection.jl#L183-L280">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.SoluteGroup" href="#ComplexMixtures.SoluteGroup"><code>ComplexMixtures.SoluteGroup</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p><strong>SoluteGroup</strong> and <strong>SolventGroup</strong> data structures.</p><p>These structures are used to select groups of atoms to extract their contributions  from the MDDF results. </p><p>Most tipically, the groups are defined from a selection of atoms with the PDBTools package, or by providing directly the indices of teh atoms in the structure. </p><p>Alternativelly, if the groups were predefined, the groups can be selected by group index or group name. </p><p>The possible constructors are:</p><pre><code class="nohighlight hljs">SoluteGroup(atoms::Vector{&lt;:PDBTools.Atom})
+SoluteGroup(atom_indices::AbstractVector{&lt;:Integer})
+SoluteGroup(atom_names::AbstractVector{&lt;:AbstractString})
+SoluteGroup(group_name::AbstractString)
+SoluteGroup(residue::PDBTools.Residue)</code></pre><p>above, each constructor can be replaced by SolventGroup. The resulting data structures  are used as input parameters for the <code>contributions</code> function:</p><pre><code class="nohighlight hljs">contributions(results::Result, group::Union{SoluteGroup, SolventGroup}; type=:mddf)</code></pre><p>See the <code>contributions</code> help entry for additional information.</p><p><strong>Examples</strong></p><p><strong>Defining solute groups with different input types:</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures, PDBTools
+
+julia&gt; atoms = PDBTools.readPDB(ComplexMixtures.Testing.pdbfile, &quot;protein&quot;); 
+
+julia&gt; SoluteGroup(select(atoms, &quot;protein and resname ASP&quot;)) # vector of PDBTools.Atom(s)
+SoluteGroup defined by:
+    atom_indices: [ 24, 25, ..., 1056, 1057 ] - 72 atoms
+
+julia&gt; SoluteGroup(1:100) # atom indices (range or vector)
+SoluteGroup defined by:
+    atom_indices: [ 1, 2, ..., 99, 100 ] - 100 atoms
+
+julia&gt; SoluteGroup([&quot;N&quot;, &quot;CA&quot;, &quot;C&quot;, &quot;O&quot;]) # vector of atom names
+SoluteGroup defined by:
+    atom_names: [ N, CA, C, O ] - 4 atom names.
+ 
+julia&gt; SoluteGroup(&quot;acidic residues&quot;) # predefined group name
+SoluteGroup defined by:
+    group_name: &quot;acidic residues&quot;
+
+julia&gt; SoluteGroup(1) # predefined group index
+SoluteGroup defined by:
+    group_index: 1
+
+julia&gt; SoluteGroup(collect(eachresidue(atoms))[2]) # PDBTools.Residue(s)
+SoluteGroup defined by:
+    atom_indices: [ 13, 14, ..., 22, 23 ] - 11 atoms
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/7ba2ab15b0581352753a6509c29195c335e615e0/src/AtomSelection.jl#L489-L551">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.SolventGroup" href="#ComplexMixtures.SolventGroup"><code>ComplexMixtures.SolventGroup</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p><strong>SoluteGroup</strong> and <strong>SolventGroup</strong> data structures.</p><p>These structures are used to select groups of atoms to extract their contributions  from the MDDF results. </p><p>Most tipically, the groups are defined from a selection of atoms with the PDBTools package, or by providing directly the indices of teh atoms in the structure. </p><p>Alternativelly, if the groups were predefined, the groups can be selected by group index or group name. </p><p>The possible constructors are:</p><pre><code class="nohighlight hljs">SoluteGroup(atoms::Vector{&lt;:PDBTools.Atom})
+SoluteGroup(atom_indices::AbstractVector{&lt;:Integer})
+SoluteGroup(atom_names::AbstractVector{&lt;:AbstractString})
+SoluteGroup(group_name::AbstractString)
+SoluteGroup(residue::PDBTools.Residue)</code></pre><p>above, each constructor can be replaced by SolventGroup. The resulting data structures  are used as input parameters for the <code>contributions</code> function:</p><pre><code class="nohighlight hljs">contributions(results::Result, group::Union{SoluteGroup, SolventGroup}; type=:mddf)</code></pre><p>See the <code>contributions</code> help entry for additional information.</p><p><strong>Examples</strong></p><p><strong>Defining solute groups with different input types:</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures, PDBTools
+
+julia&gt; atoms = PDBTools.readPDB(ComplexMixtures.Testing.pdbfile, &quot;protein&quot;); 
+
+julia&gt; SoluteGroup(select(atoms, &quot;protein and resname ASP&quot;)) # vector of PDBTools.Atom(s)
+SoluteGroup defined by:
+    atom_indices: [ 24, 25, ..., 1056, 1057 ] - 72 atoms
+
+julia&gt; SoluteGroup(1:100) # atom indices (range or vector)
+SoluteGroup defined by:
+    atom_indices: [ 1, 2, ..., 99, 100 ] - 100 atoms
+
+julia&gt; SoluteGroup([&quot;N&quot;, &quot;CA&quot;, &quot;C&quot;, &quot;O&quot;]) # vector of atom names
+SoluteGroup defined by:
+    atom_names: [ N, CA, C, O ] - 4 atom names.
+ 
+julia&gt; SoluteGroup(&quot;acidic residues&quot;) # predefined group name
+SoluteGroup defined by:
+    group_name: &quot;acidic residues&quot;
+
+julia&gt; SoluteGroup(1) # predefined group index
+SoluteGroup defined by:
+    group_index: 1
+
+julia&gt; SoluteGroup(collect(eachresidue(atoms))[2]) # PDBTools.Residue(s)
+SoluteGroup defined by:
+    atom_indices: [ 13, 14, ..., 22, 23 ] - 11 atoms
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/7ba2ab15b0581352753a6509c29195c335e615e0/src/AtomSelection.jl#L552">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.atom_group-Tuple{AtomSelection, Integer}" href="#ComplexMixtures.atom_group-Tuple{AtomSelection, Integer}"><code>ComplexMixtures.atom_group</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">atom_group(atsel::AtomSelection, i::Integer)
+atom_group(atsel::AtomSelection, groupname::String)
+
+atom_group(atsel::AtomSelection, i::Int)
+atom_group(atsel::AtomSelection, groupname::String)</code></pre><p>Return the indices of the atoms that belong to a given group, when custom groups where defined.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures
+
+julia&gt; atsel = AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]], group_names=[&quot;G1&quot;, &quot;G2&quot;])
+AtomSelection 
+    3 atoms belonging to 3 molecule(s).
+    Atoms per molecule: 1
+    Number of groups: 2
+
+julia&gt; atom_group(atsel, 1)
+2-element Vector{Int64}:
+ 1
+ 2
+
+julia&gt; atom_group(atsel, &quot;G2&quot;)
+1-element Vector{Int64}:
+ 3
+
+julia&gt; atom_group_name(atsel, 1)
+&quot;G1&quot;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/7ba2ab15b0581352753a6509c29195c335e615e0/src/AtomSelection.jl#L77-L110">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.atom_group_name-Tuple{AtomSelection, Int64}" href="#ComplexMixtures.atom_group_name-Tuple{AtomSelection, Int64}"><code>ComplexMixtures.atom_group_name</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">atom_group_name(atsel::AtomSelection, i::Integer)
+atom_group_names(atsel::AtomSelection)</code></pre><p>Return the name of the group of atoms with index <code>i</code>.  The <code>atom_group_names</code> function returns a vector with the names of all the groups.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures
+
+julia&gt; atsel = AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]], group_names=[&quot;G1&quot;, &quot;G2&quot;])
+AtomSelection 
+    3 atoms belonging to 3 molecule(s).
+    Atoms per molecule: 1
+    Number of groups: 2
+
+julia&gt; atom_group_name(atsel, 1)
+&quot;G1&quot;
+
+julia&gt; atom_group_names(atsel)
+2-element Vector{String}:
+ &quot;G1&quot;
+ &quot;G2&quot;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/7ba2ab15b0581352753a6509c29195c335e615e0/src/AtomSelection.jl#L133-L160">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.atom_group_names-Tuple{Any}" href="#ComplexMixtures.atom_group_names-Tuple{Any}"><code>ComplexMixtures.atom_group_names</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">atom_group_name(atsel::AtomSelection, i::Integer)
+atom_group_names(atsel::AtomSelection)</code></pre><p>Return the name of the group of atoms with index <code>i</code>.  The <code>atom_group_names</code> function returns a vector with the names of all the groups.</p><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures
+
+julia&gt; atsel = AtomSelection([1,2,3], natomspermol=1, group_atom_indices=[[1,2],[3]], group_names=[&quot;G1&quot;, &quot;G2&quot;])
+AtomSelection 
+    3 atoms belonging to 3 molecule(s).
+    Atoms per molecule: 1
+    Number of groups: 2
+
+julia&gt; atom_group_name(atsel, 1)
+&quot;G1&quot;
+
+julia&gt; atom_group_names(atsel)
+2-element Vector{String}:
+ &quot;G1&quot;
+ &quot;G2&quot;</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/7ba2ab15b0581352753a6509c29195c335e615e0/src/AtomSelection.jl#L164">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example4/">« ◦ Water/Glycerol mixture</a><a class="docs-footer-nextpage" href="../trajectory/">Loading the trajectory »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Thursday 21 November 2024 13:35">Thursday 21 November 2024</span>. Using Julia version 1.10.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>◦ POPC membrane in water/ethanol · ComplexMixtures.jl</title><meta name="title" content="◦ POPC membrane in water/ethanol · ComplexMixtures.jl"/><meta property="og:title" content="◦ POPC membrane in water/ethanol · ComplexMixtures.jl"/><meta property="twitter:title" content="◦ POPC membrane in water/ethanol · ComplexMixtures.jl"/><meta name="description" content="Documentation for ComplexMixtures.jl."/><meta property="og:description" content="Documentation for ComplexMixtures.jl."/><meta property="twitter:description" content="Documentation for ComplexMixtures.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="ComplexMixtures.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="ComplexMixtures.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">ComplexMixtures.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../installation/">Installation</a></li><li><a class="tocitem" href="../parallel/">Parallel execution</a></li><li><a class="tocitem" href="../quickguide/">Quick Guide</a></li><li><a class="tocitem" href="../examples/">Examples:</a></li><li><a class="tocitem" href="../example1/">◦ Protein in water/glycerol</a></li><li><a class="tocitem" href="../example2/">◦ Polyacrylamide in DMF</a></li><li class="is-active"><a class="tocitem" href>◦ POPC membrane in water/ethanol</a><ul class="internal"><li><a class="tocitem" href="#data-example3"><span>Data, packages, and execution</span></a></li><li><a class="tocitem" href="#mddf-example3"><span>MDDF and KB integrals</span></a></li><li><a class="tocitem" href="#groups1-example3"><span>Ethanol group contributions</span></a></li><li><a class="tocitem" href="#groups2-example3"><span>Interaction of POPC groups with water</span></a></li><li><a class="tocitem" href="#groups3-example3"><span>Interaction of POPC groups with ethanol</span></a></li><li><a class="tocitem" href="#map-example3"><span>Density map on POPC chains</span></a></li></ul></li><li><a class="tocitem" href="../example4/">◦ Water/Glycerol mixture</a></li><li><a class="tocitem" href="../selection/">Set solute and solvent</a></li><li><a class="tocitem" href="../trajectory/">Loading the trajectory</a></li><li><a class="tocitem" href="../mddf/">Computing the MDDF</a></li><li><a class="tocitem" href="../results/">Results</a></li><li><a class="tocitem" href="../contrib/">Atomic and group contributions</a></li><li><a class="tocitem" href="../save/">Save and load</a></li><li><a class="tocitem" href="../multiple/">Multiple trajectories</a></li><li><a class="tocitem" href="../options/">Options</a></li><li><a class="tocitem" href="../tools/">Tools</a></li><li><a class="tocitem" href="../python/">From Python</a></li><li><a class="tocitem" href="../updating_scripts/">Updating scripts</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>◦ POPC membrane in water/ethanol</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>◦ POPC membrane in water/ethanol</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl/blob/main/docs/src/example3.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="POPC-membrane-in-water/ethanol"><a class="docs-heading-anchor" href="#POPC-membrane-in-water/ethanol">POPC membrane in water/ethanol</a><a id="POPC-membrane-in-water/ethanol-1"></a><a class="docs-heading-anchor-permalink" href="#POPC-membrane-in-water/ethanol" title="Permalink"></a></h1><p>In this example ComplexMixtures.jl is used to study the interactions of a POPC membrane with a mixture of 20%(mol/mol) ethanol in water. At this concentration ethanol destabilizes the membrane.</p><center>
+<img width=50% src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/system.png">
+</center><p>System image: a POPC membrane (center) solvated by a mixture of water (purple) and ethanol (green). The system is composed by 59 POPC, 5000 water, and 1000 ethanol molecules.  </p><h3 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h3><ul><li><a href="#data-example3">Data, packages, and execution</a></li><li><a href="#mddf-example3">MDDF and KB integrals</a></li><li><a href="#groups1-example3">Group contributions</a></li><li><a href="#groups2-example3">Interaction of POPC groups with water</a></li><li><a href="#groups3-example3">Interaction of POPC groups with ethanol</a></li><li><a href="#map-example3">Density map on POPC chains</a></li></ul><h2 id="data-example3"><a class="docs-heading-anchor" href="#data-example3">Data, packages, and execution</a><a id="data-example3-1"></a><a class="docs-heading-anchor-permalink" href="#data-example3" title="Permalink"></a></h2><p>The files required to run this example are:</p><ul><li><a href="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/simulation/equilibrated.pdb">equilibrated.pdb</a>: The PDB file of the complete system.</li><li><a href="https://www.dropbox.com/scl/fi/hcenxrdf8g8hfbllyakhy/traj_POPC.dcd?rlkey=h9zivtwgya3ivva1i6q6xmr2p&amp;dl=0">traj_POPC.dcd</a>: Trajectory file. This is a 365Mb file, necessary for running from scratch the calculations.</li></ul><p>To run the scripts, we suggest the following procedure:</p><ol><li>Create a directory, for example <code>example3</code>.</li><li>Copy the required data files above to this directory.</li><li>Launch <code>julia</code> in that directory: activate the directory environment, and install the required packages. This launching Julia and executing:<pre><code class="language-julia hljs">import Pkg 
+Pkg.activate(&quot;.&quot;)
+Pkg.add([&quot;ComplexMixtures&quot;, &quot;PDBTools&quot;, &quot;Plots&quot;, &quot;LaTeXStrings&quot;, &quot;EasyFit&quot;])
+exit()</code></pre></li><li>Copy the code of each script in to a file, and execute with:<pre><code class="language-julia hljs">julia -t auto script.jl</code></pre>Alternativelly (and perhaps preferrably), copy line by line the content of the script into the Julia REPL, to follow each step of the calculation.</li></ol><h2 id="mddf-example3"><a class="docs-heading-anchor" href="#mddf-example3">MDDF and KB integrals</a><a id="mddf-example3-1"></a><a class="docs-heading-anchor-permalink" href="#mddf-example3" title="Permalink"></a></h2><p>Here we show the distribution functions and KB integrals associated to the solvation of the membrane by water and ethanol. </p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using PDBTools
+using ComplexMixtures
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# The full trajectory file is available at: 
+# https://www.dropbox.com/scl/fi/hcenxrdf8g8hfbllyakhy/traj_POPC.dcd?rlkey=h9zivtwgya3ivva1i6q6xmr2p&amp;dl=0
+trajectory_file = &quot;./traj_POPC.dcd&quot;
+
+# Load a PDB file of the system
+system = readPDB(&quot;./equilibrated.pdb&quot;)
+
+# Select the atoms corresponding to glycerol and water
+popc = select(system, &quot;resname POPC&quot;)
+water = select(system, &quot;water&quot;)
+ethanol = select(system, &quot;resname ETOH&quot;)
+
+# Set the complete membrane as the solute. We use nmols=1 here such
+# that the membrane is considered a single solute in the calculation. 
+solute = AtomSelection(popc, nmols=1)
+
+# Compute water-POPC distribution and KB integral 
+solvent = AtomSelection(water, natomspermol=3)
+
+# Set the trajectory structure
+trajectory = Trajectory(trajectory_file, solute, solvent)
+
+# We want to get reasonably converged KB integrals, which usually
+# require large solute domains. Distribution functions converge 
+# rapidly (~10Angs or less), on the other side.
+options = Options(dbulk=20.0)
+
+# Compute the mddf and associated properties
+mddf_water_POPC = mddf(trajectory, options)
+
+# Save results to file for later use
+save(mddf_water_POPC, &quot;./mddf_water_POPC.json&quot;)
+println(&quot;Results saved to ./mddf_water_POPC.json file&quot;)
+
+# Compute ethanol-POPC distribution and KB integral 
+solvent = AtomSelection(ethanol, natomspermol=9)
+traj = Trajectory(trajectory_file, solute, solvent)
+mddf_ethanol_POPC = mddf(traj, options)
+
+# Save results for later use
+save(mddf_ethanol_POPC, &quot;./mddf_ethanol_POPC.json&quot;)
+println(&quot;Results saved to ./mddf_ethanol_POPC.json file&quot;)
+
+#
+# Plot the MDDF and KB integrals
+#
+# Plot defaults
+plot_font = &quot;Computer Modern&quot;
+default(
+    fontfamily=plot_font,
+    linewidth=2.5, 
+    framestyle=:box, 
+    label=nothing, 
+    grid=false,
+    palette=:tab10
+)
+scalefontsizes(); scalefontsizes(1.3)
+
+#
+# Plots cossolvent-POPC MDDFs in subplot 1
+#
+plot(layout=(2,1))
+# Water MDDF
+plot!(
+    mddf_water_POPC.d, # distances
+    movavg(mddf_water_POPC.mddf,n=10).x, # water MDDF - smoothed
+    label=&quot;Water&quot;,
+    subplot=1
+)
+# Ethanol MDDF
+plot!(
+    mddf_ethanol_POPC.d, # distances
+    movavg(mddf_ethanol_POPC.mddf,n=10).x, # water MDDF - smoothed
+    label=&quot;Ethanol&quot;,
+    subplot=1
+)
+# Plot settings
+plot!(
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=&quot;MDDF&quot;,
+    xlim=(0,10),
+    subplot=1
+)
+
+#
+# Plot cossolvent-POPC KB integrals in subplot 2
+#
+# Water KB
+plot!(
+    mddf_water_POPC.d, # distances
+    mddf_water_POPC.kb, # water KB
+    label=&quot;Water&quot;,
+    subplot=2
+)
+# Ethanol KB
+plot!(
+    mddf_ethanol_POPC.d, # distances
+    mddf_ethanol_POPC.kb, # ethanol KB
+    label=&quot;Ethanol&quot;,
+    subplot=2
+)
+# Plot settings
+plot!(
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=L&quot;\textrm{KB~/~L~mol^{-1}}&quot;,
+    xlim=(0,10),
+    subplot=2
+)
+
+savefig(&quot;popc_water_ethanol_mddf_kb.png&quot;)
+println(&quot;Plot saved to popc_water_ethanol_mddf_kb.png file&quot;)
+
+
+</code></pre></details><br><h4 id="Output"><a class="docs-heading-anchor" href="#Output">Output</a><a id="Output-1"></a><a class="docs-heading-anchor-permalink" href="#Output" title="Permalink"></a></h4><p>The distribution functions are shown in the first panel of the figure below, and the KB integrals are shown in the second panel.</p><p><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_kb.png" alt/></p><p>Clearly, both water and ethanol accumulate on the proximity of the membrane. The distribution functions suggest that ethanol displays a greater local density augmentation, reaching concentrations roughly 4 times higher than bulk concentrations. Water has a peak at hydrogen-bonding distances (~1.8<span>$\mathrm{\AA}$</span>) and a secondary peak at 2.5<span>$\mathrm{\AA}$</span>.</p><p>Despite the fact that ethanol displays a greater relative density (relative to its own bulk concentration) at short distances, the KB integral of water turns out to be greater (more positive) than that of ethanol. This implies that the membrane is preferentially hydrated.</p><h2 id="groups1-example3"><a class="docs-heading-anchor" href="#groups1-example3">Ethanol group contributions</a><a id="groups1-example3-1"></a><a class="docs-heading-anchor-permalink" href="#groups1-example3" title="Permalink"></a></h2><p>The minimum-distance distribution function can be decomposed into the contributions of the ethanol molecule groups. </p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using ComplexMixtures
+using PDBTools
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Some default settings for the plots
+plot_font = &quot;Computer Modern&quot;
+Plots.default(
+    fontfamily=plot_font,
+    linewidth=1.5,
+    framestyle=:box,
+    label=nothing,
+    grid=false,
+)
+scalefontsizes(); scalefontsizes(1.3)
+
+# Read system PDB file
+system = readPDB(&quot;equilibrated.pdb&quot;)
+ethanol = select(system, &quot;resname ETOH&quot;)
+
+# Load the pre-calculated MDDF of ethanol
+mddf_ethanol_POPC = load(&quot;mddf_ethanol_POPC.json&quot;)
+
+#
+# Contributions of the ethanol groups
+#
+# Define the groups using selections. Set a dict, in which the keys are the group names
+# and the values are the selections
+groups = (
+    &quot;Hydroxyl&quot; =&gt; select(ethanol, &quot;name O1 or name HO1&quot;),
+    &quot;Aliphatic chain&quot; =&gt; select(ethanol, &quot;not name O1 and not name HO1&quot;),
+)
+# plot the total mddf and the contributions of the groups
+x = mddf_ethanol_POPC.d
+plot(x, movavg(mddf_ethanol_POPC.mddf, n=10).x, label=&quot;Total MDDF&quot;)
+for (group_name, group_atoms) in groups
+    cont = contributions(mddf_ethanol_POPC, SolventGroup(group_atoms))
+    y = movavg(cont, n=10).x
+    plot!(x, y, label=group_name)
+end
+# Plot settings
+plot!(
+    xlim=(1, 8),
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=&quot;MDDF&quot;
+)
+savefig(&quot;./mddf_ethanol_groups.png&quot;)
+println(&quot;The plot was saved as mddf_ethanol_groups.png&quot;)</code></pre></details><br><p>In the figure below we show the contributions of the ethanol hydroxyl and aliphatic chain groups to the total MDDF.</p><p><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_ethanol_groups.png" alt="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_ethanol_groups.png"/></p><p>As expected, the MDDF at hydrogen-bonding distances is composed by contributions of the ethanol hydroxyl group, and the non-specific interactions at ~2.5<span>$\mathrm{\AA}$</span> have a greater contribution of the aliphatic chain of the solvent molecules. It is interesting to explore the chemical complexity of POPC in what concerns these interactions.</p><h2 id="groups2-example3"><a class="docs-heading-anchor" href="#groups2-example3">Interaction of POPC groups with water</a><a id="groups2-example3-1"></a><a class="docs-heading-anchor-permalink" href="#groups2-example3" title="Permalink"></a></h2><p>The MDDF can also be decomposed into the contributions of the solute atoms and chemical groups. First, we show the contributions of the POPC chemical groups to the water-POPC distribution.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using ComplexMixtures
+using PDBTools
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Some default settings for the plots
+plot_font = &quot;Computer Modern&quot;
+Plots.default(
+    fontfamily=plot_font,
+    linewidth=2,
+    framestyle=:box,
+    label=nothing,
+    grid=false,
+)
+scalefontsizes();
+scalefontsizes(1.3);
+
+# Read system PDB file
+system = readPDB(&quot;equilibrated.pdb&quot;)
+
+# Load the pre-calculated MDDF of water
+mddf_water_POPC = load(&quot;mddf_water_POPC.json&quot;)
+
+#
+# Here we define the POPC groups, from the atom names. Each group
+# is a vector of atom names, and the keys are the group names.
+#
+groups = (
+    &quot;Choline&quot; =&gt; [&quot;N&quot;, &quot;C12&quot;, &quot;H12A&quot;, &quot;H12B&quot;, &quot;C13&quot;, &quot;H13A&quot;, &quot;H13B&quot;, &quot;H13C&quot;, &quot;C14&quot;,
+        &quot;H14A&quot;, &quot;H14B&quot;, &quot;H14C&quot;, &quot;C15&quot;, &quot;H15A&quot;, &quot;H15B&quot;, &quot;H15C&quot;, &quot;C11&quot;, &quot;H11A&quot;, &quot;H11B&quot;],
+    &quot;Phosphate&quot; =&gt; [&quot;P&quot;, &quot;O13&quot;, &quot;O14&quot;, &quot;O12&quot;],
+    &quot;Glycerol&quot; =&gt; [&quot;O11&quot;, &quot;C1&quot;, &quot;HA&quot;, &quot;HB&quot;, &quot;C2&quot;, &quot;HS&quot;, &quot;O21&quot;, &quot;C3&quot;, &quot;HX&quot;, &quot;HY&quot;, &quot;O31&quot;],
+    &quot;Oleoyl&quot; =&gt; [&quot;O22&quot;, &quot;C21&quot;, &quot;H2R&quot;, &quot;H2S&quot;, &quot;C22&quot;, &quot;C23&quot;, &quot;H3R&quot;, &quot;H3S&quot;, &quot;C24&quot;, &quot;H4R&quot;, &quot;H4S&quot;,
+        &quot;C25&quot;, &quot;H5R&quot;, &quot;H5S&quot;, &quot;C26&quot;, &quot;H6R&quot;, &quot;H6S&quot;, &quot;C27&quot;, &quot;H7R&quot;, &quot;H7S&quot;, &quot;C28&quot;, &quot;H8R&quot;, &quot;H8S&quot;,
+        &quot;C29&quot;, &quot;H91&quot;, &quot;C210&quot;, &quot;H101&quot;, &quot;C211&quot;, &quot;H11R&quot;, &quot;H11S&quot;, &quot;C212&quot;, &quot;H12R&quot;, &quot;H12S&quot;,
+        &quot;C213&quot;, &quot;H13R&quot;, &quot;H13S&quot;, &quot;C214&quot;, &quot;H14R&quot;, &quot;H14S&quot;, &quot;C215&quot;, &quot;H15R&quot;, &quot;H15S&quot;,
+        &quot;C216&quot;, &quot;H16R&quot;, &quot;H16S&quot;, &quot;C217&quot;, &quot;H17R&quot;, &quot;H17S&quot;, &quot;C218&quot;, &quot;H18R&quot;, &quot;H18S&quot;, &quot;H18T&quot;],
+    &quot;Palmitoyl&quot; =&gt; [&quot;C31&quot;, &quot;O32&quot;, &quot;C32&quot;, &quot;H2X&quot;, &quot;H2Y&quot;, &quot;C33&quot;, &quot;H3X&quot;, &quot;H3Y&quot;, &quot;C34&quot;, &quot;H4X&quot;, &quot;H4Y&quot;,
+        &quot;C35&quot;, &quot;H5X&quot;, &quot;H5Y&quot;, &quot;C36&quot;, &quot;H6X&quot;, &quot;H6Y&quot;, &quot;C37&quot;, &quot;H7X&quot;, &quot;H7Y&quot;, &quot;C38&quot;, &quot;H8X&quot;,
+        &quot;H8Y&quot;, &quot;C39&quot;, &quot;H9X&quot;, &quot;H9Y&quot;, &quot;C310&quot;, &quot;H10X&quot;, &quot;H10Y&quot;, &quot;C311&quot;, &quot;H11X&quot;, &quot;H11Y&quot;,
+        &quot;C312&quot;, &quot;H12X&quot;, &quot;H12Y&quot;, &quot;C313&quot;, &quot;H13X&quot;, &quot;H13Y&quot;, &quot;C314&quot;, &quot;H14X&quot;, &quot;H14Y&quot;, &quot;C315&quot;,
+        &quot;H15X&quot;, &quot;H15Y&quot;, &quot;C316&quot;, &quot;H16X&quot;, &quot;H16Y&quot;, &quot;H16Z&quot;],
+)
+
+#
+# plot the total mddf and the contributions of the groups
+#
+x = mddf_water_POPC.d
+plot(
+    x,
+    movavg(mddf_water_POPC.mddf, n=10).x,
+    label=&quot;Total water-POPC MDDF&quot;
+)
+for (group_name, group_atoms) in groups
+    cont = contributions(mddf_water_POPC, SoluteGroup(group_atoms))
+    y = movavg(cont, n=10).x
+    plot!(x, y, label=group_name)
+end
+# Plot settings
+plot!(
+    xlim=(1, 5),
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=&quot;MDDF&quot;
+)
+savefig(&quot;./mddf_POPC_water_groups.png&quot;)
+println(&quot;The plot was saved as mddf_POPC_water_groups.png&quot;)
+
+</code></pre></details><br><p><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_water_groups.png" alt="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_water_groups.png"/></p><p>Not surprisingly, water interactions occur majoritarily with the Phosphate and Choline groups of POPC molecules, that is, with the polar head of the lipid. The interactions at hydrogen-bonding distances are dominated by the phosphate group, and non-specific interaction occur mostly with the choline group. Some water molecules penetrate the membrane and interact with the glycerol and aliphatic chains of POPC, but these contributions are clearly secondary.</p><h2 id="groups3-example3"><a class="docs-heading-anchor" href="#groups3-example3">Interaction of POPC groups with ethanol</a><a id="groups3-example3-1"></a><a class="docs-heading-anchor-permalink" href="#groups3-example3" title="Permalink"></a></h2><p>The interactions of ethanol molecules with the membrane are more interesting, because ethanol penetrates the membrane. Here we decompose the ethanol-POPC distribution function into the contributions of the POPC chemical groups.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using ComplexMixtures
+using PDBTools
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Some default settings for the plots
+plot_font = &quot;Computer Modern&quot;
+Plots.default(
+    fontfamily=plot_font,
+    linewidth=2,
+    framestyle=:box,
+    label=nothing,
+    grid=false,
+)
+scalefontsizes();
+scalefontsizes(1.3);
+
+# Read system PDB file
+system = readPDB(&quot;equilibrated.pdb&quot;)
+
+# Load the pre-calculated MDDF of ethanol
+mddf_ethanol_POPC = load(&quot;mddf_ethanol_POPC.json&quot;)
+
+#
+# Here we define the POPC groups, from the atom names. Each group
+# is a vector of atom names, and the keys are the group names.
+#
+groups = (
+    &quot;Choline&quot; =&gt; [&quot;N&quot;, &quot;C12&quot;, &quot;H12A&quot;, &quot;H12B&quot;, &quot;C13&quot;, &quot;H13A&quot;, &quot;H13B&quot;, &quot;H13C&quot;, &quot;C14&quot;,
+        &quot;H14A&quot;, &quot;H14B&quot;, &quot;H14C&quot;, &quot;C15&quot;, &quot;H15A&quot;, &quot;H15B&quot;, &quot;H15C&quot;, &quot;C11&quot;, &quot;H11A&quot;, &quot;H11B&quot;],
+    &quot;Phosphate&quot; =&gt; [&quot;P&quot;, &quot;O13&quot;, &quot;O14&quot;, &quot;O12&quot;],
+    &quot;Glycerol&quot; =&gt; [&quot;O11&quot;, &quot;C1&quot;, &quot;HA&quot;, &quot;HB&quot;, &quot;C2&quot;, &quot;HS&quot;, &quot;O21&quot;, &quot;C3&quot;, &quot;HX&quot;, &quot;HY&quot;, &quot;O31&quot;],
+    &quot;Oleoyl&quot; =&gt; [&quot;O22&quot;, &quot;C21&quot;, &quot;H2R&quot;, &quot;H2S&quot;, &quot;C22&quot;, &quot;C23&quot;, &quot;H3R&quot;, &quot;H3S&quot;, &quot;C24&quot;, &quot;H4R&quot;, &quot;H4S&quot;,
+        &quot;C25&quot;, &quot;H5R&quot;, &quot;H5S&quot;, &quot;C26&quot;, &quot;H6R&quot;, &quot;H6S&quot;, &quot;C27&quot;, &quot;H7R&quot;, &quot;H7S&quot;, &quot;C28&quot;, &quot;H8R&quot;, &quot;H8S&quot;,
+        &quot;C29&quot;, &quot;H91&quot;, &quot;C210&quot;, &quot;H101&quot;, &quot;C211&quot;, &quot;H11R&quot;, &quot;H11S&quot;, &quot;C212&quot;, &quot;H12R&quot;, &quot;H12S&quot;,
+        &quot;C213&quot;, &quot;H13R&quot;, &quot;H13S&quot;, &quot;C214&quot;, &quot;H14R&quot;, &quot;H14S&quot;, &quot;C215&quot;, &quot;H15R&quot;, &quot;H15S&quot;,
+        &quot;C216&quot;, &quot;H16R&quot;, &quot;H16S&quot;, &quot;C217&quot;, &quot;H17R&quot;, &quot;H17S&quot;, &quot;C218&quot;, &quot;H18R&quot;, &quot;H18S&quot;, &quot;H18T&quot;],
+    &quot;Palmitoyl&quot; =&gt; [&quot;C31&quot;, &quot;O32&quot;, &quot;C32&quot;, &quot;H2X&quot;, &quot;H2Y&quot;, &quot;C33&quot;, &quot;H3X&quot;, &quot;H3Y&quot;, &quot;C34&quot;, &quot;H4X&quot;, &quot;H4Y&quot;,
+        &quot;C35&quot;, &quot;H5X&quot;, &quot;H5Y&quot;, &quot;C36&quot;, &quot;H6X&quot;, &quot;H6Y&quot;, &quot;C37&quot;, &quot;H7X&quot;, &quot;H7Y&quot;, &quot;C38&quot;, &quot;H8X&quot;,
+        &quot;H8Y&quot;, &quot;C39&quot;, &quot;H9X&quot;, &quot;H9Y&quot;, &quot;C310&quot;, &quot;H10X&quot;, &quot;H10Y&quot;, &quot;C311&quot;, &quot;H11X&quot;, &quot;H11Y&quot;,
+        &quot;C312&quot;, &quot;H12X&quot;, &quot;H12Y&quot;, &quot;C313&quot;, &quot;H13X&quot;, &quot;H13Y&quot;, &quot;C314&quot;, &quot;H14X&quot;, &quot;H14Y&quot;, &quot;C315&quot;,
+        &quot;H15X&quot;, &quot;H15Y&quot;, &quot;C316&quot;, &quot;H16X&quot;, &quot;H16Y&quot;, &quot;H16Z&quot;],
+)
+
+#
+# plot the total mddf and the contributions of the groups
+#
+x = mddf_ethanol_POPC.d
+plot(
+    x,
+    movavg(mddf_ethanol_POPC.mddf, n=10).x,
+    label=&quot;Total ethanol-POPC MDDF&quot;
+)
+for (group_name, group_atoms) in groups
+    cont = contributions(mddf_ethanol_POPC, SoluteGroup(group_atoms))
+    y = movavg(cont, n=10).x
+    plot!(x, y, label=group_name)
+end
+# Plot settings
+plot!(
+    xlim=(1.3, 5),
+    ylim=(0, 1.8),
+    xlabel=L&quot;\textrm{Distance / \AA}&quot;,
+    ylabel=&quot;MDDF&quot;
+)
+savefig(&quot;./mddf_POPC_ethanol_groups.png&quot;)
+println(&quot;The plot was saved as mddf_POPC_ethanol_groups.png&quot;)
+</code></pre></details><br><p><img src="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_ethanol_groups.png" alt="https://raw.githubusercontent.com/m3g/ComplexMixturesExamples/main/POPC_in_Water-Ethanol/results/mddf_popc_ethanol_groups.png"/></p><p>Ethanol molecules interact with the choline and phosphate groups of POPC molecules, as do water molecules. The contributions to the MDDF at hydrogen-bonding distances come essentially from ethanol-phosphate interactions.</p><p>However, ethanol molecules interact frequently with the glycerol and aliphatic chains of POPC. Interactions with the Oleoyl chain are slightly stronger than with the Palmitoyl chain. This means that ethanol penetrates the hydrophobic core of the membrane, displaying non-specific interactions with the lipids and with the glycerol group. These interactions are probably associated to the destabilizing role of ethanol in the membrane structure.</p><h2 id="map-example3"><a class="docs-heading-anchor" href="#map-example3">Density map on POPC chains</a><a id="map-example3-1"></a><a class="docs-heading-anchor-permalink" href="#map-example3" title="Permalink"></a></h2><p>The MDDFs can be decomposed at more granular level, in which each chemical group of the aliphatic chains of the POPC molecules are considered independently. This allows the study of the penetration of the ethanol molecules in the membrane. In the figure below, the carbonyl following the glycerol group of the POPC molecules is represented in the left, and going to the right the aliphatic chain groups are sequentially shown.</p><details><summary><font color="darkgreen">Complete example code: click here!</font></summary><pre><code class="language-julia hljs">import Pkg;
+Pkg.activate(&quot;.&quot;);
+
+using ComplexMixtures
+using PDBTools
+using Plots
+using LaTeXStrings
+using EasyFit: movavg
+
+# Some default settings for the plots
+plot_font = &quot;Computer Modern&quot;
+Plots.default(
+    fontfamily=plot_font,
+    linewidth=2,
+    framestyle=:box,
+    label=nothing,
+    grid=false,
+)
+scalefontsizes();
+scalefontsizes(1.3);
+
+# Read system PDB file
+system = readPDB(&quot;equilibrated.pdb&quot;)
+
+# Load the pre-calculated MDDF of ethanol
+mddf_ethanol_POPC = load(&quot;mddf_ethanol_POPC.json&quot;)
+
+# Splitting the oleoyl chain into groups along the the chain. 
+# The labels `CH_2` etc stand for `CH₂`, for example, in LaTeX notation, 
+# for a nicer plot axis ticks formatting.
+oleoyl_groups = (
+    &quot;CO&quot; =&gt; [&quot;O22&quot;, &quot;C21&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;H2R&quot;, &quot;H2S&quot;, &quot;C22&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C23&quot;, &quot;H3R&quot;, &quot;H3S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C24&quot;, &quot;H4R&quot;, &quot;H4S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C25&quot;, &quot;H5R&quot;, &quot;H5S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C26&quot;, &quot;H6R&quot;, &quot;H6S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C27&quot;, &quot;H7R&quot;, &quot;H7S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C28&quot;, &quot;H8R&quot;, &quot;H8S&quot;],
+    &quot;CH&quot; =&gt; [&quot;C29&quot;, &quot;H91&quot;],
+    &quot;CH&quot; =&gt; [&quot;C210&quot;, &quot;H101&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C211&quot;, &quot;H11R&quot;, &quot;H11S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C212&quot;, &quot;H12R&quot;, &quot;H12S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C213&quot;, &quot;H13R&quot;, &quot;H13S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C214&quot;, &quot;H14R&quot;, &quot;H14S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C215&quot;, &quot;H15R&quot;, &quot;H15S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C216&quot;, &quot;H16R&quot;, &quot;H16S&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C217&quot;, &quot;H17R&quot;, &quot;H17S&quot;],
+    &quot;CH_3&quot; =&gt; [&quot;C218&quot;, &quot;H18R&quot;, &quot;H18S&quot;, &quot;H18T&quot;]
+)
+
+# Format tick labels with LaTeX
+labels_o = [latexstring(&quot;\\textrm{$key}&quot;) for (key, val) in oleoyl_groups]
+
+# We first collect the contributions of each group into a vector of vectors:
+gcontrib = Vector{Float64}[] # empty vector of vectors
+for (group_name, group_atoms) in oleoyl_groups
+    group_contributions = contributions(mddf_ethanol_POPC, SoluteGroup(group_atoms))
+    push!(gcontrib, movavg(group_contributions; n=10).x)
+end
+
+# Convert the vector of vectors into a matrix
+gcontrib = stack(gcontrib)
+
+# Find the indices of the MDDF where the distances are between 1.5 and 3.0 Å
+idmin = findfirst(d -&gt; d &gt; 1.5, mddf_ethanol_POPC.d)
+idmax = findfirst(d -&gt; d &gt; 3.0, mddf_ethanol_POPC.d)
+
+# The plot will have two lines, the first plot will contain the 
+# oleoyl groups contributions, and the second plot will contain the
+# contributions of the palmitoyl groups.
+plot(layout=(2, 1))
+
+# Plot the contributions of the oleoyl groups
+contourf!(
+    1:length(oleoyl_groups),
+    mddf_ethanol_POPC.d[idmin:idmax],
+    gcontrib[idmin:idmax, :],
+    color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    colorbar=:none, levels=10,
+    ylabel=L&quot;r/\AA&quot;, xrotation=60,
+    xticks=(1:length(oleoyl_groups), labels_o), 
+    subplot=1,
+)
+annotate!( 14, 2.7, text(&quot;Oleoyl&quot;, :left, 12, plot_font), subplot=1)
+
+#
+# Repeat procedure for the palmitoyl groups
+#
+palmitoyl_groups = (
+    &quot;CO&quot; =&gt; [&quot;C31&quot;, &quot;O32&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C32&quot;, &quot;H2X&quot;, &quot;H2Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C33&quot;, &quot;H3X&quot;, &quot;H3Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C34&quot;, &quot;H4X&quot;, &quot;H4Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C35&quot;, &quot;H5X&quot;, &quot;H5Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C36&quot;, &quot;H6X&quot;, &quot;H6Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C37&quot;, &quot;H7X&quot;, &quot;H7Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C38&quot;, &quot;H8X&quot;, &quot;H8Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C39&quot;, &quot;H9X&quot;, &quot;H9Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C310&quot;, &quot;H10X&quot;, &quot;H10Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C311&quot;, &quot;H11X&quot;, &quot;H11Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C312&quot;, &quot;H12X&quot;, &quot;H12Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C313&quot;, &quot;H13X&quot;, &quot;H13Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C314&quot;, &quot;H14X&quot;, &quot;H14Y&quot;],
+    &quot;CH_2&quot; =&gt; [&quot;C315&quot;, &quot;H15X&quot;, &quot;H15Y&quot;],
+    &quot;CH_3&quot; =&gt; [&quot;C316&quot;, &quot;H16X&quot;, &quot;H16Y&quot;, &quot;H16Z&quot;],
+)
+
+# Format tick labels with LaTeX
+labels_p = [latexstring(&quot;\\textrm{$key}&quot;) for (key, val) in palmitoyl_groups]
+
+# We first collect the contributions of each group into a # vector of vectors:
+gcontrib = Vector{Float64}[] # empty vector of vectors
+for (group_name, group_atoms) in palmitoyl_groups
+    group_contributions = contributions(mddf_ethanol_POPC, SoluteGroup(group_atoms))
+    push!(gcontrib, movavg(group_contributions; n=10).x)
+end
+
+# Convert the vector of vectors into a matrix
+gcontrib = stack(gcontrib)
+
+# Plot the contributions of the palmitoyl groups
+contourf!(
+    1:length(palmitoyl_groups),
+    mddf_ethanol_POPC.d[idmin:idmax],
+    gcontrib[idmin:idmax, :],
+    color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    colorbar=:none, levels=10,
+    xlabel=&quot;Group&quot;,
+    ylabel=L&quot;r/\AA&quot;, xrotation=60,
+    xticks=(1:length(labels_p), labels_p), 
+    bottom_margin=0.5Plots.Measures.cm,
+    subplot=2,
+)
+annotate!( 12, 2.7, text(&quot;Palmitoyl&quot;, :left, 12, plot_font), subplot=2)
+
+savefig(&quot;POPC_ethanol_chains.png&quot;)
+println(&quot;The plot was saved as POPC_ethanol_chains.png&quot;)
+
+#
+# Now, plot a similar map for the water interactions with the POPC chain
+#
+mddf_water_POPC = load(&quot;mddf_water_POPC.json&quot;)
+plot(layout=(2, 1))
+
+# Plot the contributions of the oleoyl groups
+# We first collect the contributions of each group into a vector of vectors:
+gcontrib = Vector{Float64}[] # empty vector of vectors
+for (group_name, group_atoms) in oleoyl_groups
+    group_contributions = contributions(mddf_water_POPC, SoluteGroup(group_atoms))
+    push!(gcontrib, movavg(group_contributions; n=10).x)
+end
+# Convert the vector of vectors into a matrix
+gcontrib = stack(gcontrib)
+# Plot matrix as density map
+contourf!(
+    1:length(oleoyl_groups),
+    mddf_water_POPC.d[idmin:idmax],
+    gcontrib[idmin:idmax, :],
+    color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    colorbar=:none, levels=10,
+    ylabel=L&quot;r/\AA&quot;, xrotation=60,
+    xticks=(1:length(oleoyl_groups), labels_o), subplot=1,
+)
+annotate!( 14, 2.7, text(&quot;Oleoyl&quot;, :left, 12, plot_font), subplot=1)
+
+# Plot the contributions of the palmitoyl groups
+# We first collect the contributions of each group into a vector of vectors:
+gcontrib = Vector{Float64}[] # empty vector of vectors
+for (group_name, group_atoms) in palmitoyl_groups
+    group_contributions = contributions(mddf_water_POPC, SoluteGroup(group_atoms))
+    push!(gcontrib, movavg(group_contributions; n=10).x)
+end
+# Convert the vector of vectors into a matrix
+gcontrib = stack(gcontrib)
+# Plot matrix as density map
+contourf!(
+    1:length(palmitoyl_groups),
+    mddf_water_POPC.d[idmin:idmax],
+    gcontrib[idmin:idmax, :],
+    color=cgrad(:tempo), linewidth=1, linecolor=:black,
+    colorbar=:none, levels=10,
+    xlabel=&quot;Group&quot;,
+    ylabel=L&quot;r/\AA&quot;, xrotation=60,
+    xticks=(1:length(palmitoyl_groups), labels_o), 
+    subplot=2,
+    bottom_margin=0.5Plots.Measures.cm,
+)
+annotate!( 12, 2.7, text(&quot;Palmitoyl&quot;, :left, 12, plot_font), subplot=2)
+
+savefig(&quot;POPC_water_chains.png&quot;)
+println(&quot;The plot was saved as POPC_water_chains.png&quot;)</code></pre></details><br><p><img src="../assets/scripts/example3/POPC_ethanol_chains.png" alt="./assets/scripts/example3/POPC_ethanol_chains.png"/></p><p>Ethanol displays an important density augmentation at the vicinity of the carbonyl that follows the glycerol group, and accumulates on the proximity of the aliphatic chain. The density of ethanol decreases as one advances into the aliphatic chain, displaying a minimum around the insaturation in the Oleoyl chain. The terminal methyl group of both chains display a greater solvation by ethanol, suggesting the twisting of the aliphatic chain expose these terminal groups to membrane depth where ethanol is already abundant.</p><p>The equivalent maps for water are strikingly different, and show that water is excluded from the interior of the membrane:</p><p><img src="../assets/scripts/example3/POPC_water_chains.png" alt="./assets/scripts/example3/POPC_water_chains.png"/></p><h3 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h3><p>Membrane built with the <a href="https://www.ks.uiuc.edu/Research/vmd/">VMD</a> membrane plugin. </p><p>Water and ethanol layers added with <a href="http://m3g.iqm.unicamp.br/packmol">Packmol</a>.</p><p>The simulations were performed with <a href="https://www.ks.uiuc.edu/Research/namd/">NAMD</a>, with <a href="https://www.charmm.org">CHARMM36</a> parameters. </p><p>Density of the ethanol-water mixture from: <a href="https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/">https://wissen.science-and-fun.de/chemistry/chemistry/density-tables/ethanol-water-mixtures/</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example2/">« ◦ Polyacrylamide in DMF</a><a class="docs-footer-nextpage" href="../example4/">◦ Water/Glycerol mixture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Monday 4 March 2024 19:36">Monday 4 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

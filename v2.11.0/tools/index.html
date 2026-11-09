@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tools · ComplexMixtures.jl</title><meta name="title" content="Tools · ComplexMixtures.jl"/><meta property="og:title" content="Tools · ComplexMixtures.jl"/><meta property="twitter:title" content="Tools · ComplexMixtures.jl"/><meta name="description" content="Documentation for ComplexMixtures.jl."/><meta property="og:description" content="Documentation for ComplexMixtures.jl."/><meta property="twitter:description" content="Documentation for ComplexMixtures.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="ComplexMixtures.jl logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="ComplexMixtures.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">ComplexMixtures.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../installation/">Installation</a></li><li><a class="tocitem" href="../parallel/">Parallel execution</a></li><li><a class="tocitem" href="../quickguide/">Quick Guide</a></li><li><a class="tocitem" href="../examples/">Examples:</a></li><li><a class="tocitem" href="../example1/">◦ Protein in water/glycerol</a></li><li><a class="tocitem" href="../example2/">◦ Polyacrylamide in DMF</a></li><li><a class="tocitem" href="../example3/">◦ POPC membrane in water/ethanol</a></li><li><a class="tocitem" href="../example4/">◦ Water/Glycerol mixture</a></li><li><a class="tocitem" href="../selection/">Set solute and solvent</a></li><li><a class="tocitem" href="../mddf/">Computing the MDDF</a></li><li><a class="tocitem" href="../results/">Results</a></li><li><a class="tocitem" href="../contributions/">Atomic and group contributions</a></li><li><a class="tocitem" href="../save/">Save and load</a></li><li><a class="tocitem" href="../multiple/">Multiple trajectories</a></li><li><a class="tocitem" href="../options/">Options</a></li><li><a class="tocitem" href="../density_maps/">Density maps</a></li><li class="is-active"><a class="tocitem" href>Tools</a><ul class="internal"><li><a class="tocitem" href="#coordination_number"><span>Coordination numbers</span></a></li><li><a class="tocitem" href="#radial_distribution"><span>Computing radial distribution functions</span></a></li><li><a class="tocitem" href="#overview"><span>Overview of the solvent and solute properties</span></a></li><li><a class="tocitem" href="#Legacy"><span>Legacy</span></a></li></ul></li><li><a class="tocitem" href="../python/">From Python</a></li><li><a class="tocitem" href="../updating_scripts/">Updating scripts</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tools</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tools</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/m3g/ComplexMixtures.jl/blob/main/docs/src/tools.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Tools"><a class="docs-heading-anchor" href="#Tools">Coordination numbers</a><a id="Tools-1"></a><a class="docs-heading-anchor-permalink" href="#Tools" title="Permalink"></a></h1><ul><li><a href="#coordination_number">Coordination numbers</a></li><li><a href="#overview">Overview of the solvent and solute properties</a></li><li><a href="#radial_distribution">Computing radial distribution functions</a></li></ul><h2 id="coordination_number"><a class="docs-heading-anchor" href="#coordination_number">Coordination numbers</a><a id="coordination_number-1"></a><a class="docs-heading-anchor-permalink" href="#coordination_number" title="Permalink"></a></h2><p>The coordination number is the numerical count of how many molecules of a solvent is within a certain distance  from the solute. The following function provides the functionality of retrieving coordination numbers and atom groups contributions to these numbers, given a <code>Result</code> data structure: </p><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.coordination_number" href="#ComplexMixtures.coordination_number"><code>ComplexMixtures.coordination_number</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">coordination_number(R::Result) = R.coordination_number
+coordination_number(R::Result, s::Union{SoluteGroup,SolventGroup})</code></pre><p>Here, the coordination number is the number of molecules of the solvent that are within a certain distance from the solute.</p><p>If no group is defined (first call above), the coordination number of the whole solute or solvent is returned.</p><p>If a group is defined (second call above), the contributions of this group of atoms to the coordination number are  returned, as a function of the distance to the solute: </p><ul><li><code>R</code> are the results obtained, that is, a <code>Result</code> data structure,</li><li><code>s</code> is the solute or solvent selection (of type <code>ComplexMixtures.AtomSelection</code>)</li></ul><p><strong>Examples</strong></p><p><strong>Coordination number of a subgroup of atoms of the solute</strong></p><p>Here we compute the coordination number of the atoms of the Alanine residues of a protein, relative to the solvent (TMAO), as a function of the distance. For simplicity, the  coordination number at 5 Å is shown. We use, in this case, the <code>SoluteGroup</code> type to define the group of atoms, providing <code>select(ats, &quot;resname ALA&quot;)</code> as the selection of atoms of the solute. <code>select</code> is a  function from the <code>PDBTools</code> package. </p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures, PDBTools
+
+julia&gt; using ComplexMixtures.Testing: data_dir
+
+julia&gt; ats = read_pdb(joinpath(data_dir,&quot;NAMD/structure.pdb&quot;));
+
+julia&gt; solute = AtomSelection(select(ats, &quot;protein&quot;); nmols=1);
+
+julia&gt; solvent = AtomSelection(select(ats, &quot;resname TMAO&quot;); natomspermol=14);
+
+julia&gt; R = mddf(
+           joinpath(data_dir,&quot;NAMD/trajectory.dcd&quot;), 
+           solute, 
+           solvent, 
+           Options(bulk_range=(8.0,12.0), silent=true)
+        );
+
+julia&gt; i5 = findfirst(&gt;=(5), R.d) # index for distance ≈ 5 Å
+251
+
+julia&gt; ala_residues = select(ats, &quot;resname ALA&quot;);
+
+julia&gt; coordination_number(R, SoluteGroup(ala_residues))[i5]
+0.45</code></pre><p>Alternatively to the use of the <code>PDBTools.select</code> function, an array with the indices of the atoms of the protein can be used to define the solute group, as, for example:</p><pre><code class="language-julia-repl hljs">julia&gt; ala_indices = findall(at -&gt; resname(at) == &quot;ALA&quot;, ats);
+
+julia&gt; coordination_number(R, SoluteGroup(ala_indices))[i5]
+0.45</code></pre><p>A similar syntax can be used to compute contributions of the solvent atoms to the MDDF.</p><p><strong>Coordination numbers if the groups are predefined</strong></p><p>If group contributions were precomputed, the name of the group can be used to compute the coordination number:</p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures, PDBTools
+
+julia&gt; using ComplexMixtures.Testing: data_dir
+
+julia&gt; ats = read_pdb(joinpath(data_dir,&quot;NAMD/structure.pdb&quot;));
+
+julia&gt; solute = AtomSelection(
+           select(ats, &quot;protein&quot;); 
+           nmols=1,
+           # predefinition of the group of atoms:
+           group_atom_indices = [ findall(at -&gt; resname(at) == &quot;ALA&quot;, ats) ],
+           group_names = [&quot;alanine residues&quot;]
+        )
+AtomSelection 
+    1463 atoms belonging to 1 molecule(s).
+    Atoms per molecule: 1463
+    Number of groups: 1
+
+julia&gt; solvent = AtomSelection(select(ats, &quot;resname TMAO&quot;); natomspermol=14);
+
+julia&gt; R = mddf(
+           joinpath(data_dir,&quot;NAMD/trajectory.dcd&quot;), 
+           solute, 
+           solvent, 
+           Options(bulk_range=(8.0,12.0), silent=true)
+        );
+
+julia&gt; i5 = findfirst(&gt;=(5), R.d) # index for distance ≈ 5 Å
+251
+
+julia&gt; coordination_number(R, SoluteGroup(&quot;alanine residues&quot;))[i5]
+0.45</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/b89b7eeacdf22b7f873446e804e981dd79fcee34/src/tools/coordination_number.jl#L1-L103">source</a></section></article><p>The function can be called without any argument besides the <code>Result</code> data structure, in which case the coordination number of the complete solute will  be returned, as a function of the distance. </p><p>Alternatively, subgroups of the solute or the solvent can be selected, by providing <code>SoluteGroup</code> or <code>SolventGroup</code> objects as second arguments,  initialized with the atoms of the subgroup, as a list of indices or a list of atoms generated by <code>PDBTools</code>. Note that, if a <code>SolventGroup</code> is defined we obtain the contributions of those solvent atoms to the coordination number <em>of the solute</em> (for instance, the sum of the contributions of all solvent atoms is the coordination number of the solute). </p><h3 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h3><p>In the following example we compute the coordination number of the atoms of <code>residue 50</code> (which belongs to the solute - a protein) with the solvent atoms of TMAO, as a function of the distance. The plot produced will show side by side the residue contribution to the MDDF and the corresponding coordination number.</p><pre><code class="language-julia hljs"># Load necessary packages
+using ComplexMixtures, PDBTools 
+# Load data structure and previously computed results from a mddf calculation 
+pdb = read_pdb(&quot;test/data/NAMD/structure.pdb&quot;)
+R = load(&quot;test/data/NAMD/protein_tmao.json&quot;)
+# Define which is the solute
+solute = AtomSelection(PDBTools.select(pdb, &quot;protein&quot;), nmols=1)
+# We intend to compute the contributions of residue 50 only
+residue50 = PDBTools.select(pdb, &quot;residue 50&quot;)
+# Compute the group contribution to the MDDF
+residue50_contribution = contributions(R, SoluteGroup(residue50))
+# Now compute the coordination number
+residue50_coordination = coordination_number(R, SoluteGroup(residue50))
+#
+# Plot with twin y-axis
+#
+using Plots 
+plot(R.d, residue50_contribution,
+    xaxis=&quot;distance / Å&quot;, 
+    yaxis=&quot;MDDF contribution&quot;, 
+    linewidth=2, label=nothing, color=1
+)
+plot!(twinx(),R.d, residue50_coordination, 
+    yaxis=&quot;Coordination number&quot;, 
+    linewidth=2, label=nothing, color=2
+)
+plot!(title=&quot;Residue 50&quot;, framestyle=:box, subplot=1)</code></pre><p>With appropriate input data, this code produces:</p><center>
+<img width=60% src="../figures/coordination.png" width=80%>
+</center><div class="admonition is-success"><header class="admonition-header">Tip</header><div class="admonition-body"><p>There are some systems for which the normalization of the distributions is not  necessary or possible. It is still possible to compute the coordination numbers, by running, instead of <code>mddf</code>, the <code>coordination_number</code> function:</p><pre><code class="nohighlight hljs">coordination_number(trajectory_file, solute, solvent, options::Options)</code></pre><p>This call will return a <code>Result</code> data structure but with all fields requiring  normalization with zeros. In summary, this result data structure can be used to compute the coordination numbers, but not the MDDF, RDF, or KB integrals.</p></div></div><div class="admonition is-compat"><header class="admonition-header">Compat</header><div class="admonition-body"><p>The independent computation of coordination numbers was introduced in version 1.1.</p></div></div><h2 id="radial_distribution"><a class="docs-heading-anchor" href="#radial_distribution">Computing radial distribution functions</a><a id="radial_distribution-1"></a><a class="docs-heading-anchor-permalink" href="#radial_distribution" title="Permalink"></a></h2><p>The distributions returned by the <code>mddf</code> function (the <code>mddf</code> and <code>rdf</code> vectors), are normalized by the random reference state or using a site count based on the numerical integration of the volume corresponding to each minimum-distance to the solute. </p><p>If, however, the solute is defined by a single atom (as the oxygen atom of water, for example), the numerical integration of the volume can be replaced by a simple analytical spherical shell volume, reducing noise. The <code>ComplexMixtures.gr</code> function returns the radial distribution function and the KB integral  computed from the results, using this volume estimate: </p><pre><code class="language-julia hljs">g, kb = ComplexMixtures.gr(R)</code></pre><p>By default, the single-reference count (<code>rdf_count</code>) of the Result structure will be used to compute the radial distribution function. The function can be called with explicit control of all input parameters: </p><pre><code class="language-julia hljs">g, kb = ComplexMixtures.gr(r,count,density,binstep)</code></pre><p>where:</p><table><tr><th style="text-align: center">Parameter</th><th style="text-align: left">Definition</th><th style="text-align: left">Result structure output data to provide</th></tr><tr><td style="text-align: center"><code>r</code></td><td style="text-align: left">Vector of distances</td><td style="text-align: left">The <code>d</code> vector</td></tr><tr><td style="text-align: center"><code>count</code></td><td style="text-align: left">Number of site counts at each r</td><td style="text-align: left">The <code>rdf</code> or <code>mddf</code> vectors</td></tr><tr><td style="text-align: center"><code>density</code></td><td style="text-align: left">Bulk density</td><td style="text-align: left">The <code>density.solvent_bulk</code> or <code>density.solvent</code> densities.</td></tr><tr><td style="text-align: center"><code>binstep</code></td><td style="text-align: left">The histogram step</td><td style="text-align: left">The <code>options.binstep</code></td></tr><tr><td style="text-align: center"></td><td style="text-align: left"></td><td style="text-align: left"></td></tr></table><p>Example:</p><pre><code class="language-julia hljs">...
+R = mddf(trajectory_file, solute, solvent, options)
+g, kb = ComplexMixtures.gr(R.d,R.rdf_count,R.density.solvent_bulk,R.options.binstep)</code></pre><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.gr-Tuple{AbstractVector{&lt;:Real}, AbstractVector{&lt;:Real}, Real, Real}" href="#ComplexMixtures.gr-Tuple{AbstractVector{&lt;:Real}, AbstractVector{&lt;:Real}, Real, Real}"><code>ComplexMixtures.gr</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">gr(r::AbstractVector{&lt;:Real}, count::AbstractVector{&lt;:Real}, density::Real, binstep::Real)</code></pre><p>Computes the radial distribution function from the count data and the density.</p><p>This is exactly a conventional g(r) if a single atom was chosen as the solute and solvent selections.</p><p>Returns both the g(r) and the kb(r)</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/b89b7eeacdf22b7f873446e804e981dd79fcee34/src/tools/gr.jl#L1-L10">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.gr-Tuple{Result}" href="#ComplexMixtures.gr-Tuple{Result}"><code>ComplexMixtures.gr</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">gr(R::Result) = gr(R.d,R.rdf_count,R.density.solvent_bulk,R.files[1].options.binstep)</code></pre><p>If a Result structure is provided without further details, use the rdf count and the bulk solvent density.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/b89b7eeacdf22b7f873446e804e981dd79fcee34/src/tools/gr.jl#L28-L33">source</a></section></article><h2 id="overview"><a class="docs-heading-anchor" href="#overview">Overview of the solvent and solute properties</a><a id="overview-1"></a><a class="docs-heading-anchor-permalink" href="#overview" title="Permalink"></a></h2><p>The output to the REPL of the Result structure provides an overview of the properties of the solution. The data can be retrieved into a data structure using the <code>overview</code> function. Examples:     </p><pre><code class="language-julia-repl hljs">...
+
+julia&gt; results = mddf(trajectory_file, solute, solvent, Options(bulk_range=(8.0, 12.0)))
+
+julia&gt; results
+--------------------------------------------------------------------------------
+MDDF Overview - ComplexMixtures - Version 2.0.8
+--------------------------------------------------------------------------------
+
+Solvent properties:
+-------------------
+
+Simulation concentration: 0.49837225882780106 mol L⁻¹
+Molar volume: 2006.532230249041 cm³ mol⁻¹
+
+Concentration in bulk: 0.5182380507741433 mol L⁻¹
+Molar volume in bulk: 1929.6151614228274 cm³ mol⁻¹
+
+Solute properties:
+------------------
+
+Simulation Concentration: 0.002753437894076249 mol L⁻¹
+Estimated solute partial molar volume: 13921.98945754469 cm³ mol⁻¹
+
+Bulk range: 8.0 - 12.0 Å
+Molar volume of the solute domain: 34753.1382279134 cm³ mol⁻¹
+
+Auto-correlation: false
+
+Trajectory files and weights:
+
+   /home/user/NAMD/trajectory.dcd - w = 1.0
+
+Long range MDDF mean (expected 1.0): 1.0378896753018338 ± 1.0920172247127446
+Long range RDF mean (expected 1.0): 1.2147429551790854 ± 1.2081838161780682
+
+--------------------------------------------------------------------------------</code></pre><p>In this case, since solute and solvent are equivalent and the system is homogeneous, the molar volumes and concentrations are similar. This is not the case if the molecules are different or if the solute is at infinite dilution (in which case the bulk solvent density might be different from the solvent density in the simulation). </p><p>To retrieve the data of the overview structure use, for example:</p><pre><code class="language-julia-repl hljs">julia&gt; overview = overview(results);
+
+julia&gt; overview.solute_molar_volume
+657.5051512801567</code></pre><h2 id="Legacy"><a class="docs-heading-anchor" href="#Legacy">Legacy</a><a id="Legacy-1"></a><a class="docs-heading-anchor-permalink" href="#Legacy" title="Permalink"></a></h2><p>The legacy function <code>contourf_per_residue</code> provides a direct way to produce contour plots:</p><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ComplexMixtures.contourf_per_residue-Tuple{Result, AbstractVector{Atom}}" href="#ComplexMixtures.contourf_per_residue-Tuple{Result, AbstractVector{Atom}}"><code>ComplexMixtures.contourf_per_residue</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">contourf_per_residue(
+    results::Result, atoms::AbstractVector{&lt;:PDBTools.Atom}; 
+    residue_range=nothing, 
+    dmin=1.5, dmax=3.5, 
+    oneletter=false,
+    xlabel=&quot;Residue&quot;,
+    ylabel=&quot;r / Å&quot;,
+    type=:mddf,
+    clims=nothing,
+    colorscale=:tempo,
+)</code></pre><p>Plot the contribution of each residue to the solute-solvent pair distribution function as a contour plot. This function requires loading the <code>Plots</code> package.</p><p><strong>Arguments</strong></p><ul><li><code>results::Result</code>: The result of a <code>mddf</code> call.</li><li><code>atoms::AbstractVector{&lt;:Atom}</code>: The atoms of the solute.</li></ul><p><strong>Optional arguments</strong></p><ul><li><code>residue_range</code>: The range of residues to plot. Default is all residues. Use a step to plot every <code>n</code> residues, e.g., <code>1:2:30</code>.</li><li><code>dmin::Real</code>: The minimum distance to plot. Default is <code>1.5</code>.</li><li><code>dmax::Real</code>: The maximum distance to plot. Default is <code>3.5</code>.</li><li><code>oneletter::Bool</code>: Use one-letter residue codes. Default is <code>false</code>. One-letter codes are only available for the 20 standard amino acids.</li><li><code>xlabel</code> and <code>ylabel</code>: Labels for the x and y axes. Default is <code>&quot;Residue&quot;</code> and <code>&quot;r / Å&quot;</code>.</li><li><code>type::Symbol</code>: That data to plot. Default is <code>:mddf</code> for MDDF contributions. Options are <code>:coordination_number</code>, and <code>:mddf_count</code>.</li><li><code>clims</code>: The color limits for the contour plot.</li><li><code>colorscale</code>: The color scale for the contour plot. Default is <code>:tempo</code>. We suggest <code>:bwr</code> if the zero is at the middle of the color scale (use <code>clims</code> to adjust the color limits).</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using ComplexMixtures, Plots, PDBTools
+
+julia&gt; results = load(&quot;mddf.json&quot;)
+
+julia&gt; atoms = readPDB(&quot;system.pdb&quot;, &quot;protein&quot;)
+
+julia&gt; plt = contourf_per_residue(results, atoms; oneletter=true)</code></pre><p>This will produce a plot with the contribution of each residue to the solute-solvent pair distribution function, as a contour plot, with the residues in the x-axis and the distance in the y-axis.</p><p>The resulting plot can customized using the standard mutating <code>plot!</code> function, for example, </p><pre><code class="language-julia-repl hljs">julia&gt; plot!(plt, size=(800, 400), title=&quot;Contribution per residue&quot;)</code></pre><div class="admonition is-compat"><header class="admonition-header">Compat</header><div class="admonition-body"><p>This function requires loading the <code>Plots</code> package and is available in  ComplexMixtures v2.2.0 or greater.</p><p>The <code>type</code> and <code>clims</code> arguments, and the support for a step in <code>xticks_range</code> were introduced in ComplexMixtures v2.3.0.</p></div></div></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/b89b7eeacdf22b7f873446e804e981dd79fcee34/ext/Plotting.jl#L170-L231">source</a></section><section><div><pre><code class="language-julia hljs">contourf_per_residue</code></pre><p>This function requires loading the <code>Plots</code> package.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/m3g/ComplexMixtures.jl/blob/b89b7eeacdf22b7f873446e804e981dd79fcee34/src/tools/plotting.jl#L1-L6">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../density_maps/">« Density maps</a><a class="docs-footer-nextpage" href="../python/">From Python »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Tuesday 3 December 2024 20:06">Tuesday 3 December 2024</span>. Using Julia version 1.10.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body><div data-docstringscollapsed="true"></div></html>
